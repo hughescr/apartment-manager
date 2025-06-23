@@ -1,0 +1,43 @@
+{
+  "name": "apartment-manager",
+  "version": "0.1.0",
+  "description": "An apartment management system designed to use nodejs and free-tier AWS services to manage apartments, tenants, and maintenance requests.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "author": "Craig R. Hughes <craig.git@rungie.com>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "eslint --fix;tsc;bun test",
+    "coverage": "bun test && genhtml coverage/lcov.info --output-directory coverage --header-title 'Coverage report' --footer \"$(git id)\" --legend --sort --show-owners all --annotate-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitblame.pm\" --version-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitversion.pm\" --ignore-errors version,version --ignore-errors package,package --hierarchical --criteria-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/criteria.pm\" --show-navigation --show-proportion --num-spaces 4 --function-coverage --branch-coverage ; open coverage/index.html",
+    "package-check": "bunx npm-check -i bun:test",
+    "lint": "eslint --fix",
+    "postversion": "git commit -m \"Bump package version to $npm_package_version\" package.json; git flow release start $npm_package_version; git flow release finish -m $npm_package_version $npm_package_version; git checkout develop; git merge master"
+  },
+  "devDependencies": {
+    "@hughescr/eslint-config-default": "^3.0.4",
+    "@types/bun": "^1.2.16",
+    "@types/jest": "^30.0.0",
+    "@types/lodash": "^4.17.18",
+    "@types/node": "^24.0.3",
+    "eslint": "^9.29.0",
+    "eslint-plugin-jest": "^29.0.1",
+    "serverless": "^4.17.1",
+    "serverless-domain-manager": "^8.0.0",
+    "serverless-plugin-log-retention": "^2.1.0",
+    "serverless-plugin-zip-symlinks-compress-harder": "^0.11.1",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.34.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.835.0",
+    "@aws-sdk/util-dynamodb": "^3.835.0",
+    "@hughescr/logger": "^2.6.0",
+    "lodash": "^4.17.21",
+    "luxon": "^3.6.1",
+    "pug": "^3.0.3"
+  },
+  "trustedDependencies": [],
+  "private": true
+}

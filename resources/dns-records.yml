@@ -1,0 +1,60 @@
+# See RecordSet: https://docs.aws.amazon.com/de_de/AWSCloudFormation/latest/UserGuide/aws-properties-route53-recordset.html
+# See AliasTarget: https://docs.aws.amazon.com/de_de/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html
+# See https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region (below the first table for hosted zone ids / website endpoints of S3)
+Resources:
+  DnsARecord:
+    Type: 'AWS::Route53::RecordSet'
+    DependsOn:
+      - CFDistribution
+    Properties:
+      Comment: 'Alias CloudFront for ${param:domain}'
+      HostedZoneId: '${param:ZoneID}'
+      Type: A
+      Name: '${param:domain}'
+      AliasTarget:
+        # Generated domain name from CloudFront
+        DNSName: !GetAtt 'CFDistribution.DomainName'
+        # Default (static) hosted zone for CloudFront
+        HostedZoneId: 'Z2FDTNDATAQYW2'
+  WWWDnsARecord:
+    Type: 'AWS::Route53::RecordSet'
+    DependsOn:
+      - CFDistribution
+    Properties:
+      Comment: 'Alias CloudFront for www.${param:domain}'
+      HostedZoneId: '${param:ZoneID}'
+      Type: A
+      Name: 'www.${param:domain}'
+      AliasTarget:
+        # Generated domain name from CloudFront
+        DNSName: !GetAtt 'CFDistribution.DomainName'
+        # Default (static) hosted zone for CloudFront
+        HostedZoneId: 'Z2FDTNDATAQYW2'
+  DnsAAAARecord:
+    Type: 'AWS::Route53::RecordSet'
+    DependsOn:
+      - CFDistribution
+    Properties:
+      Comment: 'Alias CloudFront for ${param:domain}'
+      HostedZoneId: '${param:ZoneID}'
+      Type: AAAA
+      Name: '${param:domain}'
+      AliasTarget:
+        # Generated domain name from CloudFront
+        DNSName: !GetAtt 'CFDistribution.DomainName'
+        # Default (static) hosted zone for CloudFront
+        HostedZoneId: 'Z2FDTNDATAQYW2'
+  WWWDnsAAAARecord:
+    Type: 'AWS::Route53::RecordSet'
+    DependsOn:
+      - CFDistribution
+    Properties:
+      Comment: 'Alias CloudFront for www.${param:domain}'
+      HostedZoneId: '${param:ZoneID}'
+      Type: AAAA
+      Name: 'www.${param:domain}'
+      AliasTarget:
+        # Generated domain name from CloudFront
+        DNSName: !GetAtt 'CFDistribution.DomainName'
+        # Default (static) hosted zone for CloudFront
+        HostedZoneId: 'Z2FDTNDATAQYW2'

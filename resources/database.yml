@@ -1,0 +1,22 @@
+Resources:
+  BuildingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Join: [ '' , [ '${param:SHORT_PREFIX}', 'Buildings' ] ]
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      AttributeDefinitions:
+        # Attribute definitions for the 'Building' table will go here
+        - AttributeName: BuildingID
+          AttributeType: N
+        - AttributeName: UnitID
+          AttributeType: S
+        # More attributes...
+      KeySchema:
+        # Primary key is BuildingID secondary key UnitID and BuildingID+UnitID is unique
+        - AttributeName: BuildingID
+          KeyType: HASH
+        - AttributeName: UnitID
+          KeyType: RANGE
