@@ -12,16 +12,7 @@ import '../styles/global.css';
         <BaseHead title={title} />
     </head>
     <body>
-        <nav>
-            <a href="#">Home</a>
-            <a href="#">Posts</a>
-            <a href="#">Contact</a>
-        </nav>
-        <h1>{title}</h1>
-        <article>
-            <slot />
-            <!-- your content is injected here -->
-        </article>
+        <slot />
         <Footer />
     </body>
 </html>

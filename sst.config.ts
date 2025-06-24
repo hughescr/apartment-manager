@@ -22,7 +22,7 @@ export default $config({
             },
         });
 
-        const bucket = new sst.aws.Bucket('SSTBucket', {
+        const uploadedDocs = new sst.aws.Bucket('ApartmentsUploads', {
             access: 'public',
         });
 
@@ -35,7 +35,7 @@ export default $config({
 
         /* ────────────── 4. Front-end (Astro) ───────────────────── */
         const site = new sst.aws.Astro('Web', {
-            link: [buildingsUnitsTable, bucket],
+            link: [buildingsUnitsTable, uploadedDocs],
             router: {
                 instance: router,
                 path: '/',
