@@ -24,11 +24,13 @@
         ]
     },
     "include": [
-        ".astro/types.d.ts", "**/*"
+        "sst-env.d.ts", ".astro/types.d.ts"
     ],
     "exclude": [
         "node_modules",
         "site-build",
-        "sst.config.ts"
+        "sst.config.ts",
+        ".sst",
+        ".astro"
     ]
 }
