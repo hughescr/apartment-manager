@@ -33,7 +33,7 @@ export default $config({
 
         });
 
-        /* ────────────── 2. Any needed server-side logic (Lambdas) ────────────── */
+        /* ────────────── 2. Any needed server-side logic (Lambdas, Cron jobs, etc) ────────────── */
 
         /* ────────────── 3. Front-end (Astro) ───────────────────── */
         const site = new sst.aws.Astro('Web', {
