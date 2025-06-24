@@ -1,5 +1,13 @@
 # Contributor Guide
 
+## Project Overview
+
+- This project is an apartment management web application.
+- It uses Astro for the frontend and SST for infrastructure as code and AWS deployment.
+- Integrates with AWS services such as Lambda, CloudFront, S3, and DynamoDB.
+- Designed to leverage AWS free tier offerings (Lambda, CloudFront, DynamoDB) for a low-cost solution.
+- Intended for managing a small number of buildings, units, and tenants, staying within free tier limits.
+
 ## Basics
 - The typescript code is developed with the bun runtime
 
