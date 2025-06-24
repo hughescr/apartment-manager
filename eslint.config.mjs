@@ -1,13 +1,12 @@
-// eslint-disable-next-line n/no-unpublished-import -- This import is not published cos it's dev only
 import defaultConfig from '@hughescr/eslint-config-default';
-// eslint-disable-next-line n/no-unpublished-import -- This import is not published cos it's dev only
+
 import tseslint from 'typescript-eslint';
 
 export default
 [
     {
         name: 'ignores',
-        ignores: ['coverage', 'node_modules'],
+        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts'],
     },
     defaultConfig.configs.recommended,
     ...tseslint.configs.recommended,
