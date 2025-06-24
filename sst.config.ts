@@ -22,18 +22,20 @@ export default $config({
             },
         });
 
+        /* ────────────── 1. Data layer (S3 and free-tier DynamoDB) ────────────── */
         const uploadedDocs = new sst.aws.Bucket('ApartmentsUploads', {
             access: 'public',
         });
 
-        /* ────────────── 1. Data layer (free-tier DynamoDB) ────────────── */
         const buildingsUnitsTable = new sst.aws.Dynamo('BuildingsUnits', {
             fields: { buildingID: 'string', unitID: 'string' },
             primaryIndex: { hashKey: 'buildingID', rangeKey: 'unitID' },
 
         });
 
-        /* ────────────── 4. Front-end (Astro) ───────────────────── */
+        /* ────────────── 2. Any needed server-side logic (Lambdas) ────────────── */
+
+        /* ────────────── 3. Front-end (Astro) ───────────────────── */
         const site = new sst.aws.Astro('Web', {
             link: [buildingsUnitsTable, uploadedDocs],
             router: {
