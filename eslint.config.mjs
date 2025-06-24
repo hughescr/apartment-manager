@@ -14,6 +14,7 @@ export default
     ...tseslint.configs.stylistic,
     {
         rules: {
+            '@typescript-eslint/triple-slash-reference': 'off',
             '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
             '@stylistic/operator-linebreak': 'off',
             'n/no-missing-import': 'off',

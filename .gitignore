@@ -153,3 +153,11 @@ venv/
 
 # Ignore python turds
 __pycache__
+
+# sst
+.sst
+
+# Astro build output and config
+.astro
+site-build/
+sst-env.d.ts

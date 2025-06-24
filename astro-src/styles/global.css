@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+main {
+    margin: auto;
+    padding: 1.5rem;
+    max-width: 60ch;
+}
+
+form {
+    color: white;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #23262d;
+    background-image: none;
+    background-size: 400%;
+    border-radius: 0.6rem;
+    background-position: 100%;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+button {
+    appearance: none;
+    border: 0;
+    font-weight: 500;
+    border-radius: 5px;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    background-color: white;
+    color: #111827;
+}
+
+button:active:enabled {
+    background-color: #EEE;
+}
