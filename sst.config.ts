@@ -12,6 +12,21 @@ export default $config({
     },
 
     async run() {
+        // Global defaults for all DynamoDB tables: provisioned mode with 1 RCU/1 WCU
+        $transform(sst.aws.Dynamo, (args) => {
+            args.transform ??= {};
+            args.transform.table = {
+                ...(args.transform.table ?? {}),
+                billingMode: 'PROVISIONED',
+                readCapacity: 1,
+                writeCapacity: 1,
+            };
+        });
+        // Global defaults for all Lambda functions: nodejs22.x runtime and arm64 architecture
+        $transform(sst.aws.Function, (args) => {
+            args.runtime ??= 'nodejs22.x';
+            args.architecture ??= 'arm64';
+        });
         /* ────────────── 0. Router (for custom domain) ────────────── */
         const router = new sst.aws.Router('Router', {
             domain: {
@@ -30,7 +45,6 @@ export default $config({
         const buildingsUnitsTable = new sst.aws.Dynamo('BuildingsUnits', {
             fields: { buildingID: 'string', unitID: 'string' },
             primaryIndex: { hashKey: 'buildingID', rangeKey: 'unitID' },
-
         });
 
         /* ────────────── 2. Any needed server-side logic (Lambdas, Cron jobs, etc) ────────────── */
