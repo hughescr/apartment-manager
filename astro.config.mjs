@@ -11,5 +11,5 @@ export default defineConfig({
     publicDir: './astro-public',
     outDir: './site-build',   // keep it away from SST artifacts
     output: 'server',
-    adapter: aws(),
+    adapter: aws({ responseMode: 'stream' }),
 });
