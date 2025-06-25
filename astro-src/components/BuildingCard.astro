@@ -1,46 +1,39 @@
 ---
-import UnitCard from './UnitCard.astro';
-import type { BuildingData, UnitData } from '../types';
+import { getBuilding } from "../../data/buildings";
+import { getUnits } from "../../data/units";
+import UnitCard from "./UnitCard.astro";
+import type { BuildingData, UnitData } from "../types";
 
 const { buildingID } = Astro.props as { buildingID: string };
 
-const buildingPromise: Promise<BuildingData | undefined> = fetch(
-    `/api/buildings/${buildingID}/units/BUILDING`,
-)
-    .then((res) => (res.ok ? (res.json() as Promise<BuildingData>) : undefined))
-    .catch(() => undefined);
-
-const unitsPromise: Promise<UnitData[]> = fetch(`/api/buildings/${buildingID}/units`)
-    .then(async (res) => (res.ok ? ((await res.json()) as UnitData[]) : []))
-    .catch(() => []);
+const building: BuildingData | undefined = await getBuilding(buildingID);
+const units: UnitData[] = await getUnits(buildingID);
 ---
 
 <div class="building-card border rounded shadow p-4" data-building={buildingID}>
     <h2 class="font-bold text-xl mb-4">Building {buildingID}</h2>
-    {await buildingPromise.then((building) => (
-        <form class="space-y-2">
-            <label class="block">
-                Street
-                <input name="street" class="border p-1 w-full" value={building?.street ?? ''} />
-            </label>
-            <label class="block">
-                City
-                <input name="city" class="border p-1 w-full" value={building?.city ?? ''} />
-            </label>
-            <label class="block">
-                State
-                <input name="state" class="border p-1 w-full" value={building?.state ?? ''} />
-            </label>
-            <label class="block">
-                Zip
-                <input name="zip" class="border p-1 w-full" value={building?.zip ?? ''} />
-            </label>
-            <label class="block">
-                Description
-                <input name="buildingDescription" class="border p-1 w-full" value={building?.buildingDescription ?? ''} />
-            </label>
-        </form>
-    ))}
+    <form class="space-y-2">
+        <label class="block">
+            Street
+            <input name="street" class="border p-1 w-full" value={building?.street ?? ''} />
+        </label>
+        <label class="block">
+            City
+            <input name="city" class="border p-1 w-full" value={building?.city ?? ''} />
+        </label>
+        <label class="block">
+            State
+            <input name="state" class="border p-1 w-full" value={building?.state ?? ''} />
+        </label>
+        <label class="block">
+            Zip
+            <input name="zip" class="border p-1 w-full" value={building?.zip ?? ''} />
+        </label>
+        <label class="block">
+            Description
+            <input name="buildingDescription" class="border p-1 w-full" value={building?.buildingDescription ?? ''} />
+        </label>
+    </form>
     <div class="mt-2 space-x-2">
         <button type="button" class="save hidden bg-blue-600 text-white px-2 py-1 rounded">Save</button>
         <button type="button" class="undo hidden bg-gray-300 px-2 py-1 rounded">Undo</button>
@@ -48,11 +41,9 @@ const unitsPromise: Promise<UnitData[]> = fetch(`/api/buildings/${buildingID}/un
         <button type="button" class="add bg-green-600 text-white px-2 py-1 rounded">Add Unit</button>
     </div>
     <div class="mt-4 space-y-4">
-        {await unitsPromise.then((units) =>
-            units
-                .filter((u) => u.unitID !== 'BUILDING')
-                .map((u) => <UnitCard buildingID={buildingID} unitID={u.unitID} />),
-        )}
+        {units
+            .filter((u) => u.unitID !== 'BUILDING')
+            .map((u) => <UnitCard buildingID={buildingID} unitID={u.unitID} />)}
     </div>
 </div>
 

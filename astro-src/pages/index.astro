@@ -1,13 +1,26 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getBuildings } from "../../data/buildings";
+import { getUnits } from "../../data/units";
+import BuildingCard from "../components/BuildingCard.astro";
+import UnitCard from "../components/UnitCard.astro";
 
-import { Image } from "astro:assets";
-import logo from "../images/apartment-manager.png";
+const buildings = await getBuildings();
+const unitsByBuilding = await Promise.all(
+    buildings.map(b => getUnits(b.buildingID))
+);
 ---
 
-<Layout title="Astro x SST">
+<Layout title="Apartment Manager">
     <main>
-        <Image src={logo} alt="Apartment Manager Logo" />
-        <p>Hello, World!</p>
+        <h1>Buildings</h1>
+        {buildings.map((building, i) => (
+            <BuildingCard building={building}>
+                <h2>Units</h2>
+                {unitsByBuilding[i].map(unit => (
+                    <UnitCard unit={unit} />
+                ))}
+            </BuildingCard>
+        ))}
     </main>
 </Layout>
