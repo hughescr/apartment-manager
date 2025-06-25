@@ -1,12 +1,13 @@
 ---
 import { DynamoDBClient, GetItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
+import { Resource } from 'sst';
 import UnitCard from './UnitCard.astro';
 import type { BuildingData, UnitData } from '../types';
 
 const { buildingID } = Astro.props as { buildingID: string };
 
-const tableName = process.env.BUILDINGS_UNITS_TABLE_NAME ?? '';
+const tableName = Resource.BuildingsUnits.tableName;
 const client = new DynamoDBClient({});
 
 let building: BuildingData | undefined;
