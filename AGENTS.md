@@ -13,6 +13,28 @@
 - Astro documentation: https://docs.astro.build/
 - SST documentation: https://sst.dev/docs/
 
+## Application Architecture
+
+The application is divided into three main layers: the Astro frontend, the API, and the data layer.
+
+### Data Layer
+
+The data layer is responsible for all interactions with the database. It provides a set of functions for creating, reading, updating, and deleting data. The data layer is located in the `data/` directory and is shared between the Astro frontend and the API.
+
+### API
+
+The API provides a set of HTTP endpoints for interacting with the application. The API is located in the `api/` directory and uses the data layer to interact with the database. The API is used by the client-side of the Astro frontend to perform actions that require a full page reload, such as creating or deleting a unit.
+
+### Astro Frontend
+
+The Astro frontend is responsible for rendering the user interface. The frontend is located in the `astro-src/` directory and uses the data layer to fetch data for server-side rendering. The frontend also uses the API to perform actions that do not require a full page reload, such as updating a unit's information.
+
+### When to use which layer
+
+- Use the **data layer** when you need to interact with the database from either the Astro frontend or the API.
+- Use the **API** when you need to perform an action from the client-side of the Astro frontend that does not require a full page reload.
+- Use the **Astro frontend** to render the user interface and to fetch data for server-side rendering.
+
 ## Basics
 - The typescript code is developed with the bun runtime
 
