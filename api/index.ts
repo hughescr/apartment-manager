@@ -1,16 +1,51 @@
 import { APIGatewayProxyHandlerV2, APIGatewayProxyEventV2 } from 'aws-lambda';
-import { handler as buildingsHandler } from './buildings';
-import { handler as unitsHandler } from './units';
-import { noop } from 'lodash';
+import * as buildings from './buildings';
+import * as units from './units';
+import { noop, split, every, startsWith, keys } from 'lodash';
 
-const routes: Record<string, APIGatewayProxyHandlerV2> = {
-    '/api/buildings': buildingsHandler,
-    '/api/units': unitsHandler,
+const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
+    '/api/buildings': {
+        GET: buildings.list,
+        POST: buildings.create,
+    },
+    '/api/buildings/{buildingID}': {
+        GET: buildings.get,
+        PUT: buildings.update,
+        DELETE: buildings.del,
+    },
+    '/api/buildings/{buildingID}/units': {
+        GET: units.list,
+        POST: units.create,
+    },
+    '/api/buildings/{buildingID}/units/{unitID}': {
+        GET: units.get,
+        PUT: units.update,
+        DELETE: units.del,
+    },
 };
 
+function findRoute(rawPath: string): string | undefined {
+    for(const routeKey of keys(routes)) {
+        const routeParts = split(routeKey, '/');
+        const pathParts = split(rawPath, '/');
+        if(routeParts.length !== pathParts.length) {
+            continue;
+        }
+
+        if(every(routeParts, (part, i) => startsWith(part, '{') || part === pathParts[i])) {
+            return routeKey;
+        }
+    }
+    return undefined;
+}
+
 export const handler: APIGatewayProxyHandlerV2 = async (evt: APIGatewayProxyEventV2) => {
-    const { rawPath } = evt;
-    const routeHandler = routes[rawPath];
+    const { rawPath, requestContext } = evt;
+    const { http } = requestContext;
+    const { method } = http;
+
+    const route = findRoute(rawPath);
+    const routeHandler = route ? routes[route][method] : undefined;
 
     if(routeHandler) {
         return routeHandler(evt, null, noop);

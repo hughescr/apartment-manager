@@ -1,33 +1,27 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { UnitData } from '../../astro-src/types';
+import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
 
-const units: UnitData[] = [
-    {
-        buildingID: 'bldg-1',
-        unitID: 'unit-101',
-        unitDescription: 'A cozy 1-bedroom apartment.',
-        beds: 1,
-        baths: 1,
-        sqft: 650,
-        rent: 1500,
-        occupied: false,
-        availableDate: '2025-07-01',
-    },
-    {
-        buildingID: 'bldg-1',
-        unitID: 'unit-102',
-        unitDescription: 'A spacious 2-bedroom apartment.',
-        beds: 2,
-        baths: 2,
-        sqft: 900,
-        rent: 2200,
-        occupied: true,
-    },
-];
+export const list: APIGatewayProxyHandlerV2 = async evt => ({
+    statusCode: 200,
+    body: JSON.stringify(await getUnits(evt.pathParameters.buildingID)),
+});
 
-export const handler: APIGatewayProxyHandlerV2 = async (_evt) => {
-    return {
-        statusCode: 200,
-        body: JSON.stringify(units),
-    };
+export const get: APIGatewayProxyHandlerV2 = async (evt) => {
+    const unit = await getUnit(evt.pathParameters.buildingID, evt.pathParameters.unitID);
+    return unit ? { statusCode: 200, body: JSON.stringify(unit) } : { statusCode: 404, body: 'Not Found' };
+};
+
+export const create: APIGatewayProxyHandlerV2 = async (evt) => {
+    const newUnit = await createUnit(JSON.parse(evt.body));
+    return { statusCode: 201, body: JSON.stringify(newUnit) };
+};
+
+export const update: APIGatewayProxyHandlerV2 = async (evt) => {
+    const updatedUnit = await updateUnit(evt.pathParameters.buildingID, evt.pathParameters.unitID, JSON.parse(evt.body));
+    return updatedUnit ? { statusCode: 200, body: JSON.stringify(updatedUnit) } : { statusCode: 404, body: 'Not Found' };
+};
+
+export const del: APIGatewayProxyHandlerV2 = async (evt) => {
+    const success = await deleteUnit(evt.pathParameters.buildingID, evt.pathParameters.unitID);
+    return success ? { statusCode: 204, body: '' } : { statusCode: 404, body: 'Not Found' };
 };
