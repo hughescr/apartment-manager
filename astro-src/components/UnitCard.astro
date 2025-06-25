@@ -1,21 +1,14 @@
 ---
-import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { Resource } from 'sst';
 import type { UnitData } from '../types';
 
 const { buildingID, unitID } = Astro.props as { buildingID: string; unitID: string };
 
-const tableName = Resource.BuildingsUnits.tableName;
-const client = new DynamoDBClient({});
-
 let unit: UnitData | undefined;
 try {
-    const { Item } = await client.send(new GetItemCommand({
-        TableName: tableName,
-        Key: marshall({ buildingID, unitID }),
-    }));
-    unit = Item ? (unmarshall(Item) as UnitData) : undefined;
+    const res = await fetch(`/api/buildings/${buildingID}/units/${unitID}`);
+    if (res.ok) {
+        unit = (await res.json()) as UnitData;
+    }
 } catch {}
 ---
 

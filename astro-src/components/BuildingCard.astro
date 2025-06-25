@@ -1,29 +1,20 @@
 ---
-import { DynamoDBClient, GetItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { Resource } from 'sst';
 import UnitCard from './UnitCard.astro';
 import type { BuildingData, UnitData } from '../types';
 
 const { buildingID } = Astro.props as { buildingID: string };
 
-const tableName = Resource.BuildingsUnits.tableName;
-const client = new DynamoDBClient({});
-
 let building: BuildingData | undefined;
 let units: UnitData[] = [];
 try {
-    const { Item } = await client.send(new GetItemCommand({
-        TableName: tableName,
-        Key: marshall({ buildingID, unitID: 'BUILDING' }),
-    }));
-    building = Item ? (unmarshall(Item) as BuildingData) : undefined;
-    const { Items } = await client.send(new QueryCommand({
-        TableName: tableName,
-        KeyConditionExpression: 'buildingID = :b',
-        ExpressionAttributeValues: marshall({ ':b': buildingID }),
-    }));
-    units = Items ? Items.map((i) => unmarshall(i) as UnitData).filter((u) => u.unitID !== 'BUILDING') : [];
+    const resBuilding = await fetch(`/api/buildings/${buildingID}/units/BUILDING`);
+    if (resBuilding.ok) {
+        building = (await resBuilding.json()) as BuildingData;
+    }
+    const resUnits = await fetch(`/api/buildings/${buildingID}/units`);
+    if (resUnits.ok) {
+        units = ((await resUnits.json()) as UnitData[]).filter((u) => u.unitID !== 'BUILDING');
+    }
 } catch {}
 ---
 
