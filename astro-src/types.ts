@@ -1,7 +1,7 @@
 export interface UnitData {
     buildingID: string
     unitID: string
-    unitDescription?: string
+    description?: string
     beds?: number
     baths?: number
     sqft?: number
@@ -17,7 +17,7 @@ export interface BuildingData {
     city?: string
     state?: string
     zip?: string
-    buildingDescription?: string
+    description?: string
     yearBuilt?: number
     numberStories?: number
     totalUnits?: number
