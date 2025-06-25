@@ -1,0 +1,114 @@
+---
+import UnitCard from './UnitCard.astro';
+import type { BuildingData, UnitData } from '../types';
+
+const { buildingID } = Astro.props as { buildingID: string };
+
+const buildingPromise: Promise<BuildingData | undefined> = fetch(
+    `/api/buildings/${buildingID}/units/BUILDING`,
+)
+    .then((res) => (res.ok ? (res.json() as Promise<BuildingData>) : undefined))
+    .catch(() => undefined);
+
+const unitsPromise: Promise<UnitData[]> = fetch(`/api/buildings/${buildingID}/units`)
+    .then(async (res) => (res.ok ? ((await res.json()) as UnitData[]) : []))
+    .catch(() => []);
+---
+
+<div class="building-card border rounded shadow p-4" data-building={buildingID}>
+    <h2 class="font-bold text-xl mb-4">Building {buildingID}</h2>
+    {await buildingPromise.then((building) => (
+        <form class="space-y-2">
+            <label class="block">
+                Street
+                <input name="street" class="border p-1 w-full" value={building?.street ?? ''} />
+            </label>
+            <label class="block">
+                City
+                <input name="city" class="border p-1 w-full" value={building?.city ?? ''} />
+            </label>
+            <label class="block">
+                State
+                <input name="state" class="border p-1 w-full" value={building?.state ?? ''} />
+            </label>
+            <label class="block">
+                Zip
+                <input name="zip" class="border p-1 w-full" value={building?.zip ?? ''} />
+            </label>
+            <label class="block">
+                Description
+                <input name="buildingDescription" class="border p-1 w-full" value={building?.buildingDescription ?? ''} />
+            </label>
+        </form>
+    ))}
+    <div class="mt-2 space-x-2">
+        <button type="button" class="save hidden bg-blue-600 text-white px-2 py-1 rounded">Save</button>
+        <button type="button" class="undo hidden bg-gray-300 px-2 py-1 rounded">Undo</button>
+        <button type="button" class="delete bg-red-600 text-white px-2 py-1 rounded">Delete Building</button>
+        <button type="button" class="add bg-green-600 text-white px-2 py-1 rounded">Add Unit</button>
+    </div>
+    <div class="mt-4 space-y-4">
+        {await unitsPromise.then((units) =>
+            units
+                .filter((u) => u.unitID !== 'BUILDING')
+                .map((u) => <UnitCard buildingID={buildingID} unitID={u.unitID} />),
+        )}
+    </div>
+</div>
+
+<script type="module" client:load>
+const card = document.currentScript.closest('.building-card');
+const form = card.querySelector('form');
+const saveBtn = card.querySelector('.save');
+const undoBtn = card.querySelector('.undo');
+const addBtn = card.querySelector('.add');
+let original = new FormData(form);
+
+function formChanged() {
+    const current = new FormData(form);
+    let changed = false;
+    for (const [k, v] of current) {
+        if ((original.get(k) ?? '') !== v) {
+            changed = true;
+            break;
+        }
+    }
+    saveBtn.classList.toggle('hidden', !changed);
+    undoBtn.classList.toggle('hidden', !changed);
+}
+
+form.addEventListener('input', formChanged);
+
+saveBtn.addEventListener('click', async () => {
+    const data = Object.fromEntries(new FormData(form).entries());
+    await fetch(`/api/buildings/${card.dataset.building}/units/BUILDING`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    original = new FormData(form);
+    formChanged();
+});
+
+undoBtn.addEventListener('click', () => {
+    for (const [k, v] of original.entries()) {
+        const el = form.elements.namedItem(k);
+        if (!el) continue;
+        (el as HTMLInputElement).value = v as string;
+    }
+    formChanged();
+});
+
+card.querySelector('.delete').addEventListener('click', async () => {
+    if (!confirm('Delete this building and all units?')) return;
+    await fetch(`/api/buildings/${card.dataset.building}`, { method: 'DELETE' });
+    card.remove();
+});
+
+addBtn.addEventListener('click', async () => {
+    const id = prompt('New unit number?');
+    if (!id) return;
+    await fetch(`/api/buildings/${card.dataset.building}/units/${id}`, { method: 'POST' });
+    location.reload();
+});
+</script>
