@@ -1,49 +1,52 @@
 ---
 import type { UnitData } from '../types';
 
-const { buildingID, unitID } = Astro.props as { buildingID: string; unitID: string };
+const { buildingID, unitID } = Astro.props as {
+    buildingID: string;
+    unitID: string;
+};
 
-let unit: UnitData | undefined;
-try {
-    const res = await fetch(`/api/buildings/${buildingID}/units/${unitID}`);
-    if (res.ok) {
-        unit = (await res.json()) as UnitData;
-    }
-} catch {}
+const unitPromise: Promise<UnitData | undefined> = fetch(
+    `/api/buildings/${buildingID}/units/${unitID}`,
+)
+    .then((res) => (res.ok ? (res.json() as Promise<UnitData>) : undefined))
+    .catch(() => undefined);
 ---
 
 <div class="unit-card border rounded shadow p-4 mb-4" data-building={buildingID} data-unit={unitID}>
     <h3 class="font-bold text-lg mb-2">Unit {unitID}</h3>
-    <form class="space-y-2">
-        <label class="block">
-            Description
-            <input name="unitDescription" class="border p-1 w-full" value={unit?.unitDescription ?? ''} />
-        </label>
-        <label class="block">
-            Beds
-            <input type="number" name="beds" class="border p-1 w-full" value={unit?.beds ?? ''} />
-        </label>
-        <label class="block">
-            Baths
-            <input type="number" name="baths" class="border p-1 w-full" value={unit?.baths ?? ''} />
-        </label>
-        <label class="block">
-            Sqft
-            <input type="number" name="sqft" class="border p-1 w-full" value={unit?.sqft ?? ''} />
-        </label>
-        <label class="block">
-            Monthly Rent
-            <input type="number" name="rent" class="border p-1 w-full" value={unit?.rent ?? ''} />
-        </label>
-        <label class="inline-flex items-center gap-2">
-            <input type="checkbox" name="occupied" value="true" checked={unit?.occupied ?? false} />
-            Occupied
-        </label>
-        <label class="block">
-            Available Date
-            <input type="date" name="availableDate" class="border p-1 w-full" value={unit?.availableDate ?? ''} />
-        </label>
-    </form>
+    {await unitPromise.then((unit) => (
+        <form class="space-y-2">
+            <label class="block">
+                Description
+                <input name="unitDescription" class="border p-1 w-full" value={unit?.unitDescription ?? ''} />
+            </label>
+            <label class="block">
+                Beds
+                <input type="number" name="beds" class="border p-1 w-full" value={unit?.beds ?? ''} />
+            </label>
+            <label class="block">
+                Baths
+                <input type="number" name="baths" class="border p-1 w-full" value={unit?.baths ?? ''} />
+            </label>
+            <label class="block">
+                Sqft
+                <input type="number" name="sqft" class="border p-1 w-full" value={unit?.sqft ?? ''} />
+            </label>
+            <label class="block">
+                Monthly Rent
+                <input type="number" name="rent" class="border p-1 w-full" value={unit?.rent ?? ''} />
+            </label>
+            <label class="inline-flex items-center gap-2">
+                <input type="checkbox" name="occupied" value="true" checked={unit?.occupied ?? false} />
+                Occupied
+            </label>
+            <label class="block">
+                Available Date
+                <input type="date" name="availableDate" class="border p-1 w-full" value={unit?.availableDate ?? ''} />
+            </label>
+        </form>
+    ))}
     <div class="mt-2 space-x-2">
         <button type="button" class="save hidden bg-blue-600 text-white px-2 py-1 rounded">Save</button>
         <button type="button" class="undo hidden bg-gray-300 px-2 py-1 rounded">Undo</button>
