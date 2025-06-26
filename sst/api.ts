@@ -4,6 +4,7 @@ import { router } from './router';
 
 export const api = new sst.aws.Function('Api', {
     handler: 'api/index.handler',
+    url: true,
     router: {
         instance: router,
         routes: {
