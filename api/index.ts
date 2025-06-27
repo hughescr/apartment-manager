@@ -1,4 +1,4 @@
-import { APIGatewayProxyHandlerV2, APIGatewayProxyEventV2 } from 'aws-lambda';
+import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import * as buildings from './buildings';
 import * as units from './units';
 import { noop, split, every, startsWith, keys } from 'lodash';
@@ -39,7 +39,7 @@ function findRoute(rawPath: string): string | undefined {
     return undefined;
 }
 
-export const handler: APIGatewayProxyHandlerV2 = async (evt: APIGatewayProxyEventV2) => {
+export const handler: APIGatewayProxyHandlerV2 = (evt, ctx) => {
     const { rawPath, requestContext } = evt;
     const { http } = requestContext;
     const { method } = http;
@@ -48,11 +48,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (evt: APIGatewayProxyEven
     const routeHandler = route ? routes[route][method] : undefined;
 
     if(routeHandler) {
-        return routeHandler(evt, null, noop);
+        return routeHandler(evt, ctx, noop);
     }
-
-    return {
-        statusCode: 404,
-        body: 'Not Found',
-    };
 };
