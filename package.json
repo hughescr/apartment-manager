@@ -54,5 +54,11 @@
     "sst": "^3.17.6",
     "tailwindcss": "^4.1.10"
   },
-  "private": true
+  "private": true,
+  "trustedDependencies": [
+    "@tailwindcss/oxide",
+    "aws-sdk",
+    "esbuild",
+    "sharp"
+  ]
 }
