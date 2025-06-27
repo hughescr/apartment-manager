@@ -15,7 +15,7 @@ const buildingJson = JSON.stringify(building);
 <div
     class="building-card border rounded shadow p-4"
     data-building={buildingID}
-    x-data=`{
+    x-data="{
         showSave: false,
         original: ${buildingJson},
         current: ${buildingJson},
@@ -48,7 +48,7 @@ const buildingJson = JSON.stringify(building);
             await fetch(`/api/buildings/${buildingID}/units/${id}`, { method: 'POST' });
             location.reload();
         }
-    }`
+    }"
 >
     <h2 class="font-bold text-xl mb-4">Building {buildingID}</h2>
     <form class="space-y-2">
