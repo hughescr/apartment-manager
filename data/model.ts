@@ -1,42 +1,52 @@
 import { Table, Entity } from 'dynamodb-toolbox';
 import { db, tableName } from './db';
+import { item } from 'dynamodb-toolbox/schema/item';
+import { string } from 'dynamodb-toolbox/schema/string';
+import { number } from 'dynamodb-toolbox/schema/number';
+import { boolean } from 'dynamodb-toolbox/schema/boolean';
 
 export const ApartmentTable = new Table({
     name: tableName,
-    partitionKey: 'buildingID',
-    sortKey: 'unitID',
-    DocumentClient: db,
+    partitionKey: {
+        name: 'buildingID',
+        type: 'string',
+    },
+    sortKey: {
+        name: 'unitID',
+        type: 'string',
+    },
+    documentClient: db,
 });
 
 export const Building = new Entity({
     name: 'Building',
-    attributes: {
-        buildingID: { type: 'string', required: true },
-        unitID: { type: 'string', required: true, 'const': 'BUILDING' },
-        street: { type: 'string' },
-        city: { type: 'string' },
-        state: { type: 'string' },
-        zip: { type: 'string' },
-        description: { type: 'string' },
-        yearBuilt: { type: 'number' },
-        numberStories: { type: 'number' },
-        totalUnits: { type: 'number' },
-    },
     table: ApartmentTable,
+    schema: item({
+        buildingID: string().key(),
+        unitID: string().key(),
+        street: string(),
+        city: string(),
+        state: string(),
+        zip: string(),
+        description: string(),
+        yearBuilt: number(),
+        numberStories: number(),
+        totalUnits: number(),
+    }),
 });
 
 export const Unit = new Entity({
     name: 'Unit',
-    attributes: {
-        buildingID: { type: 'string', required: true },
-        unitID: { type: 'string', required: true },
-        description: { type: 'string' },
-        beds: { type: 'number' },
-        baths: { type: 'number' },
-        sqft: { type: 'number' },
-        rent: { type: 'number' },
-        occupied: { type: 'boolean' },
-        availableDate: { type: 'string' },
-    },
     table: ApartmentTable,
+    schema: item({
+        buildingID: string().key(),
+        unitID: string().key(),
+        description: string(),
+        beds: number(),
+        baths: number(),
+        sqft: number(),
+        rent: number(),
+        occupied: boolean(),
+        availableDate: string(),
+    }),
 });
