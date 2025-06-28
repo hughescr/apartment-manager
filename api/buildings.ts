@@ -16,6 +16,13 @@ export const create: APIGatewayProxyHandlerV2 = async (evt) => {
     return { statusCode: 201, body: JSON.stringify(newBuilding) };
 };
 
+export const createWithId: APIGatewayProxyHandlerV2 = async (evt) => {
+    const buildingID = evt.pathParameters?.buildingID ?? '';
+    const newBuildingData = { ...JSON.parse(evt.body!), buildingID };
+    const newBuilding = await createBuilding(newBuildingData);
+    return { statusCode: 201, body: JSON.stringify(newBuilding) };
+};
+
 export const update: APIGatewayProxyHandlerV2 = async (evt) => {
     const updatedBuilding = await updateBuilding(evt.pathParameters?.buildingID ?? '', JSON.parse(evt.body!));
     return updatedBuilding ? { statusCode: 200, body: JSON.stringify(updatedBuilding) } : { statusCode: 404, body: 'Not Found' };

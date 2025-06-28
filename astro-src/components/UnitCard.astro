@@ -1,6 +1,6 @@
 ---
-import { getUnit } from "../../data/units";
-import type { UnitData } from "../types";
+import { getUnit } from '../../data/units';
+import { Resource } from 'sst';
 
 const { buildingID, unitID } = Astro.props as {
     buildingID: string;
@@ -9,6 +9,7 @@ const { buildingID, unitID } = Astro.props as {
 
 const unit = await getUnit(buildingID, unitID);
 const unitJson = JSON.stringify(unit);
+const apiURL = Resource.API.url;
 ---
 
 <div
@@ -25,7 +26,7 @@ const unitJson = JSON.stringify(unit);
             });
         },
         async save() {
-            await fetch(`/api/buildings/${buildingID}/units/${unitID}`, {
+            await fetch(`${apiURL}/buildings/${buildingID}/units/${unitID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this.current),
@@ -38,8 +39,8 @@ const unitJson = JSON.stringify(unit);
             this.showSave = false;
         },
         async deleteUnit() {
-            if (!confirm('Delete this unit?')) return;
-            await fetch(`/api/buildings/${buildingID}/units/${unitID}`, { method: 'DELETE' });
+            if (!confirm('Are you sure you want to delete this unit?')) return;
+            await fetch(`${apiURL}/buildings/${buildingID}/units/${unitID}`, { method: 'DELETE' });
             this.$el.remove();
         }
     }"
@@ -48,23 +49,47 @@ const unitJson = JSON.stringify(unit);
     <form class="space-y-2">
         <label class="block">
             Description
-            <input name="description" class="border p-1 w-full" x-model="current.description" />
+            <input
+                name="description"
+                class="border p-1 w-full"
+                x-model="current.description"
+            />
         </label>
         <label class="block">
             Beds
-            <input type="number" name="beds" class="border p-1 w-full" x-model.number="current.beds" />
+            <input
+                type="number"
+                name="beds"
+                class="border p-1 w-full"
+                x-model.number="current.beds"
+            />
         </label>
         <label class="block">
             Baths
-            <input type="number" name="baths" class="border p-1 w-full" x-model.number="current.baths" />
+            <input
+                type="number"
+                name="baths"
+                class="border p-1 w-full"
+                x-model.number="current.baths"
+            />
         </label>
         <label class="block">
             Sqft
-            <input type="number" name="sqft" class="border p-1 w-full" x-model.number="current.sqft" />
+            <input
+                type="number"
+                name="sqft"
+                class="border p-1 w-full"
+                x-model.number="current.sqft"
+            />
         </label>
         <label class="block">
             Monthly Rent
-            <input type="number" name="rent" class="border p-1 w-full" x-model.number="current.rent" />
+            <input
+                type="number"
+                name="rent"
+                class="border p-1 w-full"
+                x-model.number="current.rent"
+            />
         </label>
         <label class="inline-flex items-center gap-2">
             <input type="checkbox" name="occupied" x-model="current.occupied" />
@@ -72,12 +97,31 @@ const unitJson = JSON.stringify(unit);
         </label>
         <label class="block">
             Available Date
-            <input type="date" name="availableDate" class="border p-1 w-full" x-model="current.availableDate" />
+            <input
+                type="date"
+                name="availableDate"
+                class="border p-1 w-full"
+                x-model="current.availableDate"
+            />
         </label>
     </form>
     <div class="mt-2 space-x-2">
-        <button type="button" class="save bg-blue-600 text-white px-2 py-1 rounded" x-show="showSave" x-on:click="save">Save</button>
-        <button type="button" class="undo bg-gray-300 px-2 py-1 rounded" x-show="showSave" x-on:click="undo">Undo</button>
-        <button type="button" class="delete bg-red-600 text-white px-2 py-1 rounded" x-on:click="deleteUnit">Delete</button>
+        <button
+            type="button"
+            class="save bg-blue-600 text-white px-2 py-1 rounded"
+            x-show="showSave"
+            x-on:click="save">Save</button
+        >
+        <button
+            type="button"
+            class="undo bg-gray-300 px-2 py-1 rounded"
+            x-show="showSave"
+            x-on:click="undo">Undo</button
+        >
+        <button
+            type="button"
+            class="delete bg-red-600 text-white px-2 py-1 rounded"
+            x-on:click="deleteUnit">Delete</button
+        >
     </div>
 </div>

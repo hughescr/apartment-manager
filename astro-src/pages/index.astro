@@ -1,26 +1,35 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import { getBuildings } from "../../data/buildings";
-import { getUnits } from "../../data/units";
-import BuildingCard from "../components/BuildingCard.astro";
-import UnitCard from "../components/UnitCard.astro";
+import Layout from '../layouts/Layout.astro';
+import { getBuildings } from '../../data/buildings';
+import { getUnits } from '../../data/units';
+import BuildingCard from '../components/BuildingCard.astro';
+import UnitCard from '../components/UnitCard.astro';
 
 const buildings = await getBuildings();
 const unitsByBuilding = await Promise.all(
-    buildings.map(b => getUnits(b.buildingID))
+    buildings.map((b) => getUnits(b.buildingID)),
 );
 ---
 
-<Layout title="Apartment Manager">
+<Layout title='Apartment Manager'>
     <main>
-        <h1>Buildings</h1>
-        {buildings.map((building, i) => (
-            <BuildingCard building={building}>
-                <h2>Units</h2>
-                {unitsByBuilding[i].map(unit => (
-                    <UnitCard unit={unit} />
-                ))}
-            </BuildingCard>
-        ))}
+        <div class='flex justify-between items-center'>
+            <h1>Buildings</h1>
+            <a
+                href='/buildings/add'
+                class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                >Add Building</a
+            >
+        </div>
+        {
+            buildings.map((building, i) => (
+                <BuildingCard building={building}>
+                    <h2>Units</h2>
+                    {unitsByBuilding[i].map((unit) => (
+                        <UnitCard unit={unit} />
+                    ))}
+                </BuildingCard>
+            ))
+        }
     </main>
 </Layout>

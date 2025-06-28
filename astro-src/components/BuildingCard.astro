@@ -1,7 +1,8 @@
 ---
-import { getBuilding } from "../../data/buildings";
-import { getUnits } from "../../data/units";
-import UnitCard from "./UnitCard.astro";
+import { getBuilding } from '../../data/buildings';
+import { getUnits } from '../../data/units';
+import UnitCard from './UnitCard.astro';
+import { Resource } from 'sst';
 
 const { buildingID } = Astro.props as { buildingID: string };
 
@@ -9,6 +10,7 @@ const building = await getBuilding(buildingID);
 const units = await getUnits(buildingID);
 
 const buildingJson = JSON.stringify(building);
+const apiURL = Resource.API.url;
 ---
 
 <div
@@ -24,7 +26,7 @@ const buildingJson = JSON.stringify(building);
             });
         },
         async save() {
-            await fetch(`/api/buildings/${buildingID}/units/BUILDING`, {
+            await fetch(`${apiURL}/buildings/${buildingID}/units/BUILDING`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this.current),
@@ -37,14 +39,14 @@ const buildingJson = JSON.stringify(building);
             this.showSave = false;
         },
         async deleteBuilding() {
-            if (!confirm('Delete this building and all units?')) return;
-            await fetch(`/api/buildings/${buildingID}`, { method: 'DELETE' });
+            if (!confirm('Are you sure you want to delete this building and all its units?')) return;
+            await fetch(`${apiURL}/buildings/${buildingID}`, { method: 'DELETE' });
             this.$el.remove();
         },
         async addUnit() {
             const id = prompt('New unit number?');
             if (!id) return;
-            await fetch(`/api/buildings/${buildingID}/units/${id}`, { method: 'POST' });
+            await fetch(`${apiURL}/buildings/${buildingID}/units/${id}`, { method: 'POST' });
             location.reload();
         }
     }"
@@ -53,15 +55,27 @@ const buildingJson = JSON.stringify(building);
     <form class="space-y-2">
         <label class="block">
             Street
-            <input name="street" class="border p-1 w-full" x-model="current.street" />
+            <input
+                name="street"
+                class="border p-1 w-full"
+                x-model="current.street"
+            />
         </label>
         <label class="block">
             City
-            <input name="city" class="border p-1 w-full" x-model="current.city" />
+            <input
+                name="city"
+                class="border p-1 w-full"
+                x-model="current.city"
+            />
         </label>
         <label class="block">
             State
-            <input name="state" class="border p-1 w-full" x-model="current.state" />
+            <input
+                name="state"
+                class="border p-1 w-full"
+                x-model="current.state"
+            />
         </label>
         <label class="block">
             Zip
@@ -69,18 +83,44 @@ const buildingJson = JSON.stringify(building);
         </label>
         <label class="block">
             Description
-            <input name="description" class="border p-1 w-full" x-model="current.description" />
+            <input
+                name="description"
+                class="border p-1 w-full"
+                x-model="current.description"
+            />
         </label>
     </form>
     <div class="mt-2 space-x-2">
-        <button type="button" class="save bg-blue-600 text-white px-2 py-1 rounded" x-show="showSave" x-on:click="save">Save</button>
-        <button type="button" class="undo bg-gray-300 px-2 py-1 rounded" x-show="showSave" x-on:click="undo">Undo</button>
-        <button type="button" class="delete bg-red-600 text-white px-2 py-1 rounded" x-on:click="deleteBuilding">Delete Building</button>
-        <button type="button" class="add bg-green-600 text-white px-2 py-1 rounded" x-on:click="addUnit">Add Unit</button>
+        <button
+            type="button"
+            class="save bg-blue-600 text-white px-2 py-1 rounded"
+            x-show="showSave"
+            x-on:click="save">Save</button
+        >
+        <button
+            type="button"
+            class="undo bg-gray-300 px-2 py-1 rounded"
+            x-show="showSave"
+            x-on:click="undo">Undo</button
+        >
+        <button
+            type="button"
+            class="delete bg-red-600 text-white px-2 py-1 rounded"
+            x-on:click="deleteBuilding">Delete Building</button
+        >
+        <button
+            type="button"
+            class="add bg-green-600 text-white px-2 py-1 rounded"
+            x-on:click="addUnit">Add Unit</button
+        >
     </div>
     <div class="mt-4 space-y-4">
-        {units
-            .filter((u) => u.unitID !== 'BUILDING')
-            .map((u) => <UnitCard buildingID={buildingID} unitID={u.unitID} />)}
+        {
+            units
+                .filter((u) => u.unitID !== 'BUILDING')
+                .map((u) => (
+                    <UnitCard buildingID={buildingID} unitID={u.unitID} />
+                ))
+        }
     </div>
 </div>

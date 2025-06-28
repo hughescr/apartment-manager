@@ -2,7 +2,7 @@
 
 import { router } from './router';
 
-export const api = new sst.aws.Function('Api', {
+export const api = new sst.aws.Function('API', {
     handler: 'api/index.handler',
     url: {
         router: {
