@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import * as buildings from './buildings';
 import * as units from './units';
-import { noop, split, every, startsWith, keys } from 'lodash';
+import { noop, split, every, startsWith, endsWith, forEach, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
     '/buildings': {
@@ -40,6 +40,21 @@ function findRoute(rawPath: string): string | undefined {
     return undefined;
 }
 
+function extractPathParameters(routeKey: string, rawPath: string): Record<string, string> {
+    const params: Record<string, string> = {};
+    const routeParts = split(routeKey, '/');
+    const pathParts = split(rawPath, '/');
+
+    forEach(routeParts, (part, i) => {
+        if(startsWith(part, '{') && endsWith(part, '}')) {
+            const paramName = part.substring(1, part.length - 1);
+            params[paramName] = pathParts[i];
+        }
+    });
+
+    return params;
+}
+
 export const handler: APIGatewayProxyHandlerV2 = (evt, ctx) => {
     const { rawPath, requestContext } = evt;
     const { http } = requestContext;
@@ -49,6 +64,8 @@ export const handler: APIGatewayProxyHandlerV2 = (evt, ctx) => {
     const routeHandler = route ? routes[route][method] : undefined;
 
     if(routeHandler) {
-        return routeHandler(evt, ctx, noop);
+        const pathParameters = route ? extractPathParameters(route, rawPath) : {};
+        const newEvt = { ...evt, pathParameters };
+        return routeHandler(newEvt, ctx, noop);
     }
 };
