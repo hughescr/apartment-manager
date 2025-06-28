@@ -3,43 +3,44 @@ import Layout from "../../layouts/Layout.astro";
 import { Resource } from "sst";
 
 const apiURL = Resource.API.url;
+const initialData = `{
+    buildingID: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    description: '',
+    async addBuilding() {
+        if (!this.buildingID) {
+            alert('Building ID is required.');
+            return;
+        }
+        const response = await fetch(\`${apiURL}/buildings/\${this.buildingID}\`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                buildingID: this.buildingID,
+                street: this.street,
+                city: this.city,
+                state: this.state,
+                zip: this.zip,
+                description: this.description,
+            }),
+        });
+        if (response.ok) {
+            window.location.href = '/';
+        } else {
+            alert('Failed to add building.');
+        }
+    }
+}`;
 ---
 
 <Layout title="Add Building">
     <main>
         <h1>Add New Building</h1>
         <form
-            x-data="{
-            buildingID: '',
-            street: '',
-            city: '',
-            state: '',
-            zip: '',
-            description: '',
-            async addBuilding() {
-                if (!this.buildingID) {
-                    alert('Building ID is required.');
-                    return;
-                }
-                const response = await fetch(`${apiURL}/buildings/${this.buildingID}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        buildingID: this.buildingID,
-                        street: this.street,
-                        city: this.city,
-                        state: this.state,
-                        zip: this.zip,
-                        description: this.description,
-                    }),
-                });
-                if (response.ok) {
-                    window.location.href = '/';
-                } else {
-                    alert('Failed to add building.');
-                }
-            }
-        }"
+            x-data={initialData}
             @submit.prevent="addBuilding"
             class="space-y-4"
         >
