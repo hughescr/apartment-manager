@@ -4,21 +4,21 @@ import * as units from './units';
 import { noop, split, every, startsWith, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
-    '/api/buildings': {
+    '/buildings': {
         GET: buildings.list,
         POST: buildings.create,
     },
-    '/api/buildings/{buildingID}': {
+    '/buildings/{buildingID}': {
         GET: buildings.get,
         POST: buildings.createWithId,
         PUT: buildings.update,
         DELETE: buildings.del,
     },
-    '/api/buildings/{buildingID}/units': {
+    '/buildings/{buildingID}/units': {
         GET: units.list,
         POST: units.create,
     },
-    '/api/buildings/{buildingID}/units/{unitID}': {
+    '/buildings/{buildingID}/units/{unitID}': {
         GET: units.get,
         PUT: units.update,
         DELETE: units.del,
