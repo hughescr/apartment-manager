@@ -5,10 +5,16 @@ import { getUnits } from '../../data/units';
 import BuildingCard from '../components/BuildingCard.astro';
 import UnitCard from '../components/UnitCard.astro';
 
+import _ from 'lodash';
+
 const buildings = await getBuildings();
-const unitsByBuilding = await Promise.all(
-    buildings.map((b) => getUnits(b.buildingID)),
-);
+const units = (await Promise.all(
+    _.map(buildings, async (building) => {
+        const units = await getUnits(building.buildingID);
+        return units;
+    })
+));
+const unitsByBuilding = _.zipObject(_.map(buildings, 'buildingID'), units);
 ---
 
 <Layout title='Apartment Manager'>
@@ -22,11 +28,11 @@ const unitsByBuilding = await Promise.all(
             >
         </div>
         {
-            buildings.map((building, i) => (
-                <BuildingCard building={building}>
+            _.map(buildings, (building, i) => (
+                <BuildingCard buildingID={building.buildingID}>
                     <h2>Units</h2>
-                    {unitsByBuilding[i].map((unit) => (
-                        <UnitCard unit={unit} />
+                    {_.map(unitsByBuilding[building.buildingID], (unit) => (
+                        <UnitCard unitID={unit.unitID} />
                     ))}
                 </BuildingCard>
             ))

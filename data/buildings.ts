@@ -7,35 +7,35 @@ import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
 import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
-export async function getBuildings(): Promise<BuildingData[]> {
+export async function getBuildings() {
     const { Items } = await ApartmentTable.build(ScanCommand)
         .entities(Building)
         .send();
-    return Items as BuildingData[];
+    return Items;
 }
 
-export async function getBuilding(buildingID: string): Promise<BuildingData | undefined> {
+export async function getBuilding(buildingID: string) {
     const { Item } = await Building.build(GetItemCommand)
         .key({ buildingID, unitID: 'BUILDING' })
         .send();
-    return Item as (BuildingData | undefined);
+    return Item;
 }
 
-export async function createBuilding(building: BuildingData): Promise<BuildingData | undefined> {
+export async function createBuilding(building: BuildingData) {
     const { Attributes } = await Building.build(PutItemCommand)
         .item({ ...building, unitID: 'BUILDING' })
         .send();
     return Attributes;
 }
 
-export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>): Promise<BuildingData | undefined> {
+export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
     const { Attributes } = await Building.build(UpdateItemCommand)
         .item({ ...updates, buildingID, unitID: 'BUILDING' })
         .send();
     return Attributes;
 }
 
-export async function deleteBuilding(buildingID: string): Promise<boolean> {
+export async function deleteBuilding(buildingID: string) {
     await Building.build(DeleteItemCommand)
         .key({ buildingID, unitID: 'BUILDING' })
         .send();

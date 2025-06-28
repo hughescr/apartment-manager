@@ -7,41 +7,39 @@ import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
 import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
-export async function getUnits(buildingID: string): Promise<UnitData[]> {
+import { logger } from '@hughescr/logger';
+
+export async function getUnits(buildingID: string) {
     const { Items } = await ApartmentTable.build(QueryCommand)
     .entities(Unit)
     .query({ partition: buildingID })
-    .options({
-        filters: {
-            Unit: { attr: 'unitID', ne: 'BUILDING' }
-        },
-    })
     .send();
-    return Items as UnitData[];
+    return Items;
 }
 
-export async function getUnit(buildingID: string, unitID: string): Promise<UnitData | undefined> {
+export async function getUnit(buildingID: string, unitID: string) {
     const { Item } = await Unit.build(GetItemCommand)
         .key({ buildingID, unitID })
         .send();
-    return Item as UnitData | undefined;
+    return Item;
 }
 
-export async function createUnit(unit: UnitData): Promise<UnitData | undefined> {
+export async function createUnit(unit: UnitData) {
+    logger.debug(`Creating unit: ${JSON.stringify(unit)}`);
     const { Attributes } = await Unit.build(PutItemCommand)
         .item(unit)
         .send();
     return Attributes;
 }
 
-export async function updateUnit(buildingID: string, unitID: string, updates: Partial<UnitData>): Promise<UnitData | undefined> {
+export async function updateUnit(buildingID: string, unitID: string, updates: Partial<UnitData>) {
     const { Attributes } = await Unit.build(UpdateItemCommand)
         .item({ ...updates, buildingID, unitID })
         .send();
     return Attributes;
 }
 
-export async function deleteUnit(buildingID: string, unitID: string): Promise<boolean> {
+export async function deleteUnit(buildingID: string, unitID: string) {
     await Unit.build(DeleteItemCommand)
         .key({ buildingID, unitID })
         .send();

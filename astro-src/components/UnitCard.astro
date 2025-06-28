@@ -29,7 +29,7 @@ const apiURL = Resource.API.url;
             });
         },
         async save() {
-            await fetch(`${apiURL}/buildings/${buildingID}/units/${unitID}`, {
+            await fetch(`${apiURL}buildings/${buildingID}/units/${unitID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this.current),
@@ -43,7 +43,7 @@ const apiURL = Resource.API.url;
         },
         async deleteUnit() {
             if (!confirm('Are you sure you want to delete this unit?')) return;
-            await fetch(`${apiURL}/buildings/${buildingID}/units/${unitID}`, { method: 'DELETE' });
+            await fetch(`${apiURL}buildings/${buildingID}/units/${unitID}`, { method: 'DELETE' });
             this.$el.remove();
         }
     }"
