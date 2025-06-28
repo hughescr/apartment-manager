@@ -2,12 +2,11 @@
 import { getBuilding } from "../../data/buildings";
 import { getUnits } from "../../data/units";
 import UnitCard from "./UnitCard.astro";
-import type { BuildingData, UnitData } from "../types";
 
 const { buildingID } = Astro.props as { buildingID: string };
 
-const building: BuildingData | undefined = await getBuilding(buildingID);
-const units: UnitData[] = await getUnits(buildingID);
+const building = await getBuilding(buildingID);
+const units = await getUnits(buildingID);
 
 const buildingJson = JSON.stringify(building);
 ---

@@ -1,15 +1,3 @@
-export interface UnitData {
-    buildingID: string
-    unitID: string
-    description?: string
-    beds?: number
-    baths?: number
-    sqft?: number
-    rent?: number
-    occupied?: boolean
-    availableDate?: string
-}
-
 export interface BuildingData {
     buildingID: string
     unitID: 'BUILDING'
@@ -21,4 +9,16 @@ export interface BuildingData {
     yearBuilt?: number
     numberStories?: number
     totalUnits?: number
+}
+
+export interface UnitData {
+    buildingID: string
+    unitID: string
+    description?: string
+    beds?: number
+    baths?: number
+    sqft?: number
+    rent?: number
+    occupied?: boolean
+    availableDate?: string
 }

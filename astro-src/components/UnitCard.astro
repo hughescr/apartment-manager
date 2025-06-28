@@ -7,7 +7,7 @@ const { buildingID, unitID } = Astro.props as {
     unitID: string;
 };
 
-const unit: UnitData | undefined = await getUnit(buildingID, unitID);
+const unit = await getUnit(buildingID, unitID);
 const unitJson = JSON.stringify(unit);
 ---
 
