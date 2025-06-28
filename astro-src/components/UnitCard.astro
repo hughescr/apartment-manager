@@ -11,7 +11,10 @@ const unit = await getUnit(buildingID, unitID);
 const unitJson = JSON.stringify(unit);
 const apiURL = Resource.API.url;
 ---
-
+<script define:vars={{ apiURL }} is:inline>
+    // This script is used to define the apiURL variable for Alpine.js
+    window.apiURL = apiURL;
+</script>
 <div
     class="unit-card border rounded shadow p-4 mb-4"
     data-building={buildingID}
