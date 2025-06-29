@@ -1,111 +1,273 @@
 ---
-import { getUnit } from '../../data/units';
-import { Resource } from 'sst';
+// astro-src/components/UnitCard.astro
+import { Resource } from "sst";
 
-const { buildingID, unitID } = Astro.props as {
-    buildingID: string;
-    unitID: string;
-};
+const { unit } = Astro.props as { unit: any }; // Will define a proper type later
 
-const unit = await getUnit(buildingID, unitID);
 const apiURL = Resource.API.url;
-const xData = JSON.stringify({
-    original: unit,
-    unit,
-    apiURL,
-    showSave: false,
-});
----
 
-<div
-    class="unit-card border rounded shadow p-4 mb-4"
-    x-data={xData}
-    x-effect="showSave = JSON.stringify(unit) !== JSON.stringify(original)"
->
-    <h3 class="font-bold text-lg mb-2">Unit {unitID}</h3>
-    <form class="space-y-2">
-        <label class="block">
-            Description
-            <input
-                name="description"
-                class="border p-1 w-full"
-                x-model="unit.description"
-            />
-        </label>
-        <label class="block">
-            Beds
-            <input
-                type="number"
-                name="beds"
-                class="border p-1 w-full"
-                x-model.number="unit.beds"
-            />
-        </label>
-        <label class="block">
-            Baths
-            <input
-                type="number"
-                name="baths"
-                class="border p-1 w-full"
-                x-model.number="unit.baths"
-            />
-        </label>
-        <label class="block">
-            Sqft
-            <input
-                type="number"
-                name="sqft"
-                class="border p-1 w-full"
-                x-model.number="unit.sqft"
-            />
-        </label>
-        <label class="block">
-            Monthly Rent
-            <input
-                type="number"
-                name="rent"
-                class="border p-1 w-full"
-                x-model.number="unit.rent"
-            />
-        </label>
-        <label class="inline-flex items-center gap-2">
-            <input type="checkbox" name="occupied" x-model="unit.occupied" />
-            Occupied
-        </label>
-        <label class="block">
-            Available Date
-            <input
-                type="date"
-                name="availableDate"
-                class="border p-1 w-full"
-                x-model="unit.availableDate"
-            />
-        </label>
-    </form>
-    <div class="mt-2 space-x-2">
-        <button
-            type="button"
-            class="save bg-blue-600 text-white px-2 py-1 rounded"
-            x-show="showSave"
-            x-on:click="await fetch(`${apiURL}buildings/${unit.buildingID}/units/${unit.unitID}`, {
+const xDataString = `{
+    unit: ${JSON.stringify(unit)},
+    originalUnit: ${JSON.stringify(unit)}, // Deep copy for original state
+    apiURL: "${apiURL}",
+    editingField: false, // Stores the name of the field being edited
+    savingField: false, // Stores the name of the field being saved
+
+    isDirty(field) {
+        // Special handling for date to compare string representations
+        if (field === 'availableDate' && this.unit[field]) {
+            return new Date(this.unit[field]).toISOString().split('T')[0] !== new Date(this.originalUnit[field]).toISOString().split('T')[0];
+        }
+        return this.unit[field] !== this.originalUnit[field];
+    },
+
+    async saveField(field) {
+        if (!this.isDirty(field)) {
+            this.editingField = false; // Exit editing mode if not dirty
+            return;
+        }
+
+        this.savingField = field;
+        try {
+            const response = await fetch(this.apiURL + 'buildings/' + this.unit.buildingID + '/units/' + this.unit.unitID, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(unit),
-            })
-            original = { ...unit };
-            showSave = false;
-            ">Save</button>
+                body: JSON.stringify(this.unit),
+            });
+            if (response.ok) {
+                this.originalUnit[field] = this.unit[field]; // Update original after successful save
+            } else {
+                console.error('Save failed:', response.statusText);
+                // Revert to original value on save failure
+                this.unit[field] = this.originalUnit[field];
+            }
+        } catch (error) {
+            console.error('Network error during save:', error);
+            // Revert to original value on network error
+            this.unit[field] = this.originalUnit[field];
+        } finally {
+            this.savingField = false;
+            this.editingField = false; // Exit editing mode after save attempt
+        }
+    },
+
+    async deleteUnit() {
+        if (!confirm('Are you sure you want to delete this unit?')) return;
+        try {
+            const response = await fetch(this.apiURL + 'buildings/' + this.unit.buildingID + '/units/' + this.unit.unitID, { method: 'DELETE' });
+            if (response.ok) {
+                // Reload the page or remove the row from the DOM
+                window.location.reload(); // Simplest for now
+            } else {
+                console.error('Delete failed:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Network error during delete:', error);
+        }
+    }
+}`;
+---
+
+<tr x-data={xDataString} class="hover:bg-gray-100">
+    <td class="p-2 border">
+        <span
+            x-show="editingField !== 'unitID'"
+            x-on:click="editingField = 'unitID'"
+        >
+            <span
+                :class="{'text-red-500': isDirty('unitID')}"
+                x-text="unit.unitID"
+            >
+            </span>
+            <span
+                x-show="savingField === 'unitID'"
+                class="ml-1 text-gray-500 text-sm"
+            >
+                (saving...)</span
+            >
+        </span>
+        <input
+            x-show="editingField === 'unitID'"
+            x-model="unit.unitID"
+            x-on:blur="saveField('unitID')"
+            x-ref="unitIDInput"
+            class="w-full border p-1"
+            x-init="$watch('editingField', value => { if (value === 'unitID') $refs.unitIDInput.focus() })"
+        />
+    </td>
+    <td class="p-2 border">
+        <span
+            x-show="editingField !== 'description'"
+            x-on:click="editingField = 'description'"
+        >
+            <span
+                class="{'text-red-500': isDirty('description')}"
+                x-text="unit.description"
+            >
+            </span>
+            <span
+                x-show="savingField === 'description'"
+                class="ml-1 text-gray-500 text-sm"
+            >
+                (saving...)</span
+            >
+        </span>
+        <input
+            x-show="editingField === 'description'"
+            x-model="unit.description"
+            x-on:blur="saveField('description')"
+            x-ref="descriptionInput"
+            class="w-full border p-1"
+            x-init="$watch('editingField', value => { if (value === 'description') $refs.descriptionInput.focus() })"
+        />
+    </td>
+    <td class="p-2 border">
+        <span
+            x-show="editingField !== 'beds'"
+            x-on:click="editingField = 'beds'"
+        >
+            <span :class="{'text-red-500': isDirty('beds')}" x-text="unit.beds">
+            </span>
+            <span
+                x-show="savingField === 'beds'"
+                class="ml-1 text-gray-500 text-sm"
+            >
+                (saving...)</span
+            >
+        </span>
+        <input
+            type="number"
+            x-show="editingField === 'beds'"
+            x-model.number="unit.beds"
+            x-on:blur="saveField('beds')"
+            x-ref="bedsInput"
+            class="w-full border p-1"
+            x-init="$watch('editingField', value => { if (value === 'beds') $refs.bedsInput.focus() })"
+        />
+    </td>
+    <td class="p-2 border">
+        <span
+            x-show="editingField !== 'baths'"
+            x-on:click="editingField = 'baths'"
+        >
+            <span
+                :class="{'text-red-500': isDirty('baths')}"
+                x-text="unit.baths"
+            >
+            </span>
+            <span
+                x-show="savingField === 'baths'"
+                class="ml-1 text-gray-500 text-sm"
+            >
+                (saving...)</span
+            >
+        </span>
+        <input
+            type="number"
+            x-show="editingField === 'baths'"
+            x-model.number="unit.baths"
+            x-on:blur="saveField('baths')"
+            x-ref="bathsInput"
+            class="w-full border p-1"
+            x-init="$watch('editingField', value => { if (value === 'baths') $refs.bathsInput.focus() })"
+        />
+    </td>
+    <td class="p-2 border">
+        <span
+            x-show="editingField !== 'sqft'"
+            x-on:click="editingField = 'sqft'"
+        >
+            <span :class="{'text-red-500': isDirty('sqft')}" x-text="unit.sqft">
+            </span>
+            <span
+                x-show="savingField === 'sqft'"
+                class="ml-1 text-gray-500 text-sm"
+            >
+                (saving...)</span
+            >
+        </span>
+        <input
+            type="number"
+            x-show="editingField === 'sqft'"
+            x-model.number="unit.sqft"
+            x-on:blur="saveField('sqft')"
+            x-ref="sqftInput"
+            class="w-full border p-1"
+            x-init="$watch('editingField', value => { if (value === 'sqft') $refs.sqftInput.focus() })"
+        />
+    </td>
+    <td class="p-2 border">
+        <span
+            x-show="editingField !== 'rent'"
+            x-on:click="editingField = 'rent'"
+        >
+            <span :class="{'text-red-500': isDirty('rent')}" x-text="unit.rent">
+            </span>
+            <span
+                x-show="savingField === 'rent'"
+                class="ml-1 text-gray-500 text-sm"
+            >
+                (saving...)</span
+            >
+        </span>
+        <input
+            type="number"
+            x-show="editingField === 'rent'"
+            x-model.number="unit.rent"
+            x-on:blur="saveField('rent')"
+            x-ref="rentInput"
+            class="w-full border p-1"
+            x-init="$watch('editingField', value => { if (value === 'rent') $refs.rentInput.focus() })"
+        />
+    </td>
+    <td class="p-2 border text-center">
+        <input
+            type="checkbox"
+            x-model="unit.occupied"
+            x-on:change="saveField('occupied')"
+            :class="{'border-red-500': isDirty('occupied')}"
+        />
+        <span
+            x-show="savingField === 'occupied'"
+            class="ml-1 text-gray-500 text-sm"
+        >
+            (saving...)</span
+        >
+    </td>
+    <td class="p-2 border">
+        <span
+            x-show="editingField !== 'availableDate'"
+            x-on:click="editingField = 'availableDate'"
+        >
+            <span
+                :class="{'text-red-500': isDirty('availableDate')}"
+                x-text="unit.availableDate"
+            >
+            </span>
+            <span
+                x-show="savingField === 'availableDate'"
+                class="ml-1 text-gray-500 text-sm"
+            >
+                (saving...)</span
+            >
+        </span>
+        <input
+            type="date"
+            x-show="editingField === 'availableDate'"
+            x-model="unit.availableDate"
+            x-on:blur="saveField('availableDate')"
+            x-ref="availableDateInput"
+            class="w-full border p-1"
+            x-init="$watch('editingField', value => { if (value === 'availableDate') $refs.availableDateInput.focus() })"
+        />
+    </td>
+    <td class="p-2 border">
         <button
             type="button"
-            class="undo bg-gray-300 px-2 py-1 rounded"
-            x-show="showSave"
-            x-on:click="unit={...original}">Undo</button>
-        <button
-            type="button"
-            class="delete bg-red-600 text-white px-2 py-1 rounded"
-            x-on:click="if (!confirm('Are you sure you want to delete this unit?')) return;
-            await fetch(`${apiURL}buildings/${unit.buildingID}/units/${unit.unitID}`, { method: 'DELETE' })
-            window.location.reload();
-            ">Delete</button>
-    </div>
-</div>
+            class="delete bg-red-600 text-white px-2 py-1 rounded text-sm"
+            x-on:click="deleteUnit()"
+        >
+            Delete
+        </button>
+    </td>
+</tr>

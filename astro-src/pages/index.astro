@@ -29,12 +29,7 @@ const unitsByBuilding = _.zipObject(_.map(buildings, 'buildingID'), units);
         </div>
         {
             _.map(buildings, (building, i) => (
-                <BuildingCard buildingID={building.buildingID}>
-                    <h2>Units</h2>
-                    {_.map(unitsByBuilding[building.buildingID], (unit) => (
-                        <UnitCard unitID={unit.unitID} />
-                    ))}
-                </BuildingCard>
+                <BuildingCard buildingID={building.buildingID}/>
             ))
         }
     </main>

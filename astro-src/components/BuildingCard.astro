@@ -105,11 +105,28 @@ const xData = JSON.stringify({
             window.location.reload();
             ">Add Unit</button>
     </div>
-    <div class="mt-4 space-y-4">
-        {
-            units.map((u) => (
-                <UnitCard buildingID={buildingID} unitID={u.unitID} />
-            ))
-        }
+    <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300">
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 border-b">Unit ID</th>
+                    <th class="py-2 px-4 border-b">Description</th>
+                    <th class="py-2 px-4 border-b">Beds</th>
+                    <th class="py-2 px-4 border-b">Baths</th>
+                    <th class="py-2 px-4 border-b">Sqft</th>
+                    <th class="py-2 px-4 border-b">Rent</th>
+                    <th class="py-2 px-4 border-b">Occupied</th>
+                    <th class="py-2 px-4 border-b">Available Date</th>
+                    <th class="py-2 px-4 border-b">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    units.map((u) => (
+                        <UnitCard unit={u} />
+                    ))
+                }
+            </tbody>
+        </table>
     </div>
 </div>

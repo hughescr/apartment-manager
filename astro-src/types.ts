@@ -22,3 +22,8 @@ export interface UnitData {
     occupied?: boolean
     availableDate?: string
 }
+
+export interface Unit extends UnitData {
+    originalUnit: UnitData
+    apiURL: string
+}
