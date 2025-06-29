@@ -24,6 +24,8 @@ const newBuildingData = JSON.stringify({
             const index = buildingsData.findIndex(b => b.buildingID === hash);
             if (index !== -1) {
                 this.activeTab = index;
+            } else if(hash === 'add-new-building') {
+                this.activeTab = buildingsData.length;
             } else {
                 this.activeTab = 0;
             }
