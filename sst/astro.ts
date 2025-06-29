@@ -6,6 +6,7 @@ import { uploadedDocs } from './s3';
 import { api } from './api';
 
 const site = new sst.aws.Astro('Web', {
+    buildCommand: 'bunx astro build',
     link: [buildingsUnitsTable, uploadedDocs, api],
     router: {
         instance: router,
