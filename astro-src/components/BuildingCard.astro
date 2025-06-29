@@ -1,8 +1,8 @@
 ---
-import { getBuilding } from '../../data/buildings';
-import { getUnits } from '../../data/units';
-import UnitCard from './UnitCard.astro';
-import { Resource } from 'sst';
+import { getBuilding } from "../../data/buildings";
+import { getUnits } from "../../data/units";
+import UnitCard from "./UnitCard.astro";
+import { Resource } from "sst";
 
 const { buildingID } = Astro.props as { buildingID: string };
 
@@ -18,81 +18,69 @@ const xData = JSON.stringify({
     showSave: false,
 });
 ---
+
 <div
     class="tab-content bg-base-100 border-base-300 building-card p-4"
     x-data={xData}
     x-effect="showSave = JSON.stringify(building) !== JSON.stringify(original)"
 >
-    <form class="space-y-2">
-        <label class="block">
-            Street
+    <fieldset class="fieldset w-xl">
+        <label class="floating-label mb-6">
             <input
-                name="street"
-                class="border p-1 w-full"
+                disabled
+                type="text"
+                x-model="building.buildingID"
+                placeholder="Building Name (required)"
+                class="input input-xl w-full"
+                required
+            />
+        </label>
+        <label class="floating-label mb-2">
+            <span>Street</span>
+            <input
+                type="text"
+                placeholder="Street"
+                class="input w-full"
                 x-model="building.street"
             />
         </label>
-        <label class="block">
-            City
+        <label class="floating-label mb-2">
+            <span>City</span>
             <input
-                name="city"
-                class="border p-1 w-full"
+                type="text"
+                placeholder="City"
+                class="input w-full"
                 x-model="building.city"
             />
         </label>
-        <label class="block">
-            State
+        <label class="floating-label mb-2">
+            <span>State</span>
             <input
-                name="state"
-                class="border p-1 w-full"
+                type="text"
+                placeholder="State"
+                class="input w-full"
                 x-model="building.state"
             />
         </label>
-        <label class="block">
-            Zip
+        <label class="floating-label mb-2">
+            <span>Zip</span>
             <input
-                name="zip"
-                class="border p-1 w-full"
+                type="text"
+                placeholder="Zip"
+                class="input w-full"
                 x-model="building.zip"
             />
         </label>
-        <label class="block">
-            Description
-            <input
-                name="description"
-                class="border p-1 w-full"
-                x-model="building.description"
-            />
+        <label class="floating-label mt-4">
+            <span>Description</span>
+            <textarea
+                placeholder="Description"
+                class="textarea w-full"
+                x-model="building.description"></textarea>
         </label>
-    </form>
-    <div class="mt-2 space-x-2">
-        <button
-            type="button"
-            class="save bg-blue-600 text-white px-2 py-1 rounded"
-            x-show="showSave"
-            x-on:click="await fetch(`${apiURL}buildings/${building.buildingID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(building),
-            })
-            original = { ...building };
-            showSave = false;
-            ">Save</button>
-        <button
-            type="button"
-            class="undo bg-gray-300 px-2 py-1 rounded"
-            x-show="showSave"
-            x-on:click="building={...original}">Undo</button>
-        <button
-            type="button"
-            class="delete bg-red-600 text-white px-2 py-1 rounded"
-            x-on:click="if (!confirm('Are you sure you want to delete this building and all its units?')) return;
-            await fetch(`${apiURL}buildings/${building.buildingID}`, { method: 'DELETE' });
-            window.location.reload();
-            ">Delete Building</button>
-        <button
-            type="button"
-            class="add bg-green-600 text-white px-2 py-1 rounded"
+    </fieldset>
+    <div class="mt-2 space-x-2 w-xl">
+        <button class="btn btn-primary"
             x-on:click="const id = prompt('New unit number?');
             if (!id) return;
             await fetch(`${apiURL}buildings/${building.buildingID}/units`, {
@@ -101,9 +89,30 @@ const xData = JSON.stringify({
                 body: JSON.stringify({ unitID: id, buildingID: building.buildingID }),
             });
             window.location.reload();
-            ">Add Unit</button>
+            "
+            >Add Unit</button>
+        <button class="btn btn-error"
+            x-on:click="if (!confirm('Are you sure you want to delete this building and all its units?')) return;
+            await fetch(`${apiURL}buildings/${building.buildingID}`, { method: 'DELETE' });
+            window.location.reload();
+            "
+            >Delete Building</button>
+        <button class="btn btn-secondary float-right ml-2"
+            x-show="showSave"
+            x-on:click="await fetch(`${apiURL}buildings/${building.buildingID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify(building),
+            })
+            original = { ...building };
+            showSave = false;
+            "
+            >Save</button>
+        <button class="btn btn-soft float-right ml-2"
+            x-show="showSave"
+            x-on:click="building={...original}">Undo</button>
     </div>
-    <div class="mt-4 overflow-x-auto">
+    <div class="mt-4">
         <table class="table table-zebra table-pin-rows w-full">
             <thead>
                 <tr>
