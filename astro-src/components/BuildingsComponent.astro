@@ -30,103 +30,78 @@ const newBuildingData = JSON.stringify({
         }
     } }" data-buildings={JSON.stringify(buildings)}>
     {buildings && (
-        <>
-            <div class="flex">
-                {_.map(buildings, (building, i) => (
-                    <button
-                        class="py-2 px-4 focus:outline-none border-t border-l border-r rounded-t"
-                        :class={`{ 'bg-white': activeTab === ${i}, 'bg-gray-200 text-gray-500 border-b': activeTab !== ${i} }`}
-                        x-on:click={`activeTab = ${i}; window.location.hash = '${building.buildingID}'`}
-                    >
-                        {building.buildingID}
-                    </button>
-                ))}
-                <button
-                    class="py-2 px-4 focus:outline-none border-t border-l border-r rounded-t bg-blue-500 text-white"
-                    :class={`{ 'bg-blue-700': activeTab === ${buildings.length}, 'bg-blue-500': activeTab !== ${buildings.length} }`}
-                    x-on:click={`activeTab = ${buildings.length}`}
-                >
-                    +
-                </button>
-                <div class="flex-grow border-b"></div>
+        <div role="tablist" class="tabs tabs-lift">
+        {_.map(buildings, (building, i) => (
+            <a role="tab" class="tab" :class={`{ 'tab-active': activeTab === ${i} }`}
+                x-on:click={`activeTab = ${i}; window.location.hash = '${building.buildingID}'`}
+            >{building.buildingID}</a>
+            <div class="tab-content bg-base-100 border-base-300">
+                <BuildingCard buildingID={building.buildingID} />
             </div>
-
-            <div class="border-l border-r border-b p-4 rounded-b -mt-px">
-                {_.map(buildings, (building, i) => (
-                    <div x-show={`activeTab === ${i}`}>
-                        <BuildingCard buildingID={building.buildingID} />
-                    </div>
-                ))}
-                <div x-show={`activeTab === ${buildings.length}`} x-data={newBuildingData}>
-                    <form @submit.prevent="addBuilding" class="space-y-4">
-                        <label class="block">
-                            Building ID (required)
-                            <input
-                                type="text"
-                                class="border p-1 w-full"
-                                x-model="buildingID"
-                                required
-                            />
-                        </label>
-                        <label class="block">
-                            Street
-                            <input type="text" class="border p-1 w-full" x-model="street" />
-                        </label>
-                        <label class="block">
-                            City
-                            <input type="text" class="border p-1 w-full" x-model="city" />
-                        </label>
-                        <label class="block">
-                            State
-                            <input type="text" class="border p-1 w-full" x-model="state" />
-                        </label>
-                        <label class="block">
-                            Zip
-                            <input type="text" class="border p-1 w-full" x-model="zip" />
-                        </label>
-                        <label class="block">
-                            Description
-                            <input
-                                type="text"
-                                class="border p-1 w-full"
-                                x-model="description"
-                            />
-                        </label>
-                        <button type="button" class="save bg-blue-600 text-white px-2 py-1 rounded"
+        ))}
+            <a role="tab" class="tab" :class={`{ 'tab-active': activeTab === ${buildings.length} }`}
+                x-on:click={`activeTab = ${buildings.length}`}
+            >+</a>
+            <div class="tab-content bg-base-100 border-base-300 p-4" x-data={newBuildingData}>
+                <form @submit.prevent="addBuilding">
+                    <label class="input input-lg">
+                        <span class="label">Building Name</span>
+                        <input type="text" x-model="buildingID" required />
+                        <span class="badge badge-neutral badge-xs">Required</span>
+                    </label>
+                    <label class="input">
+                        <span class="label">Street</span>
+                        <input type="text" x-model="street" />
+                    </label>
+                    <label class="input">
+                        <span class="label">City</span>
+                        <input type="text" x-model="city" />
+                    </label>
+                    <label class="input">
+                        <span class="label">State</span>
+                        <input type="text" x-model="state" />
+                    </label>
+                    <label class="input">
+                        <span class="label">Zip</span>
+                        <input type="text" x-model="zip" />
+                    </label>
+                    <textarea class="textarea" placeholder="Description" x-model="description" />
+                </form>
+                <div class="mt-2 space-x-2">
+                    <button class="btn btn-primary"
                         x-on:click="if(!buildingID) {
-                                    alert('Building ID is required.');
-                                    return;
-                                }
-                                const response = await fetch(`${this.apiURL}buildings`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        buildingID,
-                                        street,
-                                        city,
-                                        state,
-                                        zip,
-                                        description,
-                                    }),
-                                });
-                                if(response.ok) {
-                                    window.location.hash = buildingID;
-                                    window.location.reload(); // Reload to show the new building tab
-                                } else {
-                                    alert('Failed to add building.');
-                                }
-                        ">Add</button>
-                        <button type="button" class="save bg-gray-300 text-white px-2 py-1 rounded"
-                        x-on:click="buildingID = '';
-                                street = '';
-                                city = '';
-                                state = '';
-                                zip = '';
-                                description = '';
-                        ">Cancel</button>
-                    </form>
+                            alert('Building ID is required.');
+                            return;
+                        }
+                        const response = await fetch(`${apiURL}buildings`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                buildingID,
+                                street,
+                                city,
+                                state,
+                                zip,
+                                description,
+                            }),
+                        });
+                        if(response.ok) {
+                            window.location.hash = buildingID;
+                            window.location.reload(); // Reload to show the new building tab
+                        } else {
+                            alert('Failed to add building.');
+                        }
+                    ">Add</button>
+                    <button class="btn btn-accent"
+                    x-on:click="buildingID = '';
+                            street = '';
+                            city = '';
+                            state = '';
+                            zip = '';
+                            description = '';
+                    ">Cancel</button>
                 </div>
             </div>
-        </>
+        </div>
     )}
 </div>

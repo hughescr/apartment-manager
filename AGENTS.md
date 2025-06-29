@@ -14,6 +14,7 @@
 - SST documentation: https://sst.dev/docs/
 - Alpine documentation: https://alpinejs.dev/start-here and https://alpinejs.dev/components
 - Tailwind CSS documentation: https://tailwindcss.com/docs/styling-with-utility-classes
+- DaisyUI documentation for UI components: https://daisyui.com/components/
 
 ## Application Architecture
 
@@ -29,7 +30,7 @@ The API provides a set of HTTP endpoints for interacting with the application. T
 
 ### Astro Frontend
 
-The Astro frontend is responsible for rendering the user interface. The frontend is located in the `astro-src/` directory and uses the data layer to fetch data for server-side rendering. The frontend also uses the API to perform actions that do not require a full page reload, such as updating a unit's information. For client-side interactivity, we use AlpineJS (https://alpinejs.dev).
+The Astro frontend is responsible for rendering the user interface. The frontend is located in the `astro-src/` directory and uses the data layer to fetch data for server-side rendering. The frontend also uses the API to perform actions that do not require a full page reload, such as updating a unit's information. For client-side interactivity, we use AlpineJS, and UI components from DaisyUI.
 
 ### When to use which layer
 

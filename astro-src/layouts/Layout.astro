@@ -1,7 +1,6 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
 import Footer from "../components/Footer.astro";
-import { Resource } from "sst";
 const { title } = Astro.props;
 import '../styles/global.css';
 ---
@@ -13,9 +12,6 @@ import '../styles/global.css';
         <BaseHead title={title} />
     </head>
     <body>
-        <script define:vars={{ apiURL: Resource.API.url }} is:inline>
-            window.apiURL = apiURL;
-        </script>
         <slot />
         <Footer />
     </body>
