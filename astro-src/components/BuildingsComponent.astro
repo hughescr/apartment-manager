@@ -7,23 +7,27 @@ const buildings = await getBuildings();
 ---
 
 <div x-data="{ activeTab: 0 }">
-    <div class="flex border-b">
-        {_.map(buildings, (building, i) => (
-            <button 
-                class="py-2 px-4 text-gray-500 border-b-2 focus:outline-none"
-                :class="{'border-blue-500 text-blue-500': activeTab === i}" 
-                x-on:click={`activeTab = ${i}`}
-            >
-                {building.buildingID}
-            </button>
-        ))}
-    </div>
-
-    <div class="py-4">
-        {_.map(buildings, (building, i) => (
-            <div x-show={`activeTab === ${i}`}>
-                <BuildingCard buildingID={building.buildingID}/>
+    {buildings && (
+        <>
+            <div class="flex">
+                {_.map(buildings, (building, i) => (
+                    <button
+                        class="py-2 px-4 focus:outline-none border-t border-l border-r rounded-t"
+                        :class={`{ 'bg-white': activeTab === ${i}, 'bg-gray-200 text-gray-500 border-b': activeTab !== ${i} }`}
+                        x-on:click={`activeTab = ${i}`}
+                    >
+                        {building.buildingID}
+                    </button>
+                ))}
             </div>
-        ))}
-    </div>
+
+            <div class="border-l border-r border-b p-4 rounded-b -mt-px">
+                {_.map(buildings, (building, i) => (
+                    <div x-show={`activeTab === ${i}`}>
+                        <BuildingCard buildingID={building.buildingID} />
+                    </div>
+                ))}
+            </div>
+        </>
+    )}
 </div>
