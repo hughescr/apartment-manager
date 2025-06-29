@@ -10,7 +10,6 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
     },
     '/buildings/{buildingID}': {
         GET: buildings.get,
-        POST: buildings.createWithId,
         PUT: buildings.update,
         DELETE: buildings.del,
     },
@@ -20,7 +19,6 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
     },
     '/buildings/{buildingID}/units/{unitID}': {
         GET: units.get,
-        POST: units.create,
         PUT: units.update,
         DELETE: units.del,
     },
