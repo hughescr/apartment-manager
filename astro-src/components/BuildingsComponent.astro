@@ -1,0 +1,29 @@
+---
+import BuildingCard from './BuildingCard.astro';
+import { getBuildings } from '../../data/buildings';
+import _ from 'lodash';
+
+const buildings = await getBuildings();
+---
+
+<div x-data="{ activeTab: 0 }">
+    <div class="flex border-b">
+        {_.map(buildings, (building, i) => (
+            <button 
+                class="py-2 px-4 text-gray-500 border-b-2 focus:outline-none"
+                :class="{'border-blue-500 text-blue-500': activeTab === i}" 
+                x-on:click={`activeTab = ${i}`}
+            >
+                {building.buildingID}
+            </button>
+        ))}
+    </div>
+
+    <div class="py-4">
+        {_.map(buildings, (building, i) => (
+            <div x-show={`activeTab === ${i}`}>
+                <BuildingCard buildingID={building.buildingID}/>
+            </div>
+        ))}
+    </div>
+</div>

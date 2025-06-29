@@ -1,20 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getBuildings } from '../../data/buildings';
-import { getUnits } from '../../data/units';
-import BuildingCard from '../components/BuildingCard.astro';
-import UnitCard from '../components/UnitCard.astro';
+import BuildingsComponent from '../components/BuildingsComponent.astro';
 
-import _ from 'lodash';
-
-const buildings = await getBuildings();
-const units = (await Promise.all(
-    _.map(buildings, async (building) => {
-        const units = await getUnits(building.buildingID);
-        return units;
-    })
-));
-const unitsByBuilding = _.zipObject(_.map(buildings, 'buildingID'), units);
 ---
 
 <Layout title='Apartment Manager'>
@@ -27,10 +14,6 @@ const unitsByBuilding = _.zipObject(_.map(buildings, 'buildingID'), units);
                 >Add Building</a
             >
         </div>
-        {
-            _.map(buildings, (building, i) => (
-                <BuildingCard buildingID={building.buildingID}/>
-            ))
-        }
+        <BuildingsComponent />
     </main>
 </Layout>
