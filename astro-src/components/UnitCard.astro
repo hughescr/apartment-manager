@@ -9,45 +9,18 @@ const { buildingID, unitID } = Astro.props as {
 
 const unit = await getUnit(buildingID, unitID);
 const apiURL = Resource.API.url;
+const xData = JSON.stringify({
+    original: unit,
+    unit,
+    apiURL,
+    showSave: false,
+});
 ---
 
-<script define:vars={{ apiURL, unit }} is:inline>
-    // This script is used to define the apiURL variable for Alpine.js
-    window.apiURL = apiURL;
-    window.unit = unit;
-</script>
 <div
     class="unit-card border rounded shadow p-4 mb-4"
-    data-building={buildingID}
-    data-unit={unitID}
-    x-data="{
-        showSave: false,
-        original: unit,
-        current: unit,
-        init() {
-            this.$watch('current', () => {
-                this.showSave = JSON.stringify(this.original) !== JSON.stringify(this.current);
-            });
-        },
-        async save() {
-            await fetch(`${apiURL}buildings/${unit.buildingID}/units/${unit.unitID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.current),
-            });
-            this.original = this.current;
-            this.showSave = false;
-        },
-        undo() {
-            this.current = this.original;
-            this.showSave = false;
-        },
-        async deleteUnit() {
-            if (!confirm('Are you sure you want to delete this unit?')) return;
-            await fetch(`${apiURL}buildings/${unit.buildingID}/units/${unit.unitID}`, { method: 'DELETE' });
-            this.$el.remove();
-        }
-    }"
+    x-data={xData}
+    x-effect="showSave = JSON.stringify(unit) !== JSON.stringify(original)"
 >
     <h3 class="font-bold text-lg mb-2">Unit {unitID}</h3>
     <form class="space-y-2">
@@ -56,7 +29,7 @@ const apiURL = Resource.API.url;
             <input
                 name="description"
                 class="border p-1 w-full"
-                x-model="current.description"
+                x-model="unit.description"
             />
         </label>
         <label class="block">
@@ -65,7 +38,7 @@ const apiURL = Resource.API.url;
                 type="number"
                 name="beds"
                 class="border p-1 w-full"
-                x-model.number="current.beds"
+                x-model.number="unit.beds"
             />
         </label>
         <label class="block">
@@ -74,7 +47,7 @@ const apiURL = Resource.API.url;
                 type="number"
                 name="baths"
                 class="border p-1 w-full"
-                x-model.number="current.baths"
+                x-model.number="unit.baths"
             />
         </label>
         <label class="block">
@@ -83,7 +56,7 @@ const apiURL = Resource.API.url;
                 type="number"
                 name="sqft"
                 class="border p-1 w-full"
-                x-model.number="current.sqft"
+                x-model.number="unit.sqft"
             />
         </label>
         <label class="block">
@@ -92,11 +65,11 @@ const apiURL = Resource.API.url;
                 type="number"
                 name="rent"
                 class="border p-1 w-full"
-                x-model.number="current.rent"
+                x-model.number="unit.rent"
             />
         </label>
         <label class="inline-flex items-center gap-2">
-            <input type="checkbox" name="occupied" x-model="current.occupied" />
+            <input type="checkbox" name="occupied" x-model="unit.occupied" />
             Occupied
         </label>
         <label class="block">
@@ -105,7 +78,7 @@ const apiURL = Resource.API.url;
                 type="date"
                 name="availableDate"
                 class="border p-1 w-full"
-                x-model="current.availableDate"
+                x-model="unit.availableDate"
             />
         </label>
     </form>
@@ -114,18 +87,25 @@ const apiURL = Resource.API.url;
             type="button"
             class="save bg-blue-600 text-white px-2 py-1 rounded"
             x-show="showSave"
-            x-on:click="save">Save</button
-        >
+            x-on:click="await fetch(`${apiURL}buildings/${unit.buildingID}/units/${unit.unitID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(unit),
+            })
+            original = { ...unit };
+            showSave = false;
+            ">Save</button>
         <button
             type="button"
             class="undo bg-gray-300 px-2 py-1 rounded"
             x-show="showSave"
-            x-on:click="undo">Undo</button
-        >
+            x-on:click="unit={...original}">Undo</button>
         <button
             type="button"
             class="delete bg-red-600 text-white px-2 py-1 rounded"
-            x-on:click="deleteUnit">Delete</button
-        >
+            x-on:click="if (!confirm('Are you sure you want to delete this unit?')) return;
+            await fetch(`${apiURL}buildings/${unit.buildingID}/units/${unit.unitID}`, { method: 'DELETE' })
+            window.location.reload();
+            ">Delete</button>
     </div>
 </div>

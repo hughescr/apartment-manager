@@ -10,55 +10,19 @@ const building = await getBuilding(buildingID);
 const units = await getUnits(buildingID);
 
 const apiURL = Resource.API.url;
+const xData = JSON.stringify({
+    original: building,
+    building,
+    units,
+    apiURL,
+    showSave: false,
+});
 ---
 
-<script define:vars={{ apiURL, building }} is:inline>
-    // This script is used to define the apiURL variable for Alpine.js
-    window.apiURL = apiURL;
-    window.building = building;
-</script>
 <div
     class="building-card border rounded shadow p-4"
-    x-data="{
-        showSave: false,
-        original: building,
-        current: building,
-        init() {
-            this.$watch('current', () => {
-                this.showSave = JSON.stringify(this.original) !== JSON.stringify(this.current);
-            });
-        },
-        async save() {
-            await fetch(`${apiURL}buildings/${building.buildingID}/units/BUILDING`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.current),
-            });
-            this.original = this.current;
-            this.showSave = false;
-        },
-        undo() {
-            this.current = this.original;
-            this.showSave = false;
-        },
-        async deleteBuilding() {
-            if (!confirm('Are you sure you want to delete this building and all its units?')) return;
-            await fetch(`${apiURL}buildings/${building.buildingID}`, { method: 'DELETE' });
-            this.$el.remove();
-        },
-        async addUnit() {
-            const id = prompt('New unit number?');
-            if (!id) return;
-            await fetch(`${apiURL}buildings/${building.buildingID}/units/${id}`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    buildingID: buildingID,
-                    unitID: id
-                })
-            });
-            location.reload();
-        }
-    }"
+    x-data={xData}
+    x-effect="showSave = JSON.stringify(building) !== JSON.stringify(original)"
 >
     <h2 class="font-bold text-xl mb-4">Building {buildingID}</h2>
     <form class="space-y-2">
@@ -67,7 +31,7 @@ const apiURL = Resource.API.url;
             <input
                 name="street"
                 class="border p-1 w-full"
-                x-model="current.street"
+                x-model="building.street"
             />
         </label>
         <label class="block">
@@ -75,7 +39,7 @@ const apiURL = Resource.API.url;
             <input
                 name="city"
                 class="border p-1 w-full"
-                x-model="current.city"
+                x-model="building.city"
             />
         </label>
         <label class="block">
@@ -83,19 +47,23 @@ const apiURL = Resource.API.url;
             <input
                 name="state"
                 class="border p-1 w-full"
-                x-model="current.state"
+                x-model="building.state"
             />
         </label>
         <label class="block">
             Zip
-            <input name="zip" class="border p-1 w-full" x-model="current.zip" />
+            <input
+                name="zip"
+                class="border p-1 w-full"
+                x-model="building.zip"
+            />
         </label>
         <label class="block">
             Description
             <input
                 name="description"
                 class="border p-1 w-full"
-                x-model="current.description"
+                x-model="building.description"
             />
         </label>
     </form>
@@ -104,34 +72,50 @@ const apiURL = Resource.API.url;
             type="button"
             class="save bg-blue-600 text-white px-2 py-1 rounded"
             x-show="showSave"
-            x-on:click="save">Save</button
+            x-on:click="await fetch(`${apiURL}buildings/${building.buildingID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify(building),
+            })
+            original = { ...building };
+            showSave = false;
+            "
+            >Save</button
         >
         <button
             type="button"
             class="undo bg-gray-300 px-2 py-1 rounded"
             x-show="showSave"
-            x-on:click="undo">Undo</button
+            x-on:click="building={...original}">Undo</button
         >
         <button
             type="button"
             class="delete bg-red-600 text-white px-2 py-1 rounded"
-            x-on:click="deleteBuilding">Delete Building</button
+            x-on:click="if (!confirm('Are you sure you want to delete this building and all its units?')) return;
+            await fetch(`${apiURL}buildings/${building.buildingID}`, { method: 'DELETE' });
+            window.location.href = `/buildings`;
+            "
+            >Delete Building</button
         >
         <button
             type="button"
             class="add bg-green-600 text-white px-2 py-1 rounded"
-            x-on:click="addUnit">Add Unit</button
+            x-on:click="const id = prompt('New unit number?');
+            if (!id) return;
+            await fetch(`${apiURL}buildings/${building.buildingID}/units`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ unitID: id, buildingID: building.buildingID }),
+            });
+            window.location.reload();
+            ">Add Unit</button
         >
     </div>
     <div class="mt-4 space-y-4">
         {
-            units
-                .map((u) => (
-                    <UnitCard
-                        buildingID={buildingID}
-                        unitID={u.unitID}
-                    />
-                ))
+            units.map((u) => (
+                <UnitCard buildingID={buildingID} unitID={u.unitID} />
+            ))
         }
     </div>
 </div>
