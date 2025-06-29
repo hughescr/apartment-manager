@@ -19,7 +19,7 @@ const xData = JSON.stringify({
 });
 ---
 <div
-    class="building-card p-4"
+    class="tab-content bg-base-100 border-base-300 building-card p-4"
     x-data={xData}
     x-effect="showSave = JSON.stringify(building) !== JSON.stringify(original)"
 >
@@ -119,11 +119,7 @@ const xData = JSON.stringify({
                 </tr>
             </thead>
             <tbody>
-                {
-                    units?.map((u) => (
-                        <UnitCard unit={u} />
-                    ))
-                }
+                {units?.map((u) => <UnitCard unit={u} />)}
             </tbody>
         </table>
     </div>
