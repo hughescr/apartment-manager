@@ -6,7 +6,16 @@ import _ from 'lodash';
 const buildings = await getBuildings();
 ---
 
-<div x-data="{ activeTab: 0 }">
+<div x-data="{ activeTab: 0, init() {
+        const buildingsData = JSON.parse(this.$el.dataset.buildings);
+        const hash = decodeURIComponent(window.location.hash.substring(1));
+        if (hash) {
+            const index = buildingsData.findIndex(b => b.buildingID === hash);
+            if (index !== -1) {
+                this.activeTab = index;
+            }
+        }
+    } }" data-buildings={JSON.stringify(buildings)}>
     {buildings && (
         <>
             <div class="flex">
@@ -14,7 +23,7 @@ const buildings = await getBuildings();
                     <button
                         class="py-2 px-4 focus:outline-none border-t border-l border-r rounded-t"
                         :class={`{ 'bg-white': activeTab === ${i}, 'bg-gray-200 text-gray-500 border-b': activeTab !== ${i} }`}
-                        x-on:click={`activeTab = ${i}`}
+                        x-on:click={`activeTab = ${i}; window.location.hash = '${building.buildingID}'`}
                     >
                         {building.buildingID}
                     </button>
