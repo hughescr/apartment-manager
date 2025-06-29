@@ -49,7 +49,7 @@ function extractPathParameters(routeKey: string, rawPath: string): Record<string
     forEach(routeParts, (part, i) => {
         if(startsWith(part, '{') && endsWith(part, '}')) {
             const paramName = part.substring(1, part.length - 1);
-            params[paramName] = pathParts[i];
+            params[paramName] = decodeURIComponent(pathParts[i]);
         }
     });
 
