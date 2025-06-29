@@ -12,10 +12,12 @@
 - Intended for managing a small number of buildings, units, and tenants, staying within free tier limits.
 - Astro documentation: https://docs.astro.build/
 - SST documentation: https://sst.dev/docs/
+- Alpine documentation: https://alpinejs.dev/start-here and https://alpinejs.dev/components
+- Tailwind CSS documentation: https://tailwindcss.com/docs/styling-with-utility-classes
 
 ## Application Architecture
 
-The application is divided into three main layers: the Astro frontend, the API, and the data layer.
+The application is divided into three main layers: the Astro frontend (with Alpine and Tailwind), the API, and the data layer. SST acts as the coordinator and deployment framework.
 
 ### Data Layer
 
@@ -33,7 +35,7 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 
 - Use the **data layer** when you need to interact with the database from either the Astro frontend or the API.
 - Use the **API** when you need to perform an action from the client-side of the Astro frontend that does not require a full page reload.
-- Use the **Astro frontend** to render the user interface and to fetch data for server-side rendering.
+- Use the **Astro frontend** to render the user interface and to fetch data for server-side rendering. Use Tailwind and Alpine for UI/UX components. When creating new styles, use Tailwind CSS.
 
 ## Basics
 - The typescript code is developed with the bun runtime
@@ -45,20 +47,20 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 - ES modules (`import`/`export`) with `"type": "module"` in `package.json`.
 - ESLint rules come from `@hughescr/eslint-config-default`.
 - camelCase naming for variables/functions and PascalCase for classes.
-- Unused variables prefixed with `_`.
+- Unused variables/parameters should be prefixed with `_`.
 - Ignore errors with empty `catch` blocks if desired.
 - Tests use the Bun test framework (`import { describe } from 'bun:test'`).
 - Prefer Lodash utilities and `async/await` over raw Promises.
 - Document classes expose `metadata` and `pageContent`.
-- Verify style compliance with `bun lint`
+- Always verify style compliance with `bun run lint`
 
 ## Testing Instructions
-- Find the CI plan in the .github/workflows folder if there is one.
-- Run linting tools and type-checking tools
+- Run `bun run test` for a full set of linting and tests.
 - The commit should pass all tests before you merge.
 - Fix any test or type errors until the whole suite is green.
 - After moving files or changing imports, run linting and type-checking again.
 - Add or update tests for the code you change, even if nobody asked.
+- You can check for SST diagnostics using `bun run sst-diagnostics` and astro problems with `bun run astro-check`
 
 ## PR instructions
 Title format: [Codex] <Title>
