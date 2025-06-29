@@ -24,6 +24,8 @@ const newBuildingData = JSON.stringify({
             const index = buildingsData.findIndex(b => b.buildingID === hash);
             if (index !== -1) {
                 this.activeTab = index;
+            } else {
+                this.activeTab = 0;
             }
         }
     } }" data-buildings={JSON.stringify(buildings)}>
