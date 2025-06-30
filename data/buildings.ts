@@ -42,8 +42,14 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
     return Attributes as BuildingData;
 }
 
-export async function deleteBuilding(buildingID: string) {
-    await Building.build(DeleteItemCommand)
-        .key({ buildingID, unitID: 'BUILDING' })
-        .send();
+export async function deleteBuilding(buildingID: string): Promise<boolean> {
+    try {
+        await Building.build(DeleteItemCommand)
+            .key({ buildingID, unitID: 'BUILDING' })
+            .send();
+        return true;
+    } catch(error) {
+        console.error('Error deleting building:', error);
+        return false;
+    }
 }

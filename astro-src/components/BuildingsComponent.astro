@@ -17,7 +17,7 @@ const newBuildingData = JSON.stringify({
     apiURL
 });
 ---
-<div x-data="{ activeTab: -1, init() {
+<div x-data="{ activeTab: -1, showToast: false, toastMessage: '', toastType: '', init() {
         const buildingsData = JSON.parse(this.$el.dataset.buildings);
         const hash = decodeURIComponent(window.location.hash.substring(1));
         if (hash) {
@@ -30,7 +30,19 @@ const newBuildingData = JSON.stringify({
                 this.activeTab = 0;
             }
         }
+    }, showAndHideToast(message, type) {
+        this.toastMessage = message;
+        this.toastType = type;
+        this.showToast = true;
+        setTimeout(() => {
+            this.showToast = false;
+        }, 3000);
     } }" data-buildings={JSON.stringify(buildings)}>
+    <div class="toast toast-center toast-middle" x-show="showToast" x-transition.opacity>
+        <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
+            <span x-text="toastMessage"></span>
+        </div>
+    </div>
     {buildings && (
         <div role="tablist" class="tabs tabs-lift">
         {_.map(buildings, (building, i) => (
@@ -72,7 +84,7 @@ const newBuildingData = JSON.stringify({
                 <div class="mt-2 space-x-2">
                     <button class="btn btn-primary"
                         x-on:click="if(!buildingID) {
-                            alert('Building ID is required.');
+                            showAndHideToast('Building ID is required.', 'error');
                             return;
                         }
                         const response = await fetch(`${apiURL}buildings`, {
@@ -88,10 +100,13 @@ const newBuildingData = JSON.stringify({
                             }),
                         });
                         if(response.ok) {
+                            showAndHideToast('Building added successfully!', 'success');
                             window.location.hash = buildingID;
-                            window.location.reload(); // Reload to show the new building tab
+                            setTimeout(() => {
+                                window.location.reload(); // Reload to show the new building tab
+                            }, 1000); // 1 second delay
                         } else {
-                            alert('Failed to add building.');
+                            showAndHideToast('Failed to add building.', 'error');
                         }
                     ">Add Building</button>
                     <button class="btn btn-soft"

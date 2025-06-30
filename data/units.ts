@@ -46,8 +46,14 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
     return Attributes as UnitData;
 }
 
-export async function deleteUnit(buildingID: string, unitID: string) {
-    await Unit.build(DeleteItemCommand)
-        .key({ buildingID, unitID })
-        .send();
+export async function deleteUnit(buildingID: string, unitID: string): Promise<boolean> {
+    try {
+        await Unit.build(DeleteItemCommand)
+            .key({ buildingID, unitID })
+            .send();
+        return true;
+    } catch(error) {
+        console.error('Error deleting unit:', error);
+        return false;
+    }
 }
