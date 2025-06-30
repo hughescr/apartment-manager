@@ -1,6 +1,7 @@
 ---
 import { getBuilding } from "../../data/buildings";
 import { getUnits } from "../../data/units";
+import Saving from "./Saving.astro";
 import UnitCard from "./UnitCard.astro";
 import { Resource } from "sst";
 
@@ -16,6 +17,7 @@ const xData = JSON.stringify({
     units,
     apiURL,
     showSave: false,
+    saving: false,
 });
 ---
 
@@ -23,8 +25,8 @@ const xData = JSON.stringify({
     class="tab-content bg-base-100 border-base-300 building-card p-4"
     x-data={xData}
     x-effect="showSave = JSON.stringify(building) !== JSON.stringify(original)"
->
-    <fieldset class="fieldset w-xl">
+    :class="{'opacity-50': saving}">
+    <fieldset class="fieldset w-xl relative">
         <label class="floating-label mb-6">
             <input
                 disabled
@@ -78,6 +80,7 @@ const xData = JSON.stringify({
                 class="textarea w-full"
                 x-model="building.description"></textarea>
         </label>
+        <Saving />
     </fieldset>
     <div class="mt-2 space-x-2 w-xl">
         <button
@@ -102,13 +105,15 @@ const xData = JSON.stringify({
         <button
             class="btn btn-secondary float-right ml-2"
             x-show="showSave"
-            x-on:click="await fetch(`${apiURL}buildings/${building.buildingID}`, {
+            x-on:click="saving=true;
+                await fetch(`${apiURL}buildings/${building.buildingID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify(building),
             })
             original = { ...building };
             showSave = false;
+            saving = false;
             "
             >Save</button>
         <button

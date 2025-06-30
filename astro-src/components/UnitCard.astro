@@ -1,5 +1,6 @@
 ---
 // astro-src/components/UnitCard.astro
+import Saving from "./Saving.astro";
 import { Resource } from "sst";
 
 const { unit } = Astro.props as { unit: any }; // Will define a proper type later
@@ -104,5 +105,5 @@ const xDataString = `{
         <input type="date" x-model="unit.availableDate" class="max-w-36 input input-ghost input-lg validator" min="2025-01-01" max="2028-01-01" x-on:blur="() => saveUnit(this)"/>
     </div>
     <button class="btn btn-error" x-on:click="deleteUnit()">Delete</button>
-    <span x-show="saving" class="loading loading-bars loading-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+    <Saving />
 </li>
