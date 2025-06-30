@@ -31,6 +31,9 @@ mock.module('../../data/model', () => {
                     return { Attributes: { ...(this.Item as object), buildingID: (this.Item as { buildingID: string }).buildingID } };
                 }
                 if(commandName.includes('Delete')) {
+                    if (this.Key && (this.Key as { buildingID: string }).buildingID === 'error-id') {
+                        throw new Error('Mock delete error');
+                    }
                     return {};
                 }
                 return {};
@@ -75,5 +78,10 @@ describe('Data Layer - Buildings', () => {
     it('should delete a building', async () => {
         const result = await deleteBuilding('mock-id');
         expect(result).toBe(true);
+    });
+
+    it('should handle error when deleting a building', async () => {
+        const result = await deleteBuilding('error-id');
+        expect(result).toBe(false);
     });
 });

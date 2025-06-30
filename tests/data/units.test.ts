@@ -31,6 +31,9 @@ mock.module('../../data/model', () => {
                     return { Attributes: { ...(this.Item as object), unitID: (this.Item as { unitID: string }).unitID } };
                 }
                 if(commandName.includes('Delete')) {
+                    if (this.Key && (this.Key as { unitID: string }).unitID === 'error-unit-id') {
+                        throw new Error('Mock delete error');
+                    }
                     return {};
                 }
                 return {};
@@ -75,5 +78,10 @@ describe('Data Layer - Units', () => {
     it('should delete a unit', async () => {
         const result = await deleteUnit('bld-1', 'mock-unit-id');
         expect(result).toBe(true);
+    });
+
+    it('should handle error when deleting a unit', async () => {
+        const result = await deleteUnit('bld-1', 'error-unit-id');
+        expect(result).toBe(false);
     });
 });
