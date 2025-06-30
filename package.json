@@ -9,7 +9,7 @@
   "author": "Craig R. Hughes <craig.git@rungie.com>",
   "license": "Apache-2.0",
   "scripts": {
-    "dev-console": "op run --env-file=.env -- bunx sst dev",
+    "dev-console": "op run --env-file=.env -- bunx sst dev --mode=mono",
     "coverage": "bun test && genhtml coverage/lcov.info --output-directory coverage --header-title 'Coverage report' --footer \"$(git id)\" --legend --sort --show-owners all --annotate-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitblame.pm\" --version-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitversion.pm\" --ignore-errors version,version --ignore-errors package,package --hierarchical --criteria-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/criteria.pm\" --show-navigation --show-proportion --num-spaces 4 --function-coverage --branch-coverage ; open coverage/index.html",
     "sst-dev": "op run --env-file=.env -- bunx sst dev",
     "dev": "bunx astro dev",
