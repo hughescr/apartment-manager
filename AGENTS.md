@@ -57,6 +57,7 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 
 ## Testing Instructions
 - Run `bun run test` for a full set of linting and tests.
+- If you want to just run the bun tests without linting etc, then you need to remember to run under sst which means using the command `op run --env-file=.env -- bunx sst shell bun test` so that secrets come from 1Password and the tests are run under `sst shell`
 - The commit should pass all tests before you merge.
 - Fix any test or type errors until the whole suite is green.
 - After moving files or changing imports, run linting and type-checking again.
