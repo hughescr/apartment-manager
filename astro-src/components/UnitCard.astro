@@ -59,35 +59,34 @@ const xDataString = `{
     }
 }`;
 ---
-<li x-data={xDataString} class="list-row pt-2 border">
-    <span x-show="saving != false" class="loading loading-bars">saving...</span>
+<li x-data={xDataString} class="list-row pt-2 border" :class="{'opacity-50': saving}">
     <div>
         <div class="uppercase font-semibold">Unit</div>
-        <input type="text" x-model="unit.unitID" class="w-max-15 input input-ghost input-lg" disabled/>
+        <input type="text" x-model="unit.unitID" class="max-w-15 input input-ghost input-lg" disabled/>
     </div>
-    <div class="list-col-wrap w-xl">
+    <div>
         <div class="uppercase font-semibold">Description</div>
         <textarea class="textarea text-xs w-full" placeholder="Description" x-text="unit.description" x-on:blur="() => saveUnit(this)"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Beds</div>
-        <input type="text" x-model.number="unit.beds" class="w-max-15 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
+        <input type="text" x-model.number="unit.beds" class="max-w-15 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Baths</div>
-        <input type="text" x-model.number="unit.baths" class="w-max-15 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
+        <input type="text" x-model.number="unit.baths" class="max-w-15 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Sqft.</div>
-        <input type="text" x-model.number="unit.sqft" class="w-max-20 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
+        <input type="text" x-model.number="unit.sqft" class="max-w-20 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Monthly Rent ($)</div>
-        <input type="text" x-model.number="unit.rent" class="w-max-20 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
+        <input type="text" x-model.number="unit.rent" class="max-w-20 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Occupied?</div>
-        <label class="toggle text-base-content">
+        <label class="toggle text-base-content mt-3">
             <input type="checkbox" x-model.number="unit.occupied"  x-init="$watch('unit.occupied', () => saveUnit(this))"/>
             <svg aria-label="disabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 6 6 18" />
@@ -102,7 +101,8 @@ const xDataString = `{
     </div>
     <div>
         <div class="uppercase font-semibold">Available From</div>
-        <input type="text" x-model="unit.availableDate" class="w-max-20 input input-ghost input-lg" x-on:blur="() => saveUnit(this)"/>
+        <input type="date" x-model="unit.availableDate" class="max-w-36 input input-ghost input-lg validator" min="2025-01-01" max="2028-01-01" x-on:blur="() => saveUnit(this)"/>
     </div>
     <button class="btn btn-error" x-on:click="deleteUnit()">Delete</button>
+    <span x-show="saving != false" class="loading loading-bars">saving...</span>
 </li>
