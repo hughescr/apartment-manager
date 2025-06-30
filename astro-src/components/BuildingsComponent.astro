@@ -19,7 +19,7 @@ const newBuildingData = JSON.stringify({
     saving: false,
 });
 ---
-<div x-data="{ activeTab: -1, showToast: false, toastMessage: '', toastType: '', init() {
+<div x-data="{ activeTab: 0, showToast: false, toastMessage: '', toastType: '', init() {
         const buildingsData = JSON.parse(this.$el.dataset.buildings);
         const hash = decodeURIComponent(window.location.hash.substring(1));
         if (hash) {
