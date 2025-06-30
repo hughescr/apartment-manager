@@ -2,7 +2,25 @@
 
 This document outlines the testing strategy for the apartment manager application. The goal is to ensure the reliability, correctness, and performance of all application components, from the data layer to the user interface.
 
-## 1. Data Layer (`data/`)
+## 1. Test File Organization
+
+All test files will be located in a top-level `tests/` directory. The structure within this directory will mirror the application's source code structure.
+
+-   **Data Layer Tests:** `tests/data/`
+    -   `tests/data/buildings.test.ts`
+    -   `tests/data/units.test.ts`
+-   **API Layer Tests:** `tests/api/`
+    -   `tests/api/buildings.test.ts`
+    -   `tests/api/units.test.ts`
+-   **Frontend Tests:** `tests/astro/`
+    -   **Component Tests:** `tests/astro/components/`
+        -   `tests/astro/components/BuildingCard.test.ts`
+    -   **Page/E2E Tests:** `tests/astro/e2e/`
+        -   `tests/astro/e2e/navigation.test.ts`
+
+This organization keeps tests separate from the application code but maintains a clear and parallel structure.
+
+## 2. Data Layer (`data/`)
 
 The data layer is responsible for all interactions with the DynamoDB database. Testing this layer is critical to ensure data integrity.
 
@@ -24,7 +42,7 @@ The data layer is responsible for all interactions with the DynamoDB database. T
         - **Edge Cases:** Test with empty arrays, `null` or `undefined` values, and other edge cases.
     - Use assertions to verify the return values and that the correct DynamoDB client methods are called with the expected parameters.
 
-## 2. API Layer (`api/`)
+## 3. API Layer (`api/`)
 
 The API layer provides HTTP endpoints for the frontend to interact with the backend.
 
@@ -47,7 +65,7 @@ The API layer provides HTTP endpoints for the frontend to interact with the back
         - **Verify Error Responses:** Send invalid requests (e.g., bad payload, incorrect parameters) and assert that the correct error status and message are returned.
     - Test the full lifecycle of a resource (e.g., create, read, update, delete a unit).
 
-## 3. Astro Frontend (`astro-src/`)
+## 4. Astro Frontend (`astro-src/`)
 
 The frontend is responsible for rendering the user interface and interacting with the API.
 
@@ -81,7 +99,7 @@ The frontend is responsible for rendering the user interface and interacting wit
             8.  Verify the unit is displayed.
             9.  Delete the unit and then the building, verifying they are removed from the UI.
 
-## 4. SST Configuration (`sst/`)
+## 5. SST Configuration (`sst/`)
 
 The SST configuration defines the application's infrastructure.
 
@@ -97,7 +115,7 @@ The SST configuration defines the application's infrastructure.
     - Run `bun run sst-diagnostics` as part of the CI/CD pipeline.
     - For more in-depth testing, you can write tests that deploy the stack to a dedicated test environment and then use the AWS SDK to verify that the resources have been created with the correct configuration.
 
-## 5. Overall Test Execution
+## 6. Overall Test Execution
 
 - **Command:** A single command, `bun run test`, should run all relevant tests (linting, unit, integration).
 - **CI/CD:** All tests should be run automatically in a CI/CD pipeline (e.g., GitHub Actions) on every push and pull request to the main branch.
