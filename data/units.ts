@@ -7,6 +7,8 @@ import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
 import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
+import { logger } from '@hughescr/logger';
+
 export async function getUnits(buildingID: string) {
     const { Items } = await ApartmentTable.build(QueryCommand)
     .entities(Unit)
@@ -53,7 +55,7 @@ export async function deleteUnit(buildingID: string, unitID: string): Promise<bo
             .send();
         return true;
     } catch(error) {
-        console.error('Error deleting unit:', error);
+        logger.error('Error deleting unit:', error);
         return false;
     }
 }

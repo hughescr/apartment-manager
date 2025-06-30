@@ -7,6 +7,8 @@ import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
 import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
+import  { logger } from '@hughescr/logger';
+
 export async function getBuildings() {
     const { Items } = await ApartmentTable.build(ScanCommand)
         .entities(Building)
@@ -49,7 +51,7 @@ export async function deleteBuilding(buildingID: string): Promise<boolean> {
             .send();
         return true;
     } catch(error) {
-        console.error('Error deleting building:', error);
+        logger.error('Error deleting building:', error);
         return false;
     }
 }
