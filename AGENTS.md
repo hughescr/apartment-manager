@@ -38,6 +38,10 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 - Use the **API** when you need to perform an action from the client-side of the Astro frontend that does not require a full page reload.
 - Use the **Astro frontend** to render the user interface and to fetch data for server-side rendering. Use Tailwind and Alpine for UI/UX components. When creating new styles, use Tailwind CSS.
 
+### Writing tests
+
+See [](TESTING.md)
+
 ## Basics
 - The typescript code is developed with the bun runtime
 
@@ -57,7 +61,7 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 
 ## Testing Instructions
 - Run `bun run test` for a full set of linting and tests.
-- If you want to just run the bun tests without linting etc, then you need to remember to run under sst which means using the command `op run --env-file=.env -- bunx sst shell bun test` so that secrets come from 1Password and the tests are run under `sst shell`
+- If you want to just run the bun tests without linting etc, then you need to remember to run under sst which means using the command `bun test-only` so that secrets come from 1Password and the tests are run under `sst shell`
 - The commit should pass all tests before you merge.
 - Fix any test or type errors until the whole suite is green.
 - After moving files or changing imports, run linting and type-checking again.

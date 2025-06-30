@@ -17,6 +17,7 @@
     "package-check": "bunx npm-check -i bun:test",
     "postversion": "git commit -m \"Bump package version to $npm_package_version\" package.json; git flow release start $npm_package_version; git flow release finish -m $npm_package_version $npm_package_version; git checkout develop; git merge master",
     "test": "eslint --fix;tsc;op run --env-file=.env -- bunx sst shell bun test;bunx astro check",
+    "test-only": "op run --env-file=.env -- bunx sst shell -- bun test",
     "astro-check": "bunx astro check",
     "sst-diagnostics": "op run --env-file=.env -- bunx sst diagnostics --print-logs"
   },
