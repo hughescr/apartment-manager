@@ -60,35 +60,35 @@ const xDataString = `{
     }
 }`;
 ---
-<li x-data={xDataString} class="list-row pt-2 border relative" :class="{'opacity-50': saving}">
+<li x-data={xDataString} x-init="$watch('unit', () => saveUnit(this))" class="list-row pt-2 border relative" :class="{'opacity-50': saving}">
     <div>
         <div class="uppercase font-semibold">Unit</div>
         <input type="text" x-model="unit.unitID" class="max-w-15 input input-ghost input-lg" disabled/>
     </div>
     <div>
         <div class="uppercase font-semibold">Description</div>
-        <textarea class="textarea text-xs w-full" placeholder="Description" x-text="unit.description" x-on:blur="() => saveUnit(this)"/>
+        <textarea class="textarea text w-full" placeholder="Description" x-model.lazy="unit.description"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Beds</div>
-        <input x-model.number="unit.beds" class="max-w-15 input input-ghost input-lg validator" min="0" max="10" x-on:blur="() => saveUnit(this)"/>
+        <input x-model.number.lazy="unit.beds" class="max-w-15 input input-ghost input-lg validator" min="0" max="10"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Baths</div>
-        <input x-model.number="unit.baths" class="max-w-15 input input-ghost input-lg validator" min="0" max="10" x-on:blur="() => saveUnit(this)"/>
+        <input x-model.number.lazy="unit.baths" class="max-w-15 input input-ghost input-lg validator" min="0" max="10"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Sqft.</div>
-        <input x-model.number="unit.sqft" class="max-w-20 input input-ghost input-lg validator" min="50" max="10000" x-on:blur="() => saveUnit(this)"/>
+        <input x-model.number.lazy="unit.sqft" class="max-w-20 input input-ghost input-lg validator" min="50" max="10000"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Monthly Rent ($)</div>
-        <input x-model.number="unit.rent" class="max-w-20 input input-ghost input-lg validator" min="10" max="25000" x-on:blur="() => saveUnit(this)"/>
+        <input x-model.number.lazy="unit.rent" class="max-w-20 input input-ghost input-lg validator" min="10" max="25000"/>
     </div>
     <div>
         <div class="uppercase font-semibold">Occupied?</div>
         <label class="toggle text-base-content mt-3">
-            <input type="checkbox" x-model.number="unit.occupied"  x-init="$watch('unit.occupied', () => saveUnit(this))"/>
+            <input type="checkbox" x-model.boolean.lazy="unit.occupied"/>
             <svg aria-label="disabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 6 6 18" />
                 <path d="m6 6 12 12" />
@@ -102,7 +102,7 @@ const xDataString = `{
     </div>
     <div>
         <div class="uppercase font-semibold">Available From</div>
-        <input type="date" x-model="unit.availableDate" class="max-w-36 input input-ghost input-lg validator" min="2025-01-01" max="2028-01-01" x-on:blur="() => saveUnit(this)"/>
+        <input type="date" x-model.lazy="unit.availableDate" class="max-w-36 input input-ghost input-lg validator" min="2025-01-01" max="2028-01-01"/>
     </div>
     <button class="btn btn-error" x-on:click="deleteUnit()">Delete</button>
     <Saving />
