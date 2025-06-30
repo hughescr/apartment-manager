@@ -1,5 +1,6 @@
 ---
 import BuildingCard from './BuildingCard.astro';
+import Saving from './Saving.astro';
 import { getBuildings } from '../../data/buildings';
 import { Resource } from 'sst';
 
@@ -14,7 +15,8 @@ const newBuildingData = JSON.stringify({
     state: '',
     zip: '',
     description: '',
-    apiURL
+    apiURL,
+    saving: false,
 });
 ---
 <div x-data="{ activeTab: -1, showToast: false, toastMessage: '', toastType: '', init() {
@@ -43,85 +45,88 @@ const newBuildingData = JSON.stringify({
             <span x-text="toastMessage"></span>
         </div>
     </div>
-    {buildings && (
-        <div role="tablist" class="tabs tabs-lift">
-        {_.map(buildings, (building, i) => (
-            <a role="tab" class="tab" :class={`{ 'tab-active': activeTab === ${i} }`}
-                x-on:click={`activeTab = ${i}; window.location.hash = '${building.buildingID}'`}
-            >{building.buildingID}</a>
-            <BuildingCard buildingID={building.buildingID} />
-        ))}
-            <a role="tab" class="tab" :class={`{ 'tab-active': activeTab === ${buildings.length} }`}
-                x-on:click={`activeTab = ${buildings.length}; window.location.hash = 'add-new-building'`}
-            >+</a>
-            <div class="tab-content bg-base-100 border-base-300 p-4" x-data={newBuildingData}>
-                <fieldset class="fieldset w-xl">
-                    <div class="indicator w-full">
-                        <span class="indicator-item badge" style="z-index:2" x-show="buildingID === ''">Required</span>
-                        <label class="floating-label mb-6 w-full">
-                            <span>Building Name</span>
-                                <input type="text" x-model="buildingID" placeholder="Building Name" class="input input-xl w-full" required />
-                        </label>
-                    </div>
-                    <label class="floating-label mb-2">
-                        <span>Street</span>
-                        <input type="text" x-model="street" placeholder="Street" class="input w-full"/>
+    <div role="tablist" class="tabs tabs-lift">
+    {_.map(buildings, (building, i) => (
+        <a role="tab" class="tab" :class={`{ 'tab-active': activeTab === ${i} }`}
+            x-on:click={`activeTab = ${i}; window.location.hash = '${building.buildingID}'`}
+        >{building.buildingID}</a>
+        <BuildingCard buildingID={building.buildingID} />
+    ))}
+        <a role="tab" class="tab items-center" :class={`{ 'tab-active': activeTab === ${buildings.length} }`}
+            x-on:click={`activeTab = ${buildings.length}; window.location.hash = 'add-new-building'`}
+        ><svg class="size-4 text-secondary me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg><span class="text-secondary">Add Building</span></a>
+        <div class="tab-content bg-base-100 border-base-300 p-4" x-data={newBuildingData}>
+            <fieldset class="fieldset w-xl relative">
+                <div class="indicator w-full">
+                    <span class="indicator-item badge" style="z-index:2" x-show="buildingID === ''">Required</span>
+                    <label class="floating-label mb-6 w-full">
+                        <span>Building Name</span>
+                            <input type="text" x-model="buildingID" placeholder="Building Name" class="input input-xl w-full" required />
                     </label>
-                    <label class="floating-label mb-2">
-                        <span>City</span>
-                        <input type="text" x-model="city" placeholder="City" class="input w-full"/>
-                    </label>
-                    <label class="floating-label mb-2">
-                        <span>State</span>
-                        <input type="text" x-model="state" placeholder="State" class="input w-full"/>
-                    </label>
-                    <label class="floating-label mb-2">
-                        <span>Zip</span>
-                        <input type="text" x-model="zip" placeholder="Zip" class="input w-full"/>
-                    </label>
-                    <label class="floating-label mt-4">
-                        <span>Description</span>
-                        <textarea class="textarea w-full" placeholder="Description" x-model="description" />
-                    </label>
-                </fieldset>
-                <div class="mt-2 space-x-2">
-                    <button class="btn btn-primary"
-                        x-on:click="if(!buildingID) {
-                            showAndHideToast('Building ID is required.', 'error');
-                            return;
-                        }
-                        const response = await fetch(`${apiURL}buildings`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                buildingID,
-                                street,
-                                city,
-                                state,
-                                zip,
-                                description,
-                            }),
-                        });
-                        if(response.ok) {
-                            showAndHideToast('Building added successfully!', 'success');
-                            window.location.hash = buildingID;
-                            setTimeout(() => {
-                                window.location.reload(); // Reload to show the new building tab
-                            }, 1000); // 1 second delay
-                        } else {
-                            showAndHideToast('Failed to add building.', 'error');
-                        }
-                    ">Add Building</button>
-                    <button class="btn btn-soft"
-                    x-on:click="buildingID = '';
-                            street = '';
-                            city = '';
-                            state = '';
-                            zip = '';
-                            description = '';
-                    ">Cancel</button>
                 </div>
+                <label class="floating-label mb-2">
+                    <span>Street</span>
+                    <input type="text" x-model="street" placeholder="Street" class="input w-full"/>
+                </label>
+                <label class="floating-label mb-2">
+                    <span>City</span>
+                    <input type="text" x-model="city" placeholder="City" class="input w-full"/>
+                </label>
+                <label class="floating-label mb-2">
+                    <span>State</span>
+                    <input type="text" x-model="state" placeholder="State" class="input w-full"/>
+                </label>
+                <label class="floating-label mb-2">
+                    <span>Zip</span>
+                    <input type="text" x-model="zip" placeholder="Zip" class="input w-full"/>
+                </label>
+                <label class="floating-label mt-4">
+                    <span>Description</span>
+                    <textarea class="textarea w-full" placeholder="Description" x-model="description" />
+                </label>
+                <Saving />
+            </fieldset>
+            <div class="mt-2 space-x-2">
+                <button class="btn btn-primary"
+                    x-on:click="if(!buildingID) {
+                        showAndHideToast('Building ID is required.', 'error');
+                        return;
+                    }
+                    saving = true;
+                    const response = await fetch(`${apiURL}buildings`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            buildingID,
+                            street,
+                            city,
+                            state,
+                            zip,
+                            description,
+                        }),
+                    });
+                    saving = false;
+                    if(response.ok) {
+                        showAndHideToast('Building added successfully!', 'success');
+                        window.location.hash = buildingID;
+                        setTimeout(() => {
+                            window.location.reload(); // Reload to show the new building tab
+                        }, 1000); // 1 second delay
+                    } else {
+                        showAndHideToast('Failed to add building.', 'error');
+                    }
+                ">Add Building</button>
+                <button class="btn btn-soft"
+                x-on:click="buildingID = '';
+                        street = '';
+                        city = '';
+                        state = '';
+                        zip = '';
+                        description = '';
+                ">Cancel</button>
             </div>
         </div>
-    )}
+    </div>
 </div>
