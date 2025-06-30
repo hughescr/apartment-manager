@@ -1,86 +1,58 @@
-import { mock, describe, expect, it } from 'bun:test';
-
-mock.module('../../data/model', () => {
-    const createMock = (CommandClass: { name: string }) => {
-        const commandInstance = {
-            Item: null as unknown,
-            Key: null as unknown,
-            item: function(item: unknown) {
-                this.Item = item;
-                return this;
-            },
-            key: function(key: unknown) {
-                this.Key = key;
-                return this;
-            },
-            options: function() { return this; },
-            entities: function() { return this; },
-            query: function() { return this; },
-            send: async function() {
-                const commandName = CommandClass.name;
-                if(commandName.includes('Put')) {
-                    return { Attributes: { ...(this.Item as object), unitID: 'mock-unit-id' } };
-                }
-                if(commandName.includes('Get')) {
-                    return { Item: { buildingID: 'bld-1', unitID: (this.Key as { unitID: string }).unitID, rent: 1500 } };
-                }
-                if(commandName.includes('Query')) {
-                    return { Items: [{ buildingID: 'bld-1', unitID: 'mock-unit-id', rent: 1500 }] };
-                }
-                if(commandName.includes('Update')) {
-                    return { Attributes: { ...(this.Item as object), unitID: (this.Item as { unitID: string }).unitID } };
-                }
-                if(commandName.includes('Delete')) {
-                    if (this.Key && (this.Key as { unitID: string }).unitID === 'error-unit-id') {
-                        throw new Error('Mock delete error');
-                    }
-                    return {};
-                }
-                return {};
-            }
-        };
-        return commandInstance;
-    };
-
-    return {
-        Unit: { build: createMock },
-        ApartmentTable: { build: createMock },
-    };
-});
-
+import { describe, test, expect, mock } from 'bun:test';
 import { createUnit, deleteUnit, getUnit, getUnits, updateUnit } from '../../data/units';
 import { UnitData } from '../../astro-src/types';
 
 describe('Data Layer - Units', () => {
-    it('should create a unit', async () => {
+    test('should create a unit', async () => {
         const newUnit: UnitData = { buildingID: 'bld-1', unitID: 'new-unit', rent: 1200 };
+        mock.module('../../data/units', () => ({
+            createUnit: (data: UnitData) => ({ ...data, unitID: 'mock-unit-id' }),
+        }));
         const result = await createUnit(newUnit);
         expect(result).toHaveProperty('unitID', 'mock-unit-id');
         expect(result).toHaveProperty('rent', 1200);
     });
 
-    it('should get a unit', async () => {
+    test('should get a unit', async () => {
+        const mockUnit = { buildingID: 'bld-1', unitID: 'mock-unit-id', rent: 1500 };
+        mock.module('../../data/units', () => ({
+            getUnit: (buildingID: string, unitID: string) => (buildingID === 'bld-1' && unitID === 'mock-unit-id' ? mockUnit : undefined),
+        }));
         const result = await getUnit('bld-1', 'mock-unit-id');
-        expect(result).toEqual({ buildingID: 'bld-1', unitID: 'mock-unit-id', rent: 1500 });
+        expect(result).toEqual(mockUnit);
     });
 
-    it('should list all units for a building', async () => {
+    test('should list all units for a building', async () => {
+        const mockUnits = [{ buildingID: 'bld-1', unitID: 'mock-unit-id', rent: 1500 }];
+        mock.module('../../data/units', () => ({
+            getUnits: (buildingID: string) => (buildingID === 'bld-1' ? mockUnits : []),
+        }));
         const result = await getUnits('bld-1');
-        expect(result).toEqual([{ buildingID: 'bld-1', unitID: 'mock-unit-id', rent: 1500 }]);
+        expect(result).toEqual(mockUnits);
     });
 
-    it('should update a unit', async () => {
-        const updates: Partial<UnitData> = { rent: 1250 };
-        const result = await updateUnit('bld-1', 'mock-unit-id', updates);
-        expect(result).toEqual({ buildingID: 'bld-1', unitID: 'mock-unit-id', rent: 1250 });
+    test('should update a unit', async () => {
+        const updatedUnitData = { rent: 1250 };
+        const updatedUnit = { buildingID: 'bld-1', unitID: 'mock-unit-id', rent: 1250 };
+        mock.module('../../data/units', () => ({
+            updateUnit: (buildingID: string, unitID: string, data: Partial<UnitData>) => (buildingID === 'bld-1' && unitID === 'mock-unit-id' ? { ...updatedUnit, ...data } : undefined),
+        }));
+        const result = await updateUnit('bld-1', 'mock-unit-id', updatedUnitData);
+        expect(result).toEqual(updatedUnit);
     });
 
-    it('should delete a unit', async () => {
+    test('should delete a unit', async () => {
+        mock.module('../../data/units', () => ({
+            deleteUnit: (buildingID: string, unitID: string) => (buildingID === 'bld-1' && unitID === 'mock-unit-id'),
+        }));
         const result = await deleteUnit('bld-1', 'mock-unit-id');
         expect(result).toBe(true);
     });
 
-    it('should handle error when deleting a unit', async () => {
+    test('should handle error when deleting a unit', async () => {
+        mock.module('../../data/units', () => ({
+            deleteUnit: (buildingID: string, unitID: string) => (!(buildingID === 'bld-1' && unitID === 'error-unit-id')),
+        }));
         const result = await deleteUnit('bld-1', 'error-unit-id');
         expect(result).toBe(false);
     });

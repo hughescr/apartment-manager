@@ -19,7 +19,7 @@
         "types": [
             "node",
             "bun",
-            "jest"
+            "aws-lambda"
         ]
     },
     "types": [
