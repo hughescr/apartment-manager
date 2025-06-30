@@ -104,5 +104,5 @@ const xDataString = `{
         <input type="date" x-model="unit.availableDate" class="max-w-36 input input-ghost input-lg validator" min="2025-01-01" max="2028-01-01" x-on:blur="() => saveUnit(this)"/>
     </div>
     <button class="btn btn-error" x-on:click="deleteUnit()">Delete</button>
-    <span x-show="saving != false" class="loading loading-bars">saving...</span>
+    <span x-show="saving" class="loading loading-bars" />
 </li>
