@@ -59,7 +59,7 @@ const xDataString = `{
     }
 }`;
 ---
-<li x-data={xDataString} class="list-row pt-2 border" :class="{'opacity-50': saving}">
+<li x-data={xDataString} class="list-row pt-2 border relative" :class="{'opacity-50': saving}">
     <div>
         <div class="uppercase font-semibold">Unit</div>
         <input type="text" x-model="unit.unitID" class="max-w-15 input input-ghost input-lg" disabled/>
@@ -104,5 +104,5 @@ const xDataString = `{
         <input type="date" x-model="unit.availableDate" class="max-w-36 input input-ghost input-lg validator" min="2025-01-01" max="2028-01-01" x-on:blur="() => saveUnit(this)"/>
     </div>
     <button class="btn btn-error" x-on:click="deleteUnit()">Delete</button>
-    <span x-show="saving" class="loading loading-bars" />
+    <span x-show="saving" class="loading loading-bars loading-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
 </li>
