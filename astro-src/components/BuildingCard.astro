@@ -80,7 +80,8 @@ const xData = JSON.stringify({
         </label>
     </fieldset>
     <div class="mt-2 space-x-2 w-xl">
-        <button class="btn btn-primary"
+        <button
+            class="btn btn-primary"
             x-on:click="const id = prompt('New unit number?');
             if (!id) return;
             await fetch(`${apiURL}buildings/${building.buildingID}/units`, {
@@ -91,13 +92,15 @@ const xData = JSON.stringify({
             window.location.reload();
             "
             >Add Unit</button>
-        <button class="btn btn-error"
+        <button
+            class="btn btn-error"
             x-on:click="if (!confirm('Are you sure you want to delete this building and all its units?')) return;
             await fetch(`${apiURL}buildings/${building.buildingID}`, { method: 'DELETE' });
             window.location.reload();
             "
             >Delete Building</button>
-        <button class="btn btn-secondary float-right ml-2"
+        <button
+            class="btn btn-secondary float-right ml-2"
             x-show="showSave"
             x-on:click="await fetch(`${apiURL}buildings/${building.buildingID}`, {
                 method: 'PUT',
@@ -108,28 +111,13 @@ const xData = JSON.stringify({
             showSave = false;
             "
             >Save</button>
-        <button class="btn btn-soft float-right ml-2"
+        <button
+            class="btn btn-soft float-right ml-2"
             x-show="showSave"
             x-on:click="building={...original}">Undo</button>
     </div>
-    <div class="mt-4">
-        <table class="table table-zebra table-pin-rows w-full">
-            <thead>
-                <tr>
-                    <th class="py-2 px-4 border-b">Unit ID</th>
-                    <th class="py-2 px-4 border-b">Description</th>
-                    <th class="py-2 px-4 border-b">Beds</th>
-                    <th class="py-2 px-4 border-b">Baths</th>
-                    <th class="py-2 px-4 border-b">Sqft</th>
-                    <th class="py-2 px-4 border-b">Rent</th>
-                    <th class="py-2 px-4 border-b">Occupied</th>
-                    <th class="py-2 px-4 border-b">Available Date</th>
-                    <th class="py-2 px-4 border-b">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {units?.map((u) => <UnitCard unit={u} />)}
-            </tbody>
-        </table>
-    </div>
+    <ul class="list w-full mt-4">
+        <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Units in this building</li>
+        {units?.map((u) => <UnitCard unit={u} />)}
+    </ul>
 </div>
