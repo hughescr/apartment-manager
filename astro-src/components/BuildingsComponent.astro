@@ -56,10 +56,13 @@ const newBuildingData = JSON.stringify({
             >+</a>
             <div class="tab-content bg-base-100 border-base-300 p-4" x-data={newBuildingData}>
                 <fieldset class="fieldset w-xl">
-                    <label class="floating-label mb-6">
-                        <span>Building Name</span>
-                        <input type="text" x-model="buildingID" placeholder="Building Name (required)" class="input input-xl w-full" required />
-                    </label>
+                    <div class="indicator w-full">
+                        <span class="indicator-item badge" style="z-index:2" x-show="buildingID === ''">Required</span>
+                        <label class="floating-label mb-6 w-full">
+                            <span>Building Name</span>
+                                <input type="text" x-model="buildingID" placeholder="Building Name" class="input input-xl w-full" required />
+                        </label>
+                    </div>
                     <label class="floating-label mb-2">
                         <span>Street</span>
                         <input type="text" x-model="street" placeholder="Street" class="input w-full"/>
