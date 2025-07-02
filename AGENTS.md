@@ -70,3 +70,7 @@ See [](TESTING.md)
 
 ## PR instructions
 Title format: [Codex] <Title>
+
+## Running for UI testing
+
+If you want to start up the app locally so that you can use Playwright tools for UI testing, you can do so using the command `bun dev-console`. This process will not exit - it stays alive as long as the server is still running, and needs a SIGINT or CTRL-C to shut it down. While the server is running, you can access the Astro URL to exercise the UI.
