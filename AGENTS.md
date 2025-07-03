@@ -73,4 +73,11 @@ Title format: [Codex] <Title>
 
 ## Running for UI testing
 
-If you want to start up the app locally so that you can use Playwright tools for UI testing, you can do so using the command `bun dev-console`. This process will not exit - it stays alive as long as the server is still running, and needs a SIGINT or CTRL-C to shut it down. While the server is running, you can access the Astro URL to exercise the UI.
+If you want to start up the app locally so that you can use Playwright tools for UI testing, you can do so using the command `bun dev-console`. This process will not exit - it stays alive as long as the server is still running, and needs a SIGINT or CTRL-C to shut it down, so it's best to run it in a tmux or something.
+
+To start the `bun dev-console` in a tmux session, use the following commands:
+1. Create a new workspace: `create_workspace(workspace_id="dev-console-workspace")`
+2. Start the dev-console: `execute_command(command="bun dev-console", description="Starting Astro development server", workspace_id="dev-console-workspace")`
+3. Monitor the output: `get_output(window_name="exec", workspace_id="dev-console-workspace")`
+
+Once the server is running, you can access the Astro URL (usually `http://localhost:4321/`) to exercise the UI using Playwright tools like `browser_navigate`.
