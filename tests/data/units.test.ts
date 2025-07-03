@@ -1,61 +1,119 @@
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
 
-// Mock the logger to prevent console output during tests
-mock.module('@hughescr/logger', () => ({
-    logger: {
-        error: mock(),
-    },
-}));
+import { forEach } from 'lodash';
 
-// Mock the dynamodb-toolbox methods
+/**
+* When setting up a test that will mock a module, the block should add this:
+* const moduleMocker = new ModuleMocker();
+*
+* afterEach(() => {
+*   moduleMocker.clear();
+* });
+*
+* When a test mocks a module, it should do it this way:
+*
+* beforeEach(() => {
+*     await moduleMocker.mock('@/services/token.ts', () => ({
+*         getBucketToken: mock(() => {
+*             throw new Error('Unexpected error');
+*         }),
+*     });
+* });
+*
+*/
+interface MockResult {
+    clear: () => void
+}
+
+export class ModuleMocker {
+    private mocks: MockResult[] = [];
+
+    async mock(modulePath: string, renderMocks: () => Record<string, unknown>) {
+        const original = {
+            ...(await import(modulePath))
+        };
+        const mocks = renderMocks();
+        const result = {
+            ...original,
+            ...mocks,
+        };
+        mock.module(modulePath, () => result);
+
+        this.mocks.push({
+            clear: () => {
+                mock.module(modulePath, () => original);
+            },
+        });
+    }
+
+    clear() {
+        forEach(this.mocks, mockResult => mockResult.clear());
+        this.mocks = [];
+    }
+}
+
 const mockSend = mock();
 
-// Mock the ApartmentTable and Unit entity
-mock.module('../../data/model', () => ({
-    ApartmentTable: {
-        build: mock((command) => {
-            if(command === QueryCommand) {
-                return {
-                    entities: mock(() => ({
-                        query: mock(() => ({
-                            send: mockSend,
-                        })),
-                    })),
-                };
-            }
-            return {
-                item: mock(() => ({
-                    options: mock(() => ({
-                        send: mockSend,
-                    })),
-                    send: mockSend,
-                })),
-                key: mock(() => ({
-                    send: mockSend,
-                })),
-            };
-        }),
-    },
-    Unit: {
-        build: mock(() => {
-            return {
-                item: mock(() => ({
-                    options: mock(() => ({
-                        send: mockSend,
-                    })),
-                    send: mockSend,
-                })),
-                key: mock(() => ({
-                    send: mockSend,
-                })),
-            };
-        }),
-    },
-}));
+const moduleMocker = new ModuleMocker();
 
 describe('Unit Data Layer', () => {
+    afterEach(() => {
+        mockSend.mockClear();
+        moduleMocker.clear();
+    });
+
+    beforeEach(async () => {
+        await moduleMocker.mock('@hughescr/logger', () => ({
+            logger: {
+                error: mock(),
+            },
+        }));
+
+        await moduleMocker.mock('../../data/model', () => ({
+            ApartmentTable: {
+                build: mock((command) => {
+                    if(command === QueryCommand) {
+                        return {
+                            entities: mock(() => ({
+                                query: mock(() => ({
+                                    send: mockSend,
+                                })),
+                            })),
+                        };
+                    }
+                    return {
+                        item: mock(() => ({
+                            options: mock(() => ({
+                                send: mockSend,
+                            })),
+                            send: mockSend,
+                        })),
+                        key: mock(() => ({
+                            send: mockSend,
+                        })),
+                    };
+                }),
+            },
+            Unit: {
+                build: mock(() => {
+                    return {
+                        item: mock(() => ({
+                            options: mock(() => ({
+                                send: mockSend,
+                            })),
+                            send: mockSend,
+                        })),
+                        key: mock(() => ({
+                            send: mockSend,
+                        })),
+                    };
+                }),
+            },
+        }));
+    });
+
     const testBuildingID = 'test-building-1';
     const testUnit = {
         buildingID: testBuildingID,
