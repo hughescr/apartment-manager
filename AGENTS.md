@@ -47,7 +47,7 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 - TypeScript with strict type checking.
 - Copy the style of existing code, and respect the eslint style rules.
 - ES modules (`import`/`export`) with `"type": "module"` in `package.json`.
-- ESLint rules come from `@hughescr/eslint-config-default`; see the file `node_modules/@hughescr/eslint-config-default/index.mjs` for details.
+- ESLint rules come from `@hughescr/eslint-config-default`; the active ESLint rules are @ESLINT-RULES.md
 - camelCase naming for variables/functions and PascalCase for classes.
 - Unused variables/parameters should be prefixed with `_`.
 - Ignore errors with empty `catch` blocks if desired.
