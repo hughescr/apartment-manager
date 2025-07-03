@@ -10,7 +10,6 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev-console": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst dev --mode=mono \"$@\"; else bunx sst dev --mode=mono  \"$@\"; fi' _",
-    "coverage": "bun test && genhtml coverage/lcov.info --output-directory coverage --header-title 'Coverage report' --footer \"$(git id)\" --legend --sort --show-owners all --annotate-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitblame.pm\" --version-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitversion.pm\" --ignore-errors version,version --ignore-errors package,package --hierarchical --criteria-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/criteria.pm\" --show-navigation --show-proportion --num-spaces 4 --function-coverage --branch-coverage ; open coverage/index.html",
     "sst-dev": "if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst dev; else bunx sst dev; fi",
     "dev": "bunx astro dev",
     "lint": "eslint --fix",
