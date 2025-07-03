@@ -38,10 +38,6 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 - Use the **API** when you need to perform an action from the client-side of the Astro frontend that does not require a full page reload.
 - Use the **Astro frontend** to render the user interface and to fetch data for server-side rendering. Use Tailwind and Alpine for UI/UX components. When creating new styles, use Tailwind CSS.
 
-### Writing tests
-
-See [](TESTING.md)
-
 ## Basics
 - The typescript code is developed with the bun runtime
 
@@ -49,15 +45,15 @@ See [](TESTING.md)
 
 ### For typescript
 - TypeScript with strict type checking.
+- Copy the style of existing code, and respect the eslint style rules.
 - ES modules (`import`/`export`) with `"type": "module"` in `package.json`.
-- ESLint rules come from `@hughescr/eslint-config-default`.
+- ESLint rules come from `@hughescr/eslint-config-default`; see the file `node_modules/@hughescr/eslint-config-default/index.mjs` for details.
 - camelCase naming for variables/functions and PascalCase for classes.
 - Unused variables/parameters should be prefixed with `_`.
 - Ignore errors with empty `catch` blocks if desired.
-- Tests use the Bun test framework (`import { describe } from 'bun:test'`).
+- Tests use the Bun test framework (eg `import { describe } from 'bun:test'`).
 - Prefer Lodash utilities and `async/await` over raw Promises.
-- Document classes expose `metadata` and `pageContent`.
-- Always verify style compliance with `bun run lint`
+- Always verify style compliance with `bun run lint` which will auto-fix eslint style errors when it can.
 
 ## Testing Instructions
 - Run `bun run test` for a full set of linting and tests.
@@ -65,7 +61,6 @@ See [](TESTING.md)
 - The commit should pass all tests before you merge.
 - Fix any test or type errors until the whole suite is green.
 - After moving files or changing imports, run linting and type-checking again.
-- Add or update tests for the code you change, even if nobody asked.
 - You can check for SST diagnostics using `bun run sst-diagnostics` and astro problems with `bun run astro-check`
 
 ## PR instructions

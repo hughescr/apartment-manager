@@ -2,6 +2,60 @@
 
 This document outlines the testing strategy for the apartment manager application. The goal is to ensure the reliability, correctness, and performance of all application components, from the data layer to the user interface.
 
+## Beware of mocking
+
+When mocking for tests, remember to only insert the mocks in a `beforeEach()` and be sure to remove them in `afterEach()` so that mocks for one test don't pollute other tests. Test MUST always be idempotent.
+In particular, be aware of the problems with `mock.module()` described here: https://github.com/oven-sh/bun/issues/7823
+It is best to avoid `mock.module()` if possible because of this issue, but if you can't avoid `mock.module()` then use this workaround:
+
+```typescript
+/**
+ * When setting up a test that will mock a module, the block should add this:
+ * const moduleMocker = new ModuleMocker();
+ *
+ * afterEach(() => {
+ *   moduleMocker.clear();
+ * });
+ *
+ * When a test mocks a module, it should do it this way:
+ *
+ * beforeEach(() => {
+ *     await moduleMocker.mock('@/services/token.ts', () => ({
+ *         getBucketToken: mock(() => {
+ *             throw new Error('Unexpected error');
+ *         }),
+ *     });
+ * });
+ *
+ */
+export class ModuleMocker {
+  private mocks: MockResult[] = [];
+
+  async mock(modulePath: string, renderMocks: () => Record<string, any>) {
+    let original = {
+      ...(await import(modulePath))
+    };
+    let mocks = renderMocks();
+    let result = {
+      ...original,
+      ...mocks,
+    };
+    mock.module(modulePath, () => result);
+
+    this.mocks.push({
+      clear: () => {
+        mock.module(modulePath, () => original);
+      },
+    });
+  }
+
+  clear() {
+    this.mocks.forEach(mockResult => mockResult.clear());
+    this.mocks = [];
+  }
+}
+```
+
 ## 1. Test File Organization
 
 All test files will be located in a top-level `tests/` directory. The structure within this directory will mirror the application's source code structure.
@@ -22,7 +76,7 @@ This organization keeps tests separate from the application code but maintains a
 
 ## 2. Data Layer (`data/`)
 
-The data layer is responsible for all interactions with the DynamoDB database. Testing this layer is critical to ensure data integrity.
+The data layer is responsible for all interactions with the DynamoDB database. Testing this layer is critical to ensure data integrity. To test this layer, we will need to mock `dynamodb-toolbox`.
 
 ### What to Test:
 
@@ -44,7 +98,7 @@ The data layer is responsible for all interactions with the DynamoDB database. T
 
 ## 3. API Layer (`api/`)
 
-The API layer provides HTTP endpoints for the frontend to interact with the backend.
+The API layer provides HTTP endpoints for the frontend to interact with the backend. To test this layer, we will need to mock the data layer.
 
 ### What to Test:
 
@@ -67,7 +121,7 @@ The API layer provides HTTP endpoints for the frontend to interact with the back
 
 ## 4. Astro Frontend (`astro-src/`)
 
-The frontend is responsible for rendering the user interface and interacting with the API.
+The frontend is responsible for rendering the user interface and interacting with the API. To test this layer, we will need to mock the api layer.
 
 ### What to Test:
 
@@ -113,10 +167,8 @@ The SST configuration defines the application's infrastructure.
 - **Tool:** Use `sst-diagnostics` to check for configuration issues.
 - **Strategy:**
     - Run `bun run sst-diagnostics` as part of the CI/CD pipeline.
-    - For more in-depth testing, you can write tests that deploy the stack to a dedicated test environment and then use the AWS SDK to verify that the resources have been created with the correct configuration.
 
 ## 6. Overall Test Execution
 
 - **Command:** A single command, `bun run test`, should run all relevant tests (linting, unit, integration).
-- **CI/CD:** All tests should be run automatically in a CI/CD pipeline (e.g., GitHub Actions) on every push and pull request to the main branch.
-- **Test Coverage:** Aim for high test coverage across all layers of the application. Tools like `c8` or `vitest`'s built-in coverage can be used to measure this.
+- **Test Coverage:** Aim for high test coverage across all layers of the application.

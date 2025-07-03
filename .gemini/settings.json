@@ -1,6 +1,11 @@
 {
     "contextFileName": "AGENTS.md",
     "mcpServers": {
+        "eslint": {
+            "command": "bunx",
+            "args": ["--bun", "@eslint/mcp@latest"],
+            "trust": true
+        },
         "tmux": {
             "command": "bunx",
             "args": ["--bun", "tmux-mcp-server@latest"],
