@@ -24,7 +24,7 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
     },
 };
 
-function findRoute(rawPath: string): string | undefined {
+export function findRoute(rawPath: string): string | undefined {
     for(const routeKey of keys(routes)) {
         const routeParts = split(routeKey, '/');
         const pathParts = split(rawPath, '/');
@@ -39,7 +39,7 @@ function findRoute(rawPath: string): string | undefined {
     return undefined;
 }
 
-function extractPathParameters(routeKey: string, rawPath: string): Record<string, string> {
+export function extractPathParameters(routeKey: string, rawPath: string): Record<string, string> {
     const params: Record<string, string> = {};
     const routeParts = split(routeKey, '/');
     const pathParts = split(rawPath, '/');
