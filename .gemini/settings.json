@@ -1,0 +1,19 @@
+{
+    "contextFileName": "AGENTS.md",
+    "mcpServers": {
+        "tmux": {
+            "command": "bunx",
+            "args": ["--bun", "tmux-mcp-server@latest"],
+            "trust": true
+        },
+        "playwright": {
+            "command": "bunx",
+            "args": [
+                "--bun",
+                "@playwright/mcp@latest",
+                "--browser", "webkit"
+            ],
+            "trust": true
+        }
+    }
+}
