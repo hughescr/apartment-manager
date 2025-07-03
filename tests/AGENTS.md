@@ -10,49 +10,53 @@ It is best to avoid `mock.module()` if possible because of this issue, but if yo
 
 ```typescript
 /**
- * When setting up a test that will mock a module, the block should add this:
- * const moduleMocker = new ModuleMocker();
- *
- * afterEach(() => {
- *   moduleMocker.clear();
- * });
- *
- * When a test mocks a module, it should do it this way:
- *
- * beforeEach(() => {
- *     await moduleMocker.mock('@/services/token.ts', () => ({
- *         getBucketToken: mock(() => {
- *             throw new Error('Unexpected error');
- *         }),
- *     });
- * });
- *
- */
+* When setting up a test that will mock a module, the block should add this:
+* const moduleMocker = new ModuleMocker();
+*
+* afterEach(() => {
+*   moduleMocker.clear();
+* });
+*
+* When a test mocks a module, it should do it this way:
+*
+* beforeEach(() => {
+*     await moduleMocker.mock('@/services/token.ts', () => ({
+*         getBucketToken: mock(() => {
+*             throw new Error('Unexpected error');
+*         }),
+*     });
+* });
+*
+*/
+interface MockResult {
+    clear: () => void
+}
+
 export class ModuleMocker {
-  private mocks: MockResult[] = [];
+    private mocks: MockResult[] = [];
 
-  async mock(modulePath: string, renderMocks: () => Record<string, any>) {
-    let original = {
-      ...(await import(modulePath))
-    };
-    let mocks = renderMocks();
-    let result = {
-      ...original,
-      ...mocks,
-    };
-    mock.module(modulePath, () => result);
+    async mock(modulePath: string, renderMocks: () => Record<string, unknown>) {
+        const original = {
+            ...(await import(modulePath))
+        };
+        const mocks = renderMocks();
+        const result = {
+            ...original,
+            ...mocks,
+        };
+        mock.module(modulePath, () => result);
 
-    this.mocks.push({
-      clear: () => {
-        mock.module(modulePath, () => original);
-      },
-    });
-  }
+        this.mocks.push({
+            clear: () => {
+                mock.module(modulePath, () => original);
+            },
+        });
+    }
 
-  clear() {
-    this.mocks.forEach(mockResult => mockResult.clear());
-    this.mocks = [];
-  }
+    clear() {
+        forEach(this.mocks, mockResult => mockResult.clear());
+        this.mocks = [];
+    }
 }
 ```
 
