@@ -73,11 +73,13 @@ Title format: [Codex] <Title>
 
 ## Running for UI testing
 
-If you want to start up the app locally so that you can use Playwright tools for UI testing, you can do so using the command `bun dev-console`. This process will not exit - it stays alive as long as the server is still running, and needs a SIGINT or CTRL-C to shut it down, so it's best to run it in a tmux or something.
+If you want to start up the app locally so that you can use Playwright tools for UI testing, you can do so using the command `bun dev-console`. This process will not exit - it stays alive as long as the server is still running, and needs a SIGINT or CTRL-C to shut it down, so it's best to run it in a tmux session using MCP server tools. Use a session called `apartment-manager-mcp-workspace`.
 
 To start the `bun dev-console` in a tmux session, use the following commands:
-1. Create a new workspace: `create_workspace(workspace_id="dev-console-workspace")`
-2. Start the dev-console: `execute_command(command="bun dev-console", description="Starting Astro development server", workspace_id="dev-console-workspace")`
-3. Monitor the output: `get_output(window_name="exec", workspace_id="dev-console-workspace")`
+1. Create a new workspace: `create_workspace(workspace_id="apartment-manager-mcp-workspace")`
+2. Start the dev-console: `start_process(command="bun dev-console", workspace_id="apartment-manager-mcp-workspace", window="exec")`
+3. Monitor the output: `get_output(workspace_id="apartment-manager-mcp-workspace", window_name="exec")`
 
 Once the server is running, you can access the Astro URL (usually `http://localhost:4321/`) to exercise the UI using Playwright tools like `browser_navigate`.
+
+You can terminate the server by using `stop_process(workspace_id="apartment-manager-mcp-workspace")`
