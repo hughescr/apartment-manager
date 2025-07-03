@@ -9,17 +9,18 @@
   "author": "Craig R. Hughes <craig.git@rungie.com>",
   "license": "Apache-2.0",
   "scripts": {
-    "dev-console": "op run --env-file=.env -- bunx sst dev --mode=mono",
+    "dev-console": "if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst dev --mode=mono; else bunx sst dev --mode=mono; fi",
     "coverage": "bun test && genhtml coverage/lcov.info --output-directory coverage --header-title 'Coverage report' --footer \"$(git id)\" --legend --sort --show-owners all --annotate-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitblame.pm\" --version-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/gitversion.pm\" --ignore-errors version,version --ignore-errors package,package --hierarchical --criteria-script \"$(brew --prefix)/Cellar/lcov/*/share/lcov/support-scripts/criteria.pm\" --show-navigation --show-proportion --num-spaces 4 --function-coverage --branch-coverage ; open coverage/index.html",
-    "sst-dev": "op run --env-file=.env -- bunx sst dev",
+    "sst-dev": "if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst dev; else bunx sst dev; fi",
     "dev": "bunx astro dev",
     "lint": "eslint --fix",
     "package-check": "bunx npm-check -i bun:test",
     "postversion": "git commit -m \"Bump package version to $npm_package_version\" package.json; git flow release start $npm_package_version; git flow release finish -m $npm_package_version $npm_package_version; git checkout develop; git merge master",
-    "test": "eslint --fix;tsc;op run --env-file=.env -- bunx sst shell bun test;bunx astro check",
-    "test-only": "op run --env-file=.env -- bunx sst shell -- bun test",
+    "test": "eslint --fix;tsc;if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell bun test;bunx astro check; else bunx sst shell bun test; fi;bunx astro check",
+    "test-only": "if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell -- bun test; else bunx sst shell -- bun test; fi",
     "astro-check": "bunx astro check",
-    "sst-diagnostics": "op run --env-file=.env -- bunx sst diagnostics --print-logs"
+    "sst-diagnostics": "if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst diagnostics --print-logs; else bunx sst diagnostics --print-logs; fi",
+    "gemini": "op run --env-file=.env -- tmux -CC new -A -n Gemini -s Gemini bunx @google/gemini-cli@latest"
   },
   "devDependencies": {
     "@hughescr/eslint-config-default": "^3.0.4",
