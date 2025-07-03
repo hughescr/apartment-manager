@@ -1,6 +1,5 @@
 export interface BuildingData {
     buildingID: string
-    unitID: 'BUILDING'
     street?: string
     city?: string
     state?: string

@@ -7,20 +7,22 @@ import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
 import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
+import { map, omit } from 'lodash';
+
 import  { logger } from '@hughescr/logger';
 
 export async function getBuildings() {
     const { Items } = await ApartmentTable.build(ScanCommand)
         .entities(Building)
         .send();
-    return Items as BuildingData[];
+    return map(Items, item => omit(item, 'unitID')) as BuildingData[];
 }
 
 export async function getBuilding(buildingID: string) {
     const { Item } = await Building.build(GetItemCommand)
         .key({ buildingID, unitID: 'BUILDING' })
         .send();
-    return Item as BuildingData;
+    return Item === undefined ? undefined : omit(Item, 'unitID') as BuildingData;
 }
 
 export async function createBuilding(building: BuildingData) {
@@ -33,7 +35,7 @@ export async function createBuilding(building: BuildingData) {
             returnValuesOnConditionFalse: 'ALL_OLD',
         })
         .send();
-    return Attributes || building as BuildingData;
+    return omit(Attributes, 'unitID') || building as BuildingData;
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
@@ -41,7 +43,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
         .item({ ...updates, buildingID, unitID: 'BUILDING' })
         .options({ returnValues: 'ALL_NEW' })
         .send();
-    return Attributes as BuildingData;
+    return omit(Attributes, 'unitID') as BuildingData;
 }
 
 export async function deleteBuilding(buildingID: string): Promise<boolean> {
