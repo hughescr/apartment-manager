@@ -1,58 +1,7 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
-
-import { forEach } from 'lodash';
-
-/**
-* When setting up a test that will mock a module, the block should add this:
-* const moduleMocker = new ModuleMocker();
-*
-* afterEach(() => {
-*   moduleMocker.clear();
-* });
-*
-* When a test mocks a module, it should do it this way:
-*
-* beforeEach(() => {
-*     await moduleMocker.mock('@/services/token.ts', () => ({
-*         getBucketToken: mock(() => {
-*             throw new Error('Unexpected error');
-*         }),
-*     });
-* });
-*
-*/
-interface MockResult {
-    clear: () => void
-}
-
-export class ModuleMocker {
-    private mocks: MockResult[] = [];
-
-    async mock(modulePath: string, renderMocks: () => Record<string, unknown>) {
-        const original = {
-            ...(await import(modulePath))
-        };
-        const mocks = renderMocks();
-        const result = {
-            ...original,
-            ...mocks,
-        };
-        mock.module(modulePath, () => result);
-
-        this.mocks.push({
-            clear: () => {
-                mock.module(modulePath, () => original);
-            },
-        });
-    }
-
-    clear() {
-        forEach(this.mocks, mockResult => mockResult.clear());
-        this.mocks = [];
-    }
-}
+import { ModuleMocker } from '../ModuleMocker';
 
 const mockSend = mock();
 
@@ -71,7 +20,7 @@ describe('Unit Data Layer', () => {
             },
         }));
 
-        await moduleMocker.mock('../../data/model', () => ({
+        await moduleMocker.mock('../data/model', () => ({
             ApartmentTable: {
                 build: mock((command) => {
                     if(command === QueryCommand) {
