@@ -137,4 +137,14 @@ describe('Building Data Layer', () => {
         const result = await createBuilding(testBuilding);
         expect(result).toEqual({ ...testBuilding });
     });
+
+    it('should handle error during building deletion', async () => {
+        expect.assertions(2);
+        const { logger } = await import('@hughescr/logger');
+        mockSend.mockRejectedValueOnce(new Error('DynamoDB error'));
+
+        const success = await deleteBuilding(testBuilding.buildingID);
+        expect(success).toBeFalse();
+        expect(logger.error).toHaveBeenCalledWith('Error deleting building:', expect.any(Error));
+    });
 });

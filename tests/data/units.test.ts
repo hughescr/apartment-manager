@@ -140,4 +140,14 @@ describe('Unit Data Layer', () => {
         const result = await createUnit(testUnit);
         expect(result).toEqual(testUnit);
     });
+
+    it('should handle error during unit deletion', async () => {
+        expect.assertions(2);
+        const { logger } = await import('@hughescr/logger');
+        mockSend.mockRejectedValueOnce(new Error('DynamoDB error'));
+
+        const success = await deleteUnit(testUnit.buildingID, testUnit.unitID);
+        expect(success).toBeFalse();
+        expect(logger.error).toHaveBeenCalledWith('Error deleting unit:', expect.any(Error));
+    });
 });
