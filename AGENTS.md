@@ -56,9 +56,10 @@ The Astro frontend is responsible for rendering the user interface. The frontend
 - Always verify style compliance with `bun run lint` which will auto-fix eslint style errors when it can.
 
 ## Testing Instructions
-- Run `bun run test` for a full set of linting and tests.
-- If you want to just run the bun tests without linting etc, then you need to remember to run under sst which means using the command `bun test-only` so that secrets come from 1Password and the tests are run under `sst shell`
-- The commit should pass all tests before you merge.
+- Run `bun run test` to run all the tests - do not just use `bun test` as we need to set up various things for that to work.
+  - You can specify just some tests to run by passing the test filenames as arguments to `bun run test` eg `bun run test tests/example.test.ts tests/other-file.test.ts`
+- Run `bun run full-test` to include eslint, tsc, and astro checks as well as all the tests (this is slower than just tests).
+- Make sure your new code passes all test and is fully covered.
 - Fix any test or type errors until the whole suite is green.
 - After moving files or changing imports, run linting and type-checking again.
 - You can check for SST diagnostics using `bun run sst-diagnostics` and astro problems with `bun run astro-check`

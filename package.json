@@ -15,8 +15,8 @@
     "lint": "eslint --fix",
     "package-check": "bunx npm-check -i bun:test",
     "postversion": "git commit -m \"Bump package version to $npm_package_version\" package.json; git flow release start $npm_package_version; git flow release finish -m $npm_package_version $npm_package_version; git checkout develop; git merge master",
-    "test": "sh -c 'eslint --fix;tsc;if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell bun test \"$@\"; else bunx sst shell bun test \"$@\"; fi;bunx astro check' _",
-    "test-only": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell -- bun test \"$@\"; else bunx sst shell -- bun test \"$@\"; fi' _",
+    "full-test": "sh -c 'eslint --fix;tsc;if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell bun test \"$@\"; else bunx sst shell bun test \"$@\"; fi;bunx astro check' _",
+    "test": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell -- bun test \"$@\"; else bunx sst shell -- bun test \"$@\"; fi' _",
     "astro-check": "bunx astro check",
     "sst-diagnostics": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst diagnostics --print-logs \"$@\"; else bunx sst diagnostics --print-logs \"$@\"; fi' _",
     "gemini": "op run --env-file=.env -- tmux -CC new -A -n Gemini -s Gemini bunx @google/gemini-cli@latest"
