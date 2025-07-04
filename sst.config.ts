@@ -34,12 +34,10 @@ export default $config({
         });
 
         /* ────────────── Resources ────────────── */
-        const { router } =  await import('./sst/router');
         const { site } = await import('./sst/astro');
         const { api } = await import('./sst/api');
 
         return {
-            router: router.url,
             site: site.url,
             api: api.url,
         };
