@@ -1,0 +1,11 @@
+{
+    "name": "tmux-mcp-server",
+    "version": "1.0.0",
+    "mcpServers": {
+        "tmux": {
+            "command": "bunx",
+            "args": ["--bun", "tmux-mcp-server@latest"],
+            "trust": true
+        }
+    }
+}

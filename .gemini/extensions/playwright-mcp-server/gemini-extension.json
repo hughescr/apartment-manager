@@ -1,0 +1,15 @@
+{
+    "name": "playwright-mcp-server",
+    "version": "1.0.0",
+    "mcpServers": {
+        "playwright": {
+            "command": "bunx",
+            "args": [
+                "--bun",
+                "@playwright/mcp@latest",
+                "--browser", "webkit"
+            ],
+            "trust": true
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "eslint-mcp-server",
+    "version": "1.0.0",
+    "mcpServers": {
+        "eslint": {
+            "command": "bunx",
+            "args": ["--bun", "@eslint/mcp@latest"],
+            "trust": true
+        }
+    }
+}
