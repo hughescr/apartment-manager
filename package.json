@@ -19,7 +19,7 @@
     "test": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell -- bun test \"$@\"; else bunx sst shell -- bun test \"$@\"; fi' _",
     "astro-check": "bunx astro check",
     "sst-diagnostics": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst diagnostics --print-logs \"$@\"; else bunx sst diagnostics --print-logs \"$@\"; fi' _",
-    "gemini": "op run --env-file=.env -- tmux -CC new -A -n Gemini -s Gemini bunx @google/gemini-cli@latest"
+    "gemini": "op run --env-file=.env -- tmux -CC new -A -n Gemini -s apartment-manager-mcp-workspace bunx @google/gemini-cli@latest"
   },
   "devDependencies": {
     "@hughescr/eslint-config-default": "^3.0.4",

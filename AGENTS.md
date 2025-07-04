@@ -69,7 +69,8 @@ Title format: [Codex] <Title>
 
 ## Running for UI testing
 
-If you want to start up the app locally so that you can use Playwright tools for UI testing, you can do so using the command `bun dev-console`. This process will not exit - it stays alive as long as the server is still running, and needs a SIGINT or CTRL-C to shut it down, so it's best to run it in a tmux session using MCP server tools. Use a session called `apartment-manager-mcp-workspace`.
+If you want to start up the app locally, you can do so using the command `bun dev-console`.
+This process will not exit - it stays alive as long as the server is still running, and needs a SIGINT or CTRL-C to shut it down, so you must start it in a tmux session using MCP server tools. Use a session called `apartment-manager-mcp-workspace`.
 
 To start the `bun dev-console` in a tmux session, use the following commands:
 1. Create a new workspace: `create_workspace(workspace_id="apartment-manager-mcp-workspace")`
