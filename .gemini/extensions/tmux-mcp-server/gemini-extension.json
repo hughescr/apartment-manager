@@ -4,7 +4,7 @@
     "mcpServers": {
         "tmux": {
             "command": "bunx",
-            "args": ["--bun", "tmux-mcp-server@latest"],
+            "args": ["--bun", "github:hughescr/persistent-shell-mcp"],
             "trust": true
         }
     }
