@@ -161,3 +161,6 @@ __pycache__
 .astro
 site-build/
 sst-env.d.ts
+
+# Ignore local CLAUDE.md memories
+CLAUDE.local.md
