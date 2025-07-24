@@ -1,0 +1,18 @@
+{
+    "permissions": {
+        "allow": [
+            "mcp__eslint__lint"
+        ],
+        "deny": []
+    },
+
+    "hooks": {
+        "post_apply": [
+            {
+                "id": "eslint-autofix",
+                "description": "Auto-fix style issues after Gemini applies a patch",
+                "command": ["mcp", "eslint", "lint", "--fix"]
+            }
+        ]
+    }
+}
