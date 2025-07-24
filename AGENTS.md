@@ -7,8 +7,8 @@ This document serves as the **single source of truth** for any coding agent work
 Complete these tasks in order, following the detailed instructions in `apartment_plan.md`:
 
 ### Step 1 – Research & confirm required fields
-- [ ] Create field mapping JSON (see apartment_plan.md §3 Step 1)
-- [ ] Define enumerations and defaults in types.ts
+- [ ] Define enumerations and defaults in types.ts (establish unified data model foundation)
+- [ ] Create field mapping JSON to validate type coverage and drive automation (see apartment_plan.md §3 Step 1)
 
 ### Step 2 – Extend the data model  
 - [ ] Modify astro-src/types.ts with new BuildingData and UnitData interfaces
