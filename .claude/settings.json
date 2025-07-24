@@ -8,7 +8,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "mcp eslint lint --fix $CLAUDE_FILE_PATHS"
+                        "command": "bunx eslint --fix $CLAUDE_FILE_PATHS"
                     }
                 ]
             }
