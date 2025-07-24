@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "eslint": {
+            "command": "bunx",
+            "args": ["--bun", "@eslint/mcp@latest"]
+        },
+        "tmux": {
+            "command": "bunx",
+            "args": ["--bun", "github:hughescr/persistent-shell-mcp"]
+        }
+    }
+}
