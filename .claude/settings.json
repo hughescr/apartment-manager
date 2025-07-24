@@ -1,4 +1,20 @@
 {
+    "enableAllProjectMcpServers": true,
+
+    "hooks": {
+        "PostToolUse": [
+            {
+                "matcher": "Write|Edit|MultiEdit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "mcp eslint lint --fix $CLAUDE_FILE_PATHS"
+                    }
+                ]
+            }
+        ]
+    },
+
     "permissions": {
         "allow": [
             "mcp__playwright__browser_navigate",
@@ -8,14 +24,5 @@
             "mcp__eslint__lint"
         ],
         "deny": []
-    },
-    "hooks": {
-        "pre_message": [
-            {
-                "id": "eslint-autofix",
-                "description": "Run ESLint auto-fix on all modified *.ts/astro files before Claude drafts a commit message.",
-                "command": ["mcp", "eslint", "lint", "--fix"]
-            }
-        ]
     }
 }
