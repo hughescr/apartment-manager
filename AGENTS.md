@@ -1,78 +1,130 @@
 # Coding Agents Guide for Apartment Manager
 
-This document serves as the **single source of truth** for any coding agent working on the **Apartment Manager** project. Follow the detailed implementation steps outlined in `apartment_plan.md`.
+## Project Overview
 
-## Implementation Checklist
+This project extends an existing apartment management web application to support syncing listings to third-party rental sites (Apartments.com and Zillow Rental Manager).
 
-Complete these tasks in order, following the detailed instructions in `apartment_plan.md`:
+### Core Technologies
+- **Frontend**: Astro with Alpine.js for interactivity
+- **Infrastructure**: SST (Serverless Stack) for AWS deployment
+- **Database**: DynamoDB for structured data, S3 for media storage
+- **Styling**: Tailwind CSS with DaisyUI components
+- **Runtime**: TypeScript with Bun runtime
+- **Automation**: Playwright for browser automation
 
-### Step 1 – Define unified data model and field mapping
-- [ ] Define enumerations and defaults in types.ts (establish data model foundation)
-- [ ] Create field mapping JSON to validate type coverage and drive automation
-- [ ] Modify astro-src/types.ts with new BuildingData, UnitTypeData, and UnitData interfaces
-- [ ] Update data/model.ts DynamoDB schema for core tables
+### AWS Services Used
+- Lambda functions for API endpoints and sync operations
+- CloudFront for content delivery
+- DynamoDB for data persistence
+- Secrets Manager for credential storage
+- EventBridge for scheduled syncs
+- SNS for error notifications
 
-### Step 2 – Build core data layer with basic UI
-- [ ] Update data layer functions in data/buildings.ts and data/units.ts with unit tests
-- [ ] Expand building creation/edit pages with essential property-level fields
-- [ ] Create unit types (models) management UI components
-- [ ] Modify unit components to include model relationships and essential fields
+The application is designed to stay within AWS free tier limits for managing a small number of buildings and units.
 
-### Step 3 – Implement and test site mapping logic
-- [ ] Create src/mappers/siteMapper.ts with mapping functions
-- [ ] Implement override logic and sensible defaults (model → unit inheritance)
-- [ ] Write comprehensive unit tests for mapping functions with various data combinations
-- [ ] Test mapping completeness against all three levels (building/model/unit)
+## Architecture Overview
 
-### Step 4 – Build site automation (core functionality)
-- [ ] Set up Playwright dependency and basic browser automation framework
-- [ ] Implement Apartments.com automation (building sync, then model sync, then unit sync)
-- [ ] Implement Zillow automation (flat unit listings with building data inheritance)
-- [ ] Add listing ID capture and basic error handling
-- [ ] Create end-to-end tests with mock/sandbox accounts
+### Three-Layer Architecture
 
-### Step 5 – Add sync infrastructure and credentials management
-- [ ] Add SST definitions for SiteCredentials and SyncStatus tables
-- [ ] Implement data/credentials.ts and data/syncStatus.ts with encryption
-- [ ] Create syncCoordinator Lambda function with proper permissions
-- [ ] Write API endpoints for credentials and sync management
-- [ ] Update api/index.ts with new routes and handlers
+1. **Data Layer** (`data/`)
+   - Handles all database interactions
+   - Provides CRUD operations for buildings, units, and unit types
+   - Shared between frontend and API
+   - New modules: `unitTypes.ts`, `credentials.ts`, `syncStatus.ts`
 
-### Step 6 – Build sync orchestration and scheduling
-- [ ] Implement sync coordination logic (building → models → units order)
-- [ ] Add EventBridge scheduling for automated syncs
-- [ ] Integrate comprehensive error handling and recovery
-- [ ] Add sync status tracking and updates
+2. **API Layer** (`api/`)
+   - HTTP endpoints for client-side operations
+   - Uses data layer for database access
+   - New endpoints for credentials and sync management
 
-### Step 7 – Complete UI with sync management
-- [ ] Create settings page for site credentials management
-- [ ] Add sync status display and manual sync buttons to unit pages
-- [ ] Implement real-time sync progress and notifications
-- [ ] Add bulk sync operations for multiple units
+3. **Frontend** (`astro-src/`)
+   - Server-side rendering with Astro
+   - Client-side interactivity with Alpine.js
+   - UI components from DaisyUI
+   - New pages for settings and sync management
 
-### Step 8 – Add monitoring and observability
-- [ ] Integrate @hughescr/logger in all Lambdas with structured logging
-- [ ] Set up error notifications (SNS/email) for sync failures
-- [ ] Create sync status dashboard and reporting in UI
-- [ ] Add metrics and performance monitoring
+### New Components for Multi-Site Integration
 
-### Step 9 – Testing and validation
-- [ ] Write comprehensive integration tests for full sync workflows
-- [ ] Test error scenarios and recovery mechanisms
-- [ ] Validate against both sites with real test accounts
-- [ ] Performance test with multiple buildings/units
+4. **Automation Layer** (`src/automation/`)
+   - Playwright-based browser automation
+   - Site-specific modules for Apartments.com and Zillow
+   - Error handling and screenshot capture
 
-### Step 10 – Documentation and deployment readiness
-- [ ] Update/create INTEGRATION.md with setup and usage documentation
-- [ ] Ensure ESLint compliance and all tests pass (bun run full-test)
-- [ ] Review AWS costs and optimize for free tier compliance
-- [ ] Create deployment checklist and rollback procedures
+5. **Mapping Layer** (`src/mappers/`)
+   - Transforms unified data model to site-specific formats
+   - Handles inheritance (model → unit) and defaults
 
 ## Development Guidelines
 
-- **Test-driven development**: Write tests before implementing features
-- **Security first**: Never commit credentials, use Secrets Manager
-- **Follow existing patterns**: Mimic code style and use established libraries
-- **Legal compliance**: Respect Terms of Service for third-party sites
+### Code Style
+- TypeScript with strict type checking
+- ES modules with `"type": "module"` in `package.json`
+- Follow existing code patterns and ESLint rules
+- ESLint configuration from `@hughescr/eslint-config-default`
 
-Refer to `apartment_plan.md` for detailed implementation instructions for each step.
+### Testing Requirements
+- **Test-driven development**: Write tests before implementing features
+- Unit tests for all data layer functions
+- Integration tests for API endpoints
+- UI tests for Astro components
+- Mock browser tests for automation modules
+- **Never proceed to next implementation step without passing tests**
+
+### Security Guidelines
+- Never commit credentials to the repository
+- Use AWS Secrets Manager for all sensitive data
+- Encrypt credentials at rest in DynamoDB
+- Validate all user inputs
+- Secure API endpoints with proper authentication
+
+### When to Use Each Layer
+- **Data Layer**: Database operations from frontend or API
+- **API**: Client-side actions without page reload
+- **Frontend**: UI rendering and server-side data fetching
+- **Automation**: Browser-based sync operations
+- **Mapping**: Data transformation between systems
+
+## Running the Project
+
+### Development Commands
+```bash
+# Install dependencies
+bun install
+
+# Run development server
+bun run dev
+
+# Run tests
+bun test
+
+# Run full test suite (including linting)
+bun run full-test
+
+# Deploy to AWS
+bunx sst deploy
+```
+
+### Environment Setup
+1. Configure AWS credentials for SST
+2. Set up local DynamoDB for testing (optional)
+3. Configure VS Code with recommended extensions
+
+## Implementation Plan
+
+For the detailed step-by-step implementation plan, including architecture details and task checklists, see **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)**.
+
+## Legal Compliance
+
+- Respect Terms of Service for third-party sites
+- Document any potential compliance risks
+- Consider using official APIs if available
+- Provide clear disclaimers to users
+
+## Resources
+
+- [Astro Documentation](https://docs.astro.build/)
+- [SST Documentation](https://sst.dev/docs/)
+- [Alpine.js Documentation](https://alpinejs.dev/start-here)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs/)
+- [DaisyUI Components](https://daisyui.com/components/)
+- [Playwright Documentation](https://playwright.dev/docs/intro)
