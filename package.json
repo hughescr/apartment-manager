@@ -9,17 +9,17 @@
   "author": "Craig R. Hughes <craig.git@rungie.com>",
   "license": "Apache-2.0",
   "scripts": {
-    "dev-console": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst dev --mode=mono \"$@\"; else bunx sst dev --mode=mono  \"$@\"; fi' _",
-    "sst-dev": "if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst dev; else bunx sst dev; fi",
+    "dev-console": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst dev --mode=mono \"$@\"; else bunx sst dev --mode=mono  \"$@\"; fi' _",
+    "sst-dev": "if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst dev; else bunx sst dev; fi",
     "dev": "bunx astro dev",
     "lint": "eslint --fix",
     "package-check": "bunx npm-check -i bun:test",
     "postversion": "git commit -m \"Bump package version to $npm_package_version\" package.json; git flow release start $npm_package_version; git flow release finish -m $npm_package_version $npm_package_version; git checkout develop; git merge master",
-    "full-test": "sh -c 'eslint --fix;tsc;if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell bun test \"$@\"; else bunx sst shell bun test \"$@\"; fi;bunx astro check' _",
-    "test": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst shell -- bun test \"$@\"; else bunx sst shell -- bun test \"$@\"; fi' _",
+    "full-test": "sh -c 'eslint --fix;tsc;if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst shell bun test \"$@\"; else bunx sst shell bun test \"$@\"; fi;bunx astro check' _",
+    "test": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst shell -- bun test \"$@\"; else bunx sst shell -- bun test \"$@\"; fi' _",
     "astro-check": "bunx astro check",
-    "sst-diagnostics": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env -- bunx sst diagnostics --print-logs \"$@\"; else bunx sst diagnostics --print-logs \"$@\"; fi' _",
-    "gemini": "op run --env-file=.env -- tmux -CC new -A -n Gemini -s apartment-manager-mcp-workspace bunx @google/gemini-cli@latest"
+    "sst-diagnostics": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst diagnostics --print-logs \"$@\"; else bunx sst diagnostics --print-logs \"$@\"; fi' _",
+    "gemini": "op run --env-file=.env.op -- tmux -CC new -A -n Gemini -s apartment-manager-mcp-workspace bunx @google/gemini-cli@latest"
   },
   "devDependencies": {
     "@hughescr/eslint-config-default": "^3.0.4",
