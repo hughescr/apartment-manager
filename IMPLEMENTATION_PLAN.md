@@ -131,11 +131,11 @@ Our tool will leverage the model/unit hierarchy internally and flatten data for 
 
 ### Step 1 – Define Unified Data Model and Field Mapping
 
-1. **Define enumerations and defaults** in `types.ts`
+1. **Define enumerations and defaults** in `src/types/index.ts`
    - Property types, utilities, fee types, pet types
    - Sensible defaults to reduce data entry
 
-2. **Create field mapping JSON**
+2. **Create field mapping JSON** in `src/field-mappings.json`
    ```json
    {
      "beds": { 
@@ -146,7 +146,7 @@ Our tool will leverage the model/unit hierarchy internally and flatten data for 
    }
    ```
 
-3. **Add UnitTypeData interface** in `astro-src/types.ts`
+3. **Add UnitTypeData interface** in `src/types/index.ts`
 
 4. **Extend BuildingData and UnitData interfaces** with all new fields
 
@@ -260,12 +260,12 @@ Our tool will leverage the model/unit hierarchy internally and flatten data for 
 Track the completion status of each implementation step:
 
 ### Step 1 – Define Unified Data Model and Field Mapping
-- [ ] Define enumerations and defaults in types.ts
-- [ ] Create field mapping JSON
-- [ ] Add UnitTypeData interface in astro-src/types.ts
-- [ ] Extend BuildingData and UnitData interfaces
-- [ ] Write validation tests
-- [ ] **Gate passed**: ❌
+- [x] Define enumerations and defaults in types.ts
+- [x] Create field mapping JSON
+- [x] Add UnitTypeData interface in src/types/index.ts
+- [x] Extend BuildingData and UnitData interfaces
+- [x] Write validation tests
+- [x] **Gate passed**: ✅
 
 ### Step 2 – Extend DynamoDB Schemas and Data Layer
 - [ ] Update Buildings schema in data/model.ts
@@ -354,7 +354,7 @@ Track the completion status of each implementation step:
 - [ ] Review AWS costs
 - [ ] **Gate passed**: ❌
 
-### Overall Progress: 0/10 Steps Complete
+### Overall Progress: 1/10 Steps Complete
 
 ## 6. Security and Compliance Considerations
 
