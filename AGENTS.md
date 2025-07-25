@@ -61,6 +61,10 @@ The application is designed to stay within AWS free tier limits for managing a s
 - ES modules with `"type": "module"` in `package.json`
 - Follow existing code patterns and ESLint rules
 - ESLint configuration from `@hughescr/eslint-config-default`
+- **NEVER disable TypeScript errors** with `@ts-ignore` or `@ts-expect-error`
+  - Always fix the underlying type issues properly
+  - If types need conversion, do it explicitly
+  - If third-party library types are incorrect, create proper type definitions
 
 ### Testing Requirements
 - **Test-driven development**: Write tests before implementing features

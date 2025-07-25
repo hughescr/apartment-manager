@@ -268,14 +268,14 @@ Track the completion status of each implementation step:
 - [x] **Gate passed**: ✅
 
 ### Step 2 – Extend DynamoDB Schemas and Data Layer
-- [ ] Update Buildings schema in data/model.ts
-- [ ] Create UnitTypes schema
-- [ ] Update Units schema with modelID and new fields
-- [ ] Update data layer functions in data/buildings.ts
-- [ ] Update data layer functions in data/units.ts
-- [ ] Create data/unitTypes.ts
-- [ ] Write comprehensive tests
-- [ ] **Gate passed**: ❌
+- [x] Update Buildings schema in data/model.ts
+- [x] Create UnitTypes schema
+- [x] Update Units schema with modelID and new fields
+- [x] Update data layer functions in data/buildings.ts
+- [x] Update data layer functions in data/units.ts
+- [x] Create data/unitTypes.ts
+- [x] Write comprehensive tests
+- [x] **Gate passed**: ✅
 
 ### Step 3 – Build Core UI Components
 - [ ] Expand building UI with all property fields
@@ -354,7 +354,7 @@ Track the completion status of each implementation step:
 - [ ] Review AWS costs
 - [ ] **Gate passed**: ❌
 
-### Overall Progress: 1/10 Steps Complete
+### Overall Progress: 2/10 Steps Complete
 
 ## 6. Security and Compliance Considerations
 

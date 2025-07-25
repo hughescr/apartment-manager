@@ -4,6 +4,9 @@ import { item } from 'dynamodb-toolbox/schema/item';
 import { string } from 'dynamodb-toolbox/schema/string';
 import { number } from 'dynamodb-toolbox/schema/number';
 import { boolean } from 'dynamodb-toolbox/schema/boolean';
+import { list } from 'dynamodb-toolbox/schema/list';
+import { record } from 'dynamodb-toolbox/schema/record';
+import { any } from 'dynamodb-toolbox/schema/any';
 
 export const ApartmentTable = new Table({
     name: tableName,
@@ -23,7 +26,7 @@ export const Building = new Entity({
     table: ApartmentTable,
     schema: item({
         buildingID: string().key(),
-        unitID: string().key(),
+        unitID: string().key().default('BUILDING'),
         street: string().optional(),
         city: string().optional(),
         state: string().optional(),
@@ -32,6 +35,30 @@ export const Building = new Entity({
         yearBuilt: number().optional(),
         numberStories: number().optional(),
         totalUnits: number().optional(),
+        // New fields for listing sites
+        propertyType: string().optional(),
+        roomsForRent: boolean().optional(),
+        photos: list(string()).optional(),
+        leaseLength: number().optional(),
+        shortTermLeaseAllowed: boolean().optional(),
+        propertyLicenseNumber: string().optional(),
+        specialtyType: string().optional(),
+        specialtySubType: string().optional(),
+        propertyDescription: string().optional(),
+        rentSpecials: list(any()).optional(),
+        incomeRestrictions: any().optional(),
+        utilitiesIncluded: record(string(), boolean()).optional(),
+        oneTimeFees: list(any()).optional(),
+        monthlyFees: list(any()).optional(),
+        parkingOptions: list(any()).optional(),
+        petPolicies: any().optional(),
+        storageOptions: list(any()).optional(),
+        propertyAmenities: list(any()).optional(),
+        screeningCriteria: any().optional(),
+        contactInfo: any().optional(),
+        tourAvailability: any().optional(),
+        applicationFee: number().optional(),
+        acceptsOnlineApplications: boolean().optional(),
     }),
 });
 
@@ -48,5 +75,44 @@ export const Unit = new Entity({
         rent: number().optional(),
         occupied: boolean().optional(),
         availableDate: string().optional(),
+        // New fields for listing sites
+        modelID: string().optional(),
+        unitNumber: string().optional(),
+        maxOccupants: number().optional(),
+        perPersonRent: number().optional(),
+        deposit: number().optional(),
+        minLeaseTerm: number().optional(),
+        maxLeaseTerm: number().optional(),
+        unitDescription: string().optional(),
+        unitRentSpecial: any().optional(),
+        unitAmenities: list(any()).optional(),
+        photos: list(string()).optional(),
+        websiteStatus: record(string(), string()).optional(),
+        listingIds: record(string(), string()).optional(),
+    }),
+});
+
+export const UnitType = new Entity({
+    name: 'UnitType',
+    table: ApartmentTable,
+    schema: item({
+        buildingID: string().key(),
+        unitID: string().key(), // Will be 'MODEL#' + modelID
+        modelID: string().required(),
+        modelName: string().required(),
+        countAvailable: number().optional(),
+        dateAvailable: string().optional(),
+        beds: number().required(),
+        baths: number().required(),
+        maxOccupants: number().optional(),
+        minRent: number().optional(),
+        maxRent: number().optional(),
+        perPersonRent: number().optional(),
+        minSqft: number().optional(),
+        maxSqft: number().optional(),
+        deposit: number().optional(),
+        minLeaseTerm: number().optional(),
+        maxLeaseTerm: number().optional(),
+        modelAmenities: list(any()).optional(),
     }),
 });

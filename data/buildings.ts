@@ -35,7 +35,7 @@ export async function createBuilding(building: BuildingData) {
             returnValuesOnConditionFalse: 'ALL_OLD',
         })
         .send();
-    return _.omit(Attributes, 'unitID') || building as BuildingData;
+    return (_.omit(Attributes, 'unitID') as BuildingData) || building;
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {

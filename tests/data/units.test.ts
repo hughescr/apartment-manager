@@ -2,6 +2,8 @@ import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
 import { ModuleMocker } from '../ModuleMocker';
+import { AmenityCategory, WebsiteStatus } from '../../src/types';
+import _ from 'lodash';
 
 const mockSend = mock();
 
@@ -74,6 +76,31 @@ describe('Unit Data Layer', () => {
         rent: 1500,
         occupied: false,
         availableDate: '2025-01-01',
+        // New fields
+        modelID: 'model-1br',
+        unitNumber: 'A1',
+        maxOccupants: 2,
+        perPersonRent: 750,
+        deposit: 1500,
+        minLeaseTerm: 12,
+        maxLeaseTerm: 24,
+        unitDescription: 'Beautiful 1-bedroom unit with city views',
+        unitRentSpecial: {
+            title: 'Move-in Special',
+            description: 'Free parking for first 3 months'
+        },
+        unitAmenities: [
+            { name: 'Balcony', category: AmenityCategory.UNIT },
+            { name: 'City View', category: AmenityCategory.UNIT }
+        ],
+        photos: ['https://s3.example.com/unit-a1-1.jpg', 'https://s3.example.com/unit-a1-2.jpg'],
+        websiteStatus: {
+            'apartments.com': WebsiteStatus.ACTIVE,
+            zillow: WebsiteStatus.PENDING
+        },
+        listingIds: {
+            'apartments.com': 'APT-123456'
+        }
     };
 
     it('should create a unit', async () => {
@@ -149,5 +176,91 @@ describe('Unit Data Layer', () => {
         const success = await deleteUnit(testUnit.buildingID, testUnit.unitID);
         expect(success).toBeFalse();
         expect(logger.error).toHaveBeenCalledWith('Error deleting unit:', expect.any(Error));
+    });
+
+    it('should handle unit with minimal fields', async () => {
+        expect.assertions(1);
+        const minimalUnit = {
+            buildingID: testBuildingID,
+            unitID: 'B2'
+        };
+        mockSend.mockResolvedValueOnce({ Attributes: { ...minimalUnit } });
+
+        const createdUnit = await createUnit(minimalUnit);
+        expect(createdUnit).toEqual(minimalUnit);
+    });
+
+    it('should update website status and listing IDs', async () => {
+        expect.assertions(3);
+        const updates = {
+            websiteStatus: {
+                'apartments.com': WebsiteStatus.ACTIVE,
+                zillow: WebsiteStatus.ACTIVE
+            },
+            listingIds: {
+                'apartments.com': 'APT-123456',
+                zillow: 'ZIL-789012'
+            }
+        };
+        mockSend.mockResolvedValueOnce({
+            Attributes: { ...testUnit, ...updates }
+        });
+
+        const updatedUnit = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
+        expect(updatedUnit.websiteStatus!.zillow).toBe(WebsiteStatus.ACTIVE);
+        expect(updatedUnit.listingIds!.zillow).toBe('ZIL-789012');
+        expect(_.keys(updatedUnit.listingIds!)).toHaveLength(2);
+    });
+
+    it('should handle unit with model reference', async () => {
+        expect.assertions(3);
+        const unitWithModel = {
+            ...testUnit,
+            modelID: 'model-2br-deluxe',
+            unitAmenities: [] // Inherits from model
+        };
+        mockSend.mockResolvedValueOnce({ Attributes: { ...unitWithModel } });
+
+        const createdUnit = await createUnit(unitWithModel);
+        expect(createdUnit.modelID).toBe('model-2br-deluxe');
+        expect(createdUnit.unitAmenities).toHaveLength(0);
+        expect(createdUnit.beds).toBe(1); // Unit-specific override
+    });
+
+    it('should handle complex unit amenities override', async () => {
+        expect.assertions(2);
+        const updatedAmenities = [
+            { name: 'Premium Balcony', category: AmenityCategory.UNIT, description: 'Oversized balcony' },
+            { name: 'Corner Unit', category: AmenityCategory.UNIT },
+            { name: 'Updated Kitchen', category: AmenityCategory.UNIT }
+        ];
+        mockSend.mockResolvedValueOnce({
+            Attributes: { ...testUnit, unitAmenities: updatedAmenities }
+        });
+
+        const updatedUnit = await updateUnit(
+            testUnit.buildingID,
+            testUnit.unitID,
+            { unitAmenities: updatedAmenities }
+        );
+        expect(updatedUnit.unitAmenities).toHaveLength(3);
+        expect(updatedUnit.unitAmenities![0].description).toBe('Oversized balcony');
+    });
+
+    it('should handle empty collections in unit data', async () => {
+        expect.assertions(3);
+        const unitWithEmptyCollections = {
+            ...testUnit,
+            photos: [],
+            unitAmenities: [],
+            websiteStatus: {},
+            listingIds: {}
+        };
+        mockSend.mockResolvedValueOnce({ Items: [unitWithEmptyCollections] });
+
+        const units = await getUnits(testBuildingID);
+        expect(units[0].photos).toHaveLength(0);
+        expect(units[0].websiteStatus).toEqual({});
+        expect(units[0].listingIds).toEqual({});
     });
 });
