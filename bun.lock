@@ -39,6 +39,7 @@
         "eslint-plugin-jest": "^29.0.1",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.35.0",
+        "typescript-language-server": "^4.3.4",
       },
     },
   },
@@ -1662,6 +1663,8 @@
     "typescript-auto-import-cache": ["typescript-auto-import-cache@0.3.6", "", { "dependencies": { "semver": "^7.3.8" } }, "sha512-RpuHXrknHdVdK7wv/8ug3Fr0WNsNi5l5aB8MYYuXhq2UH5lnEB1htJ1smhtD5VeCsGr2p8mUDtd83LCQDFVgjQ=="],
 
     "typescript-eslint": ["typescript-eslint@8.35.0", "", { "dependencies": { "@typescript-eslint/eslint-plugin": "8.35.0", "@typescript-eslint/parser": "8.35.0", "@typescript-eslint/utils": "8.35.0" }, "peerDependencies": { "eslint": "^8.57.0 || ^9.0.0", "typescript": ">=4.8.4 <5.9.0" } }, "sha512-uEnz70b7kBz6eg/j0Czy6K5NivaYopgxRjsnAJ2Fx5oTLo3wefTHIbL7AkQr1+7tJCRVpTs/wiM8JR/11Loq9A=="],
+
+    "typescript-language-server": ["typescript-language-server@4.3.4", "", { "bin": { "typescript-language-server": "lib/cli.mjs" } }, "sha512-0pQ4ffAarsf10VwFhyyyqNJhuDd4r6f4dSsQN38WdbQ3WVxqi08p/bI//v1VnOV5CSVd4AeOUY/jfJYheHTQPQ=="],
 
     "ufo": ["ufo@1.6.1", "", {}, "sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA=="],
 

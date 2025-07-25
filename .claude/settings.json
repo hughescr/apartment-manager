@@ -8,7 +8,11 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "(bunx eslint --fix --cache||exit 2)"
+                        "command": "(eslint --fix --cache --max-warnings 1||exit 2)"
+                    },
+                    {
+                        "type": "command",
+                        "command": "tsc"
                     }
                 ]
             }
@@ -17,11 +21,13 @@
 
     "permissions": {
         "allow": [
-            "mcp__playwright__browser_navigate",
-            "mcp__playwright__browser_snapshot",
-            "mcp__playwright__browser_click",
-            "mcp__playwright__browser_close",
-            "mcp__eslint__lint"
+            "mcp__browser",
+            "mcp__web-fetch",
+            "mcp_search",
+            "mcp_time",
+            "mcp_Context7",
+            "mcp__eslint",
+            "mcp__language-server"
         ],
         "deny": []
     }
