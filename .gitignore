@@ -164,3 +164,4 @@ sst-env.d.ts
 
 # Ignore local CLAUDE.md memories
 CLAUDE.local.md
+.claude/settings.local.json
