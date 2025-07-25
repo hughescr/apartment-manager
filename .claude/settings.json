@@ -8,7 +8,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bunx eslint --fix --cache"
+                        "command": "(bunx eslint --fix --cache||exit 2)"
                     }
                 ]
             }
