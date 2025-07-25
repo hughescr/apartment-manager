@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'bun:test';
+import _ from 'lodash';
 import {
     // Enumerations
     PropertyType,
@@ -50,7 +51,7 @@ describe('Type Definitions', () => {
             expect(PropertyType.TOWNHOME as string).toBe('townhome');
             expect(PropertyType.SINGLE_FAMILY as string).toBe('single-family');
             expect(PropertyType.HOUSE as string).toBe('house');
-            expect(Object.keys(PropertyType).length).toBe(5);
+            expect(_.keys(PropertyType).length).toBe(5);
         });
 
         it('UtilityType should have correct values', () => {
@@ -63,7 +64,7 @@ describe('Type Definitions', () => {
             expect(UtilityType.INTERNET as string).toBe('internet');
             expect(UtilityType.HEAT as string).toBe('heat');
             expect(UtilityType.AIR_CONDITIONING as string).toBe('air-conditioning');
-            expect(Object.keys(UtilityType).length).toBe(9);
+            expect(_.keys(UtilityType).length).toBe(9);
         });
 
         it('FeeType should have correct values', () => {
@@ -77,7 +78,7 @@ describe('Type Definitions', () => {
             expect(FeeType.MOVE_IN as string).toBe('move-in');
             expect(FeeType.KEY_DEPOSIT as string).toBe('key-deposit');
             expect(FeeType.CLEANING as string).toBe('cleaning');
-            expect(Object.keys(FeeType).length).toBe(10);
+            expect(_.keys(FeeType).length).toBe(10);
         });
 
         it('PetType should have correct values', () => {
@@ -87,7 +88,7 @@ describe('Type Definitions', () => {
             expect(PetType.FISH as string).toBe('fish');
             expect(PetType.SMALL_ANIMAL as string).toBe('small-animal');
             expect(PetType.NO_PETS as string).toBe('no-pets');
-            expect(Object.keys(PetType).length).toBe(6);
+            expect(_.keys(PetType).length).toBe(6);
         });
 
         it('ParkingType should have correct values', () => {
@@ -96,7 +97,7 @@ describe('Type Definitions', () => {
             expect(ParkingType.UNCOVERED as string).toBe('uncovered');
             expect(ParkingType.STREET as string).toBe('street');
             expect(ParkingType.NONE as string).toBe('none');
-            expect(Object.keys(ParkingType).length).toBe(5);
+            expect(_.keys(ParkingType).length).toBe(5);
         });
 
         it('StorageType should have correct values', () => {
@@ -105,14 +106,14 @@ describe('Type Definitions', () => {
             expect(StorageType.GARAGE as string).toBe('garage');
             expect(StorageType.EXTERNAL_UNIT as string).toBe('external-unit');
             expect(StorageType.NONE as string).toBe('none');
-            expect(Object.keys(StorageType).length).toBe(5);
+            expect(_.keys(StorageType).length).toBe(5);
         });
 
         it('AmenityCategory should have correct values', () => {
             expect(AmenityCategory.UNIT as string).toBe('unit');
             expect(AmenityCategory.PROPERTY as string).toBe('property');
             expect(AmenityCategory.COMMUNITY as string).toBe('community');
-            expect(Object.keys(AmenityCategory).length).toBe(3);
+            expect(_.keys(AmenityCategory).length).toBe(3);
         });
 
         it('WebsiteStatus should have correct values', () => {
@@ -120,7 +121,7 @@ describe('Type Definitions', () => {
             expect(WebsiteStatus.INACTIVE as string).toBe('inactive');
             expect(WebsiteStatus.PENDING as string).toBe('pending');
             expect(WebsiteStatus.ERROR as string).toBe('error');
-            expect(Object.keys(WebsiteStatus).length).toBe(4);
+            expect(_.keys(WebsiteStatus).length).toBe(4);
         });
 
         it('DayOfWeek should have correct values', () => {
@@ -131,7 +132,7 @@ describe('Type Definitions', () => {
             expect(DayOfWeek.FRIDAY as string).toBe('friday');
             expect(DayOfWeek.SATURDAY as string).toBe('saturday');
             expect(DayOfWeek.SUNDAY as string).toBe('sunday');
-            expect(Object.keys(DayOfWeek).length).toBe(7);
+            expect(_.keys(DayOfWeek).length).toBe(7);
         });
     });
 
@@ -891,10 +892,10 @@ describe('Type Definitions', () => {
         });
 
         it('should handle maximum array lengths', () => {
-            const manyAmenities: Amenity[] = Array(1000).fill(null).map((_, i) => ({
+            const manyAmenities: Amenity[] = _(Array(1000)).fill(null).map((_, i) => ({
                 name: `Amenity ${i}`,
                 category: AmenityCategory.UNIT
-            }));
+            })).value();
 
             const unitType: UnitTypeData = {
                 buildingID: 'bldg-123',

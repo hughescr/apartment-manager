@@ -262,13 +262,9 @@ export interface Unit extends UnitData {
     apiURL: string
 }
 
-export interface Building extends BuildingData {
-    // Add any runtime-specific fields here if needed
-}
+export type Building = BuildingData;
 
-export interface UnitType extends UnitTypeData {
-    // Add any runtime-specific fields here if needed
-}
+export type UnitType = UnitTypeData;
 
 // DynamoDB single-table design helpers
 export interface DynamoDBItem {
