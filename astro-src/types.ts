@@ -1,28 +1,6 @@
-export interface BuildingData {
-    buildingID: string
-    street?: string
-    city?: string
-    state?: string
-    zip?: string
-    description?: string
-    yearBuilt?: number
-    numberStories?: number
-    totalUnits?: number
-}
-
-export interface UnitData {
-    buildingID: string
-    unitID: string
-    description?: string
-    beds?: number
-    baths?: number
-    sqft?: number
-    rent?: number
-    occupied?: boolean
-    availableDate?: string
-}
-
-export interface Unit extends UnitData {
-    originalUnit: UnitData
-    apiURL: string
-}
+// Re-export only the types needed by the Astro frontend
+export type {
+    BuildingData,
+    UnitData,
+    Unit
+} from '../src/types';

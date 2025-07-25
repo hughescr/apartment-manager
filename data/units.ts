@@ -1,4 +1,4 @@
-import { UnitData } from '../astro-src/types';
+import { UnitData } from '../src/types';
 import { ApartmentTable, Unit } from './model';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';

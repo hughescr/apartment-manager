@@ -1,4 +1,4 @@
-import { BuildingData } from '../astro-src/types';
+import { BuildingData } from '../src/types';
 import { ApartmentTable, Building } from './model';
 
 import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
