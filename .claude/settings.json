@@ -8,11 +8,11 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "(eslint --fix --cache --max-warnings 1||exit 2)"
+                        "command": "(eslint --fix --cache --max-warnings 0 1>&2||exit 2)"
                     },
                     {
                         "type": "command",
-                        "command": "tsc"
+                        "command": "tsc 1>&2"
                     }
                 ]
             }
