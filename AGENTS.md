@@ -13,6 +13,55 @@
 9. **ALWAYS ignore TypeScript errors from the `.sst` directory** - these are SST framework-generated files, not application code.
 10. **DO ONLY what has been asked** - nothing more, nothing less.
 
+## SUB-AGENT USAGE - MAXIMIZE EFFICIENCY
+
+**Core Principle**: ALWAYS consider using sub-agents for tasks that match their expertise instead of doing everything yourself.
+
+### Standard Development Recipe
+
+Follow this workflow and delegate to appropriate agents at each stage:
+
+**1. Research & Understanding**
+- Use agents specialized in research and analysis
+- Gather requirements and understand existing patterns
+- Let agents explore the codebase for you
+
+**2. Design & Architecture**
+- Delegate design tasks to agents with relevant expertise
+- Get architectural guidance from specialized agents
+- Have agents create data models and system designs
+
+**3. Implementation**
+- Use implementation-focused agents for writing code
+- Let documentation agents handle documentation tasks
+- Follow the designs from step 2
+
+**4. Testing & Validation**
+- Delegate test creation to testing specialists
+- Use review agents for quality checks
+- Have agents validate architectural consistency
+
+**5. Debug & Iterate**
+- Use debugging agents for error resolution
+- Let troubleshooting agents handle deployment issues
+- Loop back to earlier stages as needed
+
+### Key Guidelines
+
+- **Review available agents** and match tasks to agent capabilities
+- **Delegate proactively** - don't wait to be asked to use agents
+- **Provide detailed instructions** about what you need from each agent
+- **Use multiple agents concurrently** when tasks can be parallelized
+- **Trust agent expertise** in their specialized domains
+- **Move work into agent contexts** to reduce your own context usage
+
+### Best Practices
+
+- Always check if an available agent matches your current task
+- Give agents comprehensive context and clear success criteria
+- Let agents handle the details of their specialized domains
+- Focus on orchestration while agents do the specialized work
+
 ## COMMON MISTAKES TO AVOID
 
 ### Starting Development
