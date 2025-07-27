@@ -2,10 +2,10 @@
 
 import { buildingsUnitsTable } from './dynamo';
 import { uploadedDocs } from './s3';
-import { api } from './api';
+import { api, uploadApi } from './api';
 
 const site = new sst.aws.Astro('Web', {
-    link: [buildingsUnitsTable, uploadedDocs, api],
+    link: [buildingsUnitsTable, uploadedDocs, api, uploadApi],
     domain: {
         name: 'apartments.rungie.com',
         redirects: ['www.apartments.rungie.com'],

@@ -35,11 +35,12 @@ export default $config({
 
         /* ────────────── Resources ────────────── */
         const { site } = await import('./sst/astro');
-        const { api } = await import('./sst/api');
+        const { api, uploadApi } = await import('./sst/api');
 
         return {
             site: site.url,
             api: api.url,
+            UploadAPI: uploadApi.url,
         };
     },
 });
