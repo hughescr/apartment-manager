@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@hughescr/eslint-config-default": "^3.0.4",
-    "@tailwindcss/postcss": "^4.1.11",
     "@types/aws-lambda": "^8.10.152",
     "@types/bun": "^1.2.19",
     "@types/jest": "^30.0.0",
@@ -40,7 +39,6 @@
     "@astrojs/alpinejs": "^0.4.8",
     "@astrojs/check": "^0.9.4",
     "@astrojs/db": "^0.15.0",
-    "@astrojs/tailwind": "^6.0.2",
     "@astrojs/ts-plugin": "^1.10.4",
     "@aws-sdk/client-dynamodb": "^3.848.0",
     "@aws-sdk/client-s3": "^3.850.0",
@@ -52,11 +50,9 @@
     "alpinejs": "^3.14.9",
     "astro": "^5.12.3",
     "astro-sst": "3.1.4",
-    "autoprefixer": "^10.4.21",
     "dynamodb-toolbox": "^2.7.0",
     "lodash": "^4.17.21",
     "luxon": "^3.7.1",
-    "postcss": "^8.5.6",
     "sst": "^3.17.10",
     "tailwindcss": "^4.1.11"
   },
