@@ -1,0 +1,745 @@
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
+import { chromium, Browser, Page, BrowserContext } from 'playwright';
+import _ from 'lodash';
+import { AmenityCategory } from '../../src/types';
+
+// E2E tests for unit type management workflow
+describe('Unit Types E2E Tests', () => {
+    let browser: Browser;
+    let context: BrowserContext;
+    let page: Page;
+
+    const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
+    const testBuildingId = 'test-building-e2e';
+
+    beforeAll(async () => {
+        browser = await chromium.launch({
+            headless: process.env.HEADLESS !== 'false'
+        });
+    });
+
+    afterAll(async () => {
+        await browser.close();
+    });
+
+    beforeEach(async () => {
+        context = await browser.newContext();
+        page = await context.newPage();
+
+        // Set up request interception for API calls if needed
+        await page.route('**/api/**', async (route) => {
+            const url = route.request().url();
+
+            // Mock authentication if needed
+            if(url.includes('/api/auth')) {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify({ authenticated: true })
+                });
+                return;
+            }
+
+            // Let other requests through
+            await route.continue();
+        });
+    });
+
+    afterEach(async () => {
+        await context.close();
+    });
+
+    describe('Unit Types List Page', () => {
+        it('should display unit types for a building', async () => {
+            // Navigate to unit types page
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+
+            // Wait for the page to load
+            await page.waitForSelector('[data-testid="unit-types-list"]', { timeout: 10000 });
+
+            // Check page title
+            const title = await page.textContent('h1');
+            expect(title).toContain('Unit Types');
+
+            // Check for add button
+            const addButton = page.locator('[data-testid="add-unit-type-button"]');
+            expect(await addButton.isVisible()).toBe(true);
+            expect(await addButton.textContent()).toContain('Add Unit Type');
+        });
+
+        it('should display empty state when no unit types exist', async () => {
+            // Mock empty response
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify([])
+                });
+            });
+
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+
+            const emptyState = page.locator('[data-testid="empty-state"]');
+            expect(await emptyState.isVisible()).toBe(true);
+            expect(await emptyState.textContent()).toContain('No unit types');
+        });
+
+        it('should display unit type cards', async () => {
+            // Mock unit types response
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify([
+                        {
+                            buildingID: testBuildingId,
+                            modelID: 'model-2br',
+                            modelName: '2 Bedroom Deluxe',
+                            beds: 2,
+                            baths: 2,
+                            minRent: 1500,
+                            maxRent: 1800,
+                            countAvailable: 5
+                        },
+                        {
+                            buildingID: testBuildingId,
+                            modelID: 'model-1br',
+                            modelName: '1 Bedroom',
+                            beds: 1,
+                            baths: 1,
+                            minRent: 1200,
+                            maxRent: 1400,
+                            countAvailable: 3
+                        }
+                    ])
+                });
+            });
+
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.waitForSelector('[data-testid="unit-type-card"]');
+
+            const cards = await page.locator('[data-testid="unit-type-card"]').all();
+            expect(cards).toHaveLength(2);
+
+            // Check first card content
+            const firstCard = cards[0];
+            expect(await firstCard.locator('[data-testid="model-name"]').textContent()).toBe('2 Bedroom Deluxe');
+            expect(await firstCard.locator('[data-testid="bed-bath"]').textContent()).toContain('2 bed / 2 bath');
+            expect(await firstCard.locator('[data-testid="rent-range"]').textContent()).toContain('$1,500 - $1,800');
+            expect(await firstCard.locator('[data-testid="availability"]').textContent()).toContain('5 available');
+        });
+
+        it('should handle API errors gracefully', async () => {
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                await route.fulfill({
+                    status: 500,
+                    body: JSON.stringify({ error: 'Internal server error' })
+                });
+            });
+
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+
+            const errorMessage = page.locator('[data-testid="error-message"]');
+            expect(await errorMessage.isVisible()).toBe(true);
+            expect(await errorMessage.textContent()).toContain('Failed to load unit types');
+        });
+    });
+
+    describe('Add Unit Type Form', () => {
+        beforeEach(async () => {
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="add-unit-type-button"]');
+            await page.waitForSelector('[data-testid="unit-type-form"]');
+        });
+
+        it('should display all form fields', async () => {
+            // Basic fields
+            expect(await page.locator('input[name="modelID"]').isVisible()).toBe(true);
+            expect(await page.locator('input[name="modelName"]').isVisible()).toBe(true);
+            expect(await page.locator('input[name="beds"]').isVisible()).toBe(true);
+            expect(await page.locator('input[name="baths"]').isVisible()).toBe(true);
+
+            // Rent fields
+            expect(await page.locator('input[name="minRent"]').isVisible()).toBe(true);
+            expect(await page.locator('input[name="maxRent"]').isVisible()).toBe(true);
+            expect(await page.locator('input[name="deposit"]').isVisible()).toBe(true);
+
+            // Size fields
+            expect(await page.locator('input[name="minSqft"]').isVisible()).toBe(true);
+            expect(await page.locator('input[name="maxSqft"]').isVisible()).toBe(true);
+
+            // Availability
+            expect(await page.locator('input[name="countAvailable"]').isVisible()).toBe(true);
+            expect(await page.locator('input[name="dateAvailable"]').isVisible()).toBe(true);
+
+            // Amenities selector
+            expect(await page.locator('[data-testid="amenity-selector"]').isVisible()).toBe(true);
+        });
+
+        it('should validate required fields', async () => {
+            // Try to submit empty form
+            await page.click('[data-testid="submit-button"]');
+
+            // Check for validation errors
+            const modelIdError = page.locator('input[name="modelID"] ~ .text-error');
+            expect(await modelIdError.isVisible()).toBe(true);
+
+            const modelNameError = page.locator('input[name="modelName"] ~ .text-error');
+            expect(await modelNameError.isVisible()).toBe(true);
+
+            const bedsError = page.locator('input[name="beds"] ~ .text-error');
+            expect(await bedsError.isVisible()).toBe(true);
+
+            const bathsError = page.locator('input[name="baths"] ~ .text-error');
+            expect(await bathsError.isVisible()).toBe(true);
+        });
+
+        it('should validate numeric constraints', async () => {
+            // Fill in basic required fields
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('input[name="modelID"]', 'test-model');
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('input[name="modelName"]', 'Test Model');
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('input[name="beds"]', '2');
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('input[name="baths"]', '2');
+
+            // Test min/max rent validation
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('input[name="minRent"]', '2000');
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('input[name="maxRent"]', '1500'); // Max less than min
+
+            await page.click('[data-testid="submit-button"]');
+
+            const rentError = page.locator('[data-testid="rent-validation-error"]');
+            expect(await rentError.isVisible()).toBe(true);
+            expect(await rentError.textContent()).toContain('Maximum rent must be greater than minimum rent');
+        });
+
+        it('should successfully create a unit type', async () => {
+            // Mock successful API response
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                if(route.request().method() === 'POST') {
+                    const body = await route.request().postDataJSON();
+                    await route.fulfill({
+                        status: 201,
+                        body: JSON.stringify({
+                            ...body,
+                            buildingID: testBuildingId
+                        })
+                    });
+                } else {
+                    await route.continue();
+                }
+            });
+
+            // Fill in form
+            /* eslint-disable lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill */
+            await page.fill('input[name="modelID"]', 'model-3br');
+            await page.fill('input[name="modelName"]', '3 Bedroom Premium');
+            await page.fill('input[name="beds"]', '3');
+            await page.fill('input[name="baths"]', '2.5');
+            await page.fill('input[name="minRent"]', '2000');
+            await page.fill('input[name="maxRent"]', '2500');
+            await page.fill('input[name="deposit"]', '2000');
+            await page.fill('input[name="minSqft"]', '1200');
+            await page.fill('input[name="maxSqft"]', '1400');
+            await page.fill('input[name="countAvailable"]', '2');
+            /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
+
+            // Submit form
+            await page.click('[data-testid="submit-button"]');
+
+            // Should show success message
+            const successMessage = page.locator('[data-testid="success-message"]');
+            expect(await successMessage.isVisible()).toBe(true);
+            expect(await successMessage.textContent()).toContain('Unit type created successfully');
+
+            // Should redirect back to list
+            await page.waitForURL(`${baseUrl}/building/${testBuildingId}/unit-types`);
+        });
+
+        it('should handle duplicate model ID error', async () => {
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                if(route.request().method() === 'POST') {
+                    await route.fulfill({
+                        status: 409,
+                        body: JSON.stringify({ error: 'Unit type already exists' })
+                    });
+                } else {
+                    await route.continue();
+                }
+            });
+
+            // Fill in form
+            /* eslint-disable lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill */
+            await page.fill('input[name="modelID"]', 'existing-model');
+            await page.fill('input[name="modelName"]', 'Duplicate Model');
+            await page.fill('input[name="beds"]', '1');
+            await page.fill('input[name="baths"]', '1');
+            /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
+
+            await page.click('[data-testid="submit-button"]');
+
+            const errorMessage = page.locator('[data-testid="error-message"]');
+            expect(await errorMessage.isVisible()).toBe(true);
+            expect(await errorMessage.textContent()).toContain('Unit type already exists');
+        });
+    });
+
+    describe('Edit Unit Type', () => {
+        const existingUnitType = {
+            buildingID: testBuildingId,
+            modelID: 'model-edit',
+            modelName: 'Original Name',
+            beds: 2,
+            baths: 2,
+            minRent: 1500,
+            maxRent: 1800
+        };
+
+        beforeEach(async () => {
+            // Mock get single unit type
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types/${existingUnitType.modelID}`, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify(existingUnitType)
+                });
+            });
+
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types/${existingUnitType.modelID}/edit`);
+            await page.waitForSelector('[data-testid="unit-type-form"]');
+        });
+
+        it('should pre-populate form with existing data', async () => {
+            expect(await page.inputValue('input[name="modelID"]')).toBe(existingUnitType.modelID);
+            expect(await page.inputValue('input[name="modelName"]')).toBe(existingUnitType.modelName);
+            expect(await page.inputValue('input[name="beds"]')).toBe(existingUnitType.beds.toString());
+            expect(await page.inputValue('input[name="baths"]')).toBe(existingUnitType.baths.toString());
+            expect(await page.inputValue('input[name="minRent"]')).toBe(existingUnitType.minRent.toString());
+            expect(await page.inputValue('input[name="maxRent"]')).toBe(existingUnitType.maxRent.toString());
+        });
+
+        it('should disable model ID field in edit mode', async () => {
+            const modelIdInput = page.locator('input[name="modelID"]');
+            expect(await modelIdInput.isDisabled()).toBe(true);
+        });
+
+        it('should successfully update unit type', async () => {
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types/${existingUnitType.modelID}`, async (route) => {
+                if(route.request().method() === 'PUT') {
+                    const body = await route.request().postDataJSON();
+                    await route.fulfill({
+                        status: 200,
+                        body: JSON.stringify({
+                            ...existingUnitType,
+                            ...body
+                        })
+                    });
+                } else {
+                    await route.continue();
+                }
+            });
+
+            // Update some fields
+            /* eslint-disable lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill */
+            await page.fill('input[name="modelName"]', 'Updated Name');
+            await page.fill('input[name="minRent"]', '1600');
+            await page.fill('input[name="maxRent"]', '1900');
+            /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
+
+            await page.click('[data-testid="submit-button"]');
+
+            const successMessage = page.locator('[data-testid="success-message"]');
+            expect(await successMessage.isVisible()).toBe(true);
+            expect(await successMessage.textContent()).toContain('Unit type updated successfully');
+        });
+    });
+
+    describe('Delete Unit Type', () => {
+        it('should show confirmation dialog before deletion', async () => {
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify([{
+                        buildingID: testBuildingId,
+                        modelID: 'model-delete',
+                        modelName: 'To Delete',
+                        beds: 1,
+                        baths: 1
+                    }])
+                });
+            });
+
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.waitForSelector('[data-testid="unit-type-card"]');
+
+            // Click delete button
+            await page.click('[data-testid="delete-button-model-delete"]');
+
+            // Check confirmation dialog
+            const dialog = page.locator('[data-testid="confirmation-dialog"]');
+            expect(await dialog.isVisible()).toBe(true);
+            expect(await dialog.textContent()).toContain('Are you sure you want to delete');
+            expect(await dialog.textContent()).toContain('To Delete');
+        });
+
+        it('should delete unit type on confirmation', async () => {
+            let deleteRequested = false;
+
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types/model-delete`, async (route) => {
+                if(route.request().method() === 'DELETE') {
+                    deleteRequested = true;
+                    await route.fulfill({
+                        status: 204,
+                        body: ''
+                    });
+                } else {
+                    await route.continue();
+                }
+            });
+
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify([{
+                        buildingID: testBuildingId,
+                        modelID: 'model-delete',
+                        modelName: 'To Delete',
+                        beds: 1,
+                        baths: 1
+                    }])
+                });
+            });
+
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="delete-button-model-delete"]');
+            await page.click('[data-testid="confirm-delete-button"]');
+
+            expect(deleteRequested).toBe(true);
+
+            const successMessage = page.locator('[data-testid="success-message"]');
+            expect(await successMessage.isVisible()).toBe(true);
+            expect(await successMessage.textContent()).toContain('Unit type deleted successfully');
+        });
+
+        it('should cancel deletion', async () => {
+            let deleteRequested = false;
+
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types/model-delete`, async (route) => {
+                if(route.request().method() === 'DELETE') {
+                    deleteRequested = true;
+                    await route.fulfill({ status: 204 });
+                }
+                await route.continue();
+            });
+
+            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify([{
+                        buildingID: testBuildingId,
+                        modelID: 'model-delete',
+                        modelName: 'To Delete',
+                        beds: 1,
+                        baths: 1
+                    }])
+                });
+            });
+
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="delete-button-model-delete"]');
+            await page.click('[data-testid="cancel-delete-button"]');
+
+            expect(deleteRequested).toBe(false);
+
+            // Card should still be visible
+            const card = page.locator('[data-testid="unit-type-card"]');
+            expect(await card.isVisible()).toBe(true);
+        });
+    });
+
+    describe('Amenity Selection', () => {
+        beforeEach(async () => {
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="add-unit-type-button"]');
+            await page.waitForSelector('[data-testid="amenity-selector"]');
+        });
+
+        it('should filter amenities by search', async () => {
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('[data-testid="amenity-search"]', 'pool');
+
+            const visibleAmenities = await page.locator('[data-testid="amenity-checkbox"]:visible').all();
+            for(const amenity of visibleAmenities) {
+                const label = await amenity.textContent();
+                expect(_.toLower(label || '')).toContain('pool');
+            }
+        });
+
+        it('should filter amenities by category', async () => {
+            await page.selectOption('[data-testid="amenity-category-filter"]', AmenityCategory.UNIT);
+
+            const categoryCards = await page.locator('[data-testid="amenity-category-card"]').all();
+            expect(categoryCards).toHaveLength(1);
+
+            const categoryTitle = await categoryCards[0].locator('h3').textContent();
+            expect(categoryTitle).toContain('Unit Features');
+        });
+
+        it('should add custom amenity', async () => {
+            await page.click('[data-testid="custom-amenity-button"]');
+            // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill
+            await page.fill('[data-testid="custom-amenity-name"]', 'Custom Pool Table');
+            await page.selectOption('[data-testid="custom-amenity-category"]', AmenityCategory.COMMUNITY);
+            await page.click('[data-testid="add-custom-amenity"]');
+
+            // Check if amenity was added to selected list
+            const selectedAmenity = page.locator('[data-testid="selected-amenity-badge"]:has-text("Custom Pool Table")');
+            expect(await selectedAmenity.isVisible()).toBe(true);
+        });
+
+        it('should select and deselect amenities', async () => {
+            // Select an amenity
+            const firstCheckbox = page.locator('[data-testid="amenity-checkbox"]').first();
+            const amenityName = await firstCheckbox.locator('~ .label-text').textContent();
+            await firstCheckbox.check();
+
+            // Verify it appears in selected list
+            const selectedBadge = page.locator(`[data-testid="selected-amenity-badge"]:has-text("${amenityName}")`);
+            expect(await selectedBadge.isVisible()).toBe(true);
+
+            // Deselect by clicking the X on the badge
+            await selectedBadge.locator('button').click();
+
+            // Verify checkbox is unchecked
+            expect(await firstCheckbox.isChecked()).toBe(false);
+        });
+
+        it('should bulk select/clear amenities by category', async () => {
+            // Find the first category
+            const firstCategory = page.locator('[data-testid="amenity-category-card"]').first();
+
+            // Click Select All
+            await firstCategory.locator('[data-testid="select-all-button"]').click();
+
+            // Count selected amenities in this category
+            const checkedInCategory = await firstCategory.locator('[data-testid="amenity-checkbox"]:checked').count();
+            expect(checkedInCategory).toBeGreaterThan(0);
+
+            // Click Clear
+            await firstCategory.locator('[data-testid="clear-button"]').click();
+
+            // Verify all are unchecked
+            const uncheckedInCategory = await firstCategory.locator('[data-testid="amenity-checkbox"]:not(:checked)').count();
+            expect(uncheckedInCategory).toBe(checkedInCategory);
+        });
+    });
+
+    describe('Photo Upload', () => {
+        beforeEach(async () => {
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="add-unit-type-button"]');
+            await page.waitForSelector('[data-testid="photo-uploader"]');
+        });
+
+        it('should display photo uploader', async () => {
+            const uploader = page.locator('[data-testid="photo-uploader"]');
+            expect(await uploader.isVisible()).toBe(true);
+
+            const uploadButton = uploader.locator('[data-testid="upload-button"]');
+            expect(await uploadButton.textContent()).toContain('Upload Photos');
+        });
+
+        it('should validate file types', async () => {
+            // Create a test file
+            const fileInput = page.locator('input[type="file"]');
+
+            // Try to upload invalid file type
+            await fileInput.setInputFiles({
+                name: 'test.pdf',
+                mimeType: 'application/pdf',
+                buffer: Buffer.from('fake pdf content')
+            });
+
+            const errorMessage = page.locator('[data-testid="upload-error"]');
+            expect(await errorMessage.isVisible()).toBe(true);
+            expect(await errorMessage.textContent()).toContain('Only image files are allowed');
+        });
+
+        it('should upload valid image', async () => {
+            // Mock upload endpoint
+            await page.route('**/api/upload', async (route) => {
+                if(route.request().method() === 'POST') {
+                    await route.fulfill({
+                        status: 200,
+                        body: JSON.stringify({
+                            uploadUrl: 'https://s3.example.com/upload-url',
+                            key: 'buildings/test/units/test/test.jpg',
+                            publicUrl: 'https://s3.example.com/test.jpg'
+                        })
+                    });
+                } else {
+                    await route.continue();
+                }
+            });
+
+            const fileInput = page.locator('input[type="file"]');
+            await fileInput.setInputFiles({
+                name: 'test.jpg',
+                mimeType: 'image/jpeg',
+                buffer: Buffer.from('fake image content')
+            });
+
+            // Wait for upload to complete
+            await page.waitForSelector('[data-testid="uploaded-photo"]');
+
+            const uploadedPhoto = page.locator('[data-testid="uploaded-photo"]').first();
+            expect(await uploadedPhoto.getAttribute('src')).toContain('https://s3.example.com/test.jpg');
+        });
+
+        it('should delete uploaded photo', async () => {
+            // First upload a photo
+            await page.route('**/api/upload', async (route) => {
+                if(route.request().method() === 'POST') {
+                    await route.fulfill({
+                        status: 200,
+                        body: JSON.stringify({
+                            uploadUrl: 'https://s3.example.com/upload-url',
+                            key: 'buildings/test/units/test/test.jpg',
+                            publicUrl: 'https://s3.example.com/test.jpg'
+                        })
+                    });
+                } else if(route.request().method() === 'DELETE') {
+                    await route.fulfill({
+                        status: 200,
+                        body: JSON.stringify({ success: true })
+                    });
+                } else {
+                    await route.continue();
+                }
+            });
+
+            const fileInput = page.locator('input[type="file"]');
+            await fileInput.setInputFiles({
+                name: 'test.jpg',
+                mimeType: 'image/jpeg',
+                buffer: Buffer.from('fake image content')
+            });
+
+            await page.waitForSelector('[data-testid="uploaded-photo"]');
+
+            // Click delete button
+            await page.click('[data-testid="delete-photo-button"]');
+
+            // Confirm deletion
+            await page.click('[data-testid="confirm-delete-photo"]');
+
+            // Photo should be removed
+            const uploadedPhotos = await page.locator('[data-testid="uploaded-photo"]').count();
+            expect(uploadedPhotos).toBe(0);
+        });
+    });
+
+    describe('Responsive Design', () => {
+        it('should display mobile menu on small screens', async () => {
+            await page.setViewportSize({ width: 375, height: 667 }); // iPhone SE size
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+
+            // Mobile menu button should be visible
+            const menuButton = page.locator('[data-testid="mobile-menu-button"]');
+            expect(await menuButton.isVisible()).toBe(true);
+
+            // Desktop navigation should be hidden
+            const desktopNav = page.locator('[data-testid="desktop-navigation"]');
+            expect(await desktopNav.isVisible()).toBe(false);
+        });
+
+        it('should stack form fields on mobile', async () => {
+            await page.setViewportSize({ width: 375, height: 667 });
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="add-unit-type-button"]');
+
+            // Check that form fields are stacked vertically
+            const bedsInput = await page.locator('input[name="beds"]').boundingBox();
+            const bathsInput = await page.locator('input[name="baths"]').boundingBox();
+
+            expect(bedsInput).not.toBeNull();
+            expect(bathsInput).not.toBeNull();
+
+            // Baths input should be below beds input (not side by side)
+            expect(bathsInput!.y).toBeGreaterThan(bedsInput!.y + bedsInput!.height);
+        });
+
+        it('should use side-by-side layout on desktop', async () => {
+            await page.setViewportSize({ width: 1280, height: 800 });
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="add-unit-type-button"]');
+
+            const bedsInput = await page.locator('input[name="beds"]').boundingBox();
+            const bathsInput = await page.locator('input[name="baths"]').boundingBox();
+
+            expect(bedsInput).not.toBeNull();
+            expect(bathsInput).not.toBeNull();
+
+            // Inputs should be on the same row (similar y position)
+            expect(Math.abs(bathsInput!.y - bedsInput!.y)).toBeLessThan(10);
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('should have proper ARIA labels', async () => {
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+
+            // Check main navigation
+            const nav = page.locator('nav[aria-label="Main navigation"]');
+            expect(await nav.isVisible()).toBe(true);
+
+            // Check form labels
+            await page.click('[data-testid="add-unit-type-button"]');
+
+            const modelIdLabel = page.locator('label:has-text("Model ID")');
+            const modelIdInput = modelIdLabel.locator('input');
+            const inputId = await modelIdInput.getAttribute('id');
+            const labelFor = await modelIdLabel.getAttribute('for');
+            expect(inputId).toBe(labelFor);
+        });
+
+        it('should be keyboard navigable', async () => {
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+
+            // Tab to add button
+            await page.keyboard.press('Tab');
+            await page.keyboard.press('Tab'); // Skip skip-to-content link
+
+            const addButton = page.locator('[data-testid="add-unit-type-button"]');
+            expect(await addButton.evaluate(el => document.activeElement === el)).toBe(true);
+
+            // Press Enter to open form
+            await page.keyboard.press('Enter');
+            await page.waitForSelector('[data-testid="unit-type-form"]');
+
+            // First input should be focused
+            const modelIdInput = page.locator('input[name="modelID"]');
+            expect(await modelIdInput.evaluate(el => document.activeElement === el)).toBe(true);
+        });
+
+        it('should announce form errors to screen readers', async () => {
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.click('[data-testid="add-unit-type-button"]');
+
+            // Submit empty form
+            await page.click('[data-testid="submit-button"]');
+
+            // Check for aria-invalid and aria-describedby
+            const modelIdInput = page.locator('input[name="modelID"]');
+            expect(await modelIdInput.getAttribute('aria-invalid')).toBe('true');
+
+            const errorId = await modelIdInput.getAttribute('aria-describedby');
+            expect(errorId).toBeTruthy();
+
+            const errorMessage = page.locator(`#${errorId}`);
+            expect(await errorMessage.isVisible()).toBe(true);
+            expect(await errorMessage.getAttribute('role')).toBe('alert');
+        });
+    });
+});

@@ -1,0 +1,353 @@
+---
+// astro-src/components/UnitTypeCard.astro
+import Saving from "./Saving.astro";
+import { Resource } from "sst";
+import type { UnitTypeData } from "../../src/types";
+import { BaseInput, BaseTextarea, AmenitySelector } from "./forms";
+
+const { unitType } = Astro.props as { unitType: UnitTypeData };
+
+const apiURL = Resource.API.url;
+
+const xData = {
+    unitType: unitType,
+    originalUnitType: JSON.parse(JSON.stringify(unitType)), // Deep copy for original state
+    apiURL: apiURL,
+    saving: false,
+    expandedAmenities: false,
+
+    isDirty() {
+        return JSON.stringify(this.unitType) !== JSON.stringify(this.originalUnitType);
+    },
+
+    async saveUnitType(myThis) {
+        myThis = this || myThis; // Allow passing 'this' context
+        if (!myThis.isDirty()) { return; }
+
+        this.saving = true;
+        try {
+            const response = await fetch(myThis.apiURL + 'buildings/' + myThis.unitType.buildingID + '/unit-types/' + myThis.unitType.modelID, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(myThis.unitType),
+            });
+            if (response.ok) {
+                myThis.originalUnitType = { ...myThis.unitType };
+            } else {
+                console.error('Save failed:', response.statusText);
+                // Revert to original value on save failure
+                myThis.unitType = { ...myThis.originalUnitType };
+            }
+        } catch (error) {
+            console.error('Network error during save:', error);
+            // Revert to original value on network error
+            myThis.unitType = { ...myThis.originalUnitType };
+        } finally {
+            myThis.saving = false;
+        }
+    },
+
+    async deleteUnitType() {
+        if (!confirm('Are you sure you want to delete this unit type?')) return;
+        try {
+            const response = await fetch(this.apiURL + 'buildings/' + this.unitType.buildingID + '/unit-types/' + this.unitType.modelID, { method: 'DELETE' });
+            if (response.ok) {
+                // Reload the page or remove the card from the DOM
+                window.location.reload(); // Simplest for now
+            } else {
+                console.error('Delete failed:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Network error during delete:', error);
+        }
+    },
+
+    formatCurrency(value) {
+        if (!value) return '';
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(value);
+    },
+
+    formatDate(dateString) {
+        if (!dateString) return 'Not set';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+};
+
+// Initialize missing properties
+if (!unitType.modelAmenities) unitType.modelAmenities = [];
+---
+
+<div x-data={JSON.stringify(xData)} x-init="$watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}">
+    <div class="card-body">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex-1">
+                <h3 class="card-title text-2xl">
+                    <input 
+                        type="text" 
+                        x-model="unitType.modelName" 
+                        class="input input-ghost input-lg font-bold w-full"
+                        placeholder="Model Name"
+                    />
+                </h3>
+                <div class="text-sm text-base-content/70 mt-1">
+                    Model ID: <span x-text="unitType.modelID"></span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <Saving />
+                <button class="btn btn-error btn-sm" x-on:click="deleteUnitType()">Delete</button>
+            </div>
+        </div>
+
+        <!-- Main Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <!-- Availability Info -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Units Available</span>
+                </label>
+                <input 
+                    type="number" 
+                    x-model.number.lazy="unitType.countAvailable" 
+                    class="input input-bordered"
+                    min="0"
+                    placeholder="0"
+                />
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Available From</span>
+                </label>
+                <input 
+                    type="date" 
+                    x-model.lazy="unitType.dateAvailable" 
+                    class="input input-bordered"
+                />
+            </div>
+
+            <!-- Unit Details -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Configuration</span>
+                </label>
+                <div class="flex gap-2">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.beds" 
+                        class="input input-bordered w-20"
+                        min="0"
+                        max="10"
+                        placeholder="Beds"
+                    />
+                    <span class="self-center">beds</span>
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.baths" 
+                        class="input input-bordered w-20"
+                        min="0"
+                        max="10"
+                        step="0.5"
+                        placeholder="Baths"
+                    />
+                    <span class="self-center">baths</span>
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Max Occupants</span>
+                </label>
+                <input 
+                    type="number" 
+                    x-model.number.lazy="unitType.maxOccupants" 
+                    class="input input-bordered"
+                    min="1"
+                    max="20"
+                    placeholder="Not specified"
+                />
+            </div>
+
+            <!-- Pricing -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Rent Range</span>
+                </label>
+                <div class="flex gap-2 items-center">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.minRent" 
+                        class="input input-bordered w-24"
+                        min="0"
+                        placeholder="Min"
+                    />
+                    <span>-</span>
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.maxRent" 
+                        class="input input-bordered w-24"
+                        min="0"
+                        placeholder="Max"
+                    />
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Per Person Rent</span>
+                </label>
+                <input 
+                    type="number" 
+                    x-model.number.lazy="unitType.perPersonRent" 
+                    class="input input-bordered"
+                    min="0"
+                    placeholder="Not specified"
+                />
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Deposit</span>
+                </label>
+                <input 
+                    type="number" 
+                    x-model.number.lazy="unitType.deposit" 
+                    class="input input-bordered"
+                    min="0"
+                    placeholder="Not specified"
+                />
+            </div>
+
+            <!-- Square Footage -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Square Footage</span>
+                </label>
+                <div class="flex gap-2 items-center">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.minSqft" 
+                        class="input input-bordered w-24"
+                        min="0"
+                        placeholder="Min"
+                    />
+                    <span>-</span>
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.maxSqft" 
+                        class="input input-bordered w-24"
+                        min="0"
+                        placeholder="Max"
+                    />
+                </div>
+            </div>
+
+            <!-- Lease Terms -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Lease Terms (months)</span>
+                </label>
+                <div class="flex gap-2 items-center">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.minLeaseTerm" 
+                        class="input input-bordered w-24"
+                        min="1"
+                        max="24"
+                        placeholder="Min"
+                    />
+                    <span>-</span>
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unitType.maxLeaseTerm" 
+                        class="input input-bordered w-24"
+                        min="1"
+                        max="24"
+                        placeholder="Max"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Display -->
+        <div class="bg-base-200 rounded-lg p-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div>
+                    <span class="font-semibold">Availability:</span>
+                    <span x-text="unitType.countAvailable || 0"></span> units
+                    <span x-show="unitType.dateAvailable">
+                        from <span x-text="formatDate(unitType.dateAvailable)"></span>
+                    </span>
+                </div>
+                <div x-show="unitType.minRent || unitType.maxRent">
+                    <span class="font-semibold">Rent:</span>
+                    <span x-text="unitType.minRent && unitType.maxRent ? formatCurrency(unitType.minRent) + ' - ' + formatCurrency(unitType.maxRent) : (unitType.minRent ? 'From ' + formatCurrency(unitType.minRent) : 'Up to ' + formatCurrency(unitType.maxRent))"></span>
+                </div>
+                <div x-show="unitType.minSqft || unitType.maxSqft">
+                    <span class="font-semibold">Size:</span>
+                    <span x-text="unitType.minSqft && unitType.maxSqft ? unitType.minSqft + ' - ' + unitType.maxSqft + ' sq ft' : (unitType.minSqft ? 'From ' + unitType.minSqft + ' sq ft' : 'Up to ' + unitType.maxSqft + ' sq ft')"></span>
+                </div>
+                <div x-show="unitType.deposit">
+                    <span class="font-semibold">Deposit:</span>
+                    <span x-text="formatCurrency(unitType.deposit)"></span>
+                </div>
+                <div x-show="unitType.minLeaseTerm || unitType.maxLeaseTerm">
+                    <span class="font-semibold">Lease Terms:</span>
+                    <span x-text="unitType.minLeaseTerm && unitType.maxLeaseTerm ? unitType.minLeaseTerm + ' - ' + unitType.maxLeaseTerm + ' months' : (unitType.minLeaseTerm ? 'Min ' + unitType.minLeaseTerm + ' months' : 'Max ' + unitType.maxLeaseTerm + ' months')"></span>
+                </div>
+                <div x-show="unitType.perPersonRent">
+                    <span class="font-semibold">Per Person:</span>
+                    <span x-text="formatCurrency(unitType.perPersonRent) + '/month'"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Amenities Section -->
+        <div class="collapse collapse-arrow bg-base-200">
+            <input type="checkbox" x-model="expandedAmenities" />
+            <div class="collapse-title text-lg font-medium">
+                Model Amenities 
+                <span class="badge badge-primary badge-sm ml-2" x-text="unitType.modelAmenities?.length || 0"></span>
+            </div>
+            <div class="collapse-content">
+                <div class="pt-4">
+                    <AmenitySelector
+                        name="modelAmenities"
+                        label="Default amenities for all units of this type"
+                        xModel="unitType.modelAmenities"
+                        showLabel={false}
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Ensure smooth transitions */
+    .collapse-content {
+        transition: all 0.3s ease;
+    }
+    
+    /* Style number inputs to hide spinners on hover */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+</style>
