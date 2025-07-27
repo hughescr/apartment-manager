@@ -1,0 +1,303 @@
+---
+import type { Amenity } from '../../../src/types';
+import { AmenityCategory } from '../../../src/types';
+
+export interface Props {
+    name: string;
+    label?: string;
+    xModel: string;
+    amenities?: Amenity[];
+    required?: boolean;
+    disabled?: boolean;
+    class?: string;
+    error?: string;
+    helpText?: string;
+    showLabel?: boolean;
+}
+
+const {
+    name,
+    label = 'Amenities',
+    xModel,
+    amenities = [],
+    required = false,
+    disabled = false,
+    class: className = '',
+    error,
+    helpText,
+    showLabel = true,
+} = Astro.props;
+
+// Common amenities by category for quick selection
+const commonAmenities = {
+    [AmenityCategory.UNIT]: [
+        'Air Conditioning', 'Heating', 'Hardwood Floors', 'Carpet',
+        'Walk-in Closet', 'Patio/Balcony', 'In-Unit Washer/Dryer',
+        'Washer/Dryer Hookups', 'Ceiling Fan', 'Fireplace',
+        'High Ceilings', 'Storage Unit', 'Private Entrance'
+    ],
+    [AmenityCategory.PROPERTY]: [
+        'Gated Community', 'Controlled Access', 'Elevator',
+        'Laundry Facility', 'Package Service', 'Maintenance on Site',
+        'On-Site Management', 'Security System', 'Smoke Free',
+        'Parking Garage', 'Guest Parking', 'Bike Storage'
+    ],
+    [AmenityCategory.COMMUNITY]: [
+        'Pool', 'Hot Tub', 'Fitness Center', 'Clubhouse',
+        'Business Center', 'Dog Park', 'Playground',
+        'BBQ/Picnic Area', 'Tennis Court', 'Basketball Court',
+        'Game Room', 'Theater Room', 'Rooftop Deck'
+    ]
+};
+
+// Container classes
+const containerClasses = [
+    'amenity-selector',
+    'space-y-2',
+    className
+].filter(Boolean).join(' ');
+
+// Create Alpine.js data for component state
+const alpineData = {
+    searchQuery: '',
+    selectedCategory: 'all',
+    showCustom: false,
+    newAmenityName: '',
+    newAmenityCategory: AmenityCategory.UNIT,
+    
+    get filteredCommonAmenities() {
+        const query = this.searchQuery.toLowerCase();
+        const results = {};
+        
+        Object.entries(commonAmenities).forEach(([category, items]) => {
+            if (this.selectedCategory === 'all' || this.selectedCategory === category) {
+                const filtered = items.filter(item => 
+                    item.toLowerCase().includes(query)
+                );
+                if (filtered.length > 0) {
+                    results[category] = filtered;
+                }
+            }
+        });
+        
+        return results;
+    },
+    
+    isSelected(amenityName, category) {
+        return this[xModel]?.some(a => 
+            a.name === amenityName && a.category === category
+        ) || false;
+    },
+    
+    toggleAmenity(amenityName, category) {
+        if (!this[xModel]) {
+            this[xModel] = [];
+        }
+        
+        const index = this[xModel].findIndex(a => 
+            a.name === amenityName && a.category === category
+        );
+        
+        if (index >= 0) {
+            this[xModel].splice(index, 1);
+        } else {
+            this[xModel].push({
+                name: amenityName,
+                category: category
+            });
+        }
+    },
+    
+    addCustomAmenity() {
+        if (this.newAmenityName.trim()) {
+            this.toggleAmenity(this.newAmenityName.trim(), this.newAmenityCategory);
+            this.newAmenityName = '';
+            this.showCustom = false;
+        }
+    },
+    
+    selectAll(category) {
+        if (!this[xModel]) {
+            this[xModel] = [];
+        }
+        
+        commonAmenities[category].forEach(amenityName => {
+            if (!this.isSelected(amenityName, category)) {
+                this[xModel].push({
+                    name: amenityName,
+                    category: category
+                });
+            }
+        });
+    },
+    
+    clearCategory(category) {
+        if (!this[xModel]) return;
+        
+        this[xModel] = this[xModel].filter(a => a.category !== category);
+    }
+};
+
+const xData = JSON.stringify(alpineData);
+---
+
+<div class={containerClasses} x-data={xData}>
+    {showLabel && (
+        <div class="label">
+            <span class="label-text text-lg font-semibold">
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+        </div>
+    )}
+    
+    <!-- Search and Filter Controls -->
+    <div class="flex gap-2 mb-4">
+        <input
+            type="text"
+            placeholder="Search amenities..."
+            class="input input-bordered flex-1"
+            x-model="searchQuery"
+            disabled={disabled}
+        />
+        <select
+            class="select select-bordered"
+            x-model="selectedCategory"
+            disabled={disabled}
+        >
+            <option value="all">All Categories</option>
+            <option value={AmenityCategory.UNIT}>Unit Features</option>
+            <option value={AmenityCategory.PROPERTY}>Property</option>
+            <option value={AmenityCategory.COMMUNITY}>Community</option>
+        </select>
+        <button
+            type="button"
+            class="btn btn-outline btn-primary"
+            x-on:click="showCustom = !showCustom"
+            disabled={disabled}
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Custom
+        </button>
+    </div>
+    
+    <!-- Custom Amenity Form -->
+    <div x-show="showCustom" x-transition class="card bg-base-200 p-4 mb-4">
+        <div class="flex gap-2">
+            <input
+                type="text"
+                placeholder="Custom amenity name"
+                class="input input-bordered flex-1"
+                x-model="newAmenityName"
+                x-on:keyup.enter="addCustomAmenity"
+                disabled={disabled}
+            />
+            <select
+                class="select select-bordered"
+                x-model="newAmenityCategory"
+                disabled={disabled}
+            >
+                <option value={AmenityCategory.UNIT}>Unit Feature</option>
+                <option value={AmenityCategory.PROPERTY}>Property</option>
+                <option value={AmenityCategory.COMMUNITY}>Community</option>
+            </select>
+            <button
+                type="button"
+                class="btn btn-primary"
+                x-on:click="addCustomAmenity"
+                disabled={disabled}
+            >
+                Add
+            </button>
+        </div>
+    </div>
+    
+    <!-- Selected Amenities Summary -->
+    <div x-show="selectedAmenities && selectedAmenities.length > 0" class="mb-4">
+        <div class="text-sm text-base-content/70 mb-2">
+            Selected: <span x-text="selectedAmenities?.length || 0"></span> amenities
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <template x-for="amenity in selectedAmenities" :key="amenity.name + amenity.category">
+                <div class="badge badge-primary badge-lg gap-2">
+                    <span x-text="amenity.name"></span>
+                    <button
+                        type="button"
+                        class="btn btn-ghost btn-xs"
+                        x-on:click="toggleAmenity(amenity.name, amenity.category)"
+                        disabled={disabled}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Amenity Categories -->
+    <div class="space-y-4">
+        <template x-for="(amenities, category) in filteredCommonAmenities" :key="category">
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="card-title text-base" x-text="category === 'unit' ? 'Unit Features' : category === 'property' ? 'Property' : 'Community'"></h3>
+                        <div class="btn-group btn-group-sm">
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                x-on:click="selectAll(category)"
+                                disabled={disabled}
+                            >
+                                Select All
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                x-on:click="clearCategory(category)"
+                                disabled={disabled}
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <template x-for="amenityName in amenities" :key="amenityName">
+                            <label class="label cursor-pointer justify-start gap-2">
+                                <input
+                                    type="checkbox"
+                                    class="checkbox checkbox-primary"
+                                    :checked="isSelected(amenityName, category)"
+                                    x-on:change="toggleAmenity(amenityName, category)"
+                                    disabled={disabled}
+                                />
+                                <span class="label-text" x-text="amenityName"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    
+    <!-- Hidden input to store the JSON value -->
+    <input type="hidden" name={name} :value={`JSON.stringify(${xModel} || [])`} />
+    
+    {(error || helpText) && (
+        <div class={`label ${error ? 'text-error' : ''}`}>
+            <span class="label-text-alt">
+                {error || helpText}
+            </span>
+        </div>
+    )}
+</div>
+
+<style>
+    /* Smooth transitions for showing/hiding elements */
+    [x-transition] {
+        transition: all 0.2s ease;
+    }
+</style>

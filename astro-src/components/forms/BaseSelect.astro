@@ -1,0 +1,160 @@
+---
+export interface SelectOption {
+    value: string | number;
+    label: string;
+    disabled?: boolean;
+}
+
+export interface Props {
+    name: string;
+    label?: string;
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+    readonly?: boolean;
+    xModel: string;
+    options: SelectOption[] | string[];
+    value?: string | number;
+    class?: string;
+    selectClass?: string;
+    error?: string;
+    helpText?: string;
+    showLabel?: boolean;
+    floatingLabel?: boolean;
+    multiple?: boolean;
+    size?: number;
+}
+
+const {
+    name,
+    label,
+    placeholder,
+    required = false,
+    disabled = false,
+    readonly = false,
+    xModel,
+    options,
+    value,
+    class: className = '',
+    selectClass = '',
+    error,
+    helpText,
+    showLabel = true,
+    floatingLabel = true,
+    multiple = false,
+    size,
+} = Astro.props;
+
+// Normalize options to SelectOption format
+const normalizedOptions: SelectOption[] = options ? options.map(opt => 
+    typeof opt === 'string' 
+        ? { value: opt, label: opt }
+        : opt
+) : [];
+
+// Determine if we should show the label
+const shouldShowLabel = showLabel && label;
+const labelClass = floatingLabel ? 'floating-label select-label' : 'label';
+
+// Build select classes
+const selectClasses = [
+    'select',
+    'w-full',
+    error ? 'select-error' : '',
+    selectClass
+].filter(Boolean).join(' ');
+
+// Container classes
+const containerClasses = [
+    labelClass,
+    className
+].filter(Boolean).join(' ');
+---
+
+<label class={containerClasses}>
+    {shouldShowLabel && !floatingLabel && (
+        <span class="label-text">
+            {label}
+            {required && <span class="text-error">*</span>}
+        </span>
+    )}
+    {shouldShowLabel && floatingLabel && (
+        <span>
+            {label}
+            {required && <span class="text-error">*</span>}
+        </span>
+    )}
+    <select
+        name={name}
+        class={selectClasses}
+        required={required}
+        disabled={disabled}
+        x-model={xModel}
+        multiple={multiple}
+        size={size}
+    >
+        {placeholder && !multiple && (
+            <option value="" disabled selected={!value}>
+                {placeholder}
+            </option>
+        )}
+        {normalizedOptions.map((option) => (
+            <option 
+                value={option.value} 
+                disabled={option.disabled}
+                selected={value === option.value}
+            >
+                {option.label}
+            </option>
+        ))}
+    </select>
+    {(error || helpText) && (
+        <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
+            {error || helpText}
+        </span>
+    )}
+</label>
+
+<style>
+    /* Floating label styles for select */
+    .floating-label.select-label {
+        position: relative;
+        display: block;
+    }
+
+    .floating-label.select-label span:first-of-type {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.6));
+        pointer-events: none;
+        transition: all 0.2s ease;
+        background-color: var(--fallback-b1, oklch(var(--b1)));
+        padding: 0 0.25rem;
+        z-index: 1;
+    }
+
+    .floating-label.select-label select:focus ~ span:first-of-type,
+    .floating-label.select-label select:not(:invalid) ~ span:first-of-type,
+    .floating-label.select-label select:not([value=""]) ~ span:first-of-type {
+        top: -0.5rem;
+        font-size: 0.75rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.8));
+    }
+
+    .floating-label.select-label select:focus ~ span:first-of-type {
+        color: var(--fallback-p, oklch(var(--p)));
+    }
+
+    .floating-label.select-label select.select-error:focus ~ span:first-of-type {
+        color: var(--fallback-er, oklch(var(--er)));
+    }
+
+    /* Ensure select has proper padding for floating label */
+    .floating-label.select-label select {
+        padding-top: 1.25rem;
+        padding-bottom: 0.5rem;
+    }
+</style>

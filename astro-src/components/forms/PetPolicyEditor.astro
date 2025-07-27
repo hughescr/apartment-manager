@@ -1,0 +1,531 @@
+---
+import type { PetPolicy } from '../../../src/types';
+import { PetType } from '../../../src/types';
+import BaseInput from './BaseInput.astro';
+import BaseSelect from './BaseSelect.astro';
+import BaseTextarea from './BaseTextarea.astro';
+
+export interface Props {
+    name: string;
+    label?: string;
+    xModel: string;
+    petPolicy?: PetPolicy;
+    required?: boolean;
+    disabled?: boolean;
+    class?: string;
+    error?: string;
+    helpText?: string;
+    showLabel?: boolean;
+}
+
+const {
+    name,
+    label = 'Pet Policy',
+    xModel,
+    petPolicy,
+    required = false,
+    disabled = false,
+    class: className = '',
+    error,
+    helpText,
+    showLabel = true,
+} = Astro.props;
+
+// Container classes
+const containerClasses = [
+    'pet-policy-editor',
+    className
+].filter(Boolean).join(' ');
+
+// Pet type options for display
+const petTypeOptions = [
+    { value: PetType.DOG, label: 'Dogs' },
+    { value: PetType.CAT, label: 'Cats' },
+    { value: PetType.BIRD, label: 'Birds' },
+    { value: PetType.FISH, label: 'Fish' },
+    { value: PetType.SMALL_ANIMAL, label: 'Small Animals (rabbits, hamsters, etc.)' },
+];
+
+// Common breed restrictions
+const commonBreedRestrictions = [
+    'Pit Bull', 'Rottweiler', 'German Shepherd', 'Doberman', 'Akita',
+    'Chow Chow', 'Great Dane', 'Mastiff', 'Husky'
+];
+
+// Create Alpine.js data for component state
+const alpineData = {
+    modelName: xModel,
+    petTypes: petTypeOptions,
+    commonBreeds: commonBreedRestrictions,
+    showBreedRestrictions: false,
+    newBreedRestriction: '',
+    
+    init() {
+        // Initialize with default structure if not set
+        if (!this[this.modelName]) {
+            this[this.modelName] = {
+                allowed: false,
+                types: [],
+                maxCount: undefined,
+                weightLimit: undefined,
+                breedRestrictions: [],
+                deposit: undefined,
+                monthlyFee: undefined,
+                oneTimeFee: undefined,
+                notes: ''
+            };
+        }
+    },
+    
+    get petsAllowed() {
+        return this[this.modelName]?.allowed || false;
+    },
+    
+    set petsAllowed(value) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = {};
+        }
+        this[this.modelName].allowed = value;
+        
+        // Clear pet-related fields if pets are not allowed
+        if (!value) {
+            this[this.modelName].types = [];
+            this[this.modelName].maxCount = undefined;
+            this[this.modelName].weightLimit = undefined;
+            this[this.modelName].breedRestrictions = [];
+            this[this.modelName].deposit = undefined;
+            this[this.modelName].monthlyFee = undefined;
+            this[this.modelName].oneTimeFee = undefined;
+        }
+    },
+    
+    togglePetType(type) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = { allowed: true };
+        }
+        if (!this[this.modelName].types) {
+            this[this.modelName].types = [];
+        }
+        
+        const index = this[this.modelName].types.indexOf(type);
+        if (index >= 0) {
+            this[this.modelName].types.splice(index, 1);
+        } else {
+            this[this.modelName].types.push(type);
+        }
+    },
+    
+    isPetTypeSelected(type) {
+        return this[this.modelName]?.types?.includes(type) || false;
+    },
+    
+    addBreedRestriction(breed) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = { allowed: true };
+        }
+        if (!this[this.modelName].breedRestrictions) {
+            this[this.modelName].breedRestrictions = [];
+        }
+        
+        const trimmedBreed = breed.trim();
+        if (trimmedBreed && !this[this.modelName].breedRestrictions.includes(trimmedBreed)) {
+            this[this.modelName].breedRestrictions.push(trimmedBreed);
+        }
+        this.newBreedRestriction = '';
+    },
+    
+    removeBreedRestriction(index) {
+        if (this[this.modelName]?.breedRestrictions) {
+            this[this.modelName].breedRestrictions.splice(index, 1);
+        }
+    },
+    
+    toggleCommonBreed(breed) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = { allowed: true };
+        }
+        if (!this[this.modelName].breedRestrictions) {
+            this[this.modelName].breedRestrictions = [];
+        }
+        
+        const index = this[this.modelName].breedRestrictions.indexOf(breed);
+        if (index >= 0) {
+            this[this.modelName].breedRestrictions.splice(index, 1);
+        } else {
+            this[this.modelName].breedRestrictions.push(breed);
+        }
+    },
+    
+    isBreedRestricted(breed) {
+        return this[this.modelName]?.breedRestrictions?.includes(breed) || false;
+    },
+    
+    get totalPetCost() {
+        const deposit = this[this.modelName]?.deposit || 0;
+        const oneTime = this[this.modelName]?.oneTimeFee || 0;
+        const monthly = this[this.modelName]?.monthlyFee || 0;
+        return {
+            upfront: deposit + oneTime,
+            monthly: monthly,
+            annual: monthly * 12
+        };
+    }
+};
+
+// We'll inject this directly as JavaScript code
+const xData = `{
+    modelName: '${xModel}',
+    petTypes: ${JSON.stringify(petTypeOptions)},
+    commonBreeds: ${JSON.stringify(commonBreedRestrictions)},
+    showBreedRestrictions: false,
+    newBreedRestriction: '',
+    
+    init() {
+        // Initialize with default structure if not set
+        if (!this[this.modelName]) {
+            this[this.modelName] = {
+                allowed: false,
+                types: [],
+                maxCount: undefined,
+                weightLimit: undefined,
+                breedRestrictions: [],
+                deposit: undefined,
+                monthlyFee: undefined,
+                oneTimeFee: undefined,
+                notes: ''
+            };
+        }
+    },
+    
+    get petsAllowed() {
+        return this[this.modelName]?.allowed || false;
+    },
+    
+    set petsAllowed(value) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = {};
+        }
+        this[this.modelName].allowed = value;
+        
+        // Clear pet-related fields if pets are not allowed
+        if (!value) {
+            this[this.modelName].types = [];
+            this[this.modelName].maxCount = undefined;
+            this[this.modelName].weightLimit = undefined;
+            this[this.modelName].breedRestrictions = [];
+            this[this.modelName].deposit = undefined;
+            this[this.modelName].monthlyFee = undefined;
+            this[this.modelName].oneTimeFee = undefined;
+        }
+    },
+    
+    togglePetType(type) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = { allowed: true };
+        }
+        if (!this[this.modelName].types) {
+            this[this.modelName].types = [];
+        }
+        
+        const index = this[this.modelName].types.indexOf(type);
+        if (index >= 0) {
+            this[this.modelName].types.splice(index, 1);
+        } else {
+            this[this.modelName].types.push(type);
+        }
+    },
+    
+    isPetTypeSelected(type) {
+        return this[this.modelName]?.types?.includes(type) || false;
+    },
+    
+    addBreedRestriction(breed) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = { allowed: true };
+        }
+        if (!this[this.modelName].breedRestrictions) {
+            this[this.modelName].breedRestrictions = [];
+        }
+        
+        const trimmedBreed = breed.trim();
+        if (trimmedBreed && !this[this.modelName].breedRestrictions.includes(trimmedBreed)) {
+            this[this.modelName].breedRestrictions.push(trimmedBreed);
+        }
+        this.newBreedRestriction = '';
+    },
+    
+    removeBreedRestriction(index) {
+        if (this[this.modelName]?.breedRestrictions) {
+            this[this.modelName].breedRestrictions.splice(index, 1);
+        }
+    },
+    
+    toggleCommonBreed(breed) {
+        if (!this[this.modelName]) {
+            this[this.modelName] = { allowed: true };
+        }
+        if (!this[this.modelName].breedRestrictions) {
+            this[this.modelName].breedRestrictions = [];
+        }
+        
+        const index = this[this.modelName].breedRestrictions.indexOf(breed);
+        if (index >= 0) {
+            this[this.modelName].breedRestrictions.splice(index, 1);
+        } else {
+            this[this.modelName].breedRestrictions.push(breed);
+        }
+    },
+    
+    isBreedRestricted(breed) {
+        return this[this.modelName]?.breedRestrictions?.includes(breed) || false;
+    },
+    
+    get totalPetCost() {
+        const deposit = this[this.modelName]?.deposit || 0;
+        const oneTime = this[this.modelName]?.oneTimeFee || 0;
+        const monthly = this[this.modelName]?.monthlyFee || 0;
+        return {
+            upfront: deposit + oneTime,
+            monthly: monthly,
+            annual: monthly * 12
+        };
+    }
+}`;
+---
+
+<div class={containerClasses} x-data={xData} x-init="init()">
+    {showLabel && (
+        <div class="label">
+            <span class="label-text text-lg font-semibold">
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+        </div>
+    )}
+    
+    <!-- Pets Allowed Toggle -->
+    <div class="form-control mb-6">
+        <label class="label cursor-pointer justify-start gap-3">
+            <input
+                type="checkbox"
+                class="toggle toggle-primary toggle-lg"
+                x-model="petsAllowed"
+                disabled={disabled}
+            />
+            <span class="label-text text-lg font-medium">Pets Allowed</span>
+        </label>
+    </div>
+    
+    <!-- Pet Policy Details (shown when pets are allowed) -->
+    <div x-show="petsAllowed" x-transition class="space-y-6">
+        <!-- Pet Types -->
+        <div class="card bg-base-200">
+            <div class="card-body">
+                <h3 class="card-title text-base">Allowed Pet Types</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <template x-for="petType in petTypes" :key="petType.value">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            <input
+                                type="checkbox"
+                                class="checkbox checkbox-primary"
+                                x-on:change="togglePetType(petType.value)"
+                                :checked="isPetTypeSelected(petType.value)"
+                                :disabled="disabled"
+                            />
+                            <span class="label-text" x-text="petType.label"></span>
+                        </label>
+                    </template>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pet Limits -->
+        <div class="card bg-base-200">
+            <div class="card-body">
+                <h3 class="card-title text-base">Pet Limits</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <BaseInput
+                        name={name + '_maxCount'}
+                        label="Maximum Number of Pets"
+                        type="number"
+                        xModel={xModel + '.maxCount'}
+                        min="1"
+                        max="10"
+                        placeholder="e.g., 2"
+                        disabled={disabled}
+                    />
+                    <BaseInput
+                        name={name + '_weightLimit'}
+                        label="Weight Limit (lbs)"
+                        type="number"
+                        xModel={xModel + '.weightLimit'}
+                        min="0"
+                        max="200"
+                        placeholder="e.g., 50"
+                        disabled={disabled}
+                    />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Breed Restrictions -->
+        <div class="card bg-base-200">
+            <div class="card-body">
+                <h3 class="card-title text-base">Breed Restrictions</h3>
+                
+                <!-- Current Restrictions -->
+                <div x-show={xModel + '.breedRestrictions && ' + xModel + '.breedRestrictions.length > 0'} class="mb-4">
+                    <div class="text-sm font-medium mb-2">Current Restrictions:</div>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for={'(breed, index) in ' + xModel + '.breedRestrictions'} :key="breed">
+                            <div class="badge badge-warning gap-2">
+                                <span x-text="breed"></span>
+                                <button
+                                    type="button"
+                                    x-on:click="removeBreedRestriction(index)"
+                                    class="btn btn-ghost btn-xs"
+                                    :disabled="disabled"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Quick Add Common Breeds -->
+                <button
+                    type="button"
+                    x-on:click="showBreedRestrictions = !showBreedRestrictions"
+                    class="btn btn-sm btn-ghost"
+                    :disabled={disabled}
+                >
+                    <span x-text="showBreedRestrictions ? 'Hide' : 'Show'"></span> Common Breed Restrictions
+                </button>
+                
+                <div x-show="showBreedRestrictions" x-transition class="mt-4">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <template x-for="breed in commonBreeds" :key="breed">
+                            <label class="label cursor-pointer justify-start gap-2">
+                                <input
+                                    type="checkbox"
+                                    class="checkbox checkbox-sm"
+                                    x-on:change="toggleCommonBreed(breed)"
+                                    :checked="isBreedRestricted(breed)"
+                                    :disabled="disabled"
+                                />
+                                <span class="label-text text-sm" x-text="breed"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Custom Breed Input -->
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Add Custom Breed Restriction</span>
+                    </label>
+                    <div class="join">
+                        <input
+                            type="text"
+                            x-model="newBreedRestriction"
+                            placeholder="Enter breed name"
+                            class="input input-bordered join-item flex-1"
+                            :disabled="disabled"
+                            x-on:keyup.enter="addBreedRestriction(newBreedRestriction)"
+                        />
+                        <button
+                            type="button"
+                            x-on:click="addBreedRestriction(newBreedRestriction)"
+                            class="btn btn-primary join-item"
+                            :disabled="disabled"
+                        >
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pet Fees -->
+        <div class="card bg-base-200">
+            <div class="card-body">
+                <h3 class="card-title text-base">Pet Fees</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <BaseInput
+                        name={name + '_deposit'}
+                        label="Pet Deposit (Refundable)"
+                        type="number"
+                        xModel={xModel + '.deposit'}
+                        min="0"
+                        max="5000"
+                        placeholder="e.g., 500"
+                        helpText="Refundable security deposit"
+                        disabled={disabled}
+                    />
+                    <BaseInput
+                        name={name + '_oneTimeFee'}
+                        label="One-Time Pet Fee"
+                        type="number"
+                        xModel={xModel + '.oneTimeFee'}
+                        min="0"
+                        max="5000"
+                        placeholder="e.g., 250"
+                        helpText="Non-refundable fee"
+                        disabled={disabled}
+                    />
+                    <BaseInput
+                        name={name + '_monthlyFee'}
+                        label="Monthly Pet Rent"
+                        type="number"
+                        xModel={xModel + '.monthlyFee'}
+                        min="0"
+                        max="500"
+                        placeholder="e.g., 50"
+                        helpText="Per pet per month"
+                        disabled={disabled}
+                    />
+                </div>
+                
+                <!-- Fee Summary -->
+                <div x-show="totalPetCost.upfront > 0 || totalPetCost.monthly > 0" class="mt-4 p-4 bg-base-100 rounded-lg">
+                    <div class="text-sm font-medium mb-2">Fee Summary:</div>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div>Upfront Cost:</div>
+                        <div class="font-semibold">$<span x-text="totalPetCost.upfront.toFixed(2)"></span></div>
+                        <div>Monthly Cost:</div>
+                        <div class="font-semibold">$<span x-text="totalPetCost.monthly.toFixed(2)"></span></div>
+                        <div>Annual Cost:</div>
+                        <div class="font-semibold">$<span x-text="totalPetCost.annual.toFixed(2)"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Notes -->
+        <BaseTextarea
+            name={name + '_notes'}
+            label="Additional Pet Policy Notes"
+            xModel={xModel + '.notes'}
+            rows="3"
+            placeholder="Any additional pet policy information..."
+            disabled={disabled}
+        />
+    </div>
+    
+    <!-- Hidden input for form submission -->
+    <input type="hidden" name={name} x-bind:value={`JSON.stringify(${xModel} || {})`} />
+    
+    <!-- Form Error -->
+    {error && (
+        <label class="label">
+            <span class="label-text-alt text-error">{error}</span>
+        </label>
+    )}
+</div>
+
+<style>
+    .pet-policy-editor {
+        /* Custom styles if needed */
+    }
+</style>

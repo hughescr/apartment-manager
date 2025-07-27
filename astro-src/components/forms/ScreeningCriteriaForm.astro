@@ -1,0 +1,396 @@
+---
+import type { ScreeningCriteria } from '../../../src/types';
+import BaseInput from './BaseInput.astro';
+import BaseTextarea from './BaseTextarea.astro';
+
+export interface Props {
+    name: string;
+    label?: string;
+    xModel: string;
+    screeningCriteria?: ScreeningCriteria;
+    required?: boolean;
+    disabled?: boolean;
+    class?: string;
+    error?: string;
+    helpText?: string;
+    showLabel?: boolean;
+}
+
+const {
+    name,
+    label = 'Screening Criteria',
+    xModel,
+    screeningCriteria,
+    required = false,
+    disabled = false,
+    class: className = '',
+    error,
+    helpText,
+    showLabel = true,
+} = Astro.props;
+
+// Container classes
+const containerClasses = [
+    'screening-criteria-form',
+    className
+].filter(Boolean).join(' ');
+
+// Create Alpine.js data for component state
+const alpineData = {
+    showAdvanced: false,
+    
+    init() {
+        // Initialize with default structure if not set
+        if (!this[xModel]) {
+            this[xModel] = {
+                incomeRatio: undefined,
+                minCreditScore: undefined,
+                maxOccupantsPerBedroom: undefined,
+                backgroundCheckRequired: false,
+                evictionHistory: false,
+                criminalHistory: false,
+                references: undefined,
+                employmentVerification: false,
+                rentalHistory: false,
+                notes: ''
+            };
+        }
+    },
+    
+    // Quick presets for common screening criteria
+    applyPreset(preset) {
+        if (!this[xModel]) {
+            this[xModel] = {};
+        }
+        
+        switch(preset) {
+            case 'strict':
+                Object.assign(this[xModel], {
+                    incomeRatio: 3,
+                    minCreditScore: 700,
+                    maxOccupantsPerBedroom: 2,
+                    backgroundCheckRequired: true,
+                    evictionHistory: true,
+                    criminalHistory: true,
+                    references: 3,
+                    employmentVerification: true,
+                    rentalHistory: true
+                });
+                break;
+            case 'standard':
+                Object.assign(this[xModel], {
+                    incomeRatio: 2.5,
+                    minCreditScore: 650,
+                    maxOccupantsPerBedroom: 2,
+                    backgroundCheckRequired: true,
+                    evictionHistory: true,
+                    criminalHistory: true,
+                    references: 2,
+                    employmentVerification: true,
+                    rentalHistory: true
+                });
+                break;
+            case 'flexible':
+                Object.assign(this[xModel], {
+                    incomeRatio: 2,
+                    minCreditScore: 600,
+                    maxOccupantsPerBedroom: 3,
+                    backgroundCheckRequired: true,
+                    evictionHistory: false,
+                    criminalHistory: false,
+                    references: 1,
+                    employmentVerification: false,
+                    rentalHistory: false
+                });
+                break;
+            case 'minimal':
+                Object.assign(this[xModel], {
+                    incomeRatio: undefined,
+                    minCreditScore: undefined,
+                    maxOccupantsPerBedroom: undefined,
+                    backgroundCheckRequired: false,
+                    evictionHistory: false,
+                    criminalHistory: false,
+                    references: undefined,
+                    employmentVerification: false,
+                    rentalHistory: false
+                });
+                break;
+        }
+    },
+    
+    get hasRequirements() {
+        return this[xModel] && (
+            this[xModel].incomeRatio ||
+            this[xModel].minCreditScore ||
+            this[xModel].backgroundCheckRequired ||
+            this[xModel].employmentVerification ||
+            this[xModel].rentalHistory
+        );
+    },
+    
+    get requirementsSummary() {
+        if (!this[xModel] || !this.hasRequirements) return 'No screening requirements set';
+        
+        const parts = [];
+        if (this[xModel].incomeRatio) {
+            parts.push(`${this[xModel].incomeRatio}x income`);
+        }
+        if (this[xModel].minCreditScore) {
+            parts.push(`${this[xModel].minCreditScore}+ credit`);
+        }
+        if (this[xModel].backgroundCheckRequired) {
+            parts.push('background check');
+        }
+        
+        return parts.join(', ');
+    }
+};
+
+const xData = JSON.stringify(alpineData);
+---
+
+<div class={containerClasses} x-data={xData} x-init="init()">
+    {showLabel && (
+        <div class="label">
+            <span class="label-text text-lg font-semibold">
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+        </div>
+    )}
+    
+    <!-- Quick Presets -->
+    <div class="alert alert-info mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+            <div class="text-sm mb-2">Quick presets:</div>
+            <div class="btn-group btn-group-sm">
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    x-on:click="applyPreset('strict')"
+                    disabled={disabled}
+                >
+                    Strict
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    x-on:click="applyPreset('standard')"
+                    disabled={disabled}
+                >
+                    Standard
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    x-on:click="applyPreset('flexible')"
+                    disabled={disabled}
+                >
+                    Flexible
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    x-on:click="applyPreset('minimal')"
+                    disabled={disabled}
+                >
+                    Minimal
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Requirements Summary -->
+    <div x-show="hasRequirements" class="stats shadow mb-4 w-full">
+        <div class="stat">
+            <div class="stat-title">Current Requirements</div>
+            <div class="stat-value text-lg" x-text="requirementsSummary"></div>
+        </div>
+    </div>
+    
+    <!-- Financial Requirements -->
+    <div class="card bg-base-200 mb-4">
+        <div class="card-body">
+            <h3 class="card-title text-base">Financial Requirements</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <BaseInput
+                        name={name + '_incomeRatio'}
+                        label="Income to Rent Ratio"
+                        type="number"
+                        xModel={xModel + '.incomeRatio'}
+                        min="0"
+                        max="10"
+                        step="0.5"
+                        placeholder="e.g., 3"
+                        helpText="Applicant's monthly income must be X times the rent"
+                        disabled={disabled}
+                    />
+                </div>
+                <div>
+                    <BaseInput
+                        name={name + '_minCreditScore'}
+                        label="Minimum Credit Score"
+                        type="number"
+                        xModel={xModel + '.minCreditScore'}
+                        min="300"
+                        max="850"
+                        step="10"
+                        placeholder="e.g., 650"
+                        disabled={disabled}
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Background Checks -->
+    <div class="card bg-base-200 mb-4">
+        <div class="card-body">
+            <h3 class="card-title text-base">Background Checks</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input
+                        type="checkbox"
+                        class="checkbox checkbox-primary"
+                        x-model={xModel + '.backgroundCheckRequired'}
+                        disabled={disabled}
+                    />
+                    <span class="label-text">Background Check Required</span>
+                </label>
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input
+                        type="checkbox"
+                        class="checkbox checkbox-primary"
+                        x-model={xModel + '.evictionHistory'}
+                        disabled={disabled}
+                    />
+                    <span class="label-text">Check Eviction History</span>
+                </label>
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input
+                        type="checkbox"
+                        class="checkbox checkbox-primary"
+                        x-model={xModel + '.criminalHistory'}
+                        disabled={disabled}
+                    />
+                    <span class="label-text">Check Criminal History</span>
+                </label>
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input
+                        type="checkbox"
+                        class="checkbox checkbox-primary"
+                        x-model={xModel + '.rentalHistory'}
+                        disabled={disabled}
+                    />
+                    <span class="label-text">Verify Rental History</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Verification Requirements -->
+    <div class="card bg-base-200 mb-4">
+        <div class="card-body">
+            <h3 class="card-title text-base">Verification Requirements</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input
+                        type="checkbox"
+                        class="checkbox checkbox-primary"
+                        x-model={xModel + '.employmentVerification'}
+                        disabled={disabled}
+                    />
+                    <span class="label-text">Employment Verification Required</span>
+                </label>
+                <div>
+                    <BaseInput
+                        name={name + '_references'}
+                        label="Number of References Required"
+                        type="number"
+                        xModel={xModel + '.references'}
+                        min="0"
+                        max="5"
+                        placeholder="e.g., 2"
+                        disabled={disabled}
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Occupancy Limits -->
+    <div class="card bg-base-200 mb-4">
+        <div class="card-body">
+            <h3 class="card-title text-base">Occupancy Limits</h3>
+            <BaseInput
+                name={name + '_maxOccupantsPerBedroom'}
+                label="Maximum Occupants per Bedroom"
+                type="number"
+                xModel={xModel + '.maxOccupantsPerBedroom'}
+                min="1"
+                max="5"
+                placeholder="e.g., 2"
+                helpText="Maximum number of people allowed per bedroom"
+                disabled={disabled}
+                class="max-w-xs"
+            />
+        </div>
+    </div>
+    
+    <!-- Additional Notes -->
+    <div class="card bg-base-200">
+        <div class="card-body">
+            <h3 class="card-title text-base">Additional Criteria</h3>
+            <BaseTextarea
+                name={name + '_notes'}
+                label="Additional Screening Notes"
+                xModel={xModel + '.notes'}
+                placeholder="Any additional screening criteria or requirements..."
+                disabled={disabled}
+                showLabel={false}
+                class="w-full"
+            />
+        </div>
+    </div>
+    
+    <!-- Fair Housing Notice -->
+    <div class="alert alert-warning mt-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+            <h3 class="font-bold">Fair Housing Notice</h3>
+            <div class="text-sm">
+                All screening criteria must comply with Fair Housing laws. Criteria cannot discriminate based on race, color, 
+                national origin, religion, sex, familial status, or disability.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden input to store the JSON value -->
+    <input type="hidden" name={name} :value={`JSON.stringify(${xModel})`} />
+    
+    {(error || helpText) && (
+        <div class={`label ${error ? 'text-error' : ''} mt-2`}>
+            <span class="label-text-alt">
+                {error || helpText}
+            </span>
+        </div>
+    )}
+</div>
+
+<style>
+    .screening-criteria-form {
+        @apply space-y-2;
+    }
+    
+    /* Smooth transitions for showing/hiding elements */
+    [x-transition] {
+        transition: all 0.2s ease;
+    }
+</style>

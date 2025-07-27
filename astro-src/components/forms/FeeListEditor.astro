@@ -1,0 +1,399 @@
+---
+import type { Fee } from '../../../src/types';
+import { FeeType } from '../../../src/types';
+
+export interface Props {
+    name: string;
+    label?: string;
+    xModel: string;
+    fees?: Fee[];
+    required?: boolean;
+    disabled?: boolean;
+    class?: string;
+    error?: string;
+    helpText?: string;
+    showLabel?: boolean;
+    feeTypes?: FeeType[]; // Allow customization of available fee types
+}
+
+const {
+    name,
+    label = 'Fees',
+    xModel,
+    fees = [],
+    required = false,
+    disabled = false,
+    class: className = '',
+    error,
+    helpText,
+    showLabel = true,
+    feeTypes = Object.values(FeeType),
+} = Astro.props;
+
+// Container classes
+const containerClasses = [
+    'fee-list-editor',
+    'space-y-2',
+    className
+].filter(Boolean).join(' ');
+
+// Fee type labels for display
+const feeTypeLabels = {
+    [FeeType.APPLICATION]: 'Application Fee',
+    [FeeType.ADMIN]: 'Administrative Fee',
+    [FeeType.SECURITY_DEPOSIT]: 'Security Deposit',
+    [FeeType.PET_DEPOSIT]: 'Pet Deposit',
+    [FeeType.PET_FEE]: 'Pet Fee',
+    [FeeType.PARKING]: 'Parking Fee',
+    [FeeType.STORAGE]: 'Storage Fee',
+    [FeeType.MOVE_IN]: 'Move-in Fee',
+    [FeeType.KEY_DEPOSIT]: 'Key Deposit',
+    [FeeType.CLEANING]: 'Cleaning Fee',
+};
+
+// Create Alpine.js data for component state
+const alpineData = {
+    showAddForm: false,
+    newFee: {
+        type: FeeType.APPLICATION,
+        amount: 0,
+        description: '',
+        refundable: false
+    },
+    
+    addFee() {
+        if (!this[xModel]) {
+            this[xModel] = [];
+        }
+        
+        // Validate amount
+        if (this.newFee.amount <= 0) {
+            alert('Fee amount must be greater than 0');
+            return;
+        }
+        
+        // Add the new fee
+        this[xModel].push({
+            type: this.newFee.type,
+            amount: Number(this.newFee.amount),
+            description: this.newFee.description || undefined,
+            refundable: this.newFee.refundable || undefined
+        });
+        
+        // Reset form
+        this.resetNewFee();
+        this.showAddForm = false;
+    },
+    
+    removeFee(index) {
+        if (confirm('Are you sure you want to remove this fee?')) {
+            this[xModel].splice(index, 1);
+        }
+    },
+    
+    updateFee(index, field, value) {
+        if (!this[xModel] || !this[xModel][index]) return;
+        
+        if (field === 'amount') {
+            this[xModel][index][field] = Number(value);
+        } else {
+            this[xModel][index][field] = value;
+        }
+    },
+    
+    resetNewFee() {
+        this.newFee = {
+            type: FeeType.APPLICATION,
+            amount: 0,
+            description: '',
+            refundable: false
+        };
+    },
+    
+    getFeeTypeLabel(type) {
+        return this.feeTypeLabels[type] || type;
+    },
+    
+    get totalFees() {
+        if (!this[xModel]) return 0;
+        return this[xModel].reduce((sum, fee) => sum + (fee.amount || 0), 0);
+    },
+    
+    get refundableTotal() {
+        if (!this[xModel]) return 0;
+        return this[xModel]
+            .filter(fee => fee.refundable)
+            .reduce((sum, fee) => sum + (fee.amount || 0), 0);
+    },
+    
+    get nonRefundableTotal() {
+        if (!this[xModel]) return 0;
+        return this[xModel]
+            .filter(fee => !fee.refundable)
+            .reduce((sum, fee) => sum + (fee.amount || 0), 0);
+    }
+};
+
+// Merge alpine data with fee type labels
+const xData = {
+    ...alpineData,
+    feeTypeLabels: feeTypeLabels
+};
+---
+
+<div class={containerClasses} x-data={JSON.stringify(xData)}>
+    {showLabel && (
+        <div class="label">
+            <span class="label-text text-lg font-semibold">
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+        </div>
+    )}
+    
+    <!-- Fee Summary -->
+    <div x-show="fees && fees.length > 0" class="stats shadow mb-4">
+        <div class="stat">
+            <div class="stat-title">Total Fees</div>
+            <div class="stat-value text-primary">
+                $<span x-text="totalFees.toFixed(2)"></span>
+            </div>
+            <div class="stat-desc">
+                <span x-text="fees.length"></span> fee(s)
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Refundable</div>
+            <div class="stat-value text-success text-2xl">
+                $<span x-text="refundableTotal.toFixed(2)"></span>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-title">Non-refundable</div>
+            <div class="stat-value text-warning text-2xl">
+                $<span x-text="nonRefundableTotal.toFixed(2)"></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fee List -->
+    <div class="space-y-2 mb-4">
+        <template x-for="(fee, index) in fees" :key="index">
+            <div class="card bg-base-200">
+                <div class="card-body p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <!-- Fee Type -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Type</span>
+                            </label>
+                            <select
+                                class="select select-bordered select-sm w-full"
+                                x-model="fee.type"
+                                x-on:change="updateFee(index, 'type', $event.target.value)"
+                                disabled={disabled}
+                            >
+                                {feeTypes.map(type => (
+                                    <option value={type}>
+                                        {feeTypeLabels[type] || type}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        <!-- Amount -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Amount</span>
+                            </label>
+                            <label class="input-group input-group-sm">
+                                <span>$</span>
+                                <input
+                                    type="number"
+                                    class="input input-bordered input-sm w-full"
+                                    x-model.number="fee.amount"
+                                    x-on:change="updateFee(index, 'amount', $event.target.value)"
+                                    min="0"
+                                    step="0.01"
+                                    disabled={disabled}
+                                />
+                            </label>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Description</span>
+                            </label>
+                            <input
+                                type="text"
+                                class="input input-bordered input-sm w-full"
+                                x-model="fee.description"
+                                x-on:change="updateFee(index, 'description', $event.target.value)"
+                                placeholder="Optional description"
+                                disabled={disabled}
+                            />
+                        </div>
+                        
+                        <!-- Refundable & Actions -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">&nbsp;</span>
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <label class="label cursor-pointer flex-1">
+                                    <input
+                                        type="checkbox"
+                                        class="checkbox checkbox-sm"
+                                        x-model="fee.refundable"
+                                        x-on:change="updateFee(index, 'refundable', $event.target.checked)"
+                                        disabled={disabled}
+                                    />
+                                    <span class="label-text ml-2">Refundable</span>
+                                </label>
+                                <button
+                                    type="button"
+                                    class="btn btn-ghost btn-sm btn-square text-error"
+                                    x-on:click="removeFee(index)"
+                                    disabled={disabled}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    
+    <!-- Add Fee Form -->
+    <div x-show="showAddForm" x-transition class="card bg-base-200 mb-4">
+        <div class="card-body p-4">
+            <h3 class="card-title text-base mb-3">Add New Fee</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- Fee Type -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Type</span>
+                    </label>
+                    <select
+                        class="select select-bordered select-sm w-full"
+                        x-model="newFee.type"
+                        disabled={disabled}
+                    >
+                        {feeTypes.map(type => (
+                            <option value={type}>
+                                {feeTypeLabels[type] || type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                
+                <!-- Amount -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Amount</span>
+                    </label>
+                    <label class="input-group input-group-sm">
+                        <span>$</span>
+                        <input
+                            type="number"
+                            class="input input-bordered input-sm w-full"
+                            x-model.number="newFee.amount"
+                            min="0"
+                            step="0.01"
+                            disabled={disabled}
+                        />
+                    </label>
+                </div>
+                
+                <!-- Description -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Description</span>
+                    </label>
+                    <input
+                        type="text"
+                        class="input input-bordered input-sm w-full"
+                        x-model="newFee.description"
+                        placeholder="Optional description"
+                        disabled={disabled}
+                    />
+                </div>
+                
+                <!-- Refundable -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">&nbsp;</span>
+                    </label>
+                    <label class="label cursor-pointer">
+                        <input
+                            type="checkbox"
+                            class="checkbox checkbox-sm"
+                            x-model="newFee.refundable"
+                            disabled={disabled}
+                        />
+                        <span class="label-text ml-2">Refundable</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="card-actions justify-end mt-4">
+                <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    x-on:click="showAddForm = false; resetNewFee()"
+                    disabled={disabled}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    x-on:click="addFee"
+                    disabled={disabled}
+                >
+                    Add Fee
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Fee Button -->
+    <button
+        type="button"
+        class="btn btn-outline btn-primary"
+        x-on:click="showAddForm = !showAddForm"
+        x-show="!showAddForm"
+        disabled={disabled}
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Fee
+    </button>
+    
+    <!-- Hidden input to store the JSON value -->
+    <input type="hidden" name={name} :value="JSON.stringify(fees || [])" />
+    
+    {(error || helpText) && (
+        <div class={`label ${error ? 'text-error' : ''}`}>
+            <span class="label-text-alt">
+                {error || helpText}
+            </span>
+        </div>
+    )}
+</div>
+
+<style>
+    /* Smooth transitions for showing/hiding elements */
+    [x-transition] {
+        transition: all 0.2s ease;
+    }
+    
+    /* Tailwind safelist comment to ensure utility classes are included */
+    /* space-y-2 */
+</style>

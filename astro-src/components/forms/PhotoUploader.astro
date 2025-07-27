@@ -1,0 +1,335 @@
+---
+import { Resource } from 'sst';
+
+export interface Photo {
+    url: string;
+    key?: string;
+    name?: string;
+    size?: number;
+    type?: string;
+    uploadedAt?: string;
+}
+
+export interface Props {
+    name: string;
+    label?: string;
+    xModel: string; // Should bind to an array of photo URLs
+    multiple?: boolean;
+    maxFiles?: number;
+    maxFileSize?: number; // in MB
+    accept?: string;
+    required?: boolean;
+    disabled?: boolean;
+    class?: string;
+    error?: string;
+    helpText?: string;
+    buildingId: string; // Required for S3 key generation
+    unitId: string; // Required for S3 key generation
+    existingPhotos?: Photo[] | string[]; // Support both Photo objects and URL strings
+}
+
+const {
+    name,
+    label = 'Photos',
+    xModel,
+    multiple = true,
+    maxFiles = 10,
+    maxFileSize = 5, // 5MB default
+    accept = 'image/*',
+    required = false,
+    disabled = false,
+    class: className = '',
+    error,
+    helpText,
+    buildingId,
+    unitId,
+    existingPhotos = [],
+} = Astro.props;
+
+// Get the upload API URL from SST Resource
+const uploadEndpoint = Resource.UploadAPI.url;
+
+// Normalize existing photos to Photo format
+const normalizedPhotos: Photo[] = existingPhotos.map(photo => 
+    typeof photo === 'string' 
+        ? { url: photo }
+        : photo
+);
+
+const maxFileSizeBytes = maxFileSize * 1024 * 1024;
+
+// Generate unique ID for this uploader instance
+const uploaderId = `photo-uploader-${Math.random().toString(36).substring(2, 9)}`;
+
+// Create the Alpine.js data object
+const xData = {
+    photos: normalizedPhotos,
+    uploading: false,
+    uploadProgress: {},
+    errors: [],
+    dragOver: false,
+    
+    init() {
+        // Sync with parent x-model
+        this.$watch('photos', (value) => {
+            const urls = value.map(p => p.url);
+            this[xModel] = urls;
+        });
+        
+        // Initialize from existing data if any
+        if (this[xModel] && Array.isArray(this[xModel])) {
+            this.photos = this[xModel].map(url => ({ url }));
+        }
+    },
+    
+    handleFiles(files) {
+        if (this.uploading || disabled) return;
+        
+        const fileArray = Array.from(files);
+        this.errors = [];
+        
+        // Validate file count
+        if (this.photos.length + fileArray.length > maxFiles) {
+            this.errors.push(`Maximum ${maxFiles} files allowed`);
+            return;
+        }
+        
+        // Validate and process each file
+        fileArray.forEach(file => {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                this.errors.push(`${file.name} is not an image file`);
+                return;
+            }
+            
+            // Validate file size
+            if (file.size > maxFileSizeBytes) {
+                this.errors.push(`${file.name} exceeds ${maxFileSize}MB limit`);
+                return;
+            }
+            
+            this.uploadFile(file);
+        });
+    },
+    
+    async uploadFile(file) {
+        const tempId = Math.random().toString(36).substring(2, 9);
+        this.uploadProgress[tempId] = 0;
+        this.uploading = true;
+        
+        try {
+            // Get presigned URL
+            const key = `buildings/${buildingId}/units/${unitId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            
+            const presignedResponse = await fetch(`${uploadEndpoint}/presigned-url`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key, contentType: file.type })
+            });
+            
+            if (!presignedResponse.ok) {
+                throw new Error('Failed to get upload URL');
+            }
+            
+            const { uploadUrl, photoUrl } = await presignedResponse.json();
+            
+            // Upload to S3
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    this.uploadProgress[tempId] = Math.round((e.loaded / e.total) * 100);
+                }
+            });
+            
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    // Add to photos array
+                    this.photos.push({
+                        url: photoUrl,
+                        key: key,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        uploadedAt: new Date().toISOString()
+                    });
+                    
+                    delete this.uploadProgress[tempId];
+                    this.uploading = Object.keys(this.uploadProgress).length > 0;
+                } else {
+                    throw new Error('Upload failed');
+                }
+            });
+            
+            xhr.addEventListener('error', () => {
+                this.errors.push(`Failed to upload ${file.name}`);
+                delete this.uploadProgress[tempId];
+                this.uploading = Object.keys(this.uploadProgress).length > 0;
+            });
+            
+            xhr.open('PUT', uploadUrl);
+            xhr.setRequestHeader('Content-Type', file.type);
+            xhr.send(file);
+            
+        } catch (error) {
+            this.errors.push(`Failed to upload ${file.name}: ${error.message}`);
+            delete this.uploadProgress[tempId];
+            this.uploading = Object.keys(this.uploadProgress).length > 0;
+        }
+    },
+    
+    removePhoto(index) {
+        this.photos.splice(index, 1);
+    },
+    
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    },
+    
+    handleDragEnter(e) {
+        e.preventDefault();
+        this.dragOver = true;
+    },
+    
+    handleDragLeave(e) {
+        e.preventDefault();
+        this.dragOver = false;
+    },
+    
+    handleDragOver(e) {
+        e.preventDefault();
+    },
+    
+    handleDrop(e) {
+        e.preventDefault();
+        this.handleFiles(e.dataTransfer.files);
+        this.dragOver = false;
+    }
+};
+---
+
+<div class={`photo-uploader ${className}`} x-data={JSON.stringify(xData)}>
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text">
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+            {helpText && (
+                <span class="label-text-alt">{helpText}</span>
+            )}
+        </label>
+        
+        <!-- File Input / Drop Zone -->
+        <div
+            class="border-2 border-dashed rounded-lg p-8 text-center transition-colors"
+            :class="{
+                'border-primary bg-primary/10': dragOver,
+                'border-base-300 bg-base-200': !dragOver,
+                'opacity-50 cursor-not-allowed': uploading || disabled
+            }"
+            x-on:dragenter="handleDragEnter"
+            x-on:dragleave="handleDragLeave"
+            x-on:dragover="handleDragOver"
+            x-on:drop="handleDrop"
+        >
+            <input
+                type="file"
+                :id={uploaderId}
+                :name={name}
+                :accept={accept}
+                :multiple={multiple}
+                :disabled="uploading || disabled"
+                :required={required && normalizedPhotos.length === 0}
+                class="hidden"
+                x-on:change="handleFiles($event.target.files)"
+            />
+            
+            <label
+                :for={uploaderId}
+                class="cursor-pointer"
+                x-show="!uploading"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p class="text-base-content/70">
+                    Click to upload or drag and drop
+                </p>
+                <p class="text-sm text-base-content/50 mt-1">
+                    {accept} (max {maxFileSize}MB{multiple ? `, up to ${maxFiles} files` : ''})
+                </p>
+            </label>
+            
+            <!-- Upload Progress -->
+            <div x-show="uploading" class="space-y-2">
+                <template x-for="(progress, id) in uploadProgress" :key="id">
+                    <div class="w-full">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Uploading...</span>
+                            <span x-text="progress + '%'"></span>
+                        </div>
+                        <progress class="progress progress-primary w-full" :value="progress" max="100"></progress>
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Error Messages -->
+        <template x-if="errors.length > 0">
+            <div class="alert alert-error mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <template x-for="error in errors" :key="error">
+                        <p x-text="error"></p>
+                    </template>
+                </div>
+            </div>
+        </template>
+        
+        <!-- Uploaded Photos Grid -->
+        <template x-if="photos.length > 0">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                <template x-for="(photo, index) in photos" :key="photo.url">
+                    <div class="relative group">
+                        <img
+                            :src="photo.url"
+                            :alt="photo.name || `Photo ${index + 1}`"
+                            class="w-full h-32 object-cover rounded-lg"
+                        />
+                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                            <button
+                                type="button"
+                                x-on:click="removePhoto(index)"
+                                class="btn btn-sm btn-error"
+                                :disabled="uploading || disabled"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                        <div x-show="photo.size" class="text-xs text-base-content/50 mt-1">
+                            <span x-text="formatFileSize(photo.size)"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+        
+        <!-- Form Error -->
+        {error && (
+            <label class="label">
+                <span class="label-text-alt text-error">{error}</span>
+            </label>
+        )}
+    </div>
+</div>
+
+<style>
+    .photo-uploader {
+        /* Custom styles if needed */
+    }
+</style>

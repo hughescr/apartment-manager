@@ -1,0 +1,137 @@
+---
+export interface Props {
+    name: string;
+    label?: string;
+    placeholder?: string;
+    type?: 'text' | 'number' | 'email' | 'tel' | 'url' | 'date' | 'time' | 'datetime-local';
+    required?: boolean;
+    disabled?: boolean;
+    readonly?: boolean;
+    xModel: string;
+    value?: string | number;
+    min?: string | number;
+    max?: string | number;
+    step?: string | number;
+    pattern?: string;
+    autocomplete?: string;
+    class?: string;
+    inputClass?: string;
+    error?: string;
+    helpText?: string;
+    showLabel?: boolean;
+    floatingLabel?: boolean;
+}
+
+const {
+    name,
+    label,
+    placeholder,
+    type = 'text',
+    required = false,
+    disabled = false,
+    readonly = false,
+    xModel,
+    value,
+    min,
+    max,
+    step,
+    pattern,
+    autocomplete,
+    class: className = '',
+    inputClass = '',
+    error,
+    helpText,
+    showLabel = true,
+    floatingLabel = true,
+} = Astro.props;
+
+// Determine if we should show the label
+const shouldShowLabel = showLabel && label;
+const labelClass = floatingLabel ? 'floating-label' : 'label';
+
+// Build input classes
+const inputClasses = [
+    'input',
+    'w-full',
+    error ? 'input-error' : '',
+    inputClass
+].filter(Boolean).join(' ');
+
+// Container classes
+const containerClasses = [
+    labelClass,
+    className
+].filter(Boolean).join(' ');
+---
+
+<label class={containerClasses}>
+    {shouldShowLabel && !floatingLabel && (
+        <span class="label-text">
+            {label}
+            {required && <span class="text-error">*</span>}
+        </span>
+    )}
+    {shouldShowLabel && floatingLabel && (
+        <span>
+            {label}
+            {required && <span class="text-error">*</span>}
+        </span>
+    )}
+    <input
+        type={type}
+        name={name}
+        placeholder={placeholder || (floatingLabel ? label : '')}
+        class={inputClasses}
+        required={required}
+        disabled={disabled}
+        readonly={readonly}
+        x-model={type === 'number' ? xModel + '.number' : xModel}
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        pattern={pattern}
+        autocomplete={autocomplete}
+    />
+    {(error || helpText) && (
+        <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
+            {error || helpText}
+        </span>
+    )}
+</label>
+
+<style>
+    /* Floating label styles to match BuildingCard pattern */
+    .floating-label {
+        position: relative;
+        display: block;
+    }
+
+    .floating-label span:first-of-type {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.6));
+        pointer-events: none;
+        transition: all 0.2s ease;
+        background-color: var(--fallback-b1, oklch(var(--b1)));
+        padding: 0 0.25rem;
+    }
+
+    .floating-label input:focus ~ span:first-of-type,
+    .floating-label input:not(:placeholder-shown) ~ span:first-of-type {
+        top: -0.5rem;
+        font-size: 0.75rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.8));
+    }
+
+    .floating-label input:focus ~ span:first-of-type {
+        color: var(--fallback-p, oklch(var(--p)));
+    }
+
+    .floating-label input.input-error:focus ~ span:first-of-type {
+        color: var(--fallback-er, oklch(var(--er)));
+    }
+</style>
