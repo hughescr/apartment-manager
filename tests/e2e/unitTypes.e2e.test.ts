@@ -26,6 +26,12 @@ describe('Unit Types E2E Tests', () => {
         context = await browser.newContext();
         page = await context.newPage();
 
+        // Set global timeout for all actions on this page
+        page.setDefaultTimeout(5000); // 5 seconds max for any action
+
+        // Set navigation timeout separately (can be slightly longer for initial page loads)
+        page.setDefaultNavigationTimeout(5000);
+
         // Set up request interception for API calls if needed
         await page.route('**/api/**', async (route) => {
             const url = route.request().url();
@@ -54,7 +60,7 @@ describe('Unit Types E2E Tests', () => {
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
 
             // Wait for the page to load
-            await page.waitForSelector('[data-testid="unit-types-list"]', { timeout: 10000 });
+            await page.waitForSelector('[data-testid="unit-types-list"]', { timeout: 2000 });
 
             // Check page title
             const title = await page.textContent('h1');
@@ -113,7 +119,7 @@ describe('Unit Types E2E Tests', () => {
             });
 
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
-            await page.waitForSelector('[data-testid="unit-type-card"]');
+            await page.waitForSelector('[data-testid="unit-type-card"]', { timeout: 2000 });
 
             const cards = await page.locator('[data-testid="unit-type-card"]').all();
             expect(cards).toHaveLength(2);
@@ -146,7 +152,7 @@ describe('Unit Types E2E Tests', () => {
         beforeEach(async () => {
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
             await page.click('[data-testid="add-unit-type-button"]');
-            await page.waitForSelector('[data-testid="unit-type-form"]');
+            await page.waitForSelector('[data-testid="unit-type-form"]', { timeout: 1000 });
         });
 
         it('should display all form fields', async () => {
@@ -255,7 +261,7 @@ describe('Unit Types E2E Tests', () => {
             expect(await successMessage.textContent()).toContain('Unit type created successfully');
 
             // Should redirect back to list
-            await page.waitForURL(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.waitForURL(`${baseUrl}/building/${testBuildingId}/unit-types`, { timeout: 3000 });
         });
 
         it('should handle duplicate model ID error', async () => {
@@ -307,7 +313,7 @@ describe('Unit Types E2E Tests', () => {
             });
 
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types/${existingUnitType.modelID}/edit`);
-            await page.waitForSelector('[data-testid="unit-type-form"]');
+            await page.waitForSelector('[data-testid="unit-type-form"]', { timeout: 1000 });
         });
 
         it('should pre-populate form with existing data', async () => {
@@ -371,7 +377,7 @@ describe('Unit Types E2E Tests', () => {
             });
 
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
-            await page.waitForSelector('[data-testid="unit-type-card"]');
+            await page.waitForSelector('[data-testid="unit-type-card"]', { timeout: 2000 });
 
             // Click delete button
             await page.click('[data-testid="delete-button-model-delete"]');
@@ -462,7 +468,7 @@ describe('Unit Types E2E Tests', () => {
         beforeEach(async () => {
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
             await page.click('[data-testid="add-unit-type-button"]');
-            await page.waitForSelector('[data-testid="amenity-selector"]');
+            await page.waitForSelector('[data-testid="amenity-selector"]', { timeout: 1000 });
         });
 
         it('should filter amenities by search', async () => {
@@ -539,7 +545,7 @@ describe('Unit Types E2E Tests', () => {
         beforeEach(async () => {
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
             await page.click('[data-testid="add-unit-type-button"]');
-            await page.waitForSelector('[data-testid="photo-uploader"]');
+            await page.waitForSelector('[data-testid="photo-uploader"]', { timeout: 1000 });
         });
 
         it('should display photo uploader', async () => {
@@ -591,7 +597,7 @@ describe('Unit Types E2E Tests', () => {
             });
 
             // Wait for upload to complete
-            await page.waitForSelector('[data-testid="uploaded-photo"]');
+            await page.waitForSelector('[data-testid="uploaded-photo"]', { timeout: 3000 });
 
             const uploadedPhoto = page.locator('[data-testid="uploaded-photo"]').first();
             expect(await uploadedPhoto.getAttribute('src')).toContain('https://s3.example.com/test.jpg');
@@ -626,7 +632,7 @@ describe('Unit Types E2E Tests', () => {
                 buffer: Buffer.from('fake image content')
             });
 
-            await page.waitForSelector('[data-testid="uploaded-photo"]');
+            await page.waitForSelector('[data-testid="uploaded-photo"]', { timeout: 3000 });
 
             // Click delete button
             await page.click('[data-testid="delete-photo-button"]');
@@ -716,7 +722,7 @@ describe('Unit Types E2E Tests', () => {
 
             // Press Enter to open form
             await page.keyboard.press('Enter');
-            await page.waitForSelector('[data-testid="unit-type-form"]');
+            await page.waitForSelector('[data-testid="unit-type-form"]', { timeout: 1000 });
 
             // First input should be focused
             const modelIdInput = page.locator('input[name="modelID"]');
