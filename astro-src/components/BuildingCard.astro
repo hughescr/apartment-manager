@@ -55,14 +55,154 @@ const xData = JSON.stringify({
     showSave: false,
     saving: false,
     activeTab: 'basic',
+    errors: {},
+    showAddUnitDialog: false,
+    newUnit: { unitID: '', modelID: '' },
+    // Validation method
+    validateForm() {
+        this.errors = {};
+        let isValid = true;
+        
+        // Basic Info validation
+        if (!this.building.buildingID || this.building.buildingID.trim() === '') {
+            this.errors.buildingID = 'Building ID is required';
+            isValid = false;
+        }
+        
+        if (!this.building.street || this.building.street.trim() === '') {
+            this.errors.street = 'Street address is required';
+            isValid = false;
+        }
+        
+        if (!this.building.city || this.building.city.trim() === '') {
+            this.errors.city = 'City is required';
+            isValid = false;
+        }
+        
+        if (!this.building.state || this.building.state.trim() === '') {
+            this.errors.state = 'State is required';
+            isValid = false;
+        }
+        
+        if (!this.building.zip || this.building.zip.trim() === '') {
+            this.errors.zip = 'ZIP code is required';
+            isValid = false;
+        } else if (!/^\d{5}(-\d{4})?$/.test(this.building.zip)) {
+            this.errors.zip = 'ZIP code must be in format 12345 or 12345-6789';
+            isValid = false;
+        }
+        
+        if (this.building.yearBuilt && (this.building.yearBuilt < 1800 || this.building.yearBuilt > new Date().getFullYear() + 1)) {
+            this.errors.yearBuilt = `Year built must be between 1800 and ${new Date().getFullYear() + 1}`;
+            isValid = false;
+        }
+        
+        if (this.building.numberStories && (this.building.numberStories < 1 || this.building.numberStories > 100)) {
+            this.errors.numberStories = 'Number of stories must be between 1 and 100';
+            isValid = false;
+        }
+        
+        if (this.building.totalUnits && (this.building.totalUnits < 1 || this.building.totalUnits > 1000)) {
+            this.errors.totalUnits = 'Total units must be between 1 and 1000';
+            isValid = false;
+        }
+        
+        // Lease & Pricing validation
+        if (this.building.leaseLength && (this.building.leaseLength < 1 || this.building.leaseLength > 36)) {
+            this.errors.leaseLength = 'Lease length must be between 1 and 36 months';
+            isValid = false;
+        }
+        
+        if (this.building.applicationFee && this.building.applicationFee < 0) {
+            this.errors.applicationFee = 'Application fee cannot be negative';
+            isValid = false;
+        }
+        
+        // Contact validation
+        if (this.building.contactInfo?.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.building.contactInfo.email)) {
+            this.errors.contactEmail = 'Please enter a valid email address';
+            isValid = false;
+        }
+        
+        if (this.building.contactInfo?.phone && !/^[\d\s\-\(\)\+\.]+$/.test(this.building.contactInfo.phone)) {
+            this.errors.contactPhone = 'Please enter a valid phone number';
+            isValid = false;
+        }
+        
+        if (this.building.contactInfo?.website && !this.building.contactInfo.website.match(/^https?:\/\/.+/)) {
+            this.errors.contactWebsite = 'Website must start with http:// or https://';
+            isValid = false;
+        }
+        
+        if (this.building.tourAvailability?.tourSchedulingUrl && !this.building.tourAvailability.tourSchedulingUrl.match(/^https?:\/\/.+/)) {
+            this.errors.tourSchedulingUrl = 'Tour scheduling URL must start with http:// or https://';
+            isValid = false;
+        }
+        
+        // Rent specials validation
+        if (this.building.rentSpecials && this.building.rentSpecials.length > 0) {
+            this.building.rentSpecials.forEach((special, index) => {
+                if (!special.title || special.title.trim() === '') {
+                    this.errors[`rentSpecial${index}Title`] = 'Rent special title is required';
+                    isValid = false;
+                }
+                if (special.startDate && special.endDate && new Date(special.startDate) > new Date(special.endDate)) {
+                    this.errors[`rentSpecial${index}Dates`] = 'Start date must be before end date';
+                    isValid = false;
+                }
+            });
+        }
+        
+        // Income restrictions validation
+        if (this.building.incomeRestrictions?.amiLimit && 
+            (this.building.incomeRestrictions.amiLimit < 0 || this.building.incomeRestrictions.amiLimit > 200)) {
+            this.errors.amiLimit = 'AMI limit must be between 0 and 200%';
+            isValid = false;
+        }
+        
+        // Screening criteria validation
+        if (this.building.screeningCriteria?.minCreditScore && 
+            (this.building.screeningCriteria.minCreditScore < 300 || this.building.screeningCriteria.minCreditScore > 850)) {
+            this.errors.minCreditScore = 'Credit score must be between 300 and 850';
+            isValid = false;
+        }
+        
+        if (this.building.screeningCriteria?.incomeRatio && 
+            (this.building.screeningCriteria.incomeRatio < 0 || this.building.screeningCriteria.incomeRatio > 10)) {
+            this.errors.incomeRatio = 'Income ratio must be between 0 and 10';
+            isValid = false;
+        }
+        
+        if (this.building.screeningCriteria?.maxOccupantsPerBedroom && 
+            (this.building.screeningCriteria.maxOccupantsPerBedroom < 1 || this.building.screeningCriteria.maxOccupantsPerBedroom > 5)) {
+            this.errors.maxOccupantsPerBedroom = 'Max occupants per bedroom must be between 1 and 5';
+            isValid = false;
+        }
+        
+        return isValid;
+    },
     // Methods for handling actions
+    openAddUnitDialog() {
+        this.newUnit = { unitID: '', modelID: '' };
+        this.showAddUnitDialog = true;
+    },
     async addUnit() {
-        const id = prompt('New unit number?');
-        if (!id) return;
+        if (!this.newUnit.unitID || this.newUnit.unitID.trim() === '') {
+            window.showToast('Unit number is required', 'error');
+            return;
+        }
+        this.showAddUnitDialog = false;
+        const unitData = {
+            unitID: this.newUnit.unitID,
+            buildingID: this.building.buildingID
+        };
+        if (this.newUnit.modelID) {
+            unitData.modelID = this.newUnit.modelID;
+        }
         await fetch(`${this.apiURL}buildings/${this.building.buildingID}/units`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ unitID: id, buildingID: this.building.buildingID }),
+            body: JSON.stringify(unitData),
         });
         window.location.reload();
     },
@@ -72,6 +212,11 @@ const xData = JSON.stringify({
         window.location.reload();
     },
     async saveBuilding() {
+        if (!this.validateForm()) {
+            // Show validation errors
+            window.showToast('Please fix the validation errors before saving', 'error');
+            return;
+        }
         this.saving = true;
         await fetch(`${this.apiURL}buildings/${this.building.buildingID}`, {
             method: 'PUT',
@@ -81,9 +226,11 @@ const xData = JSON.stringify({
         this.original = { ...this.building };
         this.showSave = false;
         this.saving = false;
+        window.showToast('Building saved successfully', 'success');
     },
     undoChanges() {
         this.building = { ...this.original };
+        this.errors = {};
     }
 });
 
@@ -117,7 +264,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         <div class="mt-4 space-x-2">
             <button
                 class="btn btn-primary btn-sm"
-                x-on:click="addUnit()"
+                x-on:click="openAddUnitDialog()"
                 >Add Unit</button>
             <button
                 class="btn btn-error btn-sm"
@@ -182,6 +329,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.buildingID"
                     disabled={true}
                     required={true}
+                    error="errors.buildingID"
                 />
                 <BaseSelect
                     name="propertyType"
@@ -198,12 +346,16 @@ const daysOfWeek = Object.values(DayOfWeek);
                     label="Street Address"
                     xModel="building.street"
                     placeholder="123 Main St"
+                    required={true}
+                    error="errors.street"
                 />
                 <BaseInput
                     name="city"
                     label="City"
                     xModel="building.city"
                     placeholder="San Francisco"
+                    required={true}
+                    error="errors.city"
                 />
             </div>
             
@@ -213,12 +365,16 @@ const daysOfWeek = Object.values(DayOfWeek);
                     label="State"
                     xModel="building.state"
                     placeholder="CA"
+                    required={true}
+                    error="errors.state"
                 />
                 <BaseInput
                     name="zip"
                     label="ZIP Code"
                     xModel="building.zip"
                     placeholder="94102"
+                    required={true}
+                    error="errors.zip"
                 />
             </div>
             
@@ -231,6 +387,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                     placeholder="2020"
                     min="1800"
                     max="2030"
+                    error="errors.yearBuilt"
                 />
                 <BaseInput
                     name="numberStories"
@@ -239,6 +396,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.numberStories"
                     placeholder="3"
                     min="1"
+                    error="errors.numberStories"
                 />
                 <BaseInput
                     name="totalUnits"
@@ -247,6 +405,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.totalUnits"
                     placeholder="24"
                     min="1"
+                    error="errors.totalUnits"
                 />
             </div>
             
@@ -270,6 +429,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                     placeholder="12"
                     min="1"
                     max="24"
+                    error="errors.leaseLength"
                 />
                 <div class="form-control">
                     <label class="label cursor-pointer">
@@ -292,6 +452,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                     placeholder="50"
                     min="0"
                     step="1"
+                    error="errors.applicationFee"
                 />
                 <div class="form-control">
                     <label class="label cursor-pointer">
@@ -370,6 +531,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                                         x-model="special.title"
                                         placeholder="Move-in Special"
                                         required
+                                        :error="'errors.rentSpecial' + index + 'Title'"
                                     />
                                     <div class="grid grid-cols-2 gap-2">
                                         <BaseInput
@@ -386,6 +548,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                                         />
                                     </div>
                                 </div>
+                                <div x-show="errors['rentSpecial' + index + 'Dates']" class="text-error text-sm mt-1" x-text="errors['rentSpecial' + index + 'Dates']"></div>
                                 <BaseTextarea
                                     :name="'special-desc-' + index"
                                     label="Description"
@@ -428,6 +591,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                                 min="0"
                                 max="200"
                                 helpText="Area Median Income percentage limit"
+                                error="errors.amiLimit"
                             />
                             <!-- Simplified income limits by household size -->
                             <div>
@@ -689,6 +853,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                             type="tel"
                             xModel="building.contactInfo.phone"
                             placeholder="(555) 123-4567"
+                            error="errors.contactPhone"
                         />
                         <BaseInput
                             name="contactEmail"
@@ -696,6 +861,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                             type="email"
                             xModel="building.contactInfo.email"
                             placeholder="contact@property.com"
+                            error="errors.contactEmail"
                         />
                         <BaseInput
                             name="contactWebsite"
@@ -703,6 +869,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                             type="url"
                             xModel="building.contactInfo.website"
                             placeholder="https://property.com"
+                            error="errors.contactWebsite"
                         />
                     </div>
                     
@@ -789,6 +956,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                         type="url"
                         xModel="building.tourAvailability.tourSchedulingUrl"
                         placeholder="https://calendly.com/property-tours"
+                        error="errors.tourSchedulingUrl"
                     />
                     
                     <!-- Tour Hours -->
@@ -855,4 +1023,56 @@ const daysOfWeek = Object.values(DayOfWeek);
             {units?.map((u) => <UnitCard unit={u} unitTypes={unitTypes} />)}
         </div>
     </div>
+    
+    <!-- Add Unit Dialog -->
+    <dialog class="modal" :open="showAddUnitDialog">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">Add New Unit</h3>
+            
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text">Unit Number <span class="text-error">*</span></span>
+                </label>
+                <input
+                    type="text"
+                    placeholder="101"
+                    class="input input-bordered"
+                    x-model="newUnit.unitID"
+                    @keyup.enter="addUnit()"
+                />
+            </div>
+            
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text">Unit Type (Model)</span>
+                </label>
+                <select
+                    class="select select-bordered"
+                    x-model="newUnit.modelID"
+                >
+                    <option value="">No Model (Standalone Unit)</option>
+                    <template x-for="unitType in unitTypes" :key="unitType.id">
+                        <option :value="unitType.id" x-text="`${unitType.modelName} (${unitType.beds} bed, ${unitType.baths} bath)`"></option>
+                    </template>
+                </select>
+                <label class="label">
+                    <span class="label-text-alt">Optional: Select to inherit properties from this unit type</span>
+                </label>
+            </div>
+            
+            <div class="modal-action">
+                <button 
+                    class="btn btn-ghost"
+                    @click="showAddUnitDialog = false"
+                >Cancel</button>
+                <button 
+                    class="btn btn-primary"
+                    @click="addUnit()"
+                >Add Unit</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button @click="showAddUnitDialog = false">close</button>
+        </form>
+    </dialog>
 </div>

@@ -16,6 +16,7 @@ const xData = {
     selectedUnitType: null,
     apiURL: apiURL,
     saving: false, // Stores the name of the field being saved
+    errors: {},
     expandedSections: {
         details: false,
         amenities: false,
@@ -125,9 +126,131 @@ const xData = {
         this.saveUnit(this);
     },
 
+    validateForm() {
+        this.errors = {};
+        
+        // Validate unit number (required)
+        if (!this.unit.unitNumber || this.unit.unitNumber.trim() === '') {
+            this.errors.unitNumber = 'Unit number is required';
+        }
+        
+        // Validate beds (0-10)
+        if (this.unit.beds !== null && this.unit.beds !== undefined && this.unit.beds !== '') {
+            if (this.unit.beds < 0 || this.unit.beds > 10) {
+                this.errors.beds = 'Beds must be between 0 and 10';
+            }
+        }
+        
+        // Validate baths (0-10)
+        if (this.unit.baths !== null && this.unit.baths !== undefined && this.unit.baths !== '') {
+            if (this.unit.baths < 0 || this.unit.baths > 10) {
+                this.errors.baths = 'Baths must be between 0 and 10';
+            }
+        }
+        
+        // Validate sqft (> 0)
+        if (this.unit.sqft !== null && this.unit.sqft !== undefined && this.unit.sqft !== '') {
+            if (this.unit.sqft <= 0) {
+                this.errors.sqft = 'Square footage must be greater than 0';
+            }
+            if (this.unit.sqft > 10000) {
+                this.errors.sqft = 'Square footage must be less than 10,000';
+            }
+        }
+        
+        // Validate rent (> 0)
+        if (this.unit.rent !== null && this.unit.rent !== undefined && this.unit.rent !== '') {
+            if (this.unit.rent <= 0) {
+                this.errors.rent = 'Rent must be greater than 0';
+            }
+            if (this.unit.rent > 25000) {
+                this.errors.rent = 'Rent must be less than $25,000';
+            }
+        }
+        
+        // Validate maxOccupants (1-20)
+        if (this.unit.maxOccupants !== null && this.unit.maxOccupants !== undefined && this.unit.maxOccupants !== '') {
+            if (this.unit.maxOccupants < 1 || this.unit.maxOccupants > 20) {
+                this.errors.maxOccupants = 'Max occupants must be between 1 and 20';
+            }
+        }
+        
+        // Validate perPersonRent (>= 0)
+        if (this.unit.perPersonRent !== null && this.unit.perPersonRent !== undefined && this.unit.perPersonRent !== '') {
+            if (this.unit.perPersonRent < 0) {
+                this.errors.perPersonRent = 'Per person rent must be 0 or greater';
+            }
+        }
+        
+        // Validate deposit (>= 0)
+        if (this.unit.deposit !== null && this.unit.deposit !== undefined && this.unit.deposit !== '') {
+            if (this.unit.deposit < 0) {
+                this.errors.deposit = 'Deposit must be 0 or greater';
+            }
+        }
+        
+        // Validate lease terms
+        if (this.unit.minLeaseTerm !== null && this.unit.minLeaseTerm !== undefined && this.unit.minLeaseTerm !== '') {
+            if (this.unit.minLeaseTerm < 1 || this.unit.minLeaseTerm > 24) {
+                this.errors.minLeaseTerm = 'Min lease term must be between 1 and 24 months';
+            }
+        }
+        
+        if (this.unit.maxLeaseTerm !== null && this.unit.maxLeaseTerm !== undefined && this.unit.maxLeaseTerm !== '') {
+            if (this.unit.maxLeaseTerm < 1 || this.unit.maxLeaseTerm > 24) {
+                this.errors.maxLeaseTerm = 'Max lease term must be between 1 and 24 months';
+            }
+        }
+        
+        // Validate lease term logic
+        if (this.unit.minLeaseTerm && this.unit.maxLeaseTerm && this.unit.minLeaseTerm > this.unit.maxLeaseTerm) {
+            this.errors.leaseTerm = 'Minimum lease term cannot be greater than maximum';
+        }
+        
+        // Validate available date
+        if (this.unit.availableDate) {
+            const availDate = new Date(this.unit.availableDate);
+            const minDate = new Date('2025-01-01');
+            const maxDate = new Date('2028-01-01');
+            
+            if (availDate < minDate || availDate > maxDate) {
+                this.errors.availableDate = 'Available date must be between 2025 and 2028';
+            }
+        }
+        
+        // Validate rent special dates
+        if (this.unit.unitRentSpecial) {
+            if (this.unit.unitRentSpecial.startDate && this.unit.unitRentSpecial.endDate) {
+                const startDate = new Date(this.unit.unitRentSpecial.startDate);
+                const endDate = new Date(this.unit.unitRentSpecial.endDate);
+                
+                if (startDate > endDate) {
+                    this.errors.rentSpecial = 'Special start date must be before end date';
+                }
+            }
+            
+            // If any rent special field is filled, title is required
+            if ((this.unit.unitRentSpecial.description || this.unit.unitRentSpecial.startDate || this.unit.unitRentSpecial.endDate) 
+                && (!this.unit.unitRentSpecial.title || this.unit.unitRentSpecial.title.trim() === '')) {
+                this.errors.rentSpecialTitle = 'Special title is required when adding a rent special';
+            }
+        }
+        
+        return Object.keys(this.errors).length === 0;
+    },
+
+    clearFieldError(fieldName) {
+        delete this.errors[fieldName];
+    },
+
     async saveUnit(myThis) {
         myThis = this || myThis; // Allow passing 'this' context
         if (!myThis.isDirty()) { return; }
+
+        if (!myThis.validateForm()) {
+            console.error('Validation failed:', myThis.errors);
+            return;
+        }
 
         this.saving = true;
         try {
@@ -138,13 +261,17 @@ const xData = {
             });
             if (response.ok) {
                 myThis.originalUnit = { ...myThis.unit };
+                myThis.errors = {}; // Clear all errors on successful save
             } else {
-                console.error('Save failed:', response.statusText);
+                const errorData = await response.json();
+                console.error('Save failed:', errorData);
+                myThis.errors.submit = errorData.error || 'Failed to save unit';
                 // Revert to original value on save failure
                 myThis.unit = { ...myThis.originalUnit };
             }
         } catch (error) {
             console.error('Network error during save:', error);
+            myThis.errors.submit = 'Network error. Please try again.';
             // Revert to original value on network error
             myThis.unit = { ...myThis.originalUnit };
         } finally {
@@ -191,18 +318,31 @@ if (!unit.listingIds) unit.listingIds = {};
 
 <li x-data={JSON.stringify(xData)} x-init="init(); $watch('unit', () => saveUnit(this))" class="card bg-base-100 shadow-xl mb-4" :class="{'opacity-50': saving}">
     <div class="card-body">
+        <!-- Error Summary -->
+        <div x-show="Object.keys(errors).length > 0" class="alert alert-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+                <span x-show="errors.submit" x-text="errors.submit"></span>
+                <span x-show="!errors.submit">Please fix the validation errors below before saving.</span>
+            </div>
+        </div>
+        
         <!-- Header with Unit Number and Model Selection -->
         <div class="flex justify-between items-start mb-4">
             <div class="flex-1">
                 <div class="flex items-center gap-4">
                     <div>
-                        <label class="label"><span class="label-text font-semibold">Unit #</span></label>
+                        <label class="label"><span class="label-text font-semibold">Unit # <span class="text-error">*</span></span></label>
                         <input 
                             type="text" 
                             x-model.lazy="unit.unitNumber" 
                             class="input input-bordered input-lg font-bold"
+                            :class="{'input-error': errors.unitNumber}"
                             placeholder="Unit Number"
                         />
+                        <div x-show="errors.unitNumber" class="text-error text-sm mt-1" x-text="errors.unitNumber"></div>
                     </div>
                     <div class="flex-1">
                         <label class="label"><span class="label-text font-semibold">Model/Type</span></label>
@@ -248,7 +388,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.beds" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('beds')}"
+                        :class="{'input-ghost': isInherited('beds'), 'input-error': errors.beds}"
                         min="0" max="10"
                         :placeholder="getInheritedValue('beds') || 'Not set'"
                     />
@@ -256,6 +396,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('beds')"></span>
                     </span>
                 </div>
+                <div x-show="errors.beds" class="text-error text-sm mt-1" x-text="errors.beds"></div>
             </div>
             
             <div class="form-control">
@@ -268,7 +409,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.baths" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('baths')}"
+                        :class="{'input-ghost': isInherited('baths'), 'input-error': errors.baths}"
                         min="0" max="10" step="0.5"
                         :placeholder="getInheritedValue('baths') || 'Not set'"
                     />
@@ -276,6 +417,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('baths')"></span>
                     </span>
                 </div>
+                <div x-show="errors.baths" class="text-error text-sm mt-1" x-text="errors.baths"></div>
             </div>
             
             <div class="form-control">
@@ -288,7 +430,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.sqft" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('sqft')}"
+                        :class="{'input-ghost': isInherited('sqft'), 'input-error': errors.sqft}"
                         min="50" max="10000"
                         :placeholder="getInheritedValue('sqft') || 'Not set'"
                     />
@@ -296,6 +438,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('sqft')"></span>
                     </span>
                 </div>
+                <div x-show="errors.sqft" class="text-error text-sm mt-1" x-text="errors.sqft"></div>
             </div>
             
             <div class="form-control">
@@ -308,7 +451,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.rent" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('rent')}"
+                        :class="{'input-ghost': isInherited('rent'), 'input-error': errors.rent}"
                         min="10" max="25000"
                         :placeholder="getInheritedValue('rent') || 'Not set'"
                     />
@@ -316,6 +459,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('rent')"></span>
                     </span>
                 </div>
+                <div x-show="errors.rent" class="text-error text-sm mt-1" x-text="errors.rent"></div>
             </div>
             
             <!-- Occupancy -->
@@ -329,7 +473,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.maxOccupants" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('maxOccupants')}"
+                        :class="{'input-ghost': isInherited('maxOccupants'), 'input-error': errors.maxOccupants}"
                         min="1" max="20"
                         :placeholder="getInheritedValue('maxOccupants') || 'Not set'"
                     />
@@ -337,6 +481,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('maxOccupants')"></span>
                     </span>
                 </div>
+                <div x-show="errors.maxOccupants" class="text-error text-sm mt-1" x-text="errors.maxOccupants"></div>
             </div>
             
             <div class="form-control">
@@ -349,7 +494,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.perPersonRent" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('perPersonRent')}"
+                        :class="{'input-ghost': isInherited('perPersonRent'), 'input-error': errors.perPersonRent}"
                         min="0"
                         :placeholder="getInheritedValue('perPersonRent') || 'Not set'"
                     />
@@ -357,6 +502,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('perPersonRent')"></span>
                     </span>
                 </div>
+                <div x-show="errors.perPersonRent" class="text-error text-sm mt-1" x-text="errors.perPersonRent"></div>
             </div>
             
             <!-- Financial -->
@@ -370,7 +516,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.deposit" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('deposit')}"
+                        :class="{'input-ghost': isInherited('deposit'), 'input-error': errors.deposit}"
                         min="0"
                         :placeholder="getInheritedValue('deposit') || 'Not set'"
                     />
@@ -378,6 +524,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('deposit')"></span>
                     </span>
                 </div>
+                <div x-show="errors.deposit" class="text-error text-sm mt-1" x-text="errors.deposit"></div>
             </div>
             
             <!-- Availability -->
@@ -407,8 +554,10 @@ if (!unit.listingIds) unit.listingIds = {};
                     type="date" 
                     x-model.lazy="unit.availableDate" 
                     class="input input-bordered w-full"
+                    :class="{'input-error': errors.availableDate}"
                     min="2025-01-01" max="2028-01-01"
                 />
+                <div x-show="errors.availableDate" class="text-error text-sm mt-1" x-text="errors.availableDate"></div>
             </div>
             
             <!-- Lease Terms -->
@@ -422,7 +571,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.minLeaseTerm" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('minLeaseTerm')}"
+                        :class="{'input-ghost': isInherited('minLeaseTerm'), 'input-error': errors.minLeaseTerm || errors.leaseTerm}"
                         min="1" max="24"
                         :placeholder="getInheritedValue('minLeaseTerm') || 'Not set'"
                     />
@@ -430,6 +579,8 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('minLeaseTerm')"></span>
                     </span>
                 </div>
+                <div x-show="errors.minLeaseTerm" class="text-error text-sm mt-1" x-text="errors.minLeaseTerm"></div>
+                <div x-show="errors.leaseTerm" class="text-error text-sm mt-1" x-text="errors.leaseTerm"></div>
             </div>
             
             <div class="form-control">
@@ -442,7 +593,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         type="number" 
                         x-model.number.lazy="unit.maxLeaseTerm" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('maxLeaseTerm')}"
+                        :class="{'input-ghost': isInherited('maxLeaseTerm'), 'input-error': errors.maxLeaseTerm}"
                         min="1" max="24"
                         :placeholder="getInheritedValue('maxLeaseTerm') || 'Not set'"
                     />
@@ -450,6 +601,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <span x-text="getInheritedValue('maxLeaseTerm')"></span>
                     </span>
                 </div>
+                <div x-show="errors.maxLeaseTerm" class="text-error text-sm mt-1" x-text="errors.maxLeaseTerm"></div>
             </div>
         </div>
         
@@ -486,21 +638,26 @@ if (!unit.listingIds) unit.listingIds = {};
             <label class="label">
                 <span class="label-text font-semibold">Unit Rent Special</span>
             </label>
-            <div class="border border-base-300 rounded-lg p-4">
+            <div class="border border-base-300 rounded-lg p-4" :class="{'border-error': errors.rentSpecial || errors.rentSpecialTitle}">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                    <input 
-                        type="text"
-                        x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.title : ''"
-                        x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.title = $event.target.value"
-                        class="input input-bordered w-full"
-                        placeholder="Special Title (e.g., 'First Month Free')"
-                    />
+                    <div>
+                        <input 
+                            type="text"
+                            x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.title : ''"
+                            x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.title = $event.target.value"
+                            class="input input-bordered w-full"
+                            :class="{'input-error': errors.rentSpecialTitle}"
+                            placeholder="Special Title (e.g., 'First Month Free')"
+                        />
+                        <div x-show="errors.rentSpecialTitle" class="text-error text-sm mt-1" x-text="errors.rentSpecialTitle"></div>
+                    </div>
                     <div class="flex gap-2">
                         <input 
                             type="date"
                             x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.startDate : ''"
                             x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.startDate = $event.target.value"
                             class="input input-bordered flex-1"
+                            :class="{'input-error': errors.rentSpecial}"
                             placeholder="Start Date"
                         />
                         <input 
@@ -508,6 +665,7 @@ if (!unit.listingIds) unit.listingIds = {};
                             x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.endDate : ''"
                             x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.endDate = $event.target.value"
                             class="input input-bordered flex-1"
+                            :class="{'input-error': errors.rentSpecial}"
                             placeholder="End Date"
                         />
                     </div>
@@ -519,6 +677,7 @@ if (!unit.listingIds) unit.listingIds = {};
                     rows="2"
                     placeholder="Special Description"
                 ></textarea>
+                <div x-show="errors.rentSpecial" class="text-error text-sm mt-1" x-text="errors.rentSpecial"></div>
             </div>
         </div>
         

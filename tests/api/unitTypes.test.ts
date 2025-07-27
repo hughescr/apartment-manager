@@ -273,21 +273,34 @@ describe('Unit Types API', () => {
         });
 
         it('should handle missing body', async () => {
-            expect.assertions(1);
+            expect.assertions(2);
             const event = createMockEvent({
                 body: undefined
             });
 
-            expect(create(event)).rejects.toThrow();
+            const result = await create(event);
+            expect(result.statusCode).toBe(400);
+            expect(JSON.parse(result.body as string)).toEqual({
+                error: 'Validation failed',
+                errors: {
+                    modelID: 'Model ID is required',
+                    modelName: 'Model name is required',
+                    buildingID: 'Building ID is required',
+                    beds: 'Number of beds is required',
+                    baths: 'Number of baths is required'
+                }
+            });
         });
 
         it('should handle invalid JSON body', async () => {
-            expect.assertions(1);
+            expect.assertions(2);
             const event = createMockEvent({
                 body: 'invalid json'
             });
 
-            expect(create(event)).rejects.toThrow();
+            const result = await create(event);
+            expect(result.statusCode).toBe(400);
+            expect(JSON.parse(result.body as string)).toEqual({ error: 'Invalid request body' });
         });
 
         it('should handle minimal unit type data', async () => {
