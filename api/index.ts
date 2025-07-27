@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import * as buildings from './buildings';
 import * as units from './units';
+import * as unitTypes from './unitTypes';
 import { noop, split, every, startsWith, endsWith, forEach, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
@@ -21,6 +22,15 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
         GET: units.get,
         PUT: units.update,
         DELETE: units.del,
+    },
+    '/buildings/{buildingID}/unit-types': {
+        GET: unitTypes.list,
+        POST: unitTypes.create,
+    },
+    '/buildings/{buildingID}/unit-types/{modelID}': {
+        GET: unitTypes.get,
+        PUT: unitTypes.update,
+        DELETE: unitTypes.del,
     },
 };
 
