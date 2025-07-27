@@ -2,19 +2,127 @@
 // astro-src/components/UnitCard.astro
 import Saving from "./Saving.astro";
 import { Resource } from "sst";
+import type { UnitData, UnitTypeData, Amenity, RentSpecial, WebsiteStatus } from "../../src/types";
+import { AmenitySelector, PhotoUploader, BaseInput, BaseTextarea, BaseSelect } from "./forms";
 
-const { unit } = Astro.props as { unit: any }; // Will define a proper type later
+const { unit, unitTypes = [] } = Astro.props as { unit: UnitData; unitTypes: UnitTypeData[] };
 
 const apiURL = Resource.API.url;
 
-const xDataString = `{
-    unit: ${JSON.stringify(unit)},
-    originalUnit: ${JSON.stringify(unit)}, // Deep copy for original state
-    apiURL: "${apiURL}",
+const xData = {
+    unit: unit,
+    originalUnit: JSON.parse(JSON.stringify(unit)), // Deep copy for original state
+    unitTypes: unitTypes,
+    selectedUnitType: null,
+    apiURL: apiURL,
     saving: false, // Stores the name of the field being saved
+    expandedSections: {
+        details: false,
+        amenities: false,
+        photos: false,
+        websites: false
+    },
+    
+    init() {
+        // Initialize unit amenities if not present
+        if (!this.unit.unitAmenities) this.unit.unitAmenities = [];
+        if (!this.unit.photos) this.unit.photos = [];
+        if (!this.unit.websiteStatus) this.unit.websiteStatus = {};
+        if (!this.unit.listingIds) this.unit.listingIds = {};
+        
+        // Find and set the selected unit type
+        if (this.unit.modelID) {
+            this.selectedUnitType = this.unitTypes.find(ut => ut.modelID === this.unit.modelID) || null;
+        }
+    },
 
     isDirty() {
         return JSON.stringify(this.unit) !== JSON.stringify(this.originalUnit);
+    },
+    
+    isInherited(fieldName) {
+        if (!this.selectedUnitType) return false;
+        
+        // Check if the field value is null/undefined/empty in the unit
+        const unitValue = this.unit[fieldName];
+        const isEmptyValue = unitValue === null || unitValue === undefined || unitValue === '';
+        
+        // Check if the unit type has a value for this field
+        const modelFieldMap = {
+            'beds': 'beds',
+            'baths': 'baths',
+            'sqft': ['minSqft', 'maxSqft'],
+            'rent': ['minRent', 'maxRent'],
+            'maxOccupants': 'maxOccupants',
+            'perPersonRent': 'perPersonRent',
+            'deposit': 'deposit',
+            'minLeaseTerm': 'minLeaseTerm',
+            'maxLeaseTerm': 'maxLeaseTerm'
+        };
+        
+        const modelField = modelFieldMap[fieldName];
+        if (!modelField) return false;
+        
+        if (Array.isArray(modelField)) {
+            return isEmptyValue && modelField.some(f => this.selectedUnitType[f] !== null && this.selectedUnitType[f] !== undefined);
+        }
+        
+        return isEmptyValue && this.selectedUnitType[modelField] !== null && this.selectedUnitType[modelField] !== undefined;
+    },
+    
+    getInheritedValue(fieldName) {
+        if (!this.selectedUnitType) return null;
+        
+        const modelFieldMap = {
+            'beds': 'beds',
+            'baths': 'baths',
+            'sqft': ['minSqft', 'maxSqft'],
+            'rent': ['minRent', 'maxRent'],
+            'maxOccupants': 'maxOccupants',
+            'perPersonRent': 'perPersonRent',
+            'deposit': 'deposit',
+            'minLeaseTerm': 'minLeaseTerm',
+            'maxLeaseTerm': 'maxLeaseTerm'
+        };
+        
+        const modelField = modelFieldMap[fieldName];
+        if (!modelField) return null;
+        
+        if (Array.isArray(modelField)) {
+            const [min, max] = modelField.map(f => this.selectedUnitType[f]);
+            if (min !== null && max !== null) return `${min}-${max}`;
+            if (min !== null) return `${min}+`;
+            if (max !== null) return `Up to ${max}`;
+            return null;
+        }
+        
+        return this.selectedUnitType[modelField];
+    },
+    
+    getEffectiveValue(fieldName) {
+        const unitValue = this.unit[fieldName];
+        if (unitValue !== null && unitValue !== undefined && unitValue !== '') {
+            return unitValue;
+        }
+        return this.getInheritedValue(fieldName);
+    },
+    
+    getEffectiveAmenities() {
+        // If unit has amenities defined, use them (override)
+        if (this.unit.unitAmenities && this.unit.unitAmenities.length > 0) {
+            return this.unit.unitAmenities;
+        }
+        // Otherwise, use model amenities if available
+        if (this.selectedUnitType && this.selectedUnitType.modelAmenities) {
+            return this.selectedUnitType.modelAmenities;
+        }
+        return [];
+    },
+    
+    onModelChange() {
+        this.unit.modelID = this.selectedUnitType ? this.selectedUnitType.modelID : null;
+        // Trigger save when model changes
+        this.saveUnit(this);
     },
 
     async saveUnit(myThis) {
@@ -57,53 +165,488 @@ const xDataString = `{
         } catch (error) {
             console.error('Network error during delete:', error);
         }
+    },
+    
+    formatCurrency(value) {
+        if (!value) return '';
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(value);
+    },
+    
+    toggleSection(section) {
+        this.expandedSections[section] = !this.expandedSections[section];
     }
-}`;
+};
+
+// Initialize missing properties
+if (!unit.unitAmenities) unit.unitAmenities = [];
+if (!unit.photos) unit.photos = [];
+if (!unit.websiteStatus) unit.websiteStatus = {};
+if (!unit.listingIds) unit.listingIds = {};
 ---
-<li x-data={xDataString} x-init="$watch('unit', () => saveUnit(this))" class="list-row pt-2 border relative" :class="{'opacity-50': saving}">
-    <div>
-        <div class="uppercase font-semibold">Unit</div>
-        <input type="text" x-model="unit.unitID" class="max-w-15 input input-ghost input-lg" disabled/>
+
+<li x-data={JSON.stringify(xData)} x-init="init(); $watch('unit', () => saveUnit(this))" class="card bg-base-100 shadow-xl mb-4" :class="{'opacity-50': saving}">
+    <div class="card-body">
+        <!-- Header with Unit Number and Model Selection -->
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex-1">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <label class="label"><span class="label-text font-semibold">Unit #</span></label>
+                        <input 
+                            type="text" 
+                            x-model.lazy="unit.unitNumber" 
+                            class="input input-bordered input-lg font-bold"
+                            placeholder="Unit Number"
+                        />
+                    </div>
+                    <div class="flex-1">
+                        <label class="label"><span class="label-text font-semibold">Model/Type</span></label>
+                        <select 
+                            x-model="selectedUnitType"
+                            x-on:change="onModelChange()"
+                            class="select select-bordered w-full"
+                        >
+                            <option :value="null">No Model (Standalone Unit)</option>
+                            <template x-for="unitType in unitTypes" :key="unitType.modelID">
+                                <option 
+                                    :value="unitType"
+                                    :selected="unit.modelID === unitType.modelID"
+                                    x-text="unitType.modelName + ' (' + unitType.beds + ' bed, ' + unitType.baths + ' bath)'"
+                                ></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+                <div class="text-sm text-base-content/70 mt-1">
+                    Unit ID: <span x-text="unit.unitID"></span>
+                    <span x-show="selectedUnitType" class="ml-2">
+                        | Model: <span x-text="selectedUnitType?.modelName"></span>
+                    </span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <Saving />
+                <button class="btn btn-error btn-sm" x-on:click="deleteUnit()">Delete</button>
+            </div>
+        </div>
+
+        <!-- Main Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+            <!-- Configuration -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Beds</span>
+                    <span x-show="isInherited('beds')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.beds" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('beds')}"
+                        min="0" max="10"
+                        :placeholder="getInheritedValue('beds') || 'Not set'"
+                    />
+                    <span x-show="isInherited('beds')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('beds')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Baths</span>
+                    <span x-show="isInherited('baths')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.baths" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('baths')}"
+                        min="0" max="10" step="0.5"
+                        :placeholder="getInheritedValue('baths') || 'Not set'"
+                    />
+                    <span x-show="isInherited('baths')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('baths')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Sqft</span>
+                    <span x-show="isInherited('sqft')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.sqft" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('sqft')}"
+                        min="50" max="10000"
+                        :placeholder="getInheritedValue('sqft') || 'Not set'"
+                    />
+                    <span x-show="isInherited('sqft')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('sqft')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Monthly Rent ($)</span>
+                    <span x-show="isInherited('rent')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.rent" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('rent')}"
+                        min="10" max="25000"
+                        :placeholder="getInheritedValue('rent') || 'Not set'"
+                    />
+                    <span x-show="isInherited('rent')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('rent')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Occupancy -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Max Occupants</span>
+                    <span x-show="isInherited('maxOccupants')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.maxOccupants" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('maxOccupants')}"
+                        min="1" max="20"
+                        :placeholder="getInheritedValue('maxOccupants') || 'Not set'"
+                    />
+                    <span x-show="isInherited('maxOccupants')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('maxOccupants')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Per Person Rent</span>
+                    <span x-show="isInherited('perPersonRent')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.perPersonRent" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('perPersonRent')}"
+                        min="0"
+                        :placeholder="getInheritedValue('perPersonRent') || 'Not set'"
+                    />
+                    <span x-show="isInherited('perPersonRent')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('perPersonRent')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Financial -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Deposit</span>
+                    <span x-show="isInherited('deposit')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.deposit" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('deposit')}"
+                        min="0"
+                        :placeholder="getInheritedValue('deposit') || 'Not set'"
+                    />
+                    <span x-show="isInherited('deposit')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('deposit')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Availability -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Occupied?</span>
+                </label>
+                <label class="toggle">
+                    <input type="checkbox" x-model.boolean.lazy="unit.occupied"/>
+                    <svg aria-label="disabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
+                    <svg aria-label="enabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
+                        <g stroke-linejoin="round" stroke-linecap="round" stroke-width="4" fill="none" stroke="currentColor">
+                            <path d="M20 6 9 17l-5-5" />
+                        </g>
+                    </svg>
+                </label>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Available From</span>
+                </label>
+                <input 
+                    type="date" 
+                    x-model.lazy="unit.availableDate" 
+                    class="input input-bordered w-full"
+                    min="2025-01-01" max="2028-01-01"
+                />
+            </div>
+            
+            <!-- Lease Terms -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Min Lease (months)</span>
+                    <span x-show="isInherited('minLeaseTerm')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.minLeaseTerm" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('minLeaseTerm')}"
+                        min="1" max="24"
+                        :placeholder="getInheritedValue('minLeaseTerm') || 'Not set'"
+                    />
+                    <span x-show="isInherited('minLeaseTerm')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('minLeaseTerm')"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Max Lease (months)</span>
+                    <span x-show="isInherited('maxLeaseTerm')" class="badge badge-info badge-xs">inherited</span>
+                </label>
+                <div class="relative">
+                    <input 
+                        type="number" 
+                        x-model.number.lazy="unit.maxLeaseTerm" 
+                        class="input input-bordered w-full"
+                        :class="{'input-ghost': isInherited('maxLeaseTerm')}"
+                        min="1" max="24"
+                        :placeholder="getInheritedValue('maxLeaseTerm') || 'Not set'"
+                    />
+                    <span x-show="isInherited('maxLeaseTerm')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                        <span x-text="getInheritedValue('maxLeaseTerm')"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Descriptions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Internal Description</span>
+                </label>
+                <textarea 
+                    x-model.lazy="unit.description" 
+                    class="textarea textarea-bordered w-full"
+                    rows="3"
+                    placeholder="Internal notes about this unit"
+                ></textarea>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Marketing Description</span>
+                </label>
+                <textarea 
+                    x-model.lazy="unit.unitDescription" 
+                    class="textarea textarea-bordered w-full"
+                    rows="3"
+                    placeholder="Unit-specific marketing description for listings"
+                ></textarea>
+            </div>
+        </div>
+        
+        
+        <!-- Unit Rent Special -->
+        <div class="form-control mb-6">
+            <label class="label">
+                <span class="label-text font-semibold">Unit Rent Special</span>
+            </label>
+            <div class="border border-base-300 rounded-lg p-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                    <input 
+                        type="text"
+                        x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.title : ''"
+                        x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.title = $event.target.value"
+                        class="input input-bordered w-full"
+                        placeholder="Special Title (e.g., 'First Month Free')"
+                    />
+                    <div class="flex gap-2">
+                        <input 
+                            type="date"
+                            x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.startDate : ''"
+                            x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.startDate = $event.target.value"
+                            class="input input-bordered flex-1"
+                            placeholder="Start Date"
+                        />
+                        <input 
+                            type="date"
+                            x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.endDate : ''"
+                            x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.endDate = $event.target.value"
+                            class="input input-bordered flex-1"
+                            placeholder="End Date"
+                        />
+                    </div>
+                </div>
+                <textarea 
+                    x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.description : ''"
+                    x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.description = $event.target.value"
+                    class="textarea textarea-bordered w-full"
+                    rows="2"
+                    placeholder="Special Description"
+                ></textarea>
+            </div>
+        </div>
+        
+        <!-- Unit Amenities Section -->
+        <div class="collapse collapse-arrow bg-base-200 mb-2">
+            <input type="checkbox" x-model="expandedSections.amenities" />
+            <div class="collapse-title text-lg font-medium">
+                Unit Amenities
+                <span class="badge badge-primary badge-sm ml-2" x-text="getEffectiveAmenities().length"></span>
+                <span x-show="unit.unitAmenities && unit.unitAmenities.length > 0" class="badge badge-warning badge-sm ml-1">overridden</span>
+                <span x-show="(!unit.unitAmenities || unit.unitAmenities.length === 0) && selectedUnitType?.modelAmenities?.length > 0" class="badge badge-info badge-sm ml-1">inherited</span>
+            </div>
+            <div class="collapse-content">
+                <div class="pt-4">
+                    <div x-show="selectedUnitType && selectedUnitType.modelAmenities && selectedUnitType.modelAmenities.length > 0" class="alert alert-info mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>This unit inherits amenities from its model. Add amenities here to override the model defaults.</span>
+                    </div>
+                    <AmenitySelector
+                        name="unitAmenities"
+                        label="Unit-specific amenities (overrides model amenities)"
+                        xModel="unit.unitAmenities"
+                        showLabel={false}
+                    />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Photos Section -->
+        <div class="collapse collapse-arrow bg-base-200 mb-2">
+            <input type="checkbox" x-model="expandedSections.photos" />
+            <div class="collapse-title text-lg font-medium">
+                Photos
+                <span class="badge badge-primary badge-sm ml-2" x-text="unit.photos?.length || 0"></span>
+            </div>
+            <div class="collapse-content">
+                <div class="pt-4">
+                    <PhotoUploader
+                        name="photos"
+                        label="Unit photos"
+                        xModel="unit.photos"
+                        entityType="unit"
+                        entityId={unit.unitID}
+                    />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Website Status & Listing IDs Section -->
+        <div class="collapse collapse-arrow bg-base-200">
+            <input type="checkbox" x-model="expandedSections.websites" />
+            <div class="collapse-title text-lg font-medium">
+                Website Status & Listings
+                <span class="badge badge-primary badge-sm ml-2" x-text="Object.keys(unit.websiteStatus || {}).length"></span>
+            </div>
+            <div class="collapse-content">
+                <div class="pt-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Website Status -->
+                        <div>
+                            <h4 class="font-semibold mb-2">Website Status</h4>
+                            <div class="space-y-2">
+                                <template x-for="site in ['apartments.com', 'zillow.com', 'rent.com', 'craigslist.org']" :key="site">
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text" x-text="site"></span>
+                                        </label>
+                                        <select 
+                                            x-model="unit.websiteStatus[site]"
+                                            x-on:change="saveUnit(this)"
+                                            class="select select-bordered select-sm w-full"
+                                        >
+                                            <option value="">Not Listed</option>
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="error">Error</option>
+                                        </select>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Listing IDs -->
+                        <div>
+                            <h4 class="font-semibold mb-2">Listing IDs/URLs</h4>
+                            <div class="space-y-2">
+                                <template x-for="site in ['apartments.com', 'zillow.com', 'rent.com', 'craigslist.org']" :key="site">
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text" x-text="site"></span>
+                                        </label>
+                                        <input 
+                                            type="text"
+                                            x-model.lazy="unit.listingIds[site]"
+                                            class="input input-bordered input-sm w-full"
+                                            placeholder="External ID or URL"
+                                        />
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <div class="uppercase font-semibold">Description</div>
-        <textarea class="textarea text w-full" placeholder="Description" x-model.lazy="unit.description"/>
-    </div>
-    <div>
-        <div class="uppercase font-semibold">Beds</div>
-        <input x-model.number.lazy="unit.beds" class="max-w-15 input input-ghost input-lg validator" min="0" max="10"/>
-    </div>
-    <div>
-        <div class="uppercase font-semibold">Baths</div>
-        <input x-model.number.lazy="unit.baths" class="max-w-15 input input-ghost input-lg validator" min="0" max="10"/>
-    </div>
-    <div>
-        <div class="uppercase font-semibold">Sqft.</div>
-        <input x-model.number.lazy="unit.sqft" class="max-w-20 input input-ghost input-lg validator" min="50" max="10000"/>
-    </div>
-    <div>
-        <div class="uppercase font-semibold">Monthly Rent ($)</div>
-        <input x-model.number.lazy="unit.rent" class="max-w-20 input input-ghost input-lg validator" min="10" max="25000"/>
-    </div>
-    <div>
-        <div class="uppercase font-semibold">Occupied?</div>
-        <label class="toggle text-base-content mt-3">
-            <input type="checkbox" x-model.boolean.lazy="unit.occupied"/>
-            <svg aria-label="disabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-            </svg>
-            <svg aria-label="enabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <g stroke-linejoin="round" stroke-linecap="round" stroke-width="4" fill="none" stroke="currentColor">
-                    <path d="M20 6 9 17l-5-5" />
-                </g>
-            </svg>
-        </label>
-    </div>
-    <div>
-        <div class="uppercase font-semibold">Available From</div>
-        <input type="date" x-model.lazy="unit.availableDate" class="max-w-36 input input-ghost input-lg validator" min="2025-01-01" max="2028-01-01"/>
-    </div>
-    <button class="btn btn-error" x-on:click="deleteUnit()">Delete</button>
-    <Saving />
 </li>
+
+<style>
+    /* Ensure smooth transitions */
+    .collapse-content {
+        transition: all 0.3s ease;
+    }
+    
+    /* Style for inherited value indicator */
+    .input-ghost {
+        background-color: transparent;
+    }
+    
+    /* Hide number input spinners */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+</style>

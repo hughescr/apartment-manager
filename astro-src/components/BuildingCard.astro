@@ -1,128 +1,858 @@
 ---
 import { getBuilding } from "../../data/buildings";
 import { getUnits } from "../../data/units";
+import { getUnitTypes } from "../../data/unitTypes";
 import Saving from "./Saving.astro";
 import UnitCard from "./UnitCard.astro";
 import { Resource } from "sst";
+import {
+    BaseInput,
+    BaseSelect,
+    BaseTextarea,
+    PhotoUploader,
+    AmenitySelector,
+    FeeListEditor,
+    PetPolicyEditor,
+    ScreeningCriteriaForm
+} from "./forms";
+import { 
+    PropertyType, 
+    UtilityType, 
+    FeeType, 
+    DayOfWeek,
+    AmenityCategory 
+} from "../../src/types";
 
 const { buildingID } = Astro.props as { buildingID: string };
 
 const building = await getBuilding(buildingID);
 const units = await getUnits(buildingID);
+const unitTypes = await getUnitTypes(buildingID);
 
 const apiURL = Resource.API.url;
+
+// Initialize any missing nested objects
+if (!building.utilitiesIncluded) building.utilitiesIncluded = {};
+if (!building.oneTimeFees) building.oneTimeFees = [];
+if (!building.monthlyFees) building.monthlyFees = [];
+if (!building.parkingOptions) building.parkingOptions = [];
+if (!building.storageOptions) building.storageOptions = [];
+if (!building.propertyAmenities) building.propertyAmenities = [];
+if (!building.rentSpecials) building.rentSpecials = [];
+if (!building.petPolicies) building.petPolicies = { allowed: false };
+if (!building.screeningCriteria) building.screeningCriteria = {};
+if (!building.contactInfo) building.contactInfo = {};
+if (!building.tourAvailability) building.tourAvailability = {};
+if (!building.photos) building.photos = [];
+if (!building.incomeRestrictions) building.incomeRestrictions = null;
+
 const xData = JSON.stringify({
     original: building,
     building,
     units,
+    unitTypes,
     apiURL,
     showSave: false,
     saving: false,
+    activeTab: 'basic',
+    // Methods for handling actions
+    async addUnit() {
+        const id = prompt('New unit number?');
+        if (!id) return;
+        await fetch(`${this.apiURL}buildings/${this.building.buildingID}/units`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ unitID: id, buildingID: this.building.buildingID }),
+        });
+        window.location.reload();
+    },
+    async deleteBuilding() {
+        if (!confirm('Are you sure you want to delete this building and all its units?')) return;
+        await fetch(`${this.apiURL}buildings/${this.building.buildingID}`, { method: 'DELETE' });
+        window.location.reload();
+    },
+    async saveBuilding() {
+        this.saving = true;
+        await fetch(`${this.apiURL}buildings/${this.building.buildingID}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.building),
+        });
+        this.original = { ...this.building };
+        this.showSave = false;
+        this.saving = false;
+    },
+    undoChanges() {
+        this.building = { ...this.original };
+    }
 });
+
+// Property type options
+const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => ({
+    value,
+    label: key.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
+}));
+
+// Utility type options
+const utilityTypes = Object.values(UtilityType);
+
+// Days of week for office hours
+const daysOfWeek = Object.values(DayOfWeek);
 ---
 
 <div
-    class="tab-content bg-base-100 border-base-300 building-card p-4"
+    class="building-card"
     x-data={xData}
     x-effect="showSave = JSON.stringify(building) !== JSON.stringify(original)"
     :class="{'opacity-50': saving}">
-    <fieldset class="fieldset w-xl relative">
-        <label class="floating-label mb-6">
-            <input
-                disabled
-                type="text"
-                x-model="building.buildingID"
-                placeholder="Building Name (required)"
-                class="input input-xl w-full"
-                required
-            />
-        </label>
-        <label class="floating-label mb-2">
-            <span>Street</span>
-            <input
-                type="text"
-                placeholder="Street"
-                class="input w-full"
-                x-model="building.street"
-            />
-        </label>
-        <label class="floating-label mb-2">
-            <span>City</span>
-            <input
-                type="text"
-                placeholder="City"
-                class="input w-full"
-                x-model="building.city"
-            />
-        </label>
-        <label class="floating-label mb-2">
-            <span>State</span>
-            <input
-                type="text"
-                placeholder="State"
-                class="input w-full"
-                x-model="building.state"
-            />
-        </label>
-        <label class="floating-label mb-2">
-            <span>Zip</span>
-            <input
-                type="text"
-                placeholder="Zip"
-                class="input w-full"
-                x-model="building.zip"
-            />
-        </label>
-        <label class="floating-label mt-4">
-            <span>Description</span>
-            <textarea
-                placeholder="Description"
-                class="textarea w-full"
-                x-model="building.description"></textarea>
-        </label>
-        <Saving />
-    </fieldset>
-    <div class="mt-2 space-x-2 w-xl">
-        <button
-            class="btn btn-primary"
-            x-on:click="const id = prompt('New unit number?');
-            if (!id) return;
-            await fetch(`${apiURL}buildings/${building.buildingID}/units`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ unitID: id, buildingID: building.buildingID }),
-            });
-            window.location.reload();
-            "
-            >Add Unit</button>
-        <button
-            class="btn btn-error"
-            x-on:click="if (!confirm('Are you sure you want to delete this building and all its units?')) return;
-            await fetch(`${apiURL}buildings/${building.buildingID}`, { method: 'DELETE' });
-            window.location.reload();
-            "
-            >Delete Building</button>
-        <button
-            class="btn btn-secondary float-right ml-2"
-            x-show="showSave"
-            x-on:click="saving=true;
-                await fetch(`${apiURL}buildings/${building.buildingID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(building),
-            })
-            original = { ...building };
-            showSave = false;
-            saving = false;
-            "
-            >Save</button>
-        <button
-            class="btn btn-soft float-right ml-2"
-            x-show="showSave"
-            x-on:click="building={...original}">Undo</button>
+    
+    <!-- Header with Building Name and Actions -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold" x-text="building.buildingID"></h2>
+            <Saving />
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="mt-4 space-x-2">
+            <button
+                class="btn btn-primary btn-sm"
+                x-on:click="addUnit()"
+                >Add Unit</button>
+            <button
+                class="btn btn-error btn-sm"
+                x-on:click="deleteBuilding()"
+                >Delete Building</button>
+            <button
+                class="btn btn-secondary btn-sm float-right ml-2"
+                x-show="showSave"
+                x-on:click="saveBuilding()"
+                >Save</button>
+            <button
+                class="btn btn-soft btn-sm float-right ml-2"
+                x-show="showSave"
+                x-on:click="undoChanges()">Undo</button>
+        </div>
     </div>
-    <ul class="list w-full mt-4">
-        <li class="p-4 pb-2 text-lg opacity-60 tracking-wide">Units in this building</li>
-        {units?.map((u) => <UnitCard unit={u} />)}
-    </ul>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs tabs-boxed mb-6">
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'basic'}"
+            @click="activeTab = 'basic'">Basic Info</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'lease'}"
+            @click="activeTab = 'lease'">Lease & Pricing</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'details'}"
+            @click="activeTab = 'details'">Property Details</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'utilities'}"
+            @click="activeTab = 'utilities'">Utilities & Fees</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'amenities'}"
+            @click="activeTab = 'amenities'">Amenities</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'policies'}"
+            @click="activeTab = 'policies'">Policies</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'contact'}"
+            @click="activeTab = 'contact'">Contact & Tours</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeTab === 'media'}"
+            @click="activeTab = 'media'">Media</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Basic Info Tab -->
+        <div x-show="activeTab === 'basic'" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="buildingID"
+                    label="Building ID"
+                    xModel="building.buildingID"
+                    disabled={true}
+                    required={true}
+                />
+                <BaseSelect
+                    name="propertyType"
+                    label="Property Type"
+                    xModel="building.propertyType"
+                    options={propertyTypeOptions}
+                    placeholder="Select property type"
+                />
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="street"
+                    label="Street Address"
+                    xModel="building.street"
+                    placeholder="123 Main St"
+                />
+                <BaseInput
+                    name="city"
+                    label="City"
+                    xModel="building.city"
+                    placeholder="San Francisco"
+                />
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="state"
+                    label="State"
+                    xModel="building.state"
+                    placeholder="CA"
+                />
+                <BaseInput
+                    name="zip"
+                    label="ZIP Code"
+                    xModel="building.zip"
+                    placeholder="94102"
+                />
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <BaseInput
+                    name="yearBuilt"
+                    label="Year Built"
+                    type="number"
+                    xModel="building.yearBuilt"
+                    placeholder="2020"
+                    min="1800"
+                    max="2030"
+                />
+                <BaseInput
+                    name="numberStories"
+                    label="Number of Stories"
+                    type="number"
+                    xModel="building.numberStories"
+                    placeholder="3"
+                    min="1"
+                />
+                <BaseInput
+                    name="totalUnits"
+                    label="Total Units"
+                    type="number"
+                    xModel="building.totalUnits"
+                    placeholder="24"
+                    min="1"
+                />
+            </div>
+            
+            <BaseTextarea
+                name="description"
+                label="Basic Description"
+                xModel="building.description"
+                placeholder="Brief description of the property"
+                rows="3"
+            />
+        </div>
+
+        <!-- Lease & Pricing Tab -->
+        <div x-show="activeTab === 'lease'" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="leaseLength"
+                    label="Default Lease Length (months)"
+                    type="number"
+                    xModel="building.leaseLength"
+                    placeholder="12"
+                    min="1"
+                    max="24"
+                />
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Allow Short-Term Leases</span>
+                        <input 
+                            type="checkbox" 
+                            class="toggle toggle-primary" 
+                            x-model="building.shortTermLeaseAllowed"
+                        />
+                    </label>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="applicationFee"
+                    label="Application Fee"
+                    type="number"
+                    xModel="building.applicationFee"
+                    placeholder="50"
+                    min="0"
+                    step="1"
+                />
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Accept Online Applications</span>
+                        <input 
+                            type="checkbox" 
+                            class="toggle toggle-primary" 
+                            x-model="building.acceptsOnlineApplications"
+                        />
+                    </label>
+                </div>
+            </div>
+            
+            <BaseInput
+                name="propertyLicenseNumber"
+                label="Property License Number"
+                xModel="building.propertyLicenseNumber"
+                placeholder="LIC-123456"
+            />
+        </div>
+
+        <!-- Property Details Tab -->
+        <div x-show="activeTab === 'details'" class="space-y-4">
+            <BaseTextarea
+                name="propertyDescription"
+                label="Detailed Marketing Description"
+                xModel="building.propertyDescription"
+                placeholder="Detailed description for marketing purposes..."
+                rows="6"
+                helpText="This description will be used on listing sites"
+            />
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="specialtyType"
+                    label="Specialty Type"
+                    xModel="building.specialtyType"
+                    placeholder="e.g., senior, student, affordable"
+                />
+                <BaseInput
+                    name="specialtySubType"
+                    label="Specialty Sub-Type"
+                    xModel="building.specialtySubType"
+                    placeholder="e.g., 55+, 62+, graduate"
+                />
+            </div>
+            
+            <div class="form-control">
+                <label class="label cursor-pointer">
+                    <span class="label-text">Rooms for Rent Available</span>
+                    <input 
+                        type="checkbox" 
+                        class="toggle toggle-primary" 
+                        x-model="building.roomsForRent"
+                    />
+                </label>
+            </div>
+            
+            <!-- Rent Specials -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Rent Specials</h3>
+                    <div x-data='{ addSpecial() { if (!building.rentSpecials) building.rentSpecials = []; building.rentSpecials.push({ title: "", description: "", startDate: "", endDate: "" }); }, removeSpecial(index) { building.rentSpecials.splice(index, 1); } }'>
+                        <template x-for="(special, index) in building.rentSpecials" :key="index">
+                            <div class="border border-base-300 rounded-lg p-4 mb-4">
+                                <div class="flex justify-end mb-2">
+                                    <button 
+                                        @click="removeSpecial(index)"
+                                        class="btn btn-ghost btn-sm text-error"
+                                    >Remove</button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <BaseInput
+                                        :name="'special-title-' + index"
+                                        label="Title"
+                                        x-model="special.title"
+                                        placeholder="Move-in Special"
+                                        required
+                                    />
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <BaseInput
+                                            :name="'special-start-' + index"
+                                            label="Start Date"
+                                            type="date"
+                                            x-model="special.startDate"
+                                        />
+                                        <BaseInput
+                                            :name="'special-end-' + index"
+                                            label="End Date"
+                                            type="date"
+                                            x-model="special.endDate"
+                                        />
+                                    </div>
+                                </div>
+                                <BaseTextarea
+                                    :name="'special-desc-' + index"
+                                    label="Description"
+                                    x-model="special.description"
+                                    placeholder="Special details..."
+                                    rows="2"
+                                />
+                            </div>
+                        </template>
+                        <button 
+                            @click="addSpecial()"
+                            class="btn btn-primary btn-sm"
+                        >Add Rent Special</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Income Restrictions -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Income Restrictions</h3>
+                    <div x-data="{ hasRestrictions: !!building.incomeRestrictions?.amiLimit, initRestrictions() { if (this.hasRestrictions && !building.incomeRestrictions) { building.incomeRestrictions = { amiLimit: null, maxIncomeByHouseholdSize: {} }; } else if (!this.hasRestrictions) { building.incomeRestrictions = null; } } }" x-init="initRestrictions()" x-effect="initRestrictions()">
+                        <div class="form-control mb-4">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Has Income Restrictions</span>
+                                <input 
+                                    type="checkbox" 
+                                    class="toggle toggle-primary" 
+                                    x-model="hasRestrictions"
+                                />
+                            </label>
+                        </div>
+                        <div x-show="hasRestrictions" class="space-y-4">
+                            <BaseInput
+                                name="amiLimit"
+                                label="AMI Limit (%)"
+                                type="number"
+                                x-model="building.incomeRestrictions.amiLimit"
+                                placeholder="80"
+                                min="0"
+                                max="200"
+                                helpText="Area Median Income percentage limit"
+                            />
+                            <!-- Simplified income limits by household size -->
+                            <div>
+                                <label class="label">Maximum Income by Household Size</label>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <template x-for="size in [1, 2, 3, 4]" :key="size">
+                                        <BaseInput
+                                            :name="'income-size-' + size"
+                                            :label="size + ' Person'"
+                                            type="number"
+                                            x-model="building.incomeRestrictions.maxIncomeByHouseholdSize[size]"
+                                            placeholder="50000"
+                                            min="0"
+                                            step="1000"
+                                        />
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Utilities & Fees Tab -->
+        <div x-show="activeTab === 'utilities'" class="space-y-4">
+            <!-- Utilities Included -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Utilities Included</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {utilityTypes.map(utility => (
+                            <div class="form-control">
+                                <label class="label cursor-pointer">
+                                    <span class="label-text capitalize">{utility.replace('-', ' ')}</span>
+                                    <input 
+                                        type="checkbox" 
+                                        class="checkbox checkbox-primary" 
+                                        x-model="building.utilitiesIncluded[utility]"
+                                    />
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- One-Time Fees -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">One-Time Fees</h3>
+                    <FeeListEditor
+                        name="oneTimeFees"
+                        xModel="building.oneTimeFees"
+                        feeTypes={[FeeType.SECURITY_DEPOSIT, FeeType.PET_DEPOSIT, FeeType.MOVE_IN, FeeType.KEY_DEPOSIT, FeeType.CLEANING]}
+                    />
+                </div>
+            </div>
+            
+            <!-- Monthly Fees -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Monthly Fees</h3>
+                    <FeeListEditor
+                        name="monthlyFees"
+                        xModel="building.monthlyFees"
+                        feeTypes={[FeeType.PET_FEE, FeeType.PARKING, FeeType.STORAGE, FeeType.ADMIN]}
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Amenities Tab -->
+        <div x-show="activeTab === 'amenities'" class="space-y-4">
+            <!-- Parking Options -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Parking Options</h3>
+                    <div x-data='{ addParking() { if (!building.parkingOptions) building.parkingOptions = []; building.parkingOptions.push({ type: "uncovered", included: false, fee: null, spaces: 1, description: "" }); }, removeParking(index) { building.parkingOptions.splice(index, 1); } }'>
+                        <template x-for="(parking, index) in building.parkingOptions" :key="index">
+                            <div class="border border-base-300 rounded-lg p-4 mb-4">
+                                <div class="flex justify-end mb-2">
+                                    <button 
+                                        @click="removeParking(index)"
+                                        class="btn btn-ghost btn-sm text-error"
+                                    >Remove</button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <BaseSelect
+                                        :name="'parking-type-' + index"
+                                        label="Type"
+                                        x-model="parking.type"
+                                        :options='[{value: "garage", label: "Garage"}, {value: "covered", label: "Covered"}, {value: "uncovered", label: "Uncovered"}, {value: "street", label: "Street"}, {value: "none", label: "None"}]'
+                                    />
+                                    <div class="form-control">
+                                        <label class="label cursor-pointer">
+                                            <span class="label-text">Included</span>
+                                            <input 
+                                                type="checkbox" 
+                                                class="toggle toggle-primary" 
+                                                x-model="parking.included"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <BaseInput
+                                        :name="'parking-fee-' + index"
+                                        label="Monthly Fee"
+                                        type="number"
+                                        x-model="parking.fee"
+                                        placeholder="0"
+                                        min="0"
+                                        :disabled="parking.included"
+                                    />
+                                    <BaseInput
+                                        :name="'parking-spaces-' + index"
+                                        label="Number of Spaces"
+                                        type="number"
+                                        x-model="parking.spaces"
+                                        placeholder="1"
+                                        min="1"
+                                    />
+                                </div>
+                                <BaseInput
+                                    :name="'parking-desc-' + index"
+                                    label="Description"
+                                    x-model="parking.description"
+                                    placeholder="Additional details..."
+                                />
+                            </div>
+                        </template>
+                        <button 
+                            @click="addParking()"
+                            class="btn btn-primary btn-sm"
+                        >Add Parking Option</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Storage Options -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Storage Options</h3>
+                    <div x-data='{ addStorage() { if (!building.storageOptions) building.storageOptions = []; building.storageOptions.push({ type: "closet", included: false, fee: null, dimensions: "", description: "" }); }, removeStorage(index) { building.storageOptions.splice(index, 1); } }'>
+                        <template x-for="(storage, index) in building.storageOptions" :key="index">
+                            <div class="border border-base-300 rounded-lg p-4 mb-4">
+                                <div class="flex justify-end mb-2">
+                                    <button 
+                                        @click="removeStorage(index)"
+                                        class="btn btn-ghost btn-sm text-error"
+                                    >Remove</button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <BaseSelect
+                                        :name="'storage-type-' + index"
+                                        label="Type"
+                                        x-model="storage.type"
+                                        :options='[{value: "closet", label: "Closet"}, {value: "basement", label: "Basement"}, {value: "garage", label: "Garage"}, {value: "external-unit", label: "External Unit"}, {value: "none", label: "None"}]'
+                                    />
+                                    <div class="form-control">
+                                        <label class="label cursor-pointer">
+                                            <span class="label-text">Included</span>
+                                            <input 
+                                                type="checkbox" 
+                                                class="toggle toggle-primary" 
+                                                x-model="storage.included"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <BaseInput
+                                        :name="'storage-fee-' + index"
+                                        label="Monthly Fee"
+                                        type="number"
+                                        x-model="storage.fee"
+                                        placeholder="0"
+                                        min="0"
+                                        :disabled="storage.included"
+                                    />
+                                    <BaseInput
+                                        :name="'storage-dimensions-' + index"
+                                        label="Dimensions"
+                                        x-model="storage.dimensions"
+                                        placeholder="5x10"
+                                    />
+                                </div>
+                                <BaseInput
+                                    :name="'storage-desc-' + index"
+                                    label="Description"
+                                    x-model="storage.description"
+                                    placeholder="Additional details..."
+                                />
+                            </div>
+                        </template>
+                        <button 
+                            @click="addStorage()"
+                            class="btn btn-primary btn-sm"
+                        >Add Storage Option</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Property Amenities -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Property Amenities</h3>
+                    <AmenitySelector
+                        name="propertyAmenities"
+                        xModel="building.propertyAmenities"
+                        category={AmenityCategory.PROPERTY}
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Policies Tab -->
+        <div x-show="activeTab === 'policies'" class="space-y-4">
+            <!-- Pet Policies -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Pet Policies</h3>
+                    <PetPolicyEditor
+                        name="petPolicies"
+                        xModel="building.petPolicies"
+                    />
+                </div>
+            </div>
+            
+            <!-- Screening Criteria -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Screening Criteria</h3>
+                    <ScreeningCriteriaForm
+                        name="screeningCriteria"
+                        xModel="building.screeningCriteria"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Tours Tab -->
+        <div x-show="activeTab === 'contact'" class="space-y-4">
+            <!-- Contact Information -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Contact Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <BaseInput
+                            name="contactName"
+                            label="Contact Name"
+                            xModel="building.contactInfo.name"
+                            placeholder="John Doe"
+                        />
+                        <BaseInput
+                            name="contactPhone"
+                            label="Phone Number"
+                            type="tel"
+                            xModel="building.contactInfo.phone"
+                            placeholder="(555) 123-4567"
+                        />
+                        <BaseInput
+                            name="contactEmail"
+                            label="Email Address"
+                            type="email"
+                            xModel="building.contactInfo.email"
+                            placeholder="contact@property.com"
+                        />
+                        <BaseInput
+                            name="contactWebsite"
+                            label="Website"
+                            type="url"
+                            xModel="building.contactInfo.website"
+                            placeholder="https://property.com"
+                        />
+                    </div>
+                    
+                    <!-- Office Hours -->
+                    <div class="mt-6">
+                        <h4 class="text-base font-semibold mb-4">Office Hours</h4>
+                        <div class="space-y-2">
+                            {daysOfWeek.map(day => {
+                                const xDataStr = "{ day: '" + day + "', isOpen: !!building.contactInfo.officeHours?.['" + day + "'], toggle() { if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {}; if (this.isOpen) { building.contactInfo.officeHours[this.day] = { open: '09:00', close: '17:00' }; } else { delete building.contactInfo.officeHours[this.day]; } } }";
+                                return (
+                                <div class="grid grid-cols-3 gap-4 items-center" x-data={xDataStr}>
+                                    <div class="form-control">
+                                        <label class="label cursor-pointer">
+                                            <span class="label-text capitalize">{day}</span>
+                                            <input 
+                                                type="checkbox" 
+                                                class="checkbox checkbox-primary" 
+                                                x-model="isOpen"
+                                                @change="toggle()"
+                                            />
+                                        </label>
+                                    </div>
+                                    <BaseInput
+                                        name={'office-open-' + day}
+                                        label="Open"
+                                        type="time"
+                                        x-model="building.contactInfo.officeHours?.[day]?.open"
+                                        :disabled="!isOpen"
+                                    />
+                                    <BaseInput
+                                        name={'office-close-' + day}
+                                        label="Close"
+                                        type="time"
+                                        x-model="building.contactInfo.officeHours?.[day]?.close"
+                                        :disabled="!isOpen"
+                                    />
+                                </div>
+                            )})}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tour Availability -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Tour Availability</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="form-control">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Self-Guided Tours</span>
+                                <input 
+                                    type="checkbox" 
+                                    class="checkbox checkbox-primary" 
+                                    x-model="building.tourAvailability.selfGuidedTours"
+                                />
+                            </label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Virtual Tours</span>
+                                <input 
+                                    type="checkbox" 
+                                    class="checkbox checkbox-primary" 
+                                    x-model="building.tourAvailability.virtualTours"
+                                />
+                            </label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">In-Person Tours</span>
+                                <input 
+                                    type="checkbox" 
+                                    class="checkbox checkbox-primary" 
+                                    x-model="building.tourAvailability.inPersonTours"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <BaseInput
+                        name="tourSchedulingUrl"
+                        label="Tour Scheduling URL"
+                        type="url"
+                        xModel="building.tourAvailability.tourSchedulingUrl"
+                        placeholder="https://calendly.com/property-tours"
+                    />
+                    
+                    <!-- Tour Hours -->
+                    <div class="mt-6">
+                        <h4 class="text-base font-semibold mb-4">Tour Hours</h4>
+                        <div class="space-y-2">
+                            {daysOfWeek.map(day => {
+                                const xDataStr = "{ day: '" + day + "', isOpen: !!building.tourAvailability.tourHours?.['" + day + "'], toggle() { if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {}; if (this.isOpen) { building.tourAvailability.tourHours[this.day] = { open: '09:00', close: '17:00' }; } else { delete building.tourAvailability.tourHours[this.day]; } } }";
+                                return (
+                                <div class="grid grid-cols-3 gap-4 items-center" x-data={xDataStr}>
+                                    <div class="form-control">
+                                        <label class="label cursor-pointer">
+                                            <span class="label-text capitalize">{day}</span>
+                                            <input 
+                                                type="checkbox" 
+                                                class="checkbox checkbox-primary" 
+                                                x-model="isOpen"
+                                                @change="toggle()"
+                                            />
+                                        </label>
+                                    </div>
+                                    <BaseInput
+                                        name={'tour-open-' + day}
+                                        label="Open"
+                                        type="time"
+                                        x-model="building.tourAvailability.tourHours?.[day]?.open"
+                                        :disabled="!isOpen"
+                                    />
+                                    <BaseInput
+                                        name={'tour-close-' + day}
+                                        label="Close"
+                                        type="time"
+                                        x-model="building.tourAvailability.tourHours?.[day]?.close"
+                                        :disabled="!isOpen"
+                                    />
+                                </div>
+                            )})}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Media Tab -->
+        <div x-show="activeTab === 'media'" class="space-y-4">
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Property Photos</h3>
+                    <PhotoUploader
+                        name="photos"
+                        xModel="building.photos"
+                        entityType="building"
+                        :entityId="building.buildingID"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Units List -->
+    <div class="mt-8">
+        <h3 class="text-xl font-semibold mb-4">Units in this building</h3>
+        <div class="space-y-2">
+            {units?.map((u) => <UnitCard unit={u} unitTypes={unitTypes} />)}
+        </div>
+    </div>
 </div>
