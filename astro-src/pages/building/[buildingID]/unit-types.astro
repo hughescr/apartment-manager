@@ -13,11 +13,19 @@ if (!buildingID) {
     return Astro.redirect("/404");
 }
 
-const building = await getBuilding(buildingID);
-const unitTypes = await getUnitTypes(buildingID);
+let building;
+let unitTypes;
+let error = null;
 
-if (!building) {
-    return Astro.redirect("/404");
+try {
+    building = await getBuilding(buildingID);
+    if (!building) {
+        return Astro.redirect("/404");
+    }
+    unitTypes = await getUnitTypes(buildingID);
+} catch (e) {
+    error = "Failed to load unit types";
+    unitTypes = [];
 }
 ---
 
@@ -31,13 +39,23 @@ if (!building) {
             </div>
         </div>
 
+        <!-- Error Display -->
+        {error && (
+            <div class="alert alert-error mb-6" data-testid="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>{error}</span>
+            </div>
+        )}
+
         <!-- Add New Unit Type -->
         <UnitTypeForm buildingID={buildingID} />
 
         <!-- Unit Type Cards -->
-        <div class="space-y-6 mb-8">
+        <div class="space-y-6 mb-8" data-testid="unit-types-list">
             {unitTypes.length === 0 ? (
-                <div class="alert alert-info">
+                <div class="alert alert-info" data-testid="empty-state">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>

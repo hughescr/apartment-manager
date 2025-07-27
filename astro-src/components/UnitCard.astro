@@ -580,7 +580,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <!-- Website Status -->
                         <div>
                             <h4 class="font-semibold mb-2">Website Status</h4>
-                            <div class="space-y-2">
+                            <div class="flex flex-col gap-2">
                                 <template x-for="site in ['apartments.com', 'zillow.com', 'rent.com', 'craigslist.org']" :key="site">
                                     <div class="form-control">
                                         <label class="label">
@@ -605,7 +605,7 @@ if (!unit.listingIds) unit.listingIds = {};
                         <!-- Listing IDs -->
                         <div>
                             <h4 class="font-semibold mb-2">Listing IDs/URLs</h4>
-                            <div class="space-y-2">
+                            <div class="flex flex-col gap-2">
                                 <template x-for="site in ['apartments.com', 'zillow.com', 'rent.com', 'craigslist.org']" :key="site">
                                     <div class="form-control">
                                         <label class="label">

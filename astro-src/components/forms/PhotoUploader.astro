@@ -266,7 +266,7 @@ const xData = {
             </label>
             
             <!-- Upload Progress -->
-            <div x-show="uploading" class="space-y-2">
+            <div x-show="uploading" class="flex flex-col gap-2">
                 <template x-for="(progress, id) in uploadProgress" :key="id">
                     <div class="w-full">
                         <div class="flex justify-between text-sm mb-1">

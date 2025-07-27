@@ -87,7 +87,7 @@ const xData = {
 if (!unitType.modelAmenities) unitType.modelAmenities = [];
 ---
 
-<div x-data={JSON.stringify(xData)} x-init="$watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}">
+<div x-data={JSON.stringify(xData)} x-init="$watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">
     <div class="card-body">
         <!-- Header -->
         <div class="flex justify-between items-start mb-4">
