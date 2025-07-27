@@ -13,6 +13,34 @@
 9. **ALWAYS ignore TypeScript errors from the `.sst` directory** - these are SST framework-generated files, not application code.
 10. **DO ONLY what has been asked** - nothing more, nothing less.
 
+## TOOL PRIORITIZATION - ALWAYS USE SPECIALIZED TOOLS FIRST
+
+**File Operations:**
+❌ `find/grep/cat/ls` → ✅ Glob/Grep/Read/LS tools
+
+**Code Analysis:**
+❌ `tsc/eslint` → ✅ mcp__language-server/mcp__eslint tools
+
+**File Editing - Choose wisely:**
+- Line-based edits (errors, diagnostics) → `mcp__language-server__edit_file`
+- Multiple find-replace → `MultiEdit`
+- Single find-replace → `Edit`
+
+**Web/Network:**
+❌ `curl/wget` → ✅ WebFetch/mcp__web-fetch tools
+
+**Process Management:**
+❌ `tmux` commands → ✅ mcp__tmux tools
+
+**Documentation:**
+❌ Web searches → ✅ Context7 MCP for library docs
+
+**When Bash IS appropriate:**
+- Git operations (except PRs - use `gh`)
+- Package management (`bun install/add`)
+- Running npm scripts (`bun run sst-dev`)
+- Simple filesystem ops (`mkdir/rm`)
+
 ## SUB-AGENT USAGE - MAXIMIZE EFFICIENCY
 
 **Core Principle**: ALWAYS consider using sub-agents for tasks that match their expertise instead of doing everything yourself.
@@ -54,6 +82,7 @@ Follow this workflow and delegate to appropriate agents at each stage:
 - **Use multiple agents concurrently** when tasks can be parallelized
 - **Trust agent expertise** in their specialized domains
 - **Move work into agent contexts** to reduce your own context usage
+- **Prioritize specialized tools** - All agents must prefer MCP/specialized tools over Bash
 
 ### Best Practices
 
@@ -74,6 +103,7 @@ Follow this workflow and delegate to appropriate agents at each stage:
 ❌ `eslint src/` → ✅ Use `mcp__eslint__lint-files` tool
 ❌ `tsc --noEmit` → ✅ Use `mcp__language-server__diagnostics` tool
 ❌ `bun test` → ✅ `bun test` (same thing, but consistent with npm scripts)
+❌ Any direct CLI tool → ✅ Check for MCP/specialized tool first
 
 ### TypeScript Issues
 ❌ Adding `@ts-ignore` → ✅ Fix the type issue properly
