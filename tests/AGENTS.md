@@ -1,8 +1,22 @@
-# Comprehensive Test Plan
+# Testing Agent Guidelines
 
-This document outlines the testing strategy for the apartment manager application. The goal is to ensure the reliability, correctness, and performance of all application components, from the data layer to the user interface.
+## CRITICAL RULES FOR TESTING
 
-## Beware of mocking
+1. **ALWAYS write tests BEFORE implementation** - Test-driven development is mandatory
+2. **ALWAYS use the ModuleMocker pattern** for module mocks - See ModuleMocker.ts
+3. **ALWAYS clean up mocks in afterEach()** - Tests must be idempotent
+4. **NEVER use mock.module() directly** - Use ModuleMocker to avoid Bun issues
+5. **ALWAYS run `bun run test`** - NOT `bun test` (needs AWS context)
+
+## COMMON TESTING MISTAKES
+
+❌ Writing implementation before tests → ✅ Write failing tests first
+❌ Using `mock.module()` directly → ✅ Use ModuleMocker class
+❌ Not cleaning up mocks → ✅ Always use afterEach() cleanup
+❌ Running `bun test` → ✅ Run `bun run test` for AWS context
+❌ Testing implementation details → ✅ Test behavior and outputs
+
+## Module Mocking Best Practices
 
 When mocking for tests, remember to only insert the mocks in a `beforeEach()` and be sure to remove them in `afterEach()` so that mocks for one test don't pollute other tests. Test MUST always be idempotent.
 In particular, be aware of the problems with `mock.module()` described here: https://github.com/oven-sh/bun/issues/7823
@@ -59,6 +73,48 @@ export class ModuleMocker {
     }
 }
 ```
+
+## Environment Variables for Testing
+
+Tests now use environment variables to determine which server to test against:
+
+### E2E Tests
+- `E2E_BASE_URL` - Base URL for E2E tests (defaults to `http://localhost:4321`)
+  - Local SST dev: `http://localhost:4321` (check SST console for actual port)
+  - Deployed environments: Use the CloudFront URL
+
+### API Tests
+- `API_BASE_URL` - Base URL for API tests (if needed)
+  - Local SST dev: Check SST console for API function URLs
+  - Deployed environments: Use the API Gateway or Function URL
+
+### Running Tests
+
+```bash
+# Unit tests (no server needed)
+bun test tests/data/
+bun test tests/forms/
+
+# Integration/E2E tests (server must be running)
+# Terminal 1: Start server
+bun run sst-dev
+
+# Terminal 2: Run tests after server is ready
+bun test tests/e2e/  # Uses default http://localhost:4321
+API_BASE_URL=http://localhost:3001 bun test tests/api/
+
+# Test against deployed environment
+E2E_BASE_URL=https://d123456.cloudfront.net bun test tests/e2e/
+
+# Run all tests (ensure appropriate servers are running)
+bun test
+```
+
+### Benefits
+- **Flexibility**: Test against local, staging, or production environments
+- **Debugging**: See server logs while tests run
+- **Speed**: No overhead from starting/stopping servers for each test run
+- **Control**: Choose exactly which environment to test
 
 ## 1. Test File Organization
 
