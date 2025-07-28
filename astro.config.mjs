@@ -10,6 +10,33 @@ export default defineConfig({
     ],
     vite: {
         plugins: [tailwind()],
+        server: {
+            watch: {
+                ignored: [
+                    '**/.git/**',
+                    '**/.sst/**',
+                    '**/node_modules/**',
+                    '**/site-build/**',
+                    '**/coverage/**',
+                    '**/docs/**',
+                    '**/tests/**',
+                    'sst/**',
+                    '*.md',
+                    '*.json',
+                    '*.lock',
+                    '*.toml',
+                    '*.mjs',
+                    '*.ts',
+                    '*.d.ts',
+                    '.env*',
+                    '.gitignore',
+                    '.mcp.json',
+                    'LICENSE',
+                    '*.log',
+                    '.DS_Store'
+                ]
+            }
+        }
     },
     srcDir: './astro-src',
     publicDir: './astro-public',
