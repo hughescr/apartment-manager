@@ -19,9 +19,6 @@
     "test": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst shell -- bun test \"$@\"; else bunx sst shell -- bun test \"$@\"; fi' _",
     "test:unit": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst shell -- bun test tests/data tests/forms \"$@\"; else bunx sst shell -- bun test tests/data tests/forms \"$@\"; fi' _",
     "test:e2e": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst shell -- bun test tests/e2e \"$@\"; else bunx sst shell -- bun test tests/e2e \"$@\"; fi' _",
-    "test:e2e:seed": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst shell -- bun run tests/e2e/helpers/seed-default-data.ts \"$@\"; else bunx sst shell -- bun run tests/e2e/helpers/seed-default-data.ts \"$@\"; fi' _",
-    "test:e2e:cleanup": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst shell -- bun run tests/e2e/helpers/cleanup-default-data.ts \"$@\"; else bunx sst shell -- bun run tests/e2e/helpers/cleanup-default-data.ts \"$@\"; fi' _",
-    "test:e2e:with-data": "bun run test:e2e:seed && bun run test:e2e && bun run test:e2e:cleanup",
     "astro-check": "bunx astro check",
     "sst-diagnostics": "sh -c 'if [ -z \"$AWS_REGION\" ]; then op run --env-file=.env.op -- bunx sst diagnostics --print-logs \"$@\"; else bunx sst diagnostics --print-logs \"$@\"; fi' _",
     "gemini": "op run --env-file=.env.op -- tmux -CC new -A -n Gemini -s apartment-manager-mcp-workspace bunx @google/gemini-cli@latest"
