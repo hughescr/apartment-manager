@@ -259,17 +259,8 @@ We use a test data seeding strategy to populate DynamoDB with known test data be
 
 #### Test Scripts
 ```bash
-# Seed default test data
-bun run test:e2e:seed
-
-# Run E2E tests (assumes data is seeded)
+# Run E2E tests (tests handle their own data setup/cleanup)
 bun run test:e2e
-
-# Clean up test data
-bun run test:e2e:cleanup
-
-# All-in-one: seed, test, cleanup
-bun run test:e2e:with-data
 ```
 
 ### E2E Test Structure

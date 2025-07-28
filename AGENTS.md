@@ -1,49 +1,108 @@
 # Coding Agents Guide for Apartment Manager
 
+## 🛑 STOP AND READ: TOOL USAGE IS MANDATORY 🛑
+
+### ⚠️ CRITICAL: Tools Before Terminal - ALWAYS ⚠️
+
+**BEFORE ANY ACTION, ASK YOURSELF: "Is there a specialized tool for this?"**
+**If YES → Use the tool. If NO → Double-check, there probably is one.**
+
 ## CRITICAL RULES - MUST FOLLOW
 
-1. **ALWAYS use `bun run sst-dev` to start development** - NEVER use `bun run dev`. Astro requires the SST server to function properly.
-2. **NEVER create files unless absolutely necessary** - ALWAYS prefer editing existing files over creating new ones.
-3. **NEVER proactively create documentation files** (*.md) or README files unless explicitly requested.
-4. **ALWAYS use `bunx` instead of `npx`** and **ALWAYS use `bun` instead of `npm`**.
-5. **NEVER disable TypeScript errors** with `@ts-ignore` or `@ts-expect-error` - ALWAYS fix the underlying type issues properly.
-6. **ALWAYS use MCP tools for linting and type checking** - NEVER run `eslint` or `tsc` directly.
-7. **NEVER run SST commands directly** - ALWAYS use the bun scripts from package.json for AWS credential injection.
-8. **ALWAYS write tests before implementing features** - NEVER proceed to the next implementation step without passing tests.
-9. **ALWAYS ignore TypeScript errors from the `.sst` directory** - these are SST framework-generated files, not application code.
-10. **DO ONLY what has been asked** - nothing more, nothing less.
+1. **ALWAYS USE SPECIALIZED TOOLS INSTEAD OF BASH COMMANDS** - This is your #1 priority. Using Bash when a tool exists is a CRITICAL ERROR.
+2. **ALWAYS use `bun run sst-dev` to start development** - NEVER use `bun run dev`. Astro requires the SST server to function properly.
+3. **NEVER create files unless absolutely necessary** - ALWAYS prefer editing existing files over creating new ones.
+4. **NEVER proactively create documentation files** (*.md) or README files unless explicitly requested.
+5. **ALWAYS use `bunx` instead of `npx`** and **ALWAYS use `bun` instead of `npm`**.
+6. **NEVER disable TypeScript errors** with `@ts-ignore` or `@ts-expect-error` - ALWAYS fix the underlying type issues properly.
+7. **ALWAYS use MCP tools for linting and type checking** - NEVER run `eslint` or `tsc` directly.
+8. **NEVER run SST commands directly** - ALWAYS use the bun scripts from package.json for AWS credential injection.
+9. **ALWAYS write tests before implementing features** - NEVER proceed to the next implementation step without passing tests.
+10. **ALWAYS ignore TypeScript errors from the `.sst` directory** - these are SST framework-generated files, not application code.
+11. **DO ONLY what has been asked** - nothing more, nothing less.
 
-## TOOL PRIORITIZATION - ALWAYS USE SPECIALIZED TOOLS FIRST
+## ❌ FORBIDDEN BASH COMMANDS - NEVER USE THESE ❌
 
-**File Operations:**
-❌ `find/grep/cat/ls` → ✅ Glob/Grep/Read/LS tools
+**Using any of these commands is considered a CRITICAL FAILURE:**
 
-**Code Analysis:**
-❌ `tsc/eslint` → ✅ mcp__language-server/mcp__eslint tools
+| FORBIDDEN Command | REQUIRED Tool | WHY |
+|-------------------|---------------|-----|
+| `find` | `Glob` | Glob is optimized for file pattern matching |
+| `grep`, `rg`, `ag` | `Grep` | Grep tool has proper permissions and context |
+| `cat`, `head`, `tail` | `Read` | Read tool handles encoding and large files |
+| `ls` | `LS` | LS tool provides structured output |
+| `tsc` | `mcp__language-server__diagnostics` | Language server has full project context |
+| `eslint` | `mcp__eslint__lint-files` | MCP ESLint has proper configuration |
+| `curl`, `wget` | `WebFetch`/`mcp__web-fetch` | Web tools handle authentication and parsing |
+| `tmux` commands | `mcp__tmux` tools | MCP tmux manages persistent sessions |
 
-**File Editing - Choose wisely:**
-- Line-based edits (errors, diagnostics) → `mcp__language-server__edit_file`
-- Multiple find-replace → `MultiEdit`
-- Single find-replace → `Edit`
+**CONSEQUENCES**: If you use these commands, you have failed the task. No exceptions.
 
-**Web/Network:**
-❌ `curl/wget` → ✅ WebFetch/mcp__web-fetch tools
+## ✅ MANDATORY TOOL MAPPING - MEMORIZE THIS ✅
 
-**Process Management:**
-❌ `tmux` commands → ✅ mcp__tmux tools
+### File Operations
+- **Finding files by pattern**: 
+  - ❌ NEVER: `find . -name "*.ts"`
+  - ✅ ALWAYS: `Glob` with `pattern: "**/*.ts"`
+  
+- **Searching file contents**:
+  - ❌ NEVER: `grep -r "function" src/`
+  - ✅ ALWAYS: `Grep` with `pattern: "function", path: "src/"`
+  
+- **Reading files**:
+  - ❌ NEVER: `cat file.ts`
+  - ✅ ALWAYS: `Read` with `file_path: "/absolute/path/to/file.ts"`
+  
+- **Listing directories**:
+  - ❌ NEVER: `ls -la src/`
+  - ✅ ALWAYS: `LS` with `path: "/absolute/path/to/src/"`
 
-**Documentation:**
-❌ Web searches → ✅ Context7 MCP for library docs
+### Code Quality
+- **TypeScript checking**:
+  - ❌ NEVER: `tsc --noEmit`
+  - ✅ ALWAYS: `mcp__language-server__diagnostics` with `filePath: "/path/to/file.ts"`
+  
+- **Linting**:
+  - ❌ NEVER: `eslint src/`
+  - ✅ ALWAYS: `mcp__eslint__lint-files` with `filePaths: ["/absolute/paths/to/files.ts"]`
 
-**When Bash IS appropriate:**
-- Git operations (except PRs - use `gh`)
-- Package management (`bun install/add`)
-- Running npm scripts (`bun run sst-dev`)
-- Simple filesystem ops (`mkdir/rm`)
+### File Editing
+- **When fixing diagnostics/errors**: Use `mcp__language-server__edit_file`
+- **Multiple replacements**: Use `MultiEdit`
+- **Single replacement**: Use `Edit`
+
+### Web/Network
+- **Fetching URLs**:
+  - ❌ NEVER: `curl https://example.com`
+  - ✅ ALWAYS: `WebFetch` or `mcp__web-fetch` tools
+
+### Process Management
+- **Terminal sessions**:
+  - ❌ NEVER: Direct `tmux` commands
+  - ✅ ALWAYS: `mcp__tmux` tools for persistent sessions
+
+## 📋 PRE-FLIGHT CHECKLIST - USE BEFORE EVERY ACTION
+
+Before executing ANY command or action, go through this checklist:
+
+1. ✓ **Am I about to use a Bash command?** → STOP! Check the tool mapping above.
+2. ✓ **Is this a file operation?** → Use Glob/Grep/Read/LS tools.
+3. ✓ **Is this code analysis?** → Use language-server/eslint MCP tools.
+4. ✓ **Is this web/network related?** → Use WebFetch/mcp__web-fetch tools.
+5. ✓ **Have I double-checked the FORBIDDEN COMMANDS list?** → Never use those.
+
+**Remember: "Tools Before Terminal - ALWAYS!"**
 
 ## SUB-AGENT USAGE - MAXIMIZE EFFICIENCY
 
 **Core Principle**: ALWAYS consider using sub-agents for tasks that match their expertise instead of doing everything yourself.
+
+### ⚠️ CRITICAL FOR ALL SUB-AGENTS ⚠️
+
+**EVERY sub-agent MUST follow the tool prioritization rules above. No exceptions.**
+- Sub-agents using forbidden Bash commands = TASK FAILURE
+- Sub-agents MUST check the pre-flight checklist before actions
+- When instructing sub-agents, REMIND them: "Use specialized tools, NOT Bash commands"
 
 ### Standard Development Recipe
 
@@ -53,26 +112,31 @@ Follow this workflow and delegate to appropriate agents at each stage:
 - Use agents specialized in research and analysis
 - Gather requirements and understand existing patterns
 - Let agents explore the codebase for you
+- **REMIND agents**: Use Grep/Glob tools, not bash find/grep
 
 **2. Design & Architecture**
 - Delegate design tasks to agents with relevant expertise
 - Get architectural guidance from specialized agents
 - Have agents create data models and system designs
+- **REMIND agents**: Use Read tool for files, not cat
 
 **3. Implementation**
 - Use implementation-focused agents for writing code
 - Let documentation agents handle documentation tasks
 - Follow the designs from step 2
+- **REMIND agents**: Use language-server for diagnostics, not tsc
 
 **4. Testing & Validation**
 - Delegate test creation to testing specialists
 - Use review agents for quality checks
 - Have agents validate architectural consistency
+- **REMIND agents**: Use mcp__eslint for linting, not eslint CLI
 
 **5. Debug & Iterate**
 - Use debugging agents for error resolution
 - Let troubleshooting agents handle deployment issues
 - Loop back to earlier stages as needed
+- **REMIND agents**: Use mcp__tmux for sessions, not direct tmux
 
 ### Key Guidelines
 
@@ -82,7 +146,8 @@ Follow this workflow and delegate to appropriate agents at each stage:
 - **Use multiple agents concurrently** when tasks can be parallelized
 - **Trust agent expertise** in their specialized domains
 - **Move work into agent contexts** to reduce your own context usage
-- **Prioritize specialized tools** - All agents must prefer MCP/specialized tools over Bash
+- **ENFORCE tool usage** - Remind all agents about the FORBIDDEN COMMANDS list
+- **Include tool instructions** - When delegating, specify which tools to use
 
 ### Best Practices
 
@@ -90,6 +155,7 @@ Follow this workflow and delegate to appropriate agents at each stage:
 - Give agents comprehensive context and clear success criteria
 - Let agents handle the details of their specialized domains
 - Focus on orchestration while agents do the specialized work
+- **ALWAYS remind agents**: "Tools Before Terminal - No Bash commands for operations that have tools!"
 
 ## COMMON MISTAKES TO AVOID
 
@@ -102,7 +168,7 @@ Follow this workflow and delegate to appropriate agents at each stage:
 ### Code Quality Checks
 ❌ `eslint src/` → ✅ Use `mcp__eslint__lint-files` tool
 ❌ `tsc --noEmit` → ✅ Use `mcp__language-server__diagnostics` tool
-❌ `bun test` → ✅ `bun test` (same thing, but consistent with npm scripts)
+❌ `bun test` → ✅ `bun run test` (always use `bun run` for npm scripts)
 ❌ Any direct CLI tool → ✅ Check for MCP/specialized tool first
 
 ### TypeScript Issues
@@ -225,19 +291,19 @@ Pay special attention to these commonly violated rules:
 #### Running Tests
 ```bash
 # Run all tests (uses default URLs)
-bun test
+bun run test
 
 # Run tests against local SST dev server
-E2E_BASE_URL=http://localhost:4321 bun test
+E2E_BASE_URL=http://localhost:4321 bun run test
 
 # Run tests against deployed environment
-E2E_BASE_URL=https://my-app.cloudfront.net bun test
+E2E_BASE_URL=https://my-app.cloudfront.net bun run test
 
 # Run specific test file
-bun test tests/data/buildings.test.ts
+bun run test tests/data/buildings.test.ts
 
 # Run tests matching a pattern
-bun test --testNamePattern="Unit Types"
+bun run test --testNamePattern="Unit Types"
 ```
 
 #### Server Management for Testing
@@ -249,13 +315,13 @@ You are responsible for starting the appropriate server before running tests:
    bun run sst-dev
    
    # Terminal 2: Run tests (after server is ready)
-   E2E_BASE_URL=http://localhost:4321 bun test
+   E2E_BASE_URL=http://localhost:4321 bun run test
    ```
 
 2. **For testing against deployed environments**:
    ```bash
    # No server to start - just point to the deployed URL
-   E2E_BASE_URL=https://staging.myapp.com bun test
+   E2E_BASE_URL=https://staging.myapp.com bun run test
    ```
 
 #### Benefits of This Approach
@@ -281,7 +347,7 @@ bun run sst-dev  # NEVER use 'bun run dev'
 bun run dev-console
 
 # Run tests (server must be running separately for E2E/UI tests)
-bun test
+bun run test
 
 # Complete validation suite (linting, type checking, tests, and Astro check)
 bun run full-test
@@ -398,6 +464,31 @@ For detailed module-specific patterns and rules, see:
 - `/tests/AGENTS.md` - Testing requirements and mocking patterns
 
 **ALWAYS check module-specific AGENTS.md when working in those directories.**
+
+## 🔧 RARE EXCEPTIONS: When Bash IS Appropriate 🔧
+
+**⚠️ IMPORTANT: CHECK TOOLS FIRST! These are the ONLY acceptable Bash uses:**
+
+1. **Git operations** (except PRs - use `gh` for those)
+   - `git add`, `git commit`, `git push`, etc.
+   
+2. **Package management**
+   - `bun install`, `bun add <package>`
+   - BUT remember: use `bunx` not `npx`, use `bun` not `npm`
+   
+3. **Running npm scripts**
+   - `bun run sst-dev`, `bun run test`, etc.
+   - Only scripts defined in package.json
+   
+4. **Simple filesystem operations**
+   - `mkdir` for creating directories
+   - `rm` for removing files/directories
+   - BUT: For finding/reading files, use tools!
+
+**Before using Bash for ANY reason:**
+1. Double-check the FORBIDDEN COMMANDS list
+2. Verify there's no specialized tool available
+3. Remember: "Tools Before Terminal - ALWAYS!"
 
 ## Resources
 - [Astro Documentation](https://docs.astro.build/)
