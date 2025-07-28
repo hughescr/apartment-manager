@@ -5,7 +5,7 @@ import { BatchWriteCommand, execute } from 'dynamodb-toolbox/table/actions/batch
 import { Resource } from 'sst';
 import { testDataFactory } from './test-data-factory';
 import type { BuildingData, UnitData, UnitTypeData } from '../../../src/types';
-import _, { isArray, some, filter, forEach, isObject, keys } from 'lodash';
+import _, { isArray, some, filter } from 'lodash';
 
 // Helper function to format response headers for error messages
 function formatHeaders(headers: Headers): string {
@@ -56,8 +56,6 @@ async function retryWithBackoff<T>(
                 if(attempt < maxRetries) {
                     // Calculate exponential backoff with jitter
                     const delay = initialDelay * Math.pow(2, attempt) + Math.random() * 100;
-                    // eslint-disable-next-line no-console -- Logging retry attempts for debugging
-                    console.log(`DynamoDB throttled, retrying after ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                     continue;
                 }
@@ -86,63 +84,24 @@ export interface SeedOptions {
 // Helper function to wait for data to be available via API
 export async function waitForDataAvailability(
     testDataSet: TestDataSet,
-    timeout = 30000, // 30 seconds default
+    timeout = 10000, // 10 seconds default
     retryDelay = 500 // 500ms initial delay
 ): Promise<boolean> {
     const startTime = Date.now();
-    const apiUrl = Resource.API.url;
     let attempt = 0;
-
-    // eslint-disable-next-line no-console -- Logging for debugging data propagation
-    console.log(`Waiting for data to be available via API at ${apiUrl}`);
 
     while(Date.now() - startTime < timeout) {
         attempt++;
-        const allAvailable = await verifySeededData(testDataSet, false); // No logging for individual attempts
+        const allAvailable = await verifySeededData(testDataSet);
 
         if(allAvailable) {
-            // eslint-disable-next-line no-console -- Success logging
-            console.log(`✓ All data available after ${attempt} attempts (${Date.now() - startTime}ms)`);
             return true;
-        }
-
-        // Log detailed verification status every 5 attempts for debugging
-        if(attempt % 5 === 0) {
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Still waiting... (attempt ${attempt}, ${Date.now() - startTime}ms elapsed)`);
-            // Do a verbose check to capture errors
-            const errors: string[] = [];
-            await verifyBuildings(apiUrl, testDataSet.buildings, errors, true); // Enable verbose for periodic checks
-            for(const building of testDataSet.buildings) {
-                await verifyUnitTypesForBuilding(apiUrl, building, testDataSet.unitTypes, errors, true);
-                await verifyUnitsForBuilding(apiUrl, building, testDataSet.units, errors, true);
-            }
-            if(errors.length > 0) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Current issues (${errors.length} total):`);
-                forEach(errors.slice(0, 5), (err) => {
-                    // eslint-disable-next-line no-console -- Debug logging
-                    console.log(`    - ${err}`);
-                });
-                if(errors.length > 5) {
-                    // eslint-disable-next-line no-console -- Debug logging
-                    console.log(`    ... and ${errors.length - 5} more`);
-                }
-            }
         }
 
         // Exponential backoff with jitter
         const delay = Math.min(retryDelay * Math.pow(1.5, attempt - 1), 5000) + Math.random() * 100;
         await new Promise(resolve => setTimeout(resolve, delay));
     }
-
-    // eslint-disable-next-line no-console -- Timeout warning
-    console.warn(`⚠ Data availability check timed out after ${timeout}ms`);
-
-    // Do one final verbose check to show what's missing
-    // eslint-disable-next-line no-console -- Debug logging
-    console.log('Final verification status:');
-    await verifySeededData(testDataSet, true);
 
     return false;
 }
@@ -151,8 +110,7 @@ export async function waitForDataAvailability(
 async function verifyBuildings(
     apiUrl: string,
     expectedBuildings: BuildingData[],
-    errors: string[],
-    verbose: boolean
+    errors: string[]
 ): Promise<boolean> {
     try {
         // Create AbortController for timeout
@@ -178,56 +136,8 @@ async function verifyBuildings(
 
         const buildingsData = await buildingsResponse.json();
 
-        // Debug logging to understand API response structure
-        if(verbose) {
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: Buildings API response type: ${typeof buildingsData}`);
-            if(isObject(buildingsData) && !isArray(buildingsData)) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response keys: ${keys(buildingsData).join(', ')}`);
-                // Log a sample of the actual data structure
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response preview: ${JSON.stringify(buildingsData, null, 2).substring(0, 200)}...`);
-            }
-            if(isArray(buildingsData)) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response is array with ${buildingsData.length} items`);
-            }
-        }
-
         const apiBuildings = isArray(buildingsData) ? buildingsData : buildingsData.buildings || [];
         let allFound = true;
-
-        // Extract buildingIDs from API response and expected data
-        const apiBuildingIDs = _.map(apiBuildings, 'buildingID');
-        const expectedBuildingIDs = _.map(expectedBuildings, 'buildingID');
-
-        if(verbose) {
-            // Find which test buildings are actually in the API response
-            const foundTestBuildings = filter(expectedBuildings, expectedBuilding =>
-                some(apiBuildings, ['buildingID', expectedBuilding.buildingID])
-            );
-            const foundTestBuildingIDs = _.map(foundTestBuildings, 'buildingID');
-            const missingBuildingIDs = _.difference(expectedBuildingIDs, foundTestBuildingIDs);
-
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: Looking for test building IDs: [${expectedBuildingIDs.join(', ')}]`);
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: Found these test buildings in API: [${foundTestBuildingIDs.join(', ') || 'NONE'}]`);
-            if(missingBuildingIDs.length > 0) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: ❌ Missing test buildings: [${missingBuildingIDs.join(', ')}]`);
-            }
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: API returned ${apiBuildings.length} total buildings`);
-            // Show a sample of what's actually in the API response for context
-            if(apiBuildings.length > 0 && missingBuildingIDs.length > 0) {
-                const sampleIDs = apiBuildingIDs.slice(0, 3).join(', ');
-                const more = apiBuildingIDs.length > 3 ? ` and ${apiBuildingIDs.length - 3} more` : '';
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: API contains these buildings: [${sampleIDs}${more}]`);
-            }
-        }
 
         for(const expectedBuilding of expectedBuildings) {
             const found = some(apiBuildings, ['buildingID', expectedBuilding.buildingID]);
@@ -235,14 +145,6 @@ async function verifyBuildings(
                 allFound = false;
                 errors.push(`Building ${expectedBuilding.buildingID} not found via API`);
             }
-        }
-
-        if(verbose && expectedBuildings.length > 0) {
-            const foundCount = filter(expectedBuildings, expectedBuilding =>
-                some(apiBuildings, ['buildingID', expectedBuilding.buildingID])
-            ).length;
-            // eslint-disable-next-line no-console -- Verification result
-            console.log(`  ✓ Buildings: ${foundCount}/${expectedBuildings.length} test buildings found (${apiBuildings.length} total in database)`);
         }
 
         return allFound;
@@ -262,8 +164,7 @@ async function verifyUnitTypesForBuilding(
     apiUrl: string,
     building: BuildingData,
     allUnitTypes: UnitTypeData[],
-    errors: string[],
-    verbose: boolean
+    errors: string[]
 ): Promise<boolean> {
     try {
         // Create AbortController for timeout
@@ -289,41 +190,9 @@ async function verifyUnitTypesForBuilding(
 
         const unitTypesData = await unitTypesResponse.json();
 
-        // Debug logging to understand API response structure
-        if(verbose) {
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: Unit types API response type: ${typeof unitTypesData}`);
-            if(isObject(unitTypesData) && !isArray(unitTypesData)) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response keys: ${keys(unitTypesData).join(', ')}`);
-                // Log a sample of the actual data structure
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response preview: ${JSON.stringify(unitTypesData, null, 2).substring(0, 200)}...`);
-            }
-            if(isArray(unitTypesData)) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response is array with ${unitTypesData.length} items`);
-            }
-        }
-
         const apiUnitTypes = isArray(unitTypesData) ? unitTypesData : unitTypesData.unitTypes || [];
         const expectedUnitTypes = filter(allUnitTypes, ['buildingID', building.buildingID]);
         let allFound = true;
-
-        // Extract modelIDs from API response and expected data
-        const apiModelIDs = _.map(apiUnitTypes, 'modelID');
-        const expectedModelIDs = _.map(expectedUnitTypes, 'modelID');
-
-        if(verbose) {
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: Unit types for building ${building.buildingID}:`);
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`    Looking for test model IDs: [${expectedModelIDs.join(', ')}]`);
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`    Total model IDs in database: [${apiModelIDs.join(', ')}]`);
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`    Database contains ${apiUnitTypes.length} total unit types for this building`);
-        }
 
         for(const expectedUnitType of expectedUnitTypes) {
             const found = some(apiUnitTypes, ['modelID', expectedUnitType.modelID]);
@@ -331,14 +200,6 @@ async function verifyUnitTypesForBuilding(
                 allFound = false;
                 errors.push(`Unit type ${expectedUnitType.modelID} not found for building ${building.buildingID}`);
             }
-        }
-
-        if(verbose && expectedUnitTypes.length > 0) {
-            const foundCount = filter(expectedUnitTypes, expectedUnitType =>
-                some(apiUnitTypes, ['modelID', expectedUnitType.modelID])
-            ).length;
-            // eslint-disable-next-line no-console -- Verification result
-            console.log(`  ✓ Unit types for ${building.buildingID}: ${foundCount}/${expectedUnitTypes.length} test unit types found (${apiUnitTypes.length} total in database)`);
         }
 
         return allFound;
@@ -358,8 +219,7 @@ async function verifyUnitsForBuilding(
     apiUrl: string,
     building: BuildingData,
     allUnits: UnitData[],
-    errors: string[],
-    verbose: boolean
+    errors: string[]
 ): Promise<boolean> {
     try {
         // Create AbortController for timeout
@@ -385,41 +245,9 @@ async function verifyUnitsForBuilding(
 
         const unitsData = await unitsResponse.json();
 
-        // Debug logging to understand API response structure
-        if(verbose) {
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: Units API response type: ${typeof unitsData}`);
-            if(isObject(unitsData) && !isArray(unitsData)) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response keys: ${keys(unitsData).join(', ')}`);
-                // Log a sample of the actual data structure
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response preview: ${JSON.stringify(unitsData, null, 2).substring(0, 200)}...`);
-            }
-            if(isArray(unitsData)) {
-                // eslint-disable-next-line no-console -- Debug logging
-                console.log(`  Debug: Response is array with ${unitsData.length} items`);
-            }
-        }
-
         const apiUnits = isArray(unitsData) ? unitsData : unitsData.units || [];
         const expectedUnits = filter(allUnits, ['buildingID', building.buildingID]);
         let allFound = true;
-
-        // Extract unitIDs from API response and expected data
-        const apiUnitIDs = _.map(apiUnits, 'unitID');
-        const expectedUnitIDs = _.map(expectedUnits, 'unitID');
-
-        if(verbose) {
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`  Debug: Units for building ${building.buildingID}:`);
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`    Looking for test unit IDs: [${expectedUnitIDs.join(', ')}]`);
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`    Total unit IDs in database: [${apiUnitIDs.join(', ')}]`);
-            // eslint-disable-next-line no-console -- Debug logging
-            console.log(`    Database contains ${apiUnits.length} total units for this building`);
-        }
 
         for(const expectedUnit of expectedUnits) {
             const found = some(apiUnits, ['unitID', expectedUnit.unitID]);
@@ -427,14 +255,6 @@ async function verifyUnitsForBuilding(
                 allFound = false;
                 errors.push(`Unit ${expectedUnit.unitID} not found for building ${building.buildingID}`);
             }
-        }
-
-        if(verbose && expectedUnits.length > 0) {
-            const foundCount = filter(expectedUnits, expectedUnit =>
-                some(apiUnits, ['unitID', expectedUnit.unitID])
-            ).length;
-            // eslint-disable-next-line no-console -- Verification result
-            console.log(`  ✓ Units for ${building.buildingID}: ${foundCount}/${expectedUnits.length} test units found (${apiUnits.length} total in database)`);
         }
 
         return allFound;
@@ -451,47 +271,27 @@ async function verifyUnitsForBuilding(
 
 // Function to verify seeded data is accessible via API
 export async function verifySeededData(
-    testDataSet: TestDataSet,
-    verbose = true
+    testDataSet: TestDataSet
 ): Promise<boolean> {
     const apiUrl = Resource.API.url;
     const errors: string[] = [];
 
-    if(verbose) {
-        // eslint-disable-next-line no-console -- Verification status
-        console.log('Verifying seeded data via API endpoints...');
-    }
-
     // Verify buildings
-    const buildingsOk = await verifyBuildings(apiUrl, testDataSet.buildings, errors, verbose);
+    const buildingsOk = await verifyBuildings(apiUrl, testDataSet.buildings, errors);
 
     // Verify unit types and units for each building
     let allUnitTypesOk = true;
     let allUnitsOk = true;
 
     for(const building of testDataSet.buildings) {
-        const unitTypesOk = await verifyUnitTypesForBuilding(apiUrl, building, testDataSet.unitTypes, errors, verbose);
-        const unitsOk = await verifyUnitsForBuilding(apiUrl, building, testDataSet.units, errors, verbose);
+        const unitTypesOk = await verifyUnitTypesForBuilding(apiUrl, building, testDataSet.unitTypes, errors);
+        const unitsOk = await verifyUnitsForBuilding(apiUrl, building, testDataSet.units, errors);
 
         allUnitTypesOk = allUnitTypesOk && unitTypesOk;
         allUnitsOk = allUnitsOk && unitsOk;
     }
 
     const allDataAvailable = buildingsOk && allUnitTypesOk && allUnitsOk;
-
-    if(verbose) {
-        if(allDataAvailable) {
-            // eslint-disable-next-line no-console -- Success message
-            console.log('✅ All seeded data verified successfully!');
-        } else {
-            // eslint-disable-next-line no-console -- Error summary
-            console.error('❌ Data verification failed:');
-            forEach(errors, (err) => {
-                // eslint-disable-next-line no-console -- Individual errors
-                console.error(`   - ${err}`);
-            });
-        }
-    }
 
     return allDataAvailable;
 }
@@ -539,9 +339,6 @@ export async function seedTestData(testDataSet: TestDataSet, options: SeedOption
 
     // Verify data if requested
     if(options.verify) {
-        // eslint-disable-next-line no-console -- Status update
-        console.log('Verifying seeded data availability...');
-
         const isAvailable = await waitForDataAvailability(
             testDataSet,
             options.verifyTimeout,
@@ -630,9 +427,6 @@ export async function batchSeedTestData(testDataSet: TestDataSet, options: SeedO
 
     // Verify data if requested
     if(options.verify) {
-        // eslint-disable-next-line no-console -- Status update
-        console.log('Verifying batch-seeded data availability...');
-
         const isAvailable = await waitForDataAvailability(
             testDataSet,
             options.verifyTimeout,
