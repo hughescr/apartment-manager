@@ -29,6 +29,9 @@ describe('Unit Data Layer', () => {
                         return {
                             entities: mock(() => ({
                                 query: mock(() => ({
+                                    options: mock(() => ({
+                                        send: mockSend,
+                                    })),
                                     send: mockSend,
                                 })),
                             })),
@@ -136,10 +139,10 @@ describe('Unit Data Layer', () => {
         mockSend.mockResolvedValueOnce({ Item: { ...testUnit, description: updatedDescription } });
 
         const updatedUnit = await updateUnit(testUnit.buildingID, testUnit.unitID, { description: updatedDescription });
-        expect(updatedUnit.description).toBe(updatedDescription);
+        expect(updatedUnit?.description).toBe(updatedDescription);
 
         const fetchedUnit = await getUnit(testUnit.buildingID, testUnit.unitID);
-        expect(fetchedUnit.description).toBe(updatedDescription);
+        expect(fetchedUnit?.description).toBe(updatedDescription);
     });
 
     it('should delete a unit', async () => {
@@ -207,9 +210,9 @@ describe('Unit Data Layer', () => {
         });
 
         const updatedUnit = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-        expect(updatedUnit.websiteStatus!.zillow).toBe(WebsiteStatus.ACTIVE);
-        expect(updatedUnit.listingIds!.zillow).toBe('ZIL-789012');
-        expect(_.keys(updatedUnit.listingIds!)).toHaveLength(2);
+        expect(updatedUnit?.websiteStatus?.zillow).toBe(WebsiteStatus.ACTIVE);
+        expect(updatedUnit?.listingIds?.zillow).toBe('ZIL-789012');
+        expect(_.keys(updatedUnit?.listingIds ?? {})).toHaveLength(2);
     });
 
     it('should handle unit with model reference', async () => {
@@ -243,8 +246,8 @@ describe('Unit Data Layer', () => {
             testUnit.unitID,
             { unitAmenities: updatedAmenities }
         );
-        expect(updatedUnit.unitAmenities).toHaveLength(3);
-        expect(updatedUnit.unitAmenities![0].description).toBe('Oversized balcony');
+        expect(updatedUnit?.unitAmenities).toHaveLength(3);
+        expect(updatedUnit?.unitAmenities?.[0].description).toBe('Oversized balcony');
     });
 
     it('should handle empty collections in unit data', async () => {

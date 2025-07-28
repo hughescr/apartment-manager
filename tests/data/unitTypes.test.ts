@@ -35,7 +35,15 @@ describe('UnitType Data Layer', () => {
                         return {
                             entities: mock(() => ({
                                 query: mock(() => ({
+                                    options: mock(() => ({
+                                        send: mockSend,
+                                    })),
                                     send: mockSend,
+                                })),
+                                options: mock(() => ({
+                                    query: mock(() => ({
+                                        send: mockSend,
+                                    })),
                                 })),
                             })),
                         };

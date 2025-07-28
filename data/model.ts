@@ -21,6 +21,11 @@ export const ApartmentTable = new Table({
     documentClient: db,
 });
 
+// Workaround for DynamoDB Toolbox v2.7.0 compatibility issue
+// The getDocumentClient() method returns an empty object instead of the actual client
+// This override ensures it returns the correct document client
+ApartmentTable.getDocumentClient = () => db;
+
 export const Building = new Entity({
     name: 'Building',
     table: ApartmentTable,

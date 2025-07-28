@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, mock } from 'bun:test';
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import _ from 'lodash';
 import { PropertyType, ParkingType, AmenityCategory } from '../../src/types';
@@ -118,6 +118,11 @@ class IntegrationPage {
 
     async navigateToAddBuilding() {
         await this.page.click(this.selectors.addBuildingTab);
+        // Wait for the form to be visible and enabled
+        await this.page.waitForSelector(this.selectors.buildingIdInput + ':not([disabled])', { state: 'visible', timeout: 10000 });
+        await waitForAlpineDefault(this.page);
+        // Extra wait to ensure form is fully initialized
+        await this.page.waitForTimeout(500);
     }
 
     async fillBasicBuildingInfo(data: {
@@ -221,6 +226,9 @@ describe('Integration E2E Tests', () => {
     const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
 
     beforeAll(async () => {
+        // Clear any module mocks that might have leaked from unit tests
+        mock.restore();
+
         // Check server health first
         const response = await fetch(baseUrl);
         if(!response.ok) {
