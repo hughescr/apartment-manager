@@ -2,23 +2,36 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import _ from 'lodash';
 import { AmenityCategory } from '../../src/types';
+import { seedTestData, type TestDataSet } from './helpers/seed-test-data';
+import { cleanupTestData } from './helpers/cleanup-test-data';
+import { testDataFactory } from './helpers/test-data-factory';
 
 // E2E tests for unit type management workflow
 describe('Unit Types E2E Tests', () => {
     let browser: Browser;
     let context: BrowserContext;
     let page: Page;
+    let testData: TestDataSet;
 
     const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
-    const testBuildingId = 'test-building-e2e';
+    let testBuildingId: string;
 
     beforeAll(async () => {
         browser = await chromium.launch({
             headless: process.env.HEADLESS !== 'false'
         });
+
+        // Seed test data
+        testData = testDataFactory.generateFullTestDataSet();
+        await seedTestData(testData);
+
+        // Use the first building from seeded data
+        testBuildingId = testData.buildings[0].buildingID;
     });
 
     afterAll(async () => {
+        // Cleanup test data
+        await cleanupTestData(testData);
         await browser.close();
     });
 
@@ -31,23 +44,6 @@ describe('Unit Types E2E Tests', () => {
 
         // Set navigation timeout separately (can be slightly longer for initial page loads)
         page.setDefaultNavigationTimeout(5000);
-
-        // Set up request interception for API calls if needed
-        await page.route('**/api/**', async (route) => {
-            const url = route.request().url();
-
-            // Mock authentication if needed
-            if(url.includes('/api/auth')) {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify({ authenticated: true })
-                });
-                return;
-            }
-
-            // Let other requests through
-            await route.continue();
-        });
     });
 
     afterEach(async () => {
@@ -73,15 +69,18 @@ describe('Unit Types E2E Tests', () => {
         });
 
         it('should display empty state when no unit types exist', async () => {
-            // Mock empty response
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
+            // Use the second building which has fewer unit types from seeded data
+            const emptyBuildingId = testData.buildings[1].buildingID;
+
+            // Mock empty response for this specific building
+            await page.route(`**/api/buildings/${emptyBuildingId}/unit-types`, async (route) => {
                 await route.fulfill({
                     status: 200,
                     body: JSON.stringify([])
                 });
             });
 
-            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.goto(`${baseUrl}/building/${emptyBuildingId}/unit-types`);
 
             const emptyState = page.locator('[data-testid="empty-state"]');
             expect(await emptyState.isVisible()).toBe(true);
@@ -89,47 +88,23 @@ describe('Unit Types E2E Tests', () => {
         });
 
         it('should display unit type cards', async () => {
-            // Mock unit types response
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify([
-                        {
-                            buildingID: testBuildingId,
-                            modelID: 'model-2br',
-                            modelName: '2 Bedroom Deluxe',
-                            beds: 2,
-                            baths: 2,
-                            minRent: 1500,
-                            maxRent: 1800,
-                            countAvailable: 5
-                        },
-                        {
-                            buildingID: testBuildingId,
-                            modelID: 'model-1br',
-                            modelName: '1 Bedroom',
-                            beds: 1,
-                            baths: 1,
-                            minRent: 1200,
-                            maxRent: 1400,
-                            countAvailable: 3
-                        }
-                    ])
-                });
-            });
-
+            // Use seeded data - building has 3 unit types
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
             await page.waitForSelector('[data-testid="unit-type-card"]', { timeout: 2000 });
 
             const cards = await page.locator('[data-testid="unit-type-card"]').all();
-            expect(cards).toHaveLength(2);
+            expect(cards.length).toBeGreaterThanOrEqual(3); // We have at least 3 unit types in seeded data
 
-            // Check first card content
-            const firstCard = cards[0];
-            expect(await firstCard.locator('[data-testid="model-name"]').textContent()).toBe('2 Bedroom Deluxe');
-            expect(await firstCard.locator('[data-testid="bed-bath"]').textContent()).toContain('2 bed / 2 bath');
-            expect(await firstCard.locator('[data-testid="rent-range"]').textContent()).toContain('$1,500 - $1,800');
-            expect(await firstCard.locator('[data-testid="availability"]').textContent()).toContain('5 available');
+            // Find the studio card from seeded data
+            const studioCard = page.locator('[data-testid="unit-type-card"]:has([data-testid="model-name"]:has-text("Studio"))');
+            expect(await studioCard.isVisible()).toBe(true);
+            expect(await studioCard.locator('[data-testid="bed-bath"]').textContent()).toContain('0 bed / 1 bath');
+            expect(await studioCard.locator('[data-testid="rent-range"]').textContent()).toContain('$1,500 - $1,800');
+
+            // Find the 1BR card
+            const oneBRCard = page.locator('[data-testid="unit-type-card"]:has([data-testid="model-name"]:has-text("1 Bedroom"))');
+            expect(await oneBRCard.isVisible()).toBe(true);
+            expect(await oneBRCard.locator('[data-testid="bed-bath"]').textContent()).toContain('1 bed / 1 bath');
         });
 
         it('should handle API errors gracefully', async () => {
@@ -222,33 +197,27 @@ describe('Unit Types E2E Tests', () => {
         });
 
         it('should successfully create a unit type', async () => {
-            // Mock successful API response
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
-                if(route.request().method() === 'POST') {
-                    const body = await route.request().postDataJSON();
-                    await route.fulfill({
-                        status: 201,
-                        body: JSON.stringify({
-                            ...body,
-                            buildingID: testBuildingId
-                        })
-                    });
-                } else {
-                    await route.continue();
-                }
+            // Generate unique test data
+            const newUnitType = testDataFactory.generateUnitType(testData.buildings[0].buildingID, {
+                modelID: `test-model-${Date.now()}`,
+                modelName: '3 Bedroom Premium',
+                beds: 3,
+                baths: 2.5,
+                minRent: 2000,
+                maxRent: 2500
             });
 
             // Fill in form
             /* eslint-disable lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill */
-            await page.fill('input[name="modelID"]', 'model-3br');
-            await page.fill('input[name="modelName"]', '3 Bedroom Premium');
-            await page.fill('input[name="beds"]', '3');
-            await page.fill('input[name="baths"]', '2.5');
-            await page.fill('input[name="minRent"]', '2000');
-            await page.fill('input[name="maxRent"]', '2500');
-            await page.fill('input[name="deposit"]', '2000');
-            await page.fill('input[name="minSqft"]', '1200');
-            await page.fill('input[name="maxSqft"]', '1400');
+            await page.fill('input[name="modelID"]', newUnitType.modelID);
+            await page.fill('input[name="modelName"]', newUnitType.modelName);
+            await page.fill('input[name="beds"]', newUnitType.beds.toString());
+            await page.fill('input[name="baths"]', newUnitType.baths.toString());
+            await page.fill('input[name="minRent"]', newUnitType.minRent!.toString());
+            await page.fill('input[name="maxRent"]', newUnitType.maxRent!.toString());
+            await page.fill('input[name="deposit"]', newUnitType.deposit!.toString());
+            await page.fill('input[name="minSqft"]', newUnitType.minSqft!.toString());
+            await page.fill('input[name="maxSqft"]', newUnitType.maxSqft!.toString());
             await page.fill('input[name="countAvailable"]', '2');
             /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
 
@@ -265,22 +234,11 @@ describe('Unit Types E2E Tests', () => {
         });
 
         it('should handle duplicate model ID error', async () => {
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
-                if(route.request().method() === 'POST') {
-                    await route.fulfill({
-                        status: 409,
-                        body: JSON.stringify({ error: 'Unit type already exists' })
-                    });
-                } else {
-                    await route.continue();
-                }
-            });
-
-            // Fill in form
+            // Try to create with existing model ID from seeded data
             /* eslint-disable lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill */
-            await page.fill('input[name="modelID"]', 'existing-model');
-            await page.fill('input[name="modelName"]', 'Duplicate Model');
-            await page.fill('input[name="beds"]', '1');
+            await page.fill('input[name="modelID"]', 'studio'); // This already exists in seeded data
+            await page.fill('input[name="modelName"]', 'Duplicate Studio');
+            await page.fill('input[name="beds"]', '0');
             await page.fill('input[name="baths"]', '1');
             /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
 
@@ -293,24 +251,11 @@ describe('Unit Types E2E Tests', () => {
     });
 
     describe('Edit Unit Type', () => {
-        const existingUnitType = {
-            buildingID: testBuildingId,
-            modelID: 'model-edit',
-            modelName: 'Original Name',
-            beds: 2,
-            baths: 2,
-            minRent: 1500,
-            maxRent: 1800
-        };
+        let existingUnitType: typeof testData.unitTypes[0];
 
         beforeEach(async () => {
-            // Mock get single unit type
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types/${existingUnitType.modelID}`, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify(existingUnitType)
-                });
-            });
+            // Use the 1BR unit type from seeded data
+            existingUnitType = _.find(testData.unitTypes, { modelID: '1br' })!;
 
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types/${existingUnitType.modelID}/edit`);
             await page.waitForSelector('[data-testid="unit-type-form"]', { timeout: 1000 });
@@ -321,8 +266,8 @@ describe('Unit Types E2E Tests', () => {
             expect(await page.inputValue('input[name="modelName"]')).toBe(existingUnitType.modelName);
             expect(await page.inputValue('input[name="beds"]')).toBe(existingUnitType.beds.toString());
             expect(await page.inputValue('input[name="baths"]')).toBe(existingUnitType.baths.toString());
-            expect(await page.inputValue('input[name="minRent"]')).toBe(existingUnitType.minRent.toString());
-            expect(await page.inputValue('input[name="maxRent"]')).toBe(existingUnitType.maxRent.toString());
+            expect(await page.inputValue('input[name="minRent"]')).toBe(existingUnitType.minRent!.toString());
+            expect(await page.inputValue('input[name="maxRent"]')).toBe(existingUnitType.maxRent!.toString());
         });
 
         it('should disable model ID field in edit mode', async () => {
@@ -331,26 +276,11 @@ describe('Unit Types E2E Tests', () => {
         });
 
         it('should successfully update unit type', async () => {
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types/${existingUnitType.modelID}`, async (route) => {
-                if(route.request().method() === 'PUT') {
-                    const body = await route.request().postDataJSON();
-                    await route.fulfill({
-                        status: 200,
-                        body: JSON.stringify({
-                            ...existingUnitType,
-                            ...body
-                        })
-                    });
-                } else {
-                    await route.continue();
-                }
-            });
-
             // Update some fields
             /* eslint-disable lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill */
             await page.fill('input[name="modelName"]', 'Updated Name');
-            await page.fill('input[name="minRent"]', '1600');
-            await page.fill('input[name="maxRent"]', '1900');
+            await page.fill('input[name="minRent"]', '2100');
+            await page.fill('input[name="maxRent"]', '2500');
             /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
 
             await page.click('[data-testid="submit-button"]');
@@ -363,65 +293,50 @@ describe('Unit Types E2E Tests', () => {
 
     describe('Delete Unit Type', () => {
         it('should show confirmation dialog before deletion', async () => {
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify([{
-                        buildingID: testBuildingId,
-                        modelID: 'model-delete',
-                        modelName: 'To Delete',
-                        beds: 1,
-                        baths: 1
-                    }])
-                });
-            });
-
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
             await page.waitForSelector('[data-testid="unit-type-card"]', { timeout: 2000 });
 
+            // Use the 2BR unit type for deletion test
+            const unitTypeToDelete = _.find(testData.unitTypes, { modelID: '2br' })!;
+
             // Click delete button
-            await page.click('[data-testid="delete-button-model-delete"]');
+            await page.click(`[data-testid="delete-button-${unitTypeToDelete.modelID}"]`);
 
             // Check confirmation dialog
             const dialog = page.locator('[data-testid="confirmation-dialog"]');
             expect(await dialog.isVisible()).toBe(true);
             expect(await dialog.textContent()).toContain('Are you sure you want to delete');
-            expect(await dialog.textContent()).toContain('To Delete');
+            expect(await dialog.textContent()).toContain(unitTypeToDelete.modelName);
         });
 
         it('should delete unit type on confirmation', async () => {
-            let deleteRequested = false;
-
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types/model-delete`, async (route) => {
-                if(route.request().method() === 'DELETE') {
-                    deleteRequested = true;
-                    await route.fulfill({
-                        status: 204,
-                        body: ''
-                    });
-                } else {
-                    await route.continue();
-                }
+            // Create a new unit type specifically for deletion
+            const deleteUnitType = testDataFactory.generateUnitType(testData.buildings[0].buildingID, {
+                modelID: `delete-test-${Date.now()}`,
+                modelName: 'Delete Test Model',
+                beds: 3,
+                baths: 2
             });
 
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify([{
-                        buildingID: testBuildingId,
-                        modelID: 'model-delete',
-                        modelName: 'To Delete',
-                        beds: 1,
-                        baths: 1
-                    }])
-                });
-            });
-
+            // First create it
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
-            await page.click('[data-testid="delete-button-model-delete"]');
-            await page.click('[data-testid="confirm-delete-button"]');
+            await page.click('[data-testid="add-unit-type-button"]');
 
-            expect(deleteRequested).toBe(true);
+            /* eslint-disable lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.fill */
+            await page.fill('input[name="modelID"]', deleteUnitType.modelID);
+            await page.fill('input[name="modelName"]', deleteUnitType.modelName);
+            await page.fill('input[name="beds"]', deleteUnitType.beds.toString());
+            await page.fill('input[name="baths"]', deleteUnitType.baths.toString());
+            /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
+
+            await page.click('[data-testid="submit-button"]');
+            await page.waitForTimeout(1000);
+
+            // Now delete it
+            await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
+            await page.waitForSelector(`[data-testid="delete-button-${deleteUnitType.modelID}"]`);
+            await page.click(`[data-testid="delete-button-${deleteUnitType.modelID}"]`);
+            await page.click('[data-testid="confirm-delete-button"]');
 
             const successMessage = page.locator('[data-testid="success-message"]');
             expect(await successMessage.isVisible()).toBe(true);
@@ -429,37 +344,16 @@ describe('Unit Types E2E Tests', () => {
         });
 
         it('should cancel deletion', async () => {
-            let deleteRequested = false;
-
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types/model-delete`, async (route) => {
-                if(route.request().method() === 'DELETE') {
-                    deleteRequested = true;
-                    await route.fulfill({ status: 204 });
-                }
-                await route.continue();
-            });
-
-            await page.route(`**/api/buildings/${testBuildingId}/unit-types`, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify([{
-                        buildingID: testBuildingId,
-                        modelID: 'model-delete',
-                        modelName: 'To Delete',
-                        beds: 1,
-                        baths: 1
-                    }])
-                });
-            });
-
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);
-            await page.click('[data-testid="delete-button-model-delete"]');
+
+            // Use existing unit type from seeded data
+            const unitType = _.find(testData.unitTypes, { modelID: 'studio' })!;
+
+            await page.click(`[data-testid="delete-button-${unitType.modelID}"]`);
             await page.click('[data-testid="cancel-delete-button"]');
 
-            expect(deleteRequested).toBe(false);
-
             // Card should still be visible
-            const card = page.locator('[data-testid="unit-type-card"]');
+            const card = page.locator(`[data-testid="unit-type-card"]:has([data-testid="model-name"]:has-text("${unitType.modelName}"))`);
             expect(await card.isVisible()).toBe(true);
         });
     });

@@ -232,3 +232,93 @@ The SST configuration defines the application's infrastructure.
 
 - **Command:** A single command, `bun run test`, should run all relevant tests (linting, unit, integration).
 - **Test Coverage:** Aim for high test coverage across all layers of the application.
+
+## 7. E2E Testing with SSR and Database Seeding
+
+### The Challenge
+E2E tests run against the live SSR (Server-Side Rendering) Astro server, which queries the real DynamoDB database. API mocking doesn't work with SSR because the server makes database queries directly, not through the browser's network layer.
+
+### The Solution: Test Data Seeding
+We use a test data seeding strategy to populate DynamoDB with known test data before E2E tests run.
+
+### Test Data Infrastructure
+
+#### Helper Files (`tests/e2e/helpers/`)
+- **`test-data-factory.ts`**: Generates consistent test data with predictable IDs
+  - Uses timestamp-based IDs to avoid conflicts
+  - Provides methods for full datasets or minimal test data
+  - Ensures proper relationships between buildings, unit types, and units
+- **`seed-test-data.ts`**: Seeds test data into DynamoDB
+  - Single item seeding for small tests
+  - Batch seeding for performance with larger datasets
+  - Returns the seeded data for test assertions
+- **`cleanup-test-data.ts`**: Removes test data after tests
+  - Cleanup by specific test dataset
+  - Cleanup by ID prefix for broader cleanup
+  - Cleanup by time range for orphaned test data
+
+#### Test Scripts
+```bash
+# Seed default test data
+bun run test:e2e:seed
+
+# Run E2E tests (assumes data is seeded)
+bun run test:e2e
+
+# Clean up test data
+bun run test:e2e:cleanup
+
+# All-in-one: seed, test, cleanup
+bun run test:e2e:with-data
+```
+
+### E2E Test Structure
+
+Each E2E test file should:
+
+1. **Import test utilities**:
+   ```typescript
+   import { seedTestData, type TestDataSet } from './helpers/seed-test-data';
+   import { cleanupTestData } from './helpers/cleanup-test-data';
+   import { testDataFactory } from './helpers/test-data-factory';
+   ```
+
+2. **Seed data in beforeAll**:
+   ```typescript
+   let testData: TestDataSet;
+   
+   beforeAll(async () => {
+       testData = testDataFactory.generateFullTestDataSet();
+       await seedTestData(testData);
+   });
+   ```
+
+3. **Clean up in afterAll**:
+   ```typescript
+   afterAll(async () => {
+       await cleanupTestData(testData);
+   });
+   ```
+
+4. **Use seeded data in tests**:
+   ```typescript
+   it('should display seeded buildings', async () => {
+       await page.goto(baseUrl);
+       // Test uses testData.buildings[0].buildingID
+   });
+   ```
+
+### Edge Case Testing
+Some tests still use API mocking for specific edge cases:
+- Error handling (500 errors, network failures)
+- Empty states (no data scenarios)
+- File uploads (mocking S3 responses)
+
+This is appropriate as these scenarios are difficult to create with real data.
+
+### Best Practices
+1. **Unique Test IDs**: Use timestamp-based IDs to avoid conflicts
+2. **Complete Cleanup**: Always clean up test data to avoid pollution
+3. **Predictable Data**: Use the factory to create consistent test scenarios
+4. **Minimal Data**: Only seed what's needed for each test suite
+5. **Error Handling**: Handle seeding/cleanup failures gracefully

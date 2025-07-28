@@ -48,6 +48,12 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# TypeScript transpiled files
+src/**/*.js
+tests/**/*.js
+api/**/*.js
+data/**/*.js
+
 # Optional npm cache directory
 .npm
 

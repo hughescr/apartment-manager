@@ -282,10 +282,10 @@ Track the completion status of each implementation step:
 - [x] Create unit types (models) management UI (UnitTypeCard, UnitTypeForm, unit-types.astro page)
 - [x] Update unit UI with model relationships (Unit creation dialog with model selection, inheritance display)
 - [x] Add form validation (Comprehensive validation added to BuildingCard, UnitCard already had it)
-- [x] Write UI tests (E2E tests created but need test data seeding - see note)
-- [ ] **Gate passed**: ⚠️ (Partial - E2E tests need database seeding strategy)
+- [ ] Write UI tests (E2E tests created but still failing - needs debugging)
+- [ ] **Gate passed**: ⚠️ (Partial - E2E tests need fixes)
 
-**Note**: E2E tests were written but fail because they run against the live SSR server which uses the real database. Need to implement test data seeding strategy or modify test approach for SSR architecture.
+**Note**: E2E tests have been written with a database seeding strategy for the SSR architecture, but tests are currently failing and need debugging before Step 3 can be considered complete.
 
 ### Step 4 – Implement and Test Site Mapping Logic
 - [ ] Create src/mappers/siteMapper.ts
@@ -356,13 +356,15 @@ Track the completion status of each implementation step:
 - [ ] Review AWS costs
 - [ ] **Gate passed**: ❌
 
-### Overall Progress: 2.5/10 Steps Complete (Step 3 partial - needs E2E test data strategy)
+### Overall Progress: 2.5/10 Steps Complete (Step 3 partial - E2E tests failing)
 
-**⚠️ E2E Test Infrastructure Issue**: The E2E tests written in Step 3 fail because they run against the live SSR server which queries the real database. The tests attempt to mock API responses but this doesn't work with server-side rendering. Need to implement one of:
-1. Test data seeding in DynamoDB before E2E test runs
-2. A test database with pre-populated data
-3. A test mode for the SSR server that uses mocked data layers
-4. Network-level API mocking that intercepts server requests
+**⚠️ E2E Test Status**: E2E tests have been written with a database seeding strategy implemented (`tests/e2e/helpers/`), but tests are still failing. The test infrastructure includes:
+- Test data factory for generating consistent test data
+- Database seeding scripts for populating DynamoDB
+- Cleanup scripts for removing test data
+- Test scripts in package.json for easy test execution
+
+However, the tests themselves need debugging to resolve failures before Step 3 can be considered complete.
 
 ## 6. Security and Compliance Considerations
 

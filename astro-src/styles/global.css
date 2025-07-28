@@ -8,3 +8,8 @@ main {
     margin: auto;
     padding: 1.5rem;
 }
+
+/* Hide elements with x-cloak until Alpine.js initializes */
+[x-cloak] {
+    display: none !important;
+}

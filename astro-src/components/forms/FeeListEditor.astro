@@ -53,19 +53,20 @@ const feeTypeLabels = {
     [FeeType.CLEANING]: 'Cleaning Fee',
 };
 
-// Create Alpine.js data for component state
-const alpineData = {
+// Create Alpine.js data string directly
+const xData = `{
     showAddForm: false,
     newFee: {
-        type: FeeType.APPLICATION,
+        type: '${FeeType.APPLICATION}',
         amount: 0,
         description: '',
         refundable: false
     },
+    feeTypeLabels: ${JSON.stringify(feeTypeLabels)},
     
     addFee() {
-        if (!this[xModel]) {
-            this[xModel] = [];
+        if (!${xModel}) {
+            ${xModel} = [];
         }
         
         // Validate amount
@@ -75,7 +76,7 @@ const alpineData = {
         }
         
         // Add the new fee
-        this[xModel].push({
+        ${xModel}.push({
             type: this.newFee.type,
             amount: Number(this.newFee.amount),
             description: this.newFee.description || undefined,
@@ -89,23 +90,23 @@ const alpineData = {
     
     removeFee(index) {
         if (confirm('Are you sure you want to remove this fee?')) {
-            this[xModel].splice(index, 1);
+            ${xModel}.splice(index, 1);
         }
     },
     
     updateFee(index, field, value) {
-        if (!this[xModel] || !this[xModel][index]) return;
+        if (!${xModel} || !${xModel}[index]) return;
         
         if (field === 'amount') {
-            this[xModel][index][field] = Number(value);
+            ${xModel}[index][field] = Number(value);
         } else {
-            this[xModel][index][field] = value;
+            ${xModel}[index][field] = value;
         }
     },
     
     resetNewFee() {
         this.newFee = {
-            type: FeeType.APPLICATION,
+            type: '${FeeType.APPLICATION}',
             amount: 0,
             description: '',
             refundable: false
@@ -117,33 +118,27 @@ const alpineData = {
     },
     
     get totalFees() {
-        if (!this[xModel]) return 0;
-        return this[xModel].reduce((sum, fee) => sum + (fee.amount || 0), 0);
+        if (!${xModel}) return 0;
+        return ${xModel}.reduce((sum, fee) => sum + (fee.amount || 0), 0);
     },
     
     get refundableTotal() {
-        if (!this[xModel]) return 0;
-        return this[xModel]
+        if (!${xModel}) return 0;
+        return ${xModel}
             .filter(fee => fee.refundable)
             .reduce((sum, fee) => sum + (fee.amount || 0), 0);
     },
     
     get nonRefundableTotal() {
-        if (!this[xModel]) return 0;
-        return this[xModel]
+        if (!${xModel}) return 0;
+        return ${xModel}
             .filter(fee => !fee.refundable)
             .reduce((sum, fee) => sum + (fee.amount || 0), 0);
     }
-};
-
-// Merge alpine data with fee type labels
-const xData = {
-    ...alpineData,
-    feeTypeLabels: feeTypeLabels
-};
+}`;
 ---
 
-<div class={containerClasses} x-data={JSON.stringify(xData)}>
+<div class={containerClasses} x-data={xData}>
     {showLabel && (
         <div class="label">
             <span class="label-text text-lg font-semibold">
@@ -154,14 +149,14 @@ const xData = {
     )}
     
     <!-- Fee Summary -->
-    <div x-show="fees && fees.length > 0" class="stats shadow mb-4">
+    <div x-show="${xModel} && ${xModel}.length > 0" class="stats shadow mb-4">
         <div class="stat">
             <div class="stat-title">Total Fees</div>
             <div class="stat-value text-primary">
                 $<span x-text="totalFees.toFixed(2)"></span>
             </div>
             <div class="stat-desc">
-                <span x-text="fees.length"></span> fee(s)
+                <span x-text="${xModel}.length"></span> fee(s)
             </div>
         </div>
         <div class="stat">
@@ -180,7 +175,7 @@ const xData = {
     
     <!-- Fee List -->
     <div class="flex flex-col gap-2 mb-4">
-        <template x-for="(fee, index) in fees" :key="index">
+        <template x-for="(fee, index) in ${xModel}" :key="index">
             <div class="card bg-base-200">
                 <div class="card-body p-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -193,7 +188,7 @@ const xData = {
                                 class="select select-bordered select-sm w-full"
                                 x-model="fee.type"
                                 x-on:change="updateFee(index, 'type', $event.target.value)"
-                                disabled={disabled}
+                                :disabled={`${disabled}`}
                             >
                                 {feeTypes.map(type => (
                                     <option value={type}>
@@ -217,7 +212,7 @@ const xData = {
                                     x-on:change="updateFee(index, 'amount', $event.target.value)"
                                     min="0"
                                     step="0.01"
-                                    disabled={disabled}
+                                    :disabled={`${disabled}`}
                                 />
                             </label>
                         </div>
@@ -233,7 +228,7 @@ const xData = {
                                 x-model="fee.description"
                                 x-on:change="updateFee(index, 'description', $event.target.value)"
                                 placeholder="Optional description"
-                                disabled={disabled}
+                                :disabled={`${disabled}`}
                             />
                         </div>
                         
@@ -249,7 +244,7 @@ const xData = {
                                         class="checkbox checkbox-sm"
                                         x-model="fee.refundable"
                                         x-on:change="updateFee(index, 'refundable', $event.target.checked)"
-                                        disabled={disabled}
+                                        :disabled={`${disabled}`}
                                     />
                                     <span class="label-text ml-2">Refundable</span>
                                 </label>
@@ -257,7 +252,7 @@ const xData = {
                                     type="button"
                                     class="btn btn-ghost btn-sm btn-square text-error"
                                     x-on:click="removeFee(index)"
-                                    disabled={disabled}
+                                    :disabled={`${disabled}`}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -379,7 +374,7 @@ const xData = {
     </button>
     
     <!-- Hidden input to store the JSON value -->
-    <input type="hidden" name={name} :value="JSON.stringify(fees || [])" />
+    <input type="hidden" name={name} :value="JSON.stringify(${xModel} || [])" />
     
     {(error || helpText) && (
         <div class={`label ${error ? 'text-error' : ''}`}>

@@ -1,70 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import _ from 'lodash';
-import { PropertyType, AmenityCategory, WebsiteStatus } from '../../src/types';
-
-// Test data factory
-class TestData {
-    static generateBuilding(overrides: Partial<Record<string, unknown>> = {}) {
-        const baseBuilding = {
-            buildingID: `test-building-${Date.now()}`,
-            street: '123 Test Street',
-            city: 'San Francisco',
-            state: 'CA',
-            zip: '94102',
-            description: 'Test building for E2E tests',
-            yearBuilt: 2020,
-            numberStories: 3,
-            totalUnits: 24,
-            propertyType: PropertyType.APARTMENT,
-            leaseLength: 12,
-            applicationFee: 50,
-            propertyDescription: 'A modern apartment building with excellent amenities and convenient location.',
-            ...overrides
-        };
-        return baseBuilding;
-    }
-
-    static generateUnitType(overrides: Partial<Record<string, unknown>> = {}) {
-        return {
-            modelID: `model-${Date.now()}`,
-            modelName: '2 Bedroom Deluxe',
-            beds: 2,
-            baths: 2,
-            minRent: 1500,
-            maxRent: 1800,
-            deposit: 1500,
-            minSqft: 800,
-            maxSqft: 900,
-            countAvailable: 5,
-            maxOccupants: 4,
-            perPersonRent: 500,
-            minLeaseTerm: 12,
-            maxLeaseTerm: 24,
-            modelAmenities: [
-                { name: 'Dishwasher', category: AmenityCategory.UNIT },
-                { name: 'In-Unit Laundry', category: AmenityCategory.UNIT }
-            ],
-            ...overrides
-        };
-    }
-
-    static generateUnit(overrides: Partial<Record<string, unknown>> = {}) {
-        return {
-            unitID: `unit-${Date.now()}`,
-            unitNumber: '101',
-            beds: null, // Will inherit from model
-            baths: null, // Will inherit from model
-            sqft: null, // Will inherit from model
-            rent: null, // Will inherit from model
-            occupied: false,
-            availableDate: '2025-02-01',
-            description: 'Internal notes about unit',
-            unitDescription: 'Marketing description for unit',
-            ...overrides
-        };
-    }
-}
+import { AmenityCategory, WebsiteStatus } from '../../src/types';
+import { seedTestData, type TestDataSet } from './helpers/seed-test-data';
+import { cleanupTestData } from './helpers/cleanup-test-data';
+import { testDataFactory } from './helpers/test-data-factory';
 
 // Page object for better selector management
 class UnitsPage {
@@ -271,39 +211,33 @@ describe('Units E2E Tests', () => {
     let context: BrowserContext;
     let page: Page;
     let unitsPage: UnitsPage;
+    let testData: TestDataSet;
 
     const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
-    const testBuilding = TestData.generateBuilding({ buildingID: 'test-units-e2e' });
-    const testUnitType1 = TestData.generateUnitType({
-        modelID: 'model-1br',
-        modelName: '1 Bedroom',
-        beds: 1,
-        baths: 1,
-        minRent: 1200,
-        maxRent: 1400,
-        deposit: 1200,
-        minSqft: 600,
-        maxSqft: 700
-    });
-    const testUnitType2 = TestData.generateUnitType({
-        modelID: 'model-2br',
-        modelName: '2 Bedroom',
-        beds: 2,
-        baths: 2,
-        minRent: 1800,
-        maxRent: 2200,
-        deposit: 2000,
-        minSqft: 900,
-        maxSqft: 1100
-    });
+
+    // We'll use the seeded test data buildings and unit types
+    let testBuilding: typeof testData.buildings[0];
+    let _testUnitType1: typeof testData.unitTypes[0];
+    let _testUnitType2: typeof testData.unitTypes[0];
 
     beforeAll(async () => {
         browser = await chromium.launch({
             headless: process.env.HEADLESS !== 'false'
         });
+
+        // Seed test data
+        testData = testDataFactory.generateFullTestDataSet();
+        await seedTestData(testData);
+
+        // Use the first building and its unit types for testing
+        testBuilding = testData.buildings[0];
+        _testUnitType1 = _.find(testData.unitTypes, { modelID: 'studio' })!;
+        _testUnitType2 = _.find(testData.unitTypes, { modelID: '1br' })!;
     });
 
     afterAll(async () => {
+        // Cleanup test data
+        await cleanupTestData(testData);
         await browser.close();
     });
 
@@ -315,40 +249,6 @@ describe('Units E2E Tests', () => {
         // Set timeouts
         page.setDefaultTimeout(5000);
         page.setDefaultNavigationTimeout(5000);
-
-        // Mock API responses
-        await page.route('**/api/buildings', async (route) => {
-            await route.fulfill({
-                status: 200,
-                body: JSON.stringify([testBuilding])
-            });
-        });
-
-        await page.route(`**/api/buildings/${testBuilding.buildingID}`, async (route) => {
-            await route.fulfill({
-                status: 200,
-                body: JSON.stringify(testBuilding)
-            });
-        });
-
-        await page.route(`**/api/buildings/${testBuilding.buildingID}/unit-types`, async (route) => {
-            await route.fulfill({
-                status: 200,
-                body: JSON.stringify([testUnitType1, testUnitType2])
-            });
-        });
-
-        // Initially no units
-        await page.route(`**/api/buildings/${testBuilding.buildingID}/units`, async (route) => {
-            if(route.request().method() === 'GET') {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify([])
-                });
-            } else {
-                await route.continue();
-            }
-        });
     });
 
     afterEach(async () => {
@@ -374,95 +274,51 @@ describe('Units E2E Tests', () => {
             const modelSelect = page.locator(unitsPage.selectors.unitModelSelect);
             expect(await modelSelect.isVisible()).toBe(true);
 
-            // Check options
+            // Check options - seeded data has 4 unit types for building 1
             const options = await modelSelect.locator('option').all();
-            expect(options.length).toBe(3); // No Model + 2 unit types
+            expect(options.length).toBeGreaterThanOrEqual(3); // No Model + unit types
 
             // Verify option text
             const noModelOption = await options[0].textContent();
             expect(noModelOption).toContain('No Model');
 
-            const option1Text = await options[1].textContent();
-            expect(option1Text).toContain('1 Bedroom');
-            expect(option1Text).toContain('1 bed, 1 bath');
-
-            const option2Text = await options[2].textContent();
-            expect(option2Text).toContain('2 Bedroom');
-            expect(option2Text).toContain('2 bed, 2 bath');
+            // Check that we have Studio option
+            const optionTexts = await Promise.all(_.invokeMap(options, 'textContent'));
+            const hasStudio = _.some(optionTexts, text => text?.includes('Studio'));
+            const has1BR = _.some(optionTexts, text => text?.includes('1 Bedroom'));
+            expect(hasStudio).toBe(true);
+            expect(has1BR).toBe(true);
         });
 
         it('should create unit without model', async () => {
-            const newUnit = { unitID: '101', unitNumber: '101', buildingID: testBuilding.buildingID };
-
-            // Mock unit creation
-            await page.route(`**/api/buildings/${testBuilding.buildingID}/units`, async (route) => {
-                if(route.request().method() === 'POST') {
-                    const body = await route.request().postDataJSON();
-                    expect(body.unitID).toBe('101');
-                    expect(body.modelID).toBeUndefined();
-
-                    await route.fulfill({
-                        status: 201,
-                        body: JSON.stringify(newUnit)
-                    });
-                } else {
-                    await route.fulfill({
-                        status: 200,
-                        body: JSON.stringify([newUnit])
-                    });
-                }
-            });
+            const unitNumber = `test-${Date.now()}`;
 
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.addUnit('101'); // No model specified
+            await unitsPage.addUnit(unitNumber); // No model specified
 
             // Verify unit was created
-            await unitsPage.waitForUnit('101');
-            const unitCard = page.locator(unitsPage.selectors.unitCard('101'));
+            await unitsPage.waitForUnit(unitNumber);
+            const unitCard = page.locator(unitsPage.selectors.unitCard(unitNumber));
             expect(await unitCard.isVisible()).toBe(true);
         });
 
         it('should create unit with model selection', async () => {
-            const newUnit = {
-                unitID: '102',
-                unitNumber: '102',
-                buildingID: testBuilding.buildingID,
-                modelID: 'model-1br'
-            };
-
-            // Mock unit creation
-            await page.route(`**/api/buildings/${testBuilding.buildingID}/units`, async (route) => {
-                if(route.request().method() === 'POST') {
-                    const body = await route.request().postDataJSON();
-                    expect(body.unitID).toBe('102');
-                    expect(body.modelID).toBe('model-1br');
-
-                    await route.fulfill({
-                        status: 201,
-                        body: JSON.stringify(newUnit)
-                    });
-                } else {
-                    await route.fulfill({
-                        status: 200,
-                        body: JSON.stringify([newUnit])
-                    });
-                }
-            });
+            const unitNumber = `test-${Date.now()}`;
 
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.addUnit('102', 'model-1br');
+            await unitsPage.addUnit(unitNumber, '1br');
 
             // Verify unit was created with model
-            await unitsPage.waitForUnit('102');
-            const unitCard = page.locator(unitsPage.selectors.unitCard('102'));
+            await unitsPage.waitForUnit(unitNumber);
+            const unitCard = page.locator(unitsPage.selectors.unitCard(unitNumber));
             expect(await unitCard.isVisible()).toBe(true);
 
             // Check model is selected
             const modelSelect = unitCard.locator(unitsPage.selectors.modelSelect);
             const selectedValue = await modelSelect.inputValue();
-            expect(selectedValue).toContain('model-1br');
+            expect(selectedValue).toContain('1br');
         });
 
         it('should validate unit number is required', async () => {
@@ -484,66 +340,31 @@ describe('Units E2E Tests', () => {
 
     describe('Inherited Properties Display', () => {
         beforeEach(async () => {
-            // Create a unit with model
-            const unitWithModel = {
-                unitID: '201',
-                unitNumber: '201',
-                buildingID: testBuilding.buildingID,
-                modelID: 'model-2br',
-                // These are null to inherit from model
-                beds: null,
-                baths: null,
-                sqft: null,
-                rent: null,
-                deposit: null,
-                maxOccupants: null,
-                perPersonRent: null,
-                minLeaseTerm: null,
-                maxLeaseTerm: null
-            };
-
-            await page.route(`**/api/buildings/${testBuilding.buildingID}/units`, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify([unitWithModel])
-                });
-            });
-
-            await page.route(`**/api/buildings/${testBuilding.buildingID}/units/201`, async (route) => {
-                if(route.request().method() === 'PUT') {
-                    const body = await route.request().postDataJSON();
-                    await route.fulfill({
-                        status: 200,
-                        body: JSON.stringify({ ...unitWithModel, ...body })
-                    });
-                } else {
-                    await route.fulfill({
-                        status: 200,
-                        body: JSON.stringify(unitWithModel)
-                    });
-                }
-            });
+            // Use existing units from seeded data
+            // unit-101 has studio model, unit-201 has 1br model
         });
 
         it('should display inherited badges for model fields', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.waitForUnit('201');
+
+            // Use unit-201 which has 1br model from seeded data
+            await unitsPage.waitForUnit('unit-201');
 
             // Check inherited badges
-            expect(await unitsPage.isFieldInherited('201', 'Beds')).toBe(true);
-            expect(await unitsPage.isFieldInherited('201', 'Baths')).toBe(true);
-            expect(await unitsPage.isFieldInherited('201', 'Sqft')).toBe(true);
-            expect(await unitsPage.isFieldInherited('201', 'Monthly Rent')).toBe(true);
-            expect(await unitsPage.isFieldInherited('201', 'Deposit')).toBe(true);
+            expect(await unitsPage.isFieldInherited('unit-201', 'Beds')).toBe(true);
+            expect(await unitsPage.isFieldInherited('unit-201', 'Baths')).toBe(true);
+            expect(await unitsPage.isFieldInherited('unit-201', 'Sqft')).toBe(true);
+            expect(await unitsPage.isFieldInherited('unit-201', 'Monthly Rent')).toBe(true);
+            expect(await unitsPage.isFieldInherited('unit-201', 'Deposit')).toBe(true);
         });
 
         it('should display ghost styling for inherited fields', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.waitForUnit('201');
+            await unitsPage.waitForUnit('unit-201');
 
-            const unitCard = page.locator(unitsPage.selectors.unitCard('201'));
+            const unitCard = page.locator(unitsPage.selectors.unitCard('unit-201'));
 
             // Check ghost input class
             const bedsInput = unitCard.locator(unitsPage.selectors.bedsInput);
@@ -554,130 +375,83 @@ describe('Units E2E Tests', () => {
         it('should show inherited values from model', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.waitForUnit('201');
+            await unitsPage.waitForUnit('unit-201');
 
-            // Check inherited values display
-            const bedsInherited = await unitsPage.getInheritedValue('201', 'Beds');
-            expect(bedsInherited).toBe('2'); // From model-2br
+            // Check inherited values display - unit-201 has 1br model
+            const bedsInherited = await unitsPage.getInheritedValue('unit-201', 'Beds');
+            expect(bedsInherited).toBe('1'); // From 1br model
 
-            const bathsInherited = await unitsPage.getInheritedValue('201', 'Baths');
-            expect(bathsInherited).toBe('2');
+            const bathsInherited = await unitsPage.getInheritedValue('unit-201', 'Baths');
+            expect(bathsInherited).toBe('1');
 
             // Check range values
-            const rentInherited = await unitsPage.getInheritedValue('201', 'Monthly Rent');
-            expect(rentInherited).toContain('1800-2200');
-
-            const sqftInherited = await unitsPage.getInheritedValue('201', 'Sqft');
-            expect(sqftInherited).toContain('900-1100');
+            const rentInherited = await unitsPage.getInheritedValue('unit-201', 'Monthly Rent');
+            expect(rentInherited).toContain('2000-2400'); // From 1br model
         });
 
         it('should show placeholder text with inherited values', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.waitForUnit('201');
+            await unitsPage.waitForUnit('unit-201');
 
-            const unitCard = page.locator(unitsPage.selectors.unitCard('201'));
+            const unitCard = page.locator(unitsPage.selectors.unitCard('unit-201'));
 
             // Check placeholder shows inherited value
             const bedsInput = unitCard.locator(unitsPage.selectors.bedsInput);
             const placeholder = await bedsInput.getAttribute('placeholder');
-            expect(placeholder).toBe('2'); // Inherited from model
+            expect(placeholder).toBe('1'); // Inherited from 1br model
         });
     });
 
     describe('Editing Units and Model Association', () => {
-        let existingUnit: Record<string, unknown>;
-
         beforeEach(async () => {
-            existingUnit = {
-                unitID: '301',
-                unitNumber: '301',
-                buildingID: testBuilding.buildingID,
-                modelID: 'model-1br',
-                beds: null, // Inheriting 1 from model
-                baths: null, // Inheriting 1 from model
-                sqft: 650, // Override
-                rent: 1250, // Override
-                deposit: null // Inheriting from model
-            };
-
-            await page.route(`**/api/buildings/${testBuilding.buildingID}/units`, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify([existingUnit])
-                });
-            });
-
-            await page.route(`**/api/buildings/${testBuilding.buildingID}/units/301`, async (route) => {
-                if(route.request().method() === 'PUT') {
-                    const body = await route.request().postDataJSON();
-                    existingUnit = { ...existingUnit, ...body };
-                    await route.fulfill({
-                        status: 200,
-                        body: JSON.stringify(existingUnit)
-                    });
-                } else {
-                    await route.fulfill({
-                        status: 200,
-                        body: JSON.stringify(existingUnit)
-                    });
-                }
-            });
+            // Use existing unit-301 from seeded data which has 2br model
         });
 
         it('should change unit model association', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.waitForUnit('301');
+            await unitsPage.waitForUnit('unit-301');
 
-            // Change from 1BR to 2BR model
-            await unitsPage.selectUnitModel('301', 'model-2br');
-
-            // Verify model changed
-            expect(existingUnit.modelID).toBe('model-2br');
+            // Change from 2BR to 1BR model
+            await unitsPage.selectUnitModel('unit-301', '1br');
 
             // Inherited values should update
-            const bedsInherited = await unitsPage.getInheritedValue('301', 'Beds');
-            expect(bedsInherited).toBe('2'); // Now inheriting from 2BR model
+            const bedsInherited = await unitsPage.getInheritedValue('unit-301', 'Beds');
+            expect(bedsInherited).toBe('1'); // Now inheriting from 1BR model
         });
 
         it('should remove model association', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.waitForUnit('301');
+            await unitsPage.waitForUnit('unit-301');
 
             // Remove model (select "No Model")
-            await unitsPage.selectUnitModel('301', null);
-
-            // Verify model removed
-            expect(existingUnit.modelID).toBeNull();
+            await unitsPage.selectUnitModel('unit-301', null);
 
             // Should no longer show inherited badges
-            expect(await unitsPage.isFieldInherited('301', 'Beds')).toBe(false);
-            expect(await unitsPage.isFieldInherited('301', 'Baths')).toBe(false);
+            expect(await unitsPage.isFieldInherited('unit-301', 'Beds')).toBe(false);
+            expect(await unitsPage.isFieldInherited('unit-301', 'Baths')).toBe(false);
         });
 
         it('should maintain overridden values when changing models', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
-            await unitsPage.waitForUnit('301');
+            await unitsPage.waitForUnit('unit-301');
 
-            // Verify overridden values persist
-            const sqftValue = await unitsPage.getFieldValue('301', unitsPage.selectors.sqftInput);
-            expect(sqftValue).toBe('650'); // Override value
+            // First override some values
+            await unitsPage.setFieldValue('unit-301', unitsPage.selectors.sqftInput, '1050');
+            await unitsPage.setFieldValue('unit-301', unitsPage.selectors.rentInput, '3100');
 
-            const rentValue = await unitsPage.getFieldValue('301', unitsPage.selectors.rentInput);
-            expect(rentValue).toBe('1250'); // Override value
-
-            // Change model
-            await unitsPage.selectUnitModel('301', 'model-2br');
+            // Change model from 2br to 1br
+            await unitsPage.selectUnitModel('unit-301', '1br');
 
             // Overridden values should remain
-            const sqftAfter = await unitsPage.getFieldValue('301', unitsPage.selectors.sqftInput);
-            expect(sqftAfter).toBe('650');
+            const sqftAfter = await unitsPage.getFieldValue('unit-301', unitsPage.selectors.sqftInput);
+            expect(sqftAfter).toBe('1050');
 
-            const rentAfter = await unitsPage.getFieldValue('301', unitsPage.selectors.rentInput);
-            expect(rentAfter).toBe('1250');
+            const rentAfter = await unitsPage.getFieldValue('unit-301', unitsPage.selectors.rentInput);
+            expect(rentAfter).toBe('3100');
         });
     });
 

@@ -61,9 +61,9 @@ const maxFileSizeBytes = maxFileSize * 1024 * 1024;
 // Generate unique ID for this uploader instance
 const uploaderId = `photo-uploader-${Math.random().toString(36).substring(2, 9)}`;
 
-// Create the Alpine.js data object
-const xData = {
-    photos: normalizedPhotos,
+// Create the Alpine.js data string directly  
+const xData = `{
+    photos: ${JSON.stringify(normalizedPhotos)},
     uploading: false,
     uploadProgress: {},
     errors: [],
@@ -73,24 +73,24 @@ const xData = {
         // Sync with parent x-model
         this.$watch('photos', (value) => {
             const urls = value.map(p => p.url);
-            this[xModel] = urls;
+            ${xModel} = urls;
         });
         
         // Initialize from existing data if any
-        if (this[xModel] && Array.isArray(this[xModel])) {
-            this.photos = this[xModel].map(url => ({ url }));
+        if (${xModel} && Array.isArray(${xModel})) {
+            this.photos = ${xModel}.map(url => ({ url }));
         }
     },
     
     handleFiles(files) {
-        if (this.uploading || disabled) return;
+        if (this.uploading || ${disabled}) return;
         
         const fileArray = Array.from(files);
         this.errors = [];
         
         // Validate file count
-        if (this.photos.length + fileArray.length > maxFiles) {
-            this.errors.push(`Maximum ${maxFiles} files allowed`);
+        if (this.photos.length + fileArray.length > ${maxFiles}) {
+            this.errors.push(\`Maximum ${maxFiles} files allowed\`);
             return;
         }
         
@@ -98,13 +98,13 @@ const xData = {
         fileArray.forEach(file => {
             // Validate file type
             if (!file.type.startsWith('image/')) {
-                this.errors.push(`${file.name} is not an image file`);
+                this.errors.push(\`\${file.name} is not an image file\`);
                 return;
             }
             
             // Validate file size
-            if (file.size > maxFileSizeBytes) {
-                this.errors.push(`${file.name} exceeds ${maxFileSize}MB limit`);
+            if (file.size > ${maxFileSizeBytes}) {
+                this.errors.push(\`\${file.name} exceeds ${maxFileSize}MB limit\`);
                 return;
             }
             
@@ -119,9 +119,9 @@ const xData = {
         
         try {
             // Get presigned URL
-            const key = `buildings/${buildingId}/units/${unitId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            const key = \`buildings/${buildingId}/units/${unitId}/\${Date.now()}-\${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}\`;
             
-            const presignedResponse = await fetch(`${uploadEndpoint}/presigned-url`, {
+            const presignedResponse = await fetch(\`${uploadEndpoint}/presigned-url\`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key, contentType: file.type })
@@ -162,7 +162,7 @@ const xData = {
             });
             
             xhr.addEventListener('error', () => {
-                this.errors.push(`Failed to upload ${file.name}`);
+                this.errors.push(\`Failed to upload \${file.name}\`);
                 delete this.uploadProgress[tempId];
                 this.uploading = Object.keys(this.uploadProgress).length > 0;
             });
@@ -172,7 +172,7 @@ const xData = {
             xhr.send(file);
             
         } catch (error) {
-            this.errors.push(`Failed to upload ${file.name}: ${error.message}`);
+            this.errors.push(\`Failed to upload \${file.name}: \${error.message}\`);
             delete this.uploadProgress[tempId];
             this.uploading = Object.keys(this.uploadProgress).length > 0;
         }
@@ -209,10 +209,10 @@ const xData = {
         this.handleFiles(e.dataTransfer.files);
         this.dragOver = false;
     }
-};
+}`;
 ---
 
-<div class={`photo-uploader ${className}`} x-data={JSON.stringify(xData)}>
+<div class={`photo-uploader ${className}`} x-data={xData}>
     <div class="form-control">
         <label class="label">
             <span class="label-text">

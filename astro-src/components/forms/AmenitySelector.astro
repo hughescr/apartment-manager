@@ -59,19 +59,20 @@ const containerClasses = [
     className
 ].filter(Boolean).join(' ');
 
-// Create Alpine.js data for component state
-const alpineData = {
+// Create Alpine.js data string directly (no JSON.stringify needed for complex functions)
+const xData = `{
     searchQuery: '',
     selectedCategory: 'all',
     showCustom: false,
     newAmenityName: '',
-    newAmenityCategory: AmenityCategory.UNIT,
+    newAmenityCategory: '${AmenityCategory.UNIT}',
+    commonAmenities: ${JSON.stringify(commonAmenities)},
     
     get filteredCommonAmenities() {
         const query = this.searchQuery.toLowerCase();
         const results = {};
         
-        Object.entries(commonAmenities).forEach(([category, items]) => {
+        Object.entries(this.commonAmenities).forEach(([category, items]) => {
             if (this.selectedCategory === 'all' || this.selectedCategory === category) {
                 const filtered = items.filter(item => 
                     item.toLowerCase().includes(query)
@@ -85,25 +86,29 @@ const alpineData = {
         return results;
     },
     
+    getSelectedAmenities() {
+        return ${xModel} || [];
+    },
+    
     isSelected(amenityName, category) {
-        return this[xModel]?.some(a => 
+        return this.getSelectedAmenities().some(a => 
             a.name === amenityName && a.category === category
-        ) || false;
+        );
     },
     
     toggleAmenity(amenityName, category) {
-        if (!this[xModel]) {
-            this[xModel] = [];
+        if (!${xModel}) {
+            ${xModel} = [];
         }
         
-        const index = this[xModel].findIndex(a => 
+        const index = ${xModel}.findIndex(a => 
             a.name === amenityName && a.category === category
         );
         
         if (index >= 0) {
-            this[xModel].splice(index, 1);
+            ${xModel}.splice(index, 1);
         } else {
-            this[xModel].push({
+            ${xModel}.push({
                 name: amenityName,
                 category: category
             });
@@ -119,13 +124,13 @@ const alpineData = {
     },
     
     selectAll(category) {
-        if (!this[xModel]) {
-            this[xModel] = [];
+        if (!${xModel}) {
+            ${xModel} = [];
         }
         
-        commonAmenities[category].forEach(amenityName => {
+        this.commonAmenities[category].forEach(amenityName => {
             if (!this.isSelected(amenityName, category)) {
-                this[xModel].push({
+                ${xModel}.push({
                     name: amenityName,
                     category: category
                 });
@@ -134,13 +139,11 @@ const alpineData = {
     },
     
     clearCategory(category) {
-        if (!this[xModel]) return;
+        if (!${xModel}) return;
         
-        this[xModel] = this[xModel].filter(a => a.category !== category);
+        ${xModel} = ${xModel}.filter(a => a.category !== category);
     }
-};
-
-const xData = JSON.stringify(alpineData);
+}`;
 ---
 
 <div class={containerClasses} x-data={xData}>
@@ -217,12 +220,12 @@ const xData = JSON.stringify(alpineData);
     </div>
     
     <!-- Selected Amenities Summary -->
-    <div x-show="selectedAmenities && selectedAmenities.length > 0" class="mb-4">
+    <div x-show={`${xModel} && ${xModel}.length > 0`} class="mb-4">
         <div class="text-sm text-base-content/70 mb-2">
-            Selected: <span x-text="selectedAmenities?.length || 0"></span> amenities
+            Selected: <span x-text={`${xModel}?.length || 0`}></span> amenities
         </div>
         <div class="flex flex-wrap gap-2">
-            <template x-for="amenity in selectedAmenities" :key="amenity.name + amenity.category">
+            <template x-for={`amenity in ${xModel}`} :key="amenity.name + amenity.category">
                 <div class="badge badge-primary badge-lg gap-2">
                     <span x-text="amenity.name"></span>
                     <button

@@ -85,7 +85,7 @@ const containerClasses = [
         required={required}
         disabled={disabled}
         readonly={readonly}
-        x-model={type === 'number' ? xModel + '.number' : xModel}
+        {...(type === 'number' ? { 'x-model.number': xModel } : { 'x-model': xModel })}
         value={value}
         min={min}
         max={max}

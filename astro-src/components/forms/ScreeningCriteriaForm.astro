@@ -35,14 +35,14 @@ const containerClasses = [
     className
 ].filter(Boolean).join(' ');
 
-// Create Alpine.js data for component state
-const alpineData = {
+// Create Alpine.js data string directly
+const xData = `{
     showAdvanced: false,
     
     init() {
         // Initialize with default structure if not set
-        if (!this[xModel]) {
-            this[xModel] = {
+        if (!${xModel}) {
+            ${xModel} = {
                 incomeRatio: undefined,
                 minCreditScore: undefined,
                 maxOccupantsPerBedroom: undefined,
@@ -59,13 +59,13 @@ const alpineData = {
     
     // Quick presets for common screening criteria
     applyPreset(preset) {
-        if (!this[xModel]) {
-            this[xModel] = {};
+        if (!${xModel}) {
+            ${xModel} = {};
         }
         
         switch(preset) {
             case 'strict':
-                Object.assign(this[xModel], {
+                Object.assign(${xModel}, {
                     incomeRatio: 3,
                     minCreditScore: 700,
                     maxOccupantsPerBedroom: 2,
@@ -78,7 +78,7 @@ const alpineData = {
                 });
                 break;
             case 'standard':
-                Object.assign(this[xModel], {
+                Object.assign(${xModel}, {
                     incomeRatio: 2.5,
                     minCreditScore: 650,
                     maxOccupantsPerBedroom: 2,
@@ -91,7 +91,7 @@ const alpineData = {
                 });
                 break;
             case 'flexible':
-                Object.assign(this[xModel], {
+                Object.assign(${xModel}, {
                     incomeRatio: 2,
                     minCreditScore: 600,
                     maxOccupantsPerBedroom: 3,
@@ -104,7 +104,7 @@ const alpineData = {
                 });
                 break;
             case 'minimal':
-                Object.assign(this[xModel], {
+                Object.assign(${xModel}, {
                     incomeRatio: undefined,
                     minCreditScore: undefined,
                     maxOccupantsPerBedroom: undefined,
@@ -120,34 +120,32 @@ const alpineData = {
     },
     
     get hasRequirements() {
-        return this[xModel] && (
-            this[xModel].incomeRatio ||
-            this[xModel].minCreditScore ||
-            this[xModel].backgroundCheckRequired ||
-            this[xModel].employmentVerification ||
-            this[xModel].rentalHistory
+        return ${xModel} && (
+            ${xModel}.incomeRatio ||
+            ${xModel}.minCreditScore ||
+            ${xModel}.backgroundCheckRequired ||
+            ${xModel}.employmentVerification ||
+            ${xModel}.rentalHistory
         );
     },
     
     get requirementsSummary() {
-        if (!this[xModel] || !this.hasRequirements) return 'No screening requirements set';
+        if (!${xModel} || !this.hasRequirements) return 'No screening requirements set';
         
         const parts = [];
-        if (this[xModel].incomeRatio) {
-            parts.push(`${this[xModel].incomeRatio}x income`);
+        if (${xModel}.incomeRatio) {
+            parts.push(\`\${${xModel}.incomeRatio}x income\`);
         }
-        if (this[xModel].minCreditScore) {
-            parts.push(`${this[xModel].minCreditScore}+ credit`);
+        if (${xModel}.minCreditScore) {
+            parts.push(\`\${${xModel}.minCreditScore}+ credit\`);
         }
-        if (this[xModel].backgroundCheckRequired) {
+        if (${xModel}.backgroundCheckRequired) {
             parts.push('background check');
         }
         
         return parts.join(', ');
     }
-};
-
-const xData = JSON.stringify(alpineData);
+}`;
 ---
 
 <div class={containerClasses} x-data={xData} x-init="init()">

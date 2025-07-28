@@ -630,7 +630,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                                     <input 
                                         type="checkbox" 
                                         class="checkbox checkbox-primary" 
-                                        x-model="building.utilitiesIncluded[utility]"
+                                        x-model={`building.utilitiesIncluded['${utility}']`}
                                     />
                                 </label>
                             </div>
@@ -896,14 +896,14 @@ const daysOfWeek = Object.values(DayOfWeek);
                                         name={'office-open-' + day}
                                         label="Open"
                                         type="time"
-                                        x-model="building.contactInfo.officeHours?.[day]?.open"
+                                        x-model={`building.contactInfo.officeHours?.['${day}']?.open`}
                                         :disabled="!isOpen"
                                     />
                                     <BaseInput
                                         name={'office-close-' + day}
                                         label="Close"
                                         type="time"
-                                        x-model="building.contactInfo.officeHours?.[day]?.close"
+                                        x-model={`building.contactInfo.officeHours?.['${day}']?.close`}
                                         :disabled="!isOpen"
                                     />
                                 </div>
@@ -982,14 +982,14 @@ const daysOfWeek = Object.values(DayOfWeek);
                                         name={'tour-open-' + day}
                                         label="Open"
                                         type="time"
-                                        x-model="building.tourAvailability.tourHours?.[day]?.open"
+                                        x-model={`building.tourAvailability.tourHours?.['${day}']?.open`}
                                         :disabled="!isOpen"
                                     />
                                     <BaseInput
                                         name={'tour-close-' + day}
                                         label="Close"
                                         type="time"
-                                        x-model="building.tourAvailability.tourHours?.[day]?.close"
+                                        x-model={`building.tourAvailability.tourHours?.['${day}']?.close`}
                                         :disabled="!isOpen"
                                     />
                                 </div>
