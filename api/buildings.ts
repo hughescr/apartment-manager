@@ -126,10 +126,13 @@ function validateBuildingData(data: Partial<BuildingData>, isCreate = false): { 
     };
 }
 
-export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => ({
-    statusCode: 200,
-    body: JSON.stringify(await getBuildings()),
-});
+export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => {
+    const buildings = await getBuildings();
+    return {
+        statusCode: 200,
+        body: JSON.stringify(buildings),
+    };
+};
 
 export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const building = await getBuilding(evt.pathParameters?.buildingID ?? '');

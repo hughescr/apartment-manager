@@ -5,6 +5,8 @@ import { PropertyType, ParkingType, AmenityCategory } from '../../src/types';
 import { seedTestData, type TestDataSet } from './helpers/seed-test-data';
 import { cleanupTestData } from './helpers/cleanup-test-data';
 import { testDataFactory } from './helpers/test-data-factory';
+import { validateTestEnvironment } from './helpers/test-env-validator';
+import { waitForAlpineDefault } from './helpers/alpine-ready';
 
 // Page object for integration testing
 class IntegrationPage {
@@ -196,7 +198,7 @@ class IntegrationPage {
         const isExpanded = await toggle.isChecked();
         if(!isExpanded) {
             await toggle.check();
-            await this.page.waitForTimeout(300); // Wait for expansion animation
+            await this.page.waitForSelector(`${selectorMap[section]}:checked`, { timeout: 1000 });
         }
     }
 
@@ -214,17 +216,33 @@ describe('Integration E2E Tests', () => {
     let page: Page;
     let integrationPage: IntegrationPage;
     let testData: TestDataSet;
+    let _testRunId: string;
 
     const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
 
     beforeAll(async () => {
+        // Check server health first
+        const response = await fetch(baseUrl);
+        if(!response.ok) {
+            throw new Error(`Server health check failed - server returned ${response.status}`);
+        }
+
+        // Validate test environment
+        const validation = await validateTestEnvironment();
+        if(!validation.success) {
+            throw new Error('Test environment validation failed. Check the logs above for details.');
+        }
+
         browser = await chromium.launch({
             headless: process.env.HEADLESS !== 'false'
         });
 
-        // Seed test data
+        // Seed test data with verification
         testData = testDataFactory.generateFullTestDataSet();
-        await seedTestData(testData);
+        await seedTestData(testData, {
+            verify: true,
+            verifyTimeout: 30000
+        });
     });
 
     afterAll(async () => {
@@ -234,16 +252,20 @@ describe('Integration E2E Tests', () => {
     });
 
     beforeEach(async () => {
+        // Create context with test-specific data
         context = await browser.newContext();
         page = await context.newPage();
+        _testRunId = `test-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
         integrationPage = new IntegrationPage(page);
 
         // Set global timeout for all actions
-        page.setDefaultTimeout(5000);
-        page.setDefaultNavigationTimeout(5000);
+        page.setDefaultTimeout(10000);
+        page.setDefaultNavigationTimeout(10000);
     });
 
     afterEach(async () => {
+        // Close context
         await context.close();
     });
 
@@ -281,7 +303,8 @@ describe('Integration E2E Tests', () => {
             expect(successText1).toContain('Building added successfully');
 
             // Wait for redirect to building page
-            await page.waitForTimeout(1500);
+            await page.waitForURL(`*#${testBuilding.buildingID}`, { timeout: 3000 });
+            await waitForAlpineDefault(page);
             expect(page.url()).toContain(`#${testBuilding.buildingID}`);
 
             // Step 2: Configure building details
@@ -344,11 +367,11 @@ describe('Integration E2E Tests', () => {
             // Select amenities for studio
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.prototype.fill
             await page.fill(integrationPage.selectors.amenitySearch, 'kitchen');
-            await page.waitForTimeout(300);
+            await page.waitForSelector('input[type="checkbox"]:near(:has-text("Kitchenette"))', { timeout: 1000 });
             await page.click('input[type="checkbox"]:near(:has-text("Kitchenette"))');
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method, not Array.prototype.fill
             await page.fill(integrationPage.selectors.amenitySearch, 'desk');
-            await page.waitForTimeout(300);
+            await page.waitForSelector('input[type="checkbox"]:near(:has-text("Built-in Desk"))', { timeout: 1000 });
             await page.click('input[type="checkbox"]:near(:has-text("Built-in Desk"))');
 
             await page.click('[data-testid="submit-button"]');
@@ -439,7 +462,7 @@ describe('Integration E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await bedsInput.fill('2');
             await bedsInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Should no longer show inherited badge for beds
             expect(await integrationPage.isFieldInherited(unit.unitID, 'Beds')).toBe(false);
@@ -466,7 +489,7 @@ describe('Integration E2E Tests', () => {
             await integrationPage.fillBasicBuildingInfo(deleteTestBuilding);
             await page.click('button:has-text("Add Building")');
             await integrationPage.waitForToast('success');
-            await page.waitForTimeout(1500);
+            await page.waitForSelector('.building-card', { timeout: 3000 });
 
             // Create unit type
             await page.click(integrationPage.selectors.manageUnitTypesButton);
@@ -530,7 +553,7 @@ describe('Integration E2E Tests', () => {
             await integrationPage.fillBasicBuildingInfo(deleteCascadeBuilding);
             await page.click('button:has-text("Add Building")');
             await integrationPage.waitForToast('success');
-            await page.waitForTimeout(1500);
+            await page.waitForSelector('.building-card', { timeout: 3000 });
 
             // Create unit types
             await page.click(integrationPage.selectors.manageUnitTypesButton);
@@ -543,7 +566,7 @@ describe('Integration E2E Tests', () => {
                 await page.fill('input[name="baths"]', i.toString());
                 /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
                 await page.click('[data-testid="submit-button"]');
-                await page.waitForTimeout(1000);
+                await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
             }
 
             // Navigate back and create units
@@ -583,7 +606,7 @@ describe('Integration E2E Tests', () => {
         it('should handle switching unit models and preserving overrides', async () => {
             // Use seeded data
             const testBuilding = testData.buildings[0];
-            const _studioModel = _.find(testData.unitTypes, { modelID: 'studio' })!;
+            // const _studioModel = _.find(testData.unitTypes, { modelID: 'studio' })!;
             const oneBRModel = _.find(testData.unitTypes, { modelID: '1br' })!;
             const testUnit = _.find(testData.units, { buildingID: testBuilding.buildingID, modelID: 'studio' })!;
 
@@ -603,13 +626,13 @@ describe('Integration E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await rentInput.fill('1550');
             await rentInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             const sqftInput = unitCard.locator(integrationPage.selectors.sqftInput);
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await sqftInput.fill('525');
             await sqftInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Check overrides
             expect(await integrationPage.isFieldInherited(testUnit.unitID, 'Monthly Rent')).toBe(false); // Override
@@ -617,12 +640,12 @@ describe('Integration E2E Tests', () => {
 
             // Check amenities
             await integrationPage.expandSection(testUnit.unitID, 'amenities');
-            const _overriddenBadge = unitCard.locator(integrationPage.selectors.overriddenBadge);
+            // const _overriddenBadge = unitCard.locator(integrationPage.selectors.overriddenBadge);
 
             // Switch to 1BR model
             const modelSelect = unitCard.locator(integrationPage.selectors.unitModelSelectInCard(testUnit.unitID));
             await modelSelect.selectOption(oneBRModel.modelID);
-            await page.waitForTimeout(1000);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Overridden values should persist
             expect(await rentInput.inputValue()).toBe('1550');
@@ -653,7 +676,7 @@ describe('Integration E2E Tests', () => {
             await integrationPage.fillBasicBuildingInfo(bulkTestBuilding);
             await page.click('button:has-text("Add Building")');
             await integrationPage.waitForToast('success');
-            await page.waitForTimeout(1500);
+            await page.waitForSelector('.building-card', { timeout: 3000 });
 
             // Create unit type
             await page.click(integrationPage.selectors.manageUnitTypesButton);
@@ -693,7 +716,7 @@ describe('Integration E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await rentInput.fill('1550');
             await rentInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Unit 803 should no longer inherit rent
             expect(await integrationPage.isFieldInherited('803', 'Monthly Rent')).toBe(false);
@@ -781,7 +804,7 @@ describe('Integration E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await rentInput.fill('5000'); // Way above model max
             await rentInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Should show validation error
             const errorText = await unitCard.locator('.text-error').first().textContent();
@@ -794,12 +817,12 @@ describe('Integration E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await minLeaseInput.fill('12');
             await minLeaseInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await maxLeaseInput.fill('6'); // Max less than min
             await maxLeaseInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Should show validation error
             const leaseError = await unitCard.locator('.text-error').first().textContent();
@@ -809,17 +832,17 @@ describe('Integration E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await rentInput.fill('1750'); // Within model range
             await rentInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await minLeaseInput.fill('6');
             await minLeaseInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await maxLeaseInput.fill('12');
             await maxLeaseInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Should no longer show errors
             const errors = await unitCard.locator('.text-error').all();

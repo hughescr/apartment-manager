@@ -7,6 +7,8 @@ import { cleanupTestData } from './helpers/cleanup-test-data';
 import { testDataFactory } from './helpers/test-data-factory';
 import { NavigationHelpers } from './helpers/navigation-helpers';
 import { FormFillers } from './helpers/form-fillers';
+import { validateTestEnvironment } from './helpers/test-env-validator';
+import { waitForAlpineDefault } from './helpers/alpine-ready';
 
 // Page object for better selector management
 class BuildingPage {
@@ -172,6 +174,7 @@ describe('Buildings E2E Tests', () => {
     let page: Page;
     let buildingPage: BuildingPage;
     let testData: TestDataSet;
+    let testRunId: string;
 
     const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
 
@@ -186,13 +189,24 @@ describe('Buildings E2E Tests', () => {
     }
 
     beforeAll(async () => {
+        // E2E tests start
+
+        // Validate test environment
+        const validation = await validateTestEnvironment();
+        if(!validation.success) {
+            throw new Error('Test environment validation failed. Check the logs above for details.');
+        }
+
         browser = await chromium.launch({
             headless: process.env.HEADLESS !== 'false'
         });
 
-        // Seed test data
+        // Seed test data with verification
         testData = testDataFactory.generateFullTestDataSet();
-        await seedTestData(testData);
+        await seedTestData(testData, {
+            verify: true,
+            verifyTimeout: 30000
+        });
     });
 
     afterAll(async () => {
@@ -202,8 +216,11 @@ describe('Buildings E2E Tests', () => {
     });
 
     beforeEach(async () => {
+        // Create test context
+        testRunId = `test-${Date.now()}`;
         context = await browser.newContext();
         page = await context.newPage();
+
         buildingPage = new BuildingPage(page);
 
         // Set global timeout for all actions
@@ -212,15 +229,14 @@ describe('Buildings E2E Tests', () => {
     });
 
     afterEach(async () => {
+        // Close context
         await context.close();
     });
 
     describe('Building List Page', () => {
         it('should display the buildings page with add building tab', async () => {
             await page.goto(baseUrl);
-
-            // Wait for Alpine.js initialization
-            await page.waitForTimeout(300);
+            await waitForAlpineDefault(page);
 
             // Check page loads with main heading
             const mainHeading = page.locator('main h1').first();
@@ -236,9 +252,7 @@ describe('Buildings E2E Tests', () => {
 
         it('should display existing buildings as tabs', async () => {
             await page.goto(baseUrl);
-
-            // Wait for Alpine.js initialization
-            await page.waitForTimeout(300);
+            await waitForAlpineDefault(page);
 
             // Wait for tabs to render
             await page.waitForSelector('a[role="tab"]', { timeout: 5000 });
@@ -253,9 +267,7 @@ describe('Buildings E2E Tests', () => {
 
         it('should show add building tab', async () => {
             await page.goto(baseUrl);
-
-            // Wait for Alpine.js initialization
-            await page.waitForTimeout(300);
+            await waitForAlpineDefault(page);
 
             // Should show add building tab
             const addBuildingTab = page.locator(buildingPage.selectors.addBuildingTab);
@@ -266,7 +278,7 @@ describe('Buildings E2E Tests', () => {
     describe('Add Building Form', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
-            // Wait for Alpine.js initialization is handled in navigateToAddBuilding
+            await waitForAlpineDefault(page);
             await buildingPage.navigateToAddBuilding();
         });
 
@@ -295,16 +307,8 @@ describe('Buildings E2E Tests', () => {
 
         it('should successfully create a building', async () => {
             const testBuilding = testDataFactory.generateBuilding();
-
-            // Mock successful API response
-            await page.route('**/api/buildings', async (route) => {
-                if(route.request().method() === 'POST') {
-                    // Let the real API handle the creation since we have test data
-                    await route.continue();
-                } else {
-                    await route.continue();
-                }
-            });
+            // Add unique test run ID to avoid conflicts
+            testBuilding.buildingID = `${testRunId}-${testBuilding.buildingID}`;
 
             // Fill in form
             await buildingPage.fillBasicBuildingInfo(testBuilding);
@@ -317,12 +321,14 @@ describe('Buildings E2E Tests', () => {
             expect(successText).toContain('Building added successfully');
 
             // Should update URL hash
-            await page.waitForTimeout(1500); // Wait for redirect
+            await page.waitForURL(`${baseUrl}#${testBuilding.buildingID}`, { timeout: 3000 });
             expect(page.url()).toContain(`#${testBuilding.buildingID}`);
         });
 
         it('should clear form on cancel', async () => {
             const testBuilding = testDataFactory.generateBuilding();
+            // Add unique test run ID to avoid conflicts
+            testBuilding.buildingID = `${testRunId}-${testBuilding.buildingID}`;
 
             // Fill in form
             await buildingPage.fillBasicBuildingInfo(testBuilding);
@@ -344,6 +350,7 @@ describe('Buildings E2E Tests', () => {
 
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             // Get the first building tab (not Add Building)
             await page.waitForSelector('a[role="tab"]');
@@ -440,6 +447,7 @@ describe('Buildings E2E Tests', () => {
     describe('Edit Building - Lease & Pricing Tab', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             // Get the first building tab
             await page.waitForSelector('a[role="tab"]');
@@ -474,6 +482,7 @@ describe('Buildings E2E Tests', () => {
     describe('Edit Building - Property Details Tab', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
                 return;
@@ -538,6 +547,7 @@ describe('Buildings E2E Tests', () => {
     describe('Edit Building - Utilities & Fees Tab', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
                 return;
@@ -573,6 +583,7 @@ describe('Buildings E2E Tests', () => {
     describe('Edit Building - Amenities Tab', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
                 return;
@@ -625,6 +636,7 @@ describe('Buildings E2E Tests', () => {
     describe('Edit Building - Policies Tab', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
                 return;
@@ -660,6 +672,7 @@ describe('Buildings E2E Tests', () => {
     describe('Edit Building - Contact & Tours Tab', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
                 return;
@@ -724,6 +737,7 @@ describe('Buildings E2E Tests', () => {
     describe('Edit Building - Media Tab', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
                 return;
@@ -789,6 +803,7 @@ describe('Buildings E2E Tests', () => {
     describe('Unit Management', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
                 return;
@@ -862,6 +877,7 @@ describe('Buildings E2E Tests', () => {
     describe('Delete Building', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             // Try to get a building other than the first one for delete tests
             await page.waitForSelector('a[role="tab"]', { timeout: 5000 });
@@ -920,6 +936,7 @@ describe('Buildings E2E Tests', () => {
         it('should display mobile layout on small screens', async () => {
             await page.setViewportSize({ width: 375, height: 667 }); // iPhone SE
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             // Tabs should still be visible and functional
             const tabs = await page.locator('a[role="tab"]').all();
@@ -939,6 +956,7 @@ describe('Buildings E2E Tests', () => {
         it('should stack form fields on mobile', async () => {
             await page.setViewportSize({ width: 375, height: 667 });
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
@@ -961,6 +979,7 @@ describe('Buildings E2E Tests', () => {
         it('should use grid layout on desktop', async () => {
             await page.setViewportSize({ width: 1280, height: 800 });
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
@@ -983,6 +1002,7 @@ describe('Buildings E2E Tests', () => {
     describe('Accessibility', () => {
         beforeEach(async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
         });
 
         it('should have proper ARIA labels and roles', async () => {
@@ -1018,7 +1038,7 @@ describe('Buildings E2E Tests', () => {
             await page.keyboard.press('Enter');
 
             // Should navigate to the tab content
-            await page.waitForTimeout(500);
+            await page.waitForURL(/.*#.*/, { timeout: 2000 });
             const url = page.url();
             expect(url).toContain('#');
         });
@@ -1031,7 +1051,7 @@ describe('Buildings E2E Tests', () => {
 
             // Error should be announced
             const toast = await page.locator('.alert-error');
-            expect(toast.getAttribute('role')).toBeTruthy(); // Should have ARIA role
+            expect(await toast.getAttribute('role')).toBeTruthy(); // Should have ARIA role
             expect(await toast.textContent()).toContain('Building ID is required');
         });
 
@@ -1055,6 +1075,7 @@ describe('Buildings E2E Tests', () => {
     describe('Error Handling', () => {
         it('should show add building tab even without data', async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             // Should show UI
             const addBuildingTab = page.locator(buildingPage.selectors.addBuildingTab);
@@ -1063,6 +1084,7 @@ describe('Buildings E2E Tests', () => {
 
         it('should show validation errors inline', async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {
@@ -1083,6 +1105,7 @@ describe('Buildings E2E Tests', () => {
 
         it('should handle duplicate building ID errors', async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             await buildingPage.navigateToAddBuilding();
 
             // Try to add a building with an existing ID
@@ -1102,6 +1125,7 @@ describe('Buildings E2E Tests', () => {
         it('should load page within reasonable time', async () => {
             const startTime = Date.now();
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
             await page.waitForLoadState('networkidle');
             const loadTime = Date.now() - startTime;
 
@@ -1110,6 +1134,7 @@ describe('Buildings E2E Tests', () => {
 
         it('should show loading states during API calls', async () => {
             await page.goto(baseUrl);
+            await waitForAlpineDefault(page);
 
             const buildingID = await getFirstBuilding(page);
             if(!buildingID) {

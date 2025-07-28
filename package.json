@@ -27,6 +27,7 @@
     "gemini": "op run --env-file=.env.op -- tmux -CC new -A -n Gemini -s apartment-manager-mcp-workspace bunx @google/gemini-cli@latest"
   },
   "devDependencies": {
+    "@aws-sdk/client-sts": "^3.848.0",
     "@hughescr/eslint-config-default": "^3.0.4",
     "@types/aws-lambda": "^8.10.152",
     "@types/bun": "^1.2.19",

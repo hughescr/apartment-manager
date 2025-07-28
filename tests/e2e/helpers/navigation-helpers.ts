@@ -1,4 +1,6 @@
 import { Page } from 'playwright';
+import _ from 'lodash';
+import { waitForAlpineReady, waitForAlpineDefault, waitForAlpineComponentState } from './alpine-ready';
 
 /**
  * Helper functions for navigating through the application
@@ -11,17 +13,12 @@ export class NavigationHelpers {
      * Handles Alpine.js initialization and visibility changes
      */
     async navigateToAddBuilding() {
-        // Wait for Alpine.js to initialize after page load
-        // We need to wait for the x-data attribute to be processed
-        await this.page.waitForFunction(() => {
-            const alpineRoot = document.querySelector('[x-data]');
-            // Check if Alpine exists on window
-            const win = window as Window & { Alpine?: { version?: string } };
-            return alpineRoot && win.Alpine && win.Alpine.version;
-        }, { timeout: 5000 });
-
-        // Additional small delay to ensure Alpine is fully ready
-        await this.page.waitForTimeout(500);
+        // Wait for Alpine.js to initialize with the tabs component
+        await waitForAlpineReady(this.page, {
+            selector: '[x-data]',
+            timeout: 10000,
+            waitForInit: true
+        });
 
         // First ensure the Add Building tab is visible and ready
         const addBuildingTab = 'a[role="tab"]:has-text("Add Building")';
@@ -38,8 +35,13 @@ export class NavigationHelpers {
             timeout: 30000
         });
 
-        // Additional wait to ensure form is fully interactive
-        await this.page.waitForTimeout(100);
+        // Wait for the form component to be fully initialized
+        await waitForAlpineComponentState(
+            this.page,
+            '.tab-content',
+            _.constant(true), // Form is ready when component exists
+            { timeout: 5000 }
+        );
     }
 
     /**
@@ -47,16 +49,12 @@ export class NavigationHelpers {
      * @param buildingId The ID of the building to navigate to
      */
     async navigateToBuilding(buildingId: string) {
-        // Wait for Alpine.js initialization
-        await this.page.waitForFunction(() => {
-            const alpineRoot = document.querySelector('[x-data]');
-            // Check if Alpine exists on window
-            const win = window as Window & { Alpine?: { version?: string } };
-            return alpineRoot && win.Alpine && win.Alpine.version;
-        }, { timeout: 5000 });
-
-        // Additional small delay to ensure Alpine is fully ready
-        await this.page.waitForTimeout(500);
+        // Wait for Alpine.js initialization with the tabs component
+        await waitForAlpineReady(this.page, {
+            selector: '[x-data]',
+            timeout: 10000,
+            waitForInit: true
+        });
 
         // Click the building tab
         const buildingTab = `a[role="tab"]:has-text("${buildingId}")`;
@@ -66,8 +64,13 @@ export class NavigationHelpers {
         // Wait for building card to load - the card is shown via x-show directive
         await this.page.waitForSelector('.building-card', { state: 'visible', timeout: 10000 });
 
-        // Extra wait for any async data loading
-        await this.page.waitForTimeout(200);
+        // Wait for the building card component to be fully initialized
+        await waitForAlpineComponentState(
+            this.page,
+            '.building-card',
+            _.constant(true), // Component is ready when it exists
+            { timeout: 5000 }
+        );
     }
 
     /**
@@ -94,8 +97,8 @@ export class NavigationHelpers {
         await this.page.waitForSelector(tabSelector, { state: 'visible', timeout: 5000 });
         await this.page.click(tabSelector);
 
-        // Wait for tab content to be ready
-        await this.page.waitForTimeout(100);
+        // Wait for the tab content to be visible and Alpine to be ready
+        await this.page.waitForSelector('[x-show]:visible', { state: 'visible', timeout: 5000 });
     }
 
     /**
@@ -109,8 +112,8 @@ export class NavigationHelpers {
         // Wait for page navigation
         await this.page.waitForURL(/unit-types/, { timeout: 5000 });
 
-        // Wait for Alpine.js initialization on new page
-        await this.page.waitForTimeout(300);
+        // Wait for Alpine.js initialization on the new page
+        await waitForAlpineDefault(this.page);
     }
 
     /**
@@ -124,8 +127,8 @@ export class NavigationHelpers {
         // Wait for page navigation
         await this.page.waitForURL(/units/, { timeout: 5000 });
 
-        // Wait for Alpine.js initialization on new page
-        await this.page.waitForTimeout(300);
+        // Wait for Alpine.js initialization on the new page
+        await waitForAlpineDefault(this.page);
     }
 
     /**

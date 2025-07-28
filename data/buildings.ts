@@ -12,10 +12,13 @@ import _ from 'lodash';
 import  { logger } from '@hughescr/logger';
 
 export async function getBuildings() {
-    const { Items } = await ApartmentTable.build(ScanCommand)
+    const scanResult = await ApartmentTable.build(ScanCommand)
         .entities(Building)
+        .options({ consistent: true })
         .send();
-    return _.map(Items, item => _.omit(item, 'unitID')) as BuildingData[];
+
+    const buildings = _.map(scanResult.Items, item => _.omit(item, 'unitID')) as BuildingData[];
+    return buildings;
 }
 
 export async function getBuilding(buildingID: string) {

@@ -27,7 +27,9 @@ describe('Building Data Layer', () => {
                     if(command === ScanCommand) {
                         return {
                             entities: mock(() => ({
-                                send: mockSend,
+                                options: mock(() => ({
+                                    send: mockSend,
+                                })),
                             })),
                         };
                     }

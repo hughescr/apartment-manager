@@ -17,6 +17,7 @@ export async function getUnitTypes(buildingID: string) {
             partition: buildingID,
             range: { beginsWith: 'MODEL#' }
         })
+        .options({ consistent: true })
         .send();
     return _.map(Items, (item) => {
         const { unitID: _unitID, ...rest } = item;

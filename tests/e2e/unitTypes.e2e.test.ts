@@ -5,6 +5,8 @@ import { AmenityCategory } from '../../src/types';
 import { seedTestData, type TestDataSet } from './helpers/seed-test-data';
 import { cleanupTestData } from './helpers/cleanup-test-data';
 import { testDataFactory } from './helpers/test-data-factory';
+import { validateTestEnvironment } from './helpers/test-env-validator';
+// Alpine ready not needed in this test file
 
 // E2E tests for unit type management workflow
 describe('Unit Types E2E Tests', () => {
@@ -12,18 +14,34 @@ describe('Unit Types E2E Tests', () => {
     let context: BrowserContext;
     let page: Page;
     let testData: TestDataSet;
+    let _testRunId: string;
 
     const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
     let testBuildingId: string;
 
     beforeAll(async () => {
+        // Check server health first
+        const response = await fetch(baseUrl);
+        if(!response.ok) {
+            throw new Error(`Server health check failed - server returned ${response.status}`);
+        }
+
+        // Validate test environment
+        const validation = await validateTestEnvironment();
+        if(!validation.success) {
+            throw new Error('Test environment validation failed. Check the logs above for details.');
+        }
+
         browser = await chromium.launch({
             headless: process.env.HEADLESS !== 'false'
         });
 
-        // Seed test data
+        // Seed test data with verification
         testData = testDataFactory.generateFullTestDataSet();
-        await seedTestData(testData);
+        await seedTestData(testData, {
+            verify: true,
+            verifyTimeout: 30000
+        });
 
         // Use the first building from seeded data
         testBuildingId = testData.buildings[0].buildingID;
@@ -36,17 +54,18 @@ describe('Unit Types E2E Tests', () => {
     });
 
     beforeEach(async () => {
+        // Create context with test-specific data
         context = await browser.newContext();
         page = await context.newPage();
+        _testRunId = `test-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-        // Set global timeout for all actions on this page
-        page.setDefaultTimeout(5000); // 5 seconds max for any action
-
-        // Set navigation timeout separately (can be slightly longer for initial page loads)
-        page.setDefaultNavigationTimeout(5000);
+        // Set global timeout for all actions
+        page.setDefaultTimeout(10000);
+        page.setDefaultNavigationTimeout(10000);
     });
 
     afterEach(async () => {
+        // Close context
         await context.close();
     });
 
@@ -330,7 +349,7 @@ describe('Unit Types E2E Tests', () => {
             /* eslint-enable lodash/prefer-lodash-method -- Re-enable after Playwright method calls */
 
             await page.click('[data-testid="submit-button"]');
-            await page.waitForTimeout(1000);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Now delete it
             await page.goto(`${baseUrl}/building/${testBuildingId}/unit-types`);

@@ -20,15 +20,27 @@ export async function getUnits(buildingID: string) {
     const { Items } = await ApartmentTable.build(QueryCommand)
     .entities(Unit)
     .query({ partition: buildingID })
+    .options({ consistent: true })
     .send();
-    return Items as UnitData[];
+    // Remove the UNIT# prefix from unitID when returning
+    return _.map(Items, item => ({
+        ...item,
+        unitID: _.replace(item.unitID || '', /^UNIT#/, '') || item.unitID
+    })) as UnitData[];
 }
 
 export async function getUnit(buildingID: string, unitID: string) {
     const { Item } = await Unit.build(GetItemCommand)
-        .key({ buildingID, unitID })
+        .key({ buildingID, unitID: `UNIT#${unitID}` })
         .send();
-    return Item as UnitData;
+    if(!Item) {
+        return undefined;
+    }
+    // Remove the UNIT# prefix from unitID when returning
+    return {
+        ...Item,
+        unitID: _.replace(Item.unitID || '', /^UNIT#/, '') || Item.unitID
+    } as UnitData;
 }
 
 export async function createUnit(unit: UnitData) {
@@ -37,6 +49,7 @@ export async function createUnit(unit: UnitData) {
 
     const unitForDB: UnitDataForDB = {
         ...restUnit,
+        unitID: `UNIT#${unit.unitID}`,
         ...(websiteStatus && {
             websiteStatus: _(websiteStatus)
                 .pickBy(value => value !== undefined)
@@ -63,7 +76,15 @@ export async function createUnit(unit: UnitData) {
             returnValuesOnConditionFalse: 'ALL_OLD',
         })
         .send();
-    return Attributes || unit  as UnitData;
+    if(!Attributes) {
+        return unit;
+    }
+    // Remove the UNIT# prefix from unitID when returning
+    const result = Attributes as UnitData & { unitID: string };
+    return {
+        ...result,
+        unitID: _.replace(result.unitID || '', /^UNIT#/, '') || result.unitID
+    } as UnitData;
 }
 
 export async function updateUnit(buildingID: string, unitID: string, updates: Partial<UnitData>) {
@@ -85,20 +106,27 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
                 .value() as Record<string, string>
         }),
         buildingID,
-        unitID
+        unitID: `UNIT#${unitID}`
     };
 
     const { Attributes } = await Unit.build(UpdateItemCommand)
         .item(updatesForDB)
         .options({ returnValues: 'ALL_NEW' })
         .send();
-    return Attributes as UnitData;
+    if(!Attributes) {
+        return undefined;
+    }
+    // Remove the UNIT# prefix from unitID when returning
+    return {
+        ...Attributes,
+        unitID: _.replace(Attributes.unitID || '', /^UNIT#/, '') || Attributes.unitID
+    } as UnitData;
 }
 
 export async function deleteUnit(buildingID: string, unitID: string): Promise<boolean> {
     try {
         await Unit.build(DeleteItemCommand)
-            .key({ buildingID, unitID })
+            .key({ buildingID, unitID: `UNIT#${unitID}` })
             .send();
         return true;
     } catch(error) {

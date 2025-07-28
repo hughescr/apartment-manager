@@ -2,9 +2,13 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import * as buildings from './buildings';
 import * as units from './units';
 import * as unitTypes from './unitTypes';
+import * as version from './version';
 import { noop, split, every, startsWith, endsWith, forEach, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
+    '/version': {
+        GET: version.get,
+    },
     '/buildings': {
         GET: buildings.list,
         POST: buildings.create,

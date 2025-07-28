@@ -5,6 +5,8 @@ import { AmenityCategory, WebsiteStatus } from '../../src/types';
 import { seedTestData, type TestDataSet } from './helpers/seed-test-data';
 import { cleanupTestData } from './helpers/cleanup-test-data';
 import { testDataFactory } from './helpers/test-data-factory';
+import { validateTestEnvironment } from './helpers/test-env-validator';
+import { waitForAlpineDefault } from './helpers/alpine-ready';
 
 // Page object for better selector management
 class UnitsPage {
@@ -124,7 +126,7 @@ class UnitsPage {
         }
 
         // Wait for save to complete
-        await this.page.waitForTimeout(1000);
+        await this.page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
     }
 
     async getFieldValue(unitId: string, fieldSelector: string) {
@@ -139,7 +141,7 @@ class UnitsPage {
         // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
         await input.fill(value);
         await input.blur(); // Trigger save
-        await this.page.waitForTimeout(500);
+        await this.page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
     }
 
     async isFieldInherited(unitId: string, fieldName: string) {
@@ -169,7 +171,7 @@ class UnitsPage {
         const isExpanded = await toggle.isChecked();
         if(!isExpanded) {
             await toggle.check();
-            await this.page.waitForTimeout(300); // Wait for expansion animation
+            await this.page.waitForSelector(`${selectorMap[section]}:checked`, { timeout: 1000 });
         }
     }
 
@@ -195,7 +197,7 @@ class UnitsPage {
         const unitCard = this.page.locator(this.selectors.unitCard(unitId));
         const checkbox = unitCard.locator(this.selectors.amenityCheckbox(amenityName));
         await checkbox.click();
-        await this.page.waitForTimeout(500);
+        await this.page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
     }
 
     async waitForToast(type: 'success' | 'error') {
@@ -212,22 +214,38 @@ describe('Units E2E Tests', () => {
     let page: Page;
     let unitsPage: UnitsPage;
     let testData: TestDataSet;
+    let _testRunId: string;
 
     const baseUrl = process.env.E2E_BASE_URL || 'http://localhost:4321';
 
     // We'll use the seeded test data buildings and unit types
     let testBuilding: typeof testData.buildings[0];
-    let _testUnitType1: typeof testData.unitTypes[0];
-    let _testUnitType2: typeof testData.unitTypes[0];
+    let _testUnitType1: typeof testData.unitTypes[0] | undefined;
+    let _testUnitType2: typeof testData.unitTypes[0] | undefined;
 
     beforeAll(async () => {
+        // Check server health first
+        const response = await fetch(baseUrl);
+        if(!response.ok) {
+            throw new Error(`Server health check failed - server returned ${response.status}`);
+        }
+
+        // Validate test environment
+        const validation = await validateTestEnvironment();
+        if(!validation.success) {
+            throw new Error('Test environment validation failed. Check the logs above for details.');
+        }
+
         browser = await chromium.launch({
             headless: process.env.HEADLESS !== 'false'
         });
 
-        // Seed test data
+        // Seed test data with verification
         testData = testDataFactory.generateFullTestDataSet();
-        await seedTestData(testData);
+        await seedTestData(testData, {
+            verify: true,
+            verifyTimeout: 30000
+        });
 
         // Use the first building and its unit types for testing
         testBuilding = testData.buildings[0];
@@ -242,16 +260,20 @@ describe('Units E2E Tests', () => {
     });
 
     beforeEach(async () => {
+        // Create context with test-specific data
         context = await browser.newContext();
         page = await context.newPage();
+        _testRunId = `test-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
         unitsPage = new UnitsPage(page);
 
-        // Set timeouts
-        page.setDefaultTimeout(5000);
-        page.setDefaultNavigationTimeout(5000);
+        // Set global timeout for all actions
+        page.setDefaultTimeout(10000);
+        page.setDefaultNavigationTimeout(10000);
     });
 
     afterEach(async () => {
+        // Close context
         await context.close();
     });
 
@@ -259,6 +281,7 @@ describe('Units E2E Tests', () => {
         it('should display unit creation dialog with model dropdown', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
+            await waitForAlpineDefault(page);
             await unitsPage.openAddUnitDialog();
 
             // Check dialog elements
@@ -295,6 +318,7 @@ describe('Units E2E Tests', () => {
 
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
+            await waitForAlpineDefault(page);
             await unitsPage.addUnit(unitNumber); // No model specified
 
             // Verify unit was created
@@ -308,6 +332,7 @@ describe('Units E2E Tests', () => {
 
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
+            await waitForAlpineDefault(page);
             await unitsPage.addUnit(unitNumber, '1br');
 
             // Verify unit was created with model
@@ -324,6 +349,7 @@ describe('Units E2E Tests', () => {
         it('should validate unit number is required', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
+            await waitForAlpineDefault(page);
             await unitsPage.openAddUnitDialog();
 
             // Try to add without unit number
@@ -525,7 +551,7 @@ describe('Units E2E Tests', () => {
             const bedsInput = unitCard.locator(unitsPage.selectors.bedsInput);
             await bedsInput.clear();
             await bedsInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Should show inherited badge again
             expect(await unitsPage.isFieldInherited('401', 'Beds')).toBe(true);
@@ -654,6 +680,7 @@ describe('Units E2E Tests', () => {
         it('should show unit types with details in dropdown', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
+            await waitForAlpineDefault(page);
             await unitsPage.openAddUnitDialog();
 
             const modelSelect = page.locator(unitsPage.selectors.unitModelSelect);
@@ -669,6 +696,7 @@ describe('Units E2E Tests', () => {
         it('should show helpful label for model selection', async () => {
             await page.goto(baseUrl);
             await unitsPage.navigateToBuilding(testBuilding.buildingID);
+            await waitForAlpineDefault(page);
             await unitsPage.openAddUnitDialog();
 
             const dialog = page.locator(unitsPage.selectors.addUnitDialog);
@@ -852,7 +880,7 @@ describe('Units E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await titleInput.fill('Updated Special');
             await titleInput.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             expect((unitWithSpecial.unitRentSpecial as { title: string }).title).toBe('Updated Special');
         });
@@ -866,12 +894,12 @@ describe('Units E2E Tests', () => {
 
             // Set end date before start date
             const startDate = unitCard.locator(unitsPage.selectors.rentSpecialStartDate);
-            const _endDate = unitCard.locator(unitsPage.selectors.rentSpecialEndDate);
+            // const _endDate = unitCard.locator(unitsPage.selectors.rentSpecialEndDate);
 
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await startDate.fill('2025-05-01');
             await startDate.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             // Should show validation error
             const errorText = await unitCard.locator('.text-error').first().textContent();
@@ -935,7 +963,7 @@ describe('Units E2E Tests', () => {
             // Change zillow status
             const zillowStatus = unitCard.locator(unitsPage.selectors.websiteStatusSelect('zillow.com'));
             await zillowStatus.selectOption('active');
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             expect((unitWithListings.websiteStatus as Record<string, string>)['zillow.com']).toBe('active');
         });
@@ -957,7 +985,7 @@ describe('Units E2E Tests', () => {
             // eslint-disable-next-line lodash/prefer-lodash-method -- page.fill is a Playwright method
             await zillowListing.fill('ZIL-789012');
             await zillowListing.blur();
-            await page.waitForTimeout(500);
+            await page.waitForResponse(resp => resp.url().includes('/api/buildings/') && resp.status() === 200, { timeout: 5000 });
 
             expect((unitWithListings.listingIds as Record<string, string>)['zillow.com']).toBe('ZIL-789012');
         });
