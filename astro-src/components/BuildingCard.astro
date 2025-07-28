@@ -19,13 +19,18 @@ import {
     PropertyType, 
     UtilityType, 
     FeeType, 
-    DayOfWeek,
-    AmenityCategory 
+    DayOfWeek
 } from "../../src/types";
 
 const { buildingID } = Astro.props as { buildingID: string };
 
 const building = await getBuilding(buildingID);
+if (!building) {
+    throw new Error(`Building ${buildingID} not found`);
+}
+
+// TypeScript now knows building is defined after the throw
+
 const units = await getUnits(buildingID);
 const unitTypes = await getUnitTypes(buildingID);
 
@@ -44,7 +49,7 @@ if (!building.screeningCriteria) building.screeningCriteria = {};
 if (!building.contactInfo) building.contactInfo = {};
 if (!building.tourAvailability) building.tourAvailability = {};
 if (!building.photos) building.photos = [];
-if (!building.incomeRestrictions) building.incomeRestrictions = null;
+if (!building.incomeRestrictions) building.incomeRestrictions = undefined;
 
 const xData = JSON.stringify({
     original: building,
@@ -141,7 +146,7 @@ const xData = JSON.stringify({
         
         // Rent specials validation
         if (this.building.rentSpecials && this.building.rentSpecials.length > 0) {
-            this.building.rentSpecials.forEach((special, index) => {
+            this.building.rentSpecials.forEach((special: any, index: number) => {
                 if (!special.title || special.title.trim() === '') {
                     this.errors[`rentSpecial${index}Title`] = 'Rent special title is required';
                     isValid = false;
@@ -188,11 +193,11 @@ const xData = JSON.stringify({
     },
     async addUnit() {
         if (!this.newUnit.unitID || this.newUnit.unitID.trim() === '') {
-            window.showToast('Unit number is required', 'error');
+            this.$dispatch('show-toast', { message: 'Unit number is required', type: 'error' });
             return;
         }
         this.showAddUnitDialog = false;
-        const unitData = {
+        const unitData: any = {
             unitID: this.newUnit.unitID,
             buildingID: this.building.buildingID
         };
@@ -214,7 +219,7 @@ const xData = JSON.stringify({
     async saveBuilding() {
         if (!this.validateForm()) {
             // Show validation errors
-            window.showToast('Please fix the validation errors before saving', 'error');
+            this.$dispatch('show-toast', { message: 'Please fix the validation errors before saving', type: 'error' });
             return;
         }
         this.saving = true;
@@ -226,7 +231,7 @@ const xData = JSON.stringify({
         this.original = { ...this.building };
         this.showSave = false;
         this.saving = false;
-        window.showToast('Building saved successfully', 'success');
+        this.$dispatch('show-toast', { message: 'Building saved successfully', type: 'success' });
     },
     undoChanges() {
         this.building = { ...this.original };
@@ -414,7 +419,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                 label="Basic Description"
                 xModel="building.description"
                 placeholder="Brief description of the property"
-                rows="3"
+                rows={3}
             />
         </div>
 
@@ -481,7 +486,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                 label="Detailed Marketing Description"
                 xModel="building.propertyDescription"
                 placeholder="Detailed description for marketing purposes..."
-                rows="6"
+                rows={6}
                 helpText="This description will be used on listing sites"
             />
             
@@ -525,37 +530,55 @@ const daysOfWeek = Object.values(DayOfWeek);
                                     >Remove</button>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <BaseInput
-                                        :name="'special-title-' + index"
-                                        label="Title"
-                                        x-model="special.title"
-                                        placeholder="Move-in Special"
-                                        required
-                                        :error="'errors.rentSpecial' + index + 'Title'"
-                                    />
+                                    <!-- Title Input -->
+                                    <label class="floating-label">
+                                        <span>Title<span class="text-error">*</span></span>
+                                        <input
+                                            type="text"
+                                            :name="'special-title-' + index"
+                                            x-model="special.title"
+                                            placeholder="Move-in Special"
+                                            class="input w-full"
+                                            :class="errors['rentSpecial' + index + 'Title'] ? 'input-error' : ''"
+                                            required
+                                        />
+                                        <span x-show="errors['rentSpecial' + index + 'Title']" class="label-text-alt text-error" x-text="errors['rentSpecial' + index + 'Title']"></span>
+                                    </label>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <BaseInput
-                                            :name="'special-start-' + index"
-                                            label="Start Date"
-                                            type="date"
-                                            x-model="special.startDate"
-                                        />
-                                        <BaseInput
-                                            :name="'special-end-' + index"
-                                            label="End Date"
-                                            type="date"
-                                            x-model="special.endDate"
-                                        />
+                                        <!-- Start Date Input -->
+                                        <label class="floating-label">
+                                            <span>Start Date</span>
+                                            <input
+                                                type="date"
+                                                :name="'special-start-' + index"
+                                                x-model="special.startDate"
+                                                class="input w-full"
+                                            />
+                                        </label>
+                                        <!-- End Date Input -->
+                                        <label class="floating-label">
+                                            <span>End Date</span>
+                                            <input
+                                                type="date"
+                                                :name="'special-end-' + index"
+                                                x-model="special.endDate"
+                                                class="input w-full"
+                                            />
+                                        </label>
                                     </div>
                                 </div>
                                 <div x-show="errors['rentSpecial' + index + 'Dates']" class="text-error text-sm mt-1" x-text="errors['rentSpecial' + index + 'Dates']"></div>
-                                <BaseTextarea
-                                    :name="'special-desc-' + index"
-                                    label="Description"
-                                    x-model="special.description"
-                                    placeholder="Special details..."
-                                    rows="2"
-                                />
+                                <!-- Description Textarea -->
+                                <label class="floating-label textarea-label">
+                                    <span>Description</span>
+                                    <textarea
+                                        :name="'special-desc-' + index"
+                                        x-model="special.description"
+                                        placeholder="Special details..."
+                                        class="textarea w-full resize-vertical"
+                                        rows="2"
+                                    ></textarea>
+                                </label>
                             </div>
                         </template>
                         <button 
@@ -586,7 +609,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                                 name="amiLimit"
                                 label="AMI Limit (%)"
                                 type="number"
-                                x-model="building.incomeRestrictions.amiLimit"
+                                xModel="building.incomeRestrictions.amiLimit"
                                 placeholder="80"
                                 min="0"
                                 max="200"
@@ -598,15 +621,18 @@ const daysOfWeek = Object.values(DayOfWeek);
                                 <label class="label">Maximum Income by Household Size</label>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <template x-for="size in [1, 2, 3, 4]" :key="size">
-                                        <BaseInput
-                                            :name="'income-size-' + size"
-                                            :label="size + ' Person'"
-                                            type="number"
-                                            x-model="building.incomeRestrictions.maxIncomeByHouseholdSize[size]"
-                                            placeholder="50000"
-                                            min="0"
-                                            step="1000"
-                                        />
+                                        <label class="floating-label">
+                                            <span x-text="size + ' Person'"></span>
+                                            <input
+                                                type="number"
+                                                :name="'income-size-' + size"
+                                                x-model.number="building.incomeRestrictions.maxIncomeByHouseholdSize[size]"
+                                                placeholder="50000"
+                                                class="input w-full"
+                                                min="0"
+                                                step="1000"
+                                            />
+                                        </label>
                                     </template>
                                 </div>
                             </div>
@@ -680,12 +706,21 @@ const daysOfWeek = Object.values(DayOfWeek);
                                     >Remove</button>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <BaseSelect
-                                        :name="'parking-type-' + index"
-                                        label="Type"
-                                        x-model="parking.type"
-                                        :options='[{value: "garage", label: "Garage"}, {value: "covered", label: "Covered"}, {value: "uncovered", label: "Uncovered"}, {value: "street", label: "Street"}, {value: "none", label: "None"}]'
-                                    />
+                                    <!-- Parking Type Select -->
+                                    <label class="floating-label select-label">
+                                        <span>Type</span>
+                                        <select
+                                            :name="'parking-type-' + index"
+                                            x-model="parking.type"
+                                            class="select w-full"
+                                        >
+                                            <option value="garage">Garage</option>
+                                            <option value="covered">Covered</option>
+                                            <option value="uncovered">Uncovered</option>
+                                            <option value="street">Street</option>
+                                            <option value="none">None</option>
+                                        </select>
+                                    </label>
                                     <div class="form-control">
                                         <label class="label cursor-pointer">
                                             <span class="label-text">Included</span>
@@ -698,30 +733,43 @@ const daysOfWeek = Object.values(DayOfWeek);
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <BaseInput
-                                        :name="'parking-fee-' + index"
-                                        label="Monthly Fee"
-                                        type="number"
-                                        x-model="parking.fee"
-                                        placeholder="0"
-                                        min="0"
-                                        :disabled="parking.included"
-                                    />
-                                    <BaseInput
-                                        :name="'parking-spaces-' + index"
-                                        label="Number of Spaces"
-                                        type="number"
-                                        x-model="parking.spaces"
-                                        placeholder="1"
-                                        min="1"
-                                    />
+                                    <!-- Monthly Fee Input -->
+                                    <label class="floating-label">
+                                        <span>Monthly Fee</span>
+                                        <input
+                                            type="number"
+                                            :name="'parking-fee-' + index"
+                                            x-model.number="parking.fee"
+                                            placeholder="0"
+                                            class="input w-full"
+                                            min="0"
+                                            :disabled="parking.included"
+                                        />
+                                    </label>
+                                    <!-- Number of Spaces Input -->
+                                    <label class="floating-label">
+                                        <span>Number of Spaces</span>
+                                        <input
+                                            type="number"
+                                            :name="'parking-spaces-' + index"
+                                            x-model.number="parking.spaces"
+                                            placeholder="1"
+                                            class="input w-full"
+                                            min="1"
+                                        />
+                                    </label>
                                 </div>
-                                <BaseInput
-                                    :name="'parking-desc-' + index"
-                                    label="Description"
-                                    x-model="parking.description"
-                                    placeholder="Additional details..."
-                                />
+                                <!-- Description Input -->
+                                <label class="floating-label">
+                                    <span>Description</span>
+                                    <input
+                                        type="text"
+                                        :name="'parking-desc-' + index"
+                                        x-model="parking.description"
+                                        placeholder="Additional details..."
+                                        class="input w-full"
+                                    />
+                                </label>
                             </div>
                         </template>
                         <button 
@@ -746,12 +794,21 @@ const daysOfWeek = Object.values(DayOfWeek);
                                     >Remove</button>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <BaseSelect
-                                        :name="'storage-type-' + index"
-                                        label="Type"
-                                        x-model="storage.type"
-                                        :options='[{value: "closet", label: "Closet"}, {value: "basement", label: "Basement"}, {value: "garage", label: "Garage"}, {value: "external-unit", label: "External Unit"}, {value: "none", label: "None"}]'
-                                    />
+                                    <!-- Storage Type Select -->
+                                    <label class="floating-label select-label">
+                                        <span>Type</span>
+                                        <select
+                                            :name="'storage-type-' + index"
+                                            x-model="storage.type"
+                                            class="select w-full"
+                                        >
+                                            <option value="closet">Closet</option>
+                                            <option value="basement">Basement</option>
+                                            <option value="garage">Garage</option>
+                                            <option value="external-unit">External Unit</option>
+                                            <option value="none">None</option>
+                                        </select>
+                                    </label>
                                     <div class="form-control">
                                         <label class="label cursor-pointer">
                                             <span class="label-text">Included</span>
@@ -764,28 +821,42 @@ const daysOfWeek = Object.values(DayOfWeek);
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <BaseInput
-                                        :name="'storage-fee-' + index"
-                                        label="Monthly Fee"
-                                        type="number"
-                                        x-model="storage.fee"
-                                        placeholder="0"
-                                        min="0"
-                                        :disabled="storage.included"
-                                    />
-                                    <BaseInput
-                                        :name="'storage-dimensions-' + index"
-                                        label="Dimensions"
-                                        x-model="storage.dimensions"
+                                    <!-- Monthly Fee Input -->
+                                    <label class="floating-label">
+                                        <span>Monthly Fee</span>
+                                        <input
+                                            type="number"
+                                            :name="'storage-fee-' + index"
+                                            x-model.number="storage.fee"
+                                            placeholder="0"
+                                            class="input w-full"
+                                            min="0"
+                                            :disabled="storage.included"
+                                        />
+                                    </label>
+                                    <!-- Dimensions Input -->
+                                    <label class="floating-label">
+                                        <span>Dimensions</span>
+                                        <input
+                                            type="text"
+                                            :name="'storage-dimensions-' + index"
+                                            x-model="storage.dimensions"
                                         placeholder="5x10"
+                                        class="input w-full"
                                     />
+                                </label>
                                 </div>
-                                <BaseInput
-                                    :name="'storage-desc-' + index"
-                                    label="Description"
-                                    x-model="storage.description"
-                                    placeholder="Additional details..."
-                                />
+                                <!-- Description Input -->
+                                <label class="floating-label">
+                                    <span>Description</span>
+                                    <input
+                                        type="text"
+                                        :name="'storage-desc-' + index"
+                                        x-model="storage.description"
+                                        placeholder="Additional details..."
+                                        class="input w-full"
+                                    />
+                                </label>
                             </div>
                         </template>
                         <button 
@@ -803,7 +874,6 @@ const daysOfWeek = Object.values(DayOfWeek);
                     <AmenitySelector
                         name="propertyAmenities"
                         xModel="building.propertyAmenities"
-                        category={AmenityCategory.PROPERTY}
                     />
                 </div>
             </div>
@@ -896,14 +966,14 @@ const daysOfWeek = Object.values(DayOfWeek);
                                         name={'office-open-' + day}
                                         label="Open"
                                         type="time"
-                                        x-model={`building.contactInfo.officeHours?.['${day}']?.open`}
+                                        xModel={`building.contactInfo.officeHours?.['${day}']?.open`}
                                         :disabled="!isOpen"
                                     />
                                     <BaseInput
                                         name={'office-close-' + day}
                                         label="Close"
                                         type="time"
-                                        x-model={`building.contactInfo.officeHours?.['${day}']?.close`}
+                                        xModel={`building.contactInfo.officeHours?.['${day}']?.close`}
                                         :disabled="!isOpen"
                                     />
                                 </div>
@@ -982,14 +1052,14 @@ const daysOfWeek = Object.values(DayOfWeek);
                                         name={'tour-open-' + day}
                                         label="Open"
                                         type="time"
-                                        x-model={`building.tourAvailability.tourHours?.['${day}']?.open`}
+                                        xModel={`building.tourAvailability.tourHours?.['${day}']?.open`}
                                         :disabled="!isOpen"
                                     />
                                     <BaseInput
                                         name={'tour-close-' + day}
                                         label="Close"
                                         type="time"
-                                        x-model={`building.tourAvailability.tourHours?.['${day}']?.close`}
+                                        xModel={`building.tourAvailability.tourHours?.['${day}']?.close`}
                                         :disabled="!isOpen"
                                     />
                                 </div>
@@ -1008,8 +1078,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     <PhotoUploader
                         name="photos"
                         xModel="building.photos"
-                        entityType="building"
-                        :entityId="building.buildingID"
+                        buildingId={building.buildingID}
+                        unitId="property-photos"
                     />
                 </div>
             </div>
@@ -1076,3 +1146,126 @@ const daysOfWeek = Object.values(DayOfWeek);
         </form>
     </dialog>
 </div>
+
+<style>
+    /* Floating label styles to match BaseInput/BaseSelect/BaseTextarea patterns */
+    .floating-label {
+        position: relative;
+        display: block;
+    }
+
+    .floating-label span:first-of-type {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.6));
+        pointer-events: none;
+        transition: all 0.2s ease;
+        background-color: var(--fallback-b1, oklch(var(--b1)));
+        padding: 0 0.25rem;
+    }
+
+    .floating-label input:focus ~ span:first-of-type,
+    .floating-label input:not(:placeholder-shown) ~ span:first-of-type {
+        top: -0.5rem;
+        font-size: 0.75rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.8));
+    }
+
+    .floating-label input:focus ~ span:first-of-type {
+        color: var(--fallback-p, oklch(var(--p)));
+    }
+
+    .floating-label input.input-error:focus ~ span:first-of-type {
+        color: var(--fallback-er, oklch(var(--er)));
+    }
+
+    /* Floating label styles for select */
+    .floating-label.select-label {
+        position: relative;
+        display: block;
+    }
+
+    .floating-label.select-label span:first-of-type {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.6));
+        pointer-events: none;
+        transition: all 0.2s ease;
+        background-color: var(--fallback-b1, oklch(var(--b1)));
+        padding: 0 0.25rem;
+        z-index: 1;
+    }
+
+    .floating-label.select-label select:focus ~ span:first-of-type,
+    .floating-label.select-label select:not(:invalid) ~ span:first-of-type,
+    .floating-label.select-label select:not([value=""]) ~ span:first-of-type {
+        top: -0.5rem;
+        font-size: 0.75rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.8));
+    }
+
+    .floating-label.select-label select:focus ~ span:first-of-type {
+        color: var(--fallback-p, oklch(var(--p)));
+    }
+
+    .floating-label.select-label select.select-error:focus ~ span:first-of-type {
+        color: var(--fallback-er, oklch(var(--er)));
+    }
+
+    /* Ensure select has proper padding for floating label */
+    .floating-label.select-label select {
+        padding-top: 1.25rem;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Floating label styles for textarea */
+    .floating-label.textarea-label {
+        position: relative;
+        display: block;
+    }
+
+    .floating-label.textarea-label span:first-of-type {
+        position: absolute;
+        top: 0.75rem;
+        left: 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.6));
+        pointer-events: none;
+        transition: all 0.2s ease;
+        background-color: var(--fallback-b1, oklch(var(--b1)));
+        padding: 0 0.25rem;
+        z-index: 1;
+    }
+
+    .floating-label.textarea-label textarea:focus ~ span:first-of-type,
+    .floating-label.textarea-label textarea:not(:placeholder-shown) ~ span:first-of-type {
+        top: -0.5rem;
+        font-size: 0.75rem;
+        color: var(--fallback-bc, oklch(var(--bc) / 0.8));
+    }
+
+    .floating-label.textarea-label textarea:focus ~ span:first-of-type {
+        color: var(--fallback-p, oklch(var(--p)));
+    }
+
+    .floating-label.textarea-label textarea.textarea-error:focus ~ span:first-of-type {
+        color: var(--fallback-er, oklch(var(--er)));
+    }
+
+    /* Ensure textarea has proper padding for floating label */
+    .floating-label.textarea-label textarea {
+        padding-top: 1.5rem;
+    }
+
+    /* Resize utilities */
+    .resize-vertical {
+        resize: vertical;
+    }
+</style>

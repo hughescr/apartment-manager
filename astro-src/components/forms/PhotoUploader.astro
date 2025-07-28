@@ -50,7 +50,7 @@ const {
 const uploadEndpoint = Resource.UploadAPI.url;
 
 // Normalize existing photos to Photo format
-const normalizedPhotos: Photo[] = existingPhotos.map(photo => 
+const normalizedPhotos: Photo[] = existingPhotos.map((photo: Photo | string) => 
     typeof photo === 'string' 
         ? { url: photo }
         : photo
@@ -61,50 +61,72 @@ const maxFileSizeBytes = maxFileSize * 1024 * 1024;
 // Generate unique ID for this uploader instance
 const uploaderId = `photo-uploader-${Math.random().toString(36).substring(2, 9)}`;
 
-// Create the Alpine.js data string directly  
-const xData = `{
-    photos: ${JSON.stringify(normalizedPhotos)},
+// Create the Alpine.js data string with proper escaping
+const xData = JSON.stringify({
+    photos: normalizedPhotos,
     uploading: false,
     uploadProgress: {},
     errors: [],
     dragOver: false,
+    xModel,
+    disabled,
+    maxFiles,
+    maxFileSize,
+    maxFileSizeBytes,
+    buildingId,
+    unitId,
+    uploadEndpoint,
     
     init() {
         // Sync with parent x-model
-        this.$watch('photos', (value) => {
-            const urls = value.map(p => p.url);
-            ${xModel} = urls;
+        this.$watch('photos', (value: Photo[]) => {
+            const urls = value.map((p: Photo) => p.url);
+            const modelPath = this.xModel.split('.');
+            let target: any = window;
+            for (let i = 0; i < modelPath.length - 1; i++) {
+                target = target[modelPath[i]];
+            }
+            target[modelPath[modelPath.length - 1]] = urls;
         });
         
         // Initialize from existing data if any
-        if (${xModel} && Array.isArray(${xModel})) {
-            this.photos = ${xModel}.map(url => ({ url }));
+        try {
+            const modelPath = this.xModel.split('.');
+            let value: any = window;
+            for (const key of modelPath) {
+                value = value[key];
+            }
+            if (value && Array.isArray(value)) {
+                this.photos = value.map(url => ({ url }));
+            }
+        } catch (e) {
+            // Model doesn't exist yet
         }
     },
     
-    handleFiles(files) {
-        if (this.uploading || ${disabled}) return;
+    handleFiles(files: FileList | File[]) {
+        if (this.uploading || this.disabled) return;
         
         const fileArray = Array.from(files);
         this.errors = [];
         
         // Validate file count
-        if (this.photos.length + fileArray.length > ${maxFiles}) {
-            this.errors.push(\`Maximum ${maxFiles} files allowed\`);
+        if (this.photos.length + fileArray.length > this.maxFiles) {
+            this.errors.push(`Maximum ${this.maxFiles} files allowed`);
             return;
         }
         
         // Validate and process each file
-        fileArray.forEach(file => {
+        fileArray.forEach((file: File) => {
             // Validate file type
             if (!file.type.startsWith('image/')) {
-                this.errors.push(\`\${file.name} is not an image file\`);
+                this.errors.push(`${file.name} is not an image file`);
                 return;
             }
             
             // Validate file size
-            if (file.size > ${maxFileSizeBytes}) {
-                this.errors.push(\`\${file.name} exceeds ${maxFileSize}MB limit\`);
+            if (file.size > this.maxFileSizeBytes) {
+                this.errors.push(`${file.name} exceeds ${this.maxFileSize}MB limit`);
                 return;
             }
             
@@ -112,16 +134,16 @@ const xData = `{
         });
     },
     
-    async uploadFile(file) {
+    async uploadFile(file: File) {
         const tempId = Math.random().toString(36).substring(2, 9);
         this.uploadProgress[tempId] = 0;
         this.uploading = true;
         
         try {
             // Get presigned URL
-            const key = \`buildings/${buildingId}/units/${unitId}/\${Date.now()}-\${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}\`;
+            const key = `buildings/${this.buildingId}/units/${this.unitId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
             
-            const presignedResponse = await fetch(\`${uploadEndpoint}/presigned-url\`, {
+            const presignedResponse = await fetch(`${this.uploadEndpoint}/presigned-url`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key, contentType: file.type })
@@ -162,7 +184,7 @@ const xData = `{
             });
             
             xhr.addEventListener('error', () => {
-                this.errors.push(\`Failed to upload \${file.name}\`);
+                this.errors.push(`Failed to upload ${file.name}`);
                 delete this.uploadProgress[tempId];
                 this.uploading = Object.keys(this.uploadProgress).length > 0;
             });
@@ -172,17 +194,18 @@ const xData = `{
             xhr.send(file);
             
         } catch (error) {
-            this.errors.push(\`Failed to upload \${file.name}: \${error.message}\`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            this.errors.push(`Failed to upload ${file.name}: ${errorMessage}`);
             delete this.uploadProgress[tempId];
             this.uploading = Object.keys(this.uploadProgress).length > 0;
         }
     },
     
-    removePhoto(index) {
+    removePhoto(index: number) {
         this.photos.splice(index, 1);
     },
     
-    formatFileSize(bytes) {
+    formatFileSize(bytes: number) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -190,26 +213,28 @@ const xData = `{
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     },
     
-    handleDragEnter(e) {
+    handleDragEnter(e: DragEvent) {
         e.preventDefault();
         this.dragOver = true;
     },
     
-    handleDragLeave(e) {
+    handleDragLeave(e: DragEvent) {
         e.preventDefault();
         this.dragOver = false;
     },
     
-    handleDragOver(e) {
+    handleDragOver(e: DragEvent) {
         e.preventDefault();
     },
     
-    handleDrop(e) {
+    handleDrop(e: DragEvent) {
         e.preventDefault();
-        this.handleFiles(e.dataTransfer.files);
+        if (e.dataTransfer?.files) {
+            this.handleFiles(e.dataTransfer.files);
+        }
         this.dragOver = false;
     }
-}`;
+});
 ---
 
 <div class={`photo-uploader ${className}`} x-data={xData}>
@@ -227,7 +252,7 @@ const xData = `{
         <!-- File Input / Drop Zone -->
         <div
             class="border-2 border-dashed rounded-lg p-8 text-center transition-colors"
-            :class="{
+            x-bind:class="{
                 'border-primary bg-primary/10': dragOver,
                 'border-base-300 bg-base-200': !dragOver,
                 'opacity-50 cursor-not-allowed': uploading || disabled
@@ -239,18 +264,18 @@ const xData = `{
         >
             <input
                 type="file"
-                :id={uploaderId}
-                :name={name}
-                :accept={accept}
-                :multiple={multiple}
-                :disabled="uploading || disabled"
-                :required={required && normalizedPhotos.length === 0}
+                x-bind:id={`"${uploaderId}"`}
+                x-bind:name={`"${name}"`}
+                x-bind:accept={`"${accept}"`}
+                x-bind:multiple={`${multiple}`}
+                x-bind:disabled="uploading || disabled"
+                x-bind:required={`${required} && photos.length === 0`}
                 class="hidden"
                 x-on:change="handleFiles($event.target.files)"
             />
             
             <label
-                :for={uploaderId}
+                x-bind:for={`"${uploaderId}"`}
                 class="cursor-pointer"
                 x-show="!uploading"
             >

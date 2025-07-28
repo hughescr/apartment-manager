@@ -8,16 +8,6 @@ import _ from 'lodash';
 
 const buildings = await getBuildings();
 const apiURL = Resource.API.url;
-const newBuildingData = JSON.stringify({
-    buildingID: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    description: '',
-    apiURL,
-    saving: false
-});
 ---
 <div x-data="{ 
     activeTab: 0, 

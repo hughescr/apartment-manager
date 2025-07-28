@@ -1,12 +1,10 @@
 ---
-import type { Amenity } from '../../../src/types';
 import { AmenityCategory } from '../../../src/types';
 
 export interface Props {
     name: string;
     label?: string;
     xModel: string;
-    amenities?: Amenity[];
     required?: boolean;
     disabled?: boolean;
     class?: string;
@@ -19,7 +17,6 @@ const {
     name,
     label = 'Amenities',
     xModel,
-    amenities = [],
     required = false,
     disabled = false,
     class: className = '',

@@ -2,7 +2,6 @@
 import type { PetPolicy } from '../../../src/types';
 import { PetType } from '../../../src/types';
 import BaseInput from './BaseInput.astro';
-import BaseSelect from './BaseSelect.astro';
 import BaseTextarea from './BaseTextarea.astro';
 
 export interface Props {
@@ -14,7 +13,6 @@ export interface Props {
     disabled?: boolean;
     class?: string;
     error?: string;
-    helpText?: string;
     showLabel?: boolean;
 }
 
@@ -27,7 +25,6 @@ const {
     disabled = false,
     class: className = '',
     error,
-    helpText,
     showLabel = true,
 } = Astro.props;
 
@@ -52,133 +49,14 @@ const commonBreedRestrictions = [
     'Chow Chow', 'Great Dane', 'Mastiff', 'Husky'
 ];
 
-// Create Alpine.js data for component state
-const alpineData = {
-    modelName: xModel,
-    petTypes: petTypeOptions,
-    commonBreeds: commonBreedRestrictions,
-    showBreedRestrictions: false,
-    newBreedRestriction: '',
-    
-    init() {
-        // Initialize with default structure if not set
-        if (!this[this.modelName]) {
-            this[this.modelName] = {
-                allowed: false,
-                types: [],
-                maxCount: undefined,
-                weightLimit: undefined,
-                breedRestrictions: [],
-                deposit: undefined,
-                monthlyFee: undefined,
-                oneTimeFee: undefined,
-                notes: ''
-            };
-        }
-    },
-    
-    get petsAllowed() {
-        return this[this.modelName]?.allowed || false;
-    },
-    
-    set petsAllowed(value) {
-        if (!this[this.modelName]) {
-            this[this.modelName] = {};
-        }
-        this[this.modelName].allowed = value;
-        
-        // Clear pet-related fields if pets are not allowed
-        if (!value) {
-            this[this.modelName].types = [];
-            this[this.modelName].maxCount = undefined;
-            this[this.modelName].weightLimit = undefined;
-            this[this.modelName].breedRestrictions = [];
-            this[this.modelName].deposit = undefined;
-            this[this.modelName].monthlyFee = undefined;
-            this[this.modelName].oneTimeFee = undefined;
-        }
-    },
-    
-    togglePetType(type) {
-        if (!this[this.modelName]) {
-            this[this.modelName] = { allowed: true };
-        }
-        if (!this[this.modelName].types) {
-            this[this.modelName].types = [];
-        }
-        
-        const index = this[this.modelName].types.indexOf(type);
-        if (index >= 0) {
-            this[this.modelName].types.splice(index, 1);
-        } else {
-            this[this.modelName].types.push(type);
-        }
-    },
-    
-    isPetTypeSelected(type) {
-        return this[this.modelName]?.types?.includes(type) || false;
-    },
-    
-    addBreedRestriction(breed) {
-        if (!this[this.modelName]) {
-            this[this.modelName] = { allowed: true };
-        }
-        if (!this[this.modelName].breedRestrictions) {
-            this[this.modelName].breedRestrictions = [];
-        }
-        
-        const trimmedBreed = breed.trim();
-        if (trimmedBreed && !this[this.modelName].breedRestrictions.includes(trimmedBreed)) {
-            this[this.modelName].breedRestrictions.push(trimmedBreed);
-        }
-        this.newBreedRestriction = '';
-    },
-    
-    removeBreedRestriction(index) {
-        if (this[this.modelName]?.breedRestrictions) {
-            this[this.modelName].breedRestrictions.splice(index, 1);
-        }
-    },
-    
-    toggleCommonBreed(breed) {
-        if (!this[this.modelName]) {
-            this[this.modelName] = { allowed: true };
-        }
-        if (!this[this.modelName].breedRestrictions) {
-            this[this.modelName].breedRestrictions = [];
-        }
-        
-        const index = this[this.modelName].breedRestrictions.indexOf(breed);
-        if (index >= 0) {
-            this[this.modelName].breedRestrictions.splice(index, 1);
-        } else {
-            this[this.modelName].breedRestrictions.push(breed);
-        }
-    },
-    
-    isBreedRestricted(breed) {
-        return this[this.modelName]?.breedRestrictions?.includes(breed) || false;
-    },
-    
-    get totalPetCost() {
-        const deposit = this[this.modelName]?.deposit || 0;
-        const oneTime = this[this.modelName]?.oneTimeFee || 0;
-        const monthly = this[this.modelName]?.monthlyFee || 0;
-        return {
-            upfront: deposit + oneTime,
-            monthly: monthly,
-            annual: monthly * 12
-        };
-    }
-};
-
-// We'll inject this directly as JavaScript code
-const xData = `{
+// We'll inject this directly as JavaScript code to avoid TypeScript issues with dynamic properties
+const xDataString = `{
     modelName: '${xModel}',
     petTypes: ${JSON.stringify(petTypeOptions)},
     commonBreeds: ${JSON.stringify(commonBreedRestrictions)},
     showBreedRestrictions: false,
     newBreedRestriction: '',
+    ${xModel}: ${JSON.stringify(petPolicy || null)},
     
     init() {
         // Initialize with default structure if not set
@@ -293,7 +171,7 @@ const xData = `{
 }`;
 ---
 
-<div class={containerClasses} x-data={xData} x-init="init()">
+<div class={containerClasses} x-data={xDataString} x-init="init()">
     {showLabel && (
         <div class="label">
             <span class="label-text text-lg font-semibold">
@@ -507,7 +385,7 @@ const xData = `{
             name={name + '_notes'}
             label="Additional Pet Policy Notes"
             xModel={xModel + '.notes'}
-            rows="3"
+            rows={3}
             placeholder="Any additional pet policy information..."
             disabled={disabled}
         />

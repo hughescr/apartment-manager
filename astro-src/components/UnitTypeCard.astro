@@ -3,7 +3,7 @@
 import Saving from "./Saving.astro";
 import { Resource } from "sst";
 import type { UnitTypeData } from "../../src/types";
-import { BaseInput, BaseTextarea, AmenitySelector } from "./forms";
+import { AmenitySelector } from "./forms";
 
 const { unitType } = Astro.props as { unitType: UnitTypeData };
 
@@ -20,7 +20,7 @@ const xData = {
         return JSON.stringify(this.unitType) !== JSON.stringify(this.originalUnitType);
     },
 
-    async saveUnitType(myThis) {
+    async saveUnitType(myThis?: any) {
         myThis = this || myThis; // Allow passing 'this' context
         if (!myThis.isDirty()) { return; }
 
@@ -62,7 +62,7 @@ const xData = {
         }
     },
 
-    formatCurrency(value) {
+    formatCurrency(value: number | null | undefined) {
         if (!value) return '';
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -72,7 +72,7 @@ const xData = {
         }).format(value);
     },
 
-    formatDate(dateString) {
+    formatDate(dateString: string | null | undefined) {
         if (!dateString) return 'Not set';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { 

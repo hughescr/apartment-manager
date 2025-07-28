@@ -23,6 +23,41 @@ import '../styles/global.css';
             <h1 class="text-3xl font-bold mb-6">Apartment Manager</h1>
             <slot />
         </main>
+        
+        <!-- Global Toast Container -->
+        <div 
+            x-data="{
+                showToast: false,
+                toastMessage: '',
+                toastType: 'success',
+                showAndHideToast(message, type) {
+                    this.toastMessage = message;
+                    this.toastType = type;
+                    this.showToast = true;
+                    setTimeout(() => {
+                        this.showToast = false;
+                    }, 3000);
+                }
+            }"
+            @show-toast.window="showAndHideToast($event.detail.message, $event.detail.type)"
+            class="toast toast-center toast-middle" 
+            x-show="showToast" 
+            x-transition.opacity
+        >
+            <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
+                <span x-text="toastMessage"></span>
+            </div>
+        </div>
+        
         <Footer />
+        
+        <!-- Global showToast function -->
+        <script>
+            window.showToast = function(message, type) {
+                window.dispatchEvent(new CustomEvent('show-toast', {
+                    detail: { message, type }
+                }));
+            };
+        </script>
     </body>
 </html>

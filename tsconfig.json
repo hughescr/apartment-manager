@@ -23,8 +23,11 @@
             "aws-lambda"
         ]
     },
-    "types": [
-        "sst-env.d.ts", ".astro/types.d.ts"
+    "include": [
+        "astro-src/**/*",
+        "astro-src/global.d.ts",
+        "sst-env.d.ts",
+        ".astro/types.d.ts"
     ],
     "exclude": [
         "node_modules",

@@ -1,5 +1,4 @@
 ---
-import type { ScreeningCriteria } from '../../../src/types';
 import BaseInput from './BaseInput.astro';
 import BaseTextarea from './BaseTextarea.astro';
 
@@ -7,7 +6,6 @@ export interface Props {
     name: string;
     label?: string;
     xModel: string;
-    screeningCriteria?: ScreeningCriteria;
     required?: boolean;
     disabled?: boolean;
     class?: string;
@@ -20,7 +18,6 @@ const {
     name,
     label = 'Screening Criteria',
     xModel,
-    screeningCriteria,
     required = false,
     disabled = false,
     class: className = '',

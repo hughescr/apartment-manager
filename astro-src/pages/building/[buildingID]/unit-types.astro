@@ -13,9 +13,9 @@ if (!buildingID) {
     return Astro.redirect("/404");
 }
 
-let building;
-let unitTypes;
-let error = null;
+let building: Awaited<ReturnType<typeof getBuilding>> | undefined;
+let unitTypes: Awaited<ReturnType<typeof getUnitTypes>> = [];
+let error: string | null = null;
 
 try {
     building = await getBuilding(buildingID);
@@ -26,6 +26,11 @@ try {
 } catch (e) {
     error = "Failed to load unit types";
     unitTypes = [];
+}
+
+// TypeScript now knows building is defined if we reach this point
+if (!building) {
+    return Astro.redirect("/404");
 }
 ---
 

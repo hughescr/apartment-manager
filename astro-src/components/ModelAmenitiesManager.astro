@@ -24,8 +24,8 @@ const xData = {
     selectedModel: '',
     saving: false,
     bulkEditMode: false,
-    selectedModels: [],
-    bulkAmenities: [],
+    selectedModels: [] as string[],
+    bulkAmenities: [] as Amenity[],
     
     get currentModelAmenities() {
         if (!this.selectedModel || !this.unitTypes[this.selectedModel]) {
@@ -48,7 +48,7 @@ const xData = {
         }));
     },
     
-    async saveModelAmenities(modelID) {
+    async saveModelAmenities(modelID: string) {
         const unitType = this.unitTypes[modelID];
         if (!unitType) return;
         
@@ -129,7 +129,7 @@ const xData = {
         }
     },
     
-    copyAmenities(fromModelID) {
+    copyAmenities(fromModelID: string) {
         const fromAmenities = this.unitTypes[fromModelID]?.modelAmenities || [];
         if (this.selectedModel && this.selectedModel !== fromModelID) {
             this.currentModelAmenities = [...fromAmenities];
@@ -137,11 +137,11 @@ const xData = {
         }
     },
     
-    getAmenityCount(modelID) {
+    getAmenityCount(modelID: string) {
         return this.unitTypes[modelID]?.modelAmenities?.length || 0;
     },
     
-    getAmenitySummary(modelID) {
+    getAmenitySummary(modelID: string) {
         const amenities = this.unitTypes[modelID]?.modelAmenities || [];
         if (amenities.length === 0) return 'No amenities';
         if (amenities.length <= 3) {
@@ -199,12 +199,13 @@ const xData = {
                         <span>These amenities will be the default for all units of this type.</span>
                     </div>
 
-                    <AmenitySelector
-                        name="modelAmenities"
-                        label="Model Amenities"
-                        xModel="currentModelAmenities"
-                        x-effect="$watch('currentModelAmenities', () => saveModelAmenities(selectedModel))"
-                    />
+                    <div x-effect="$watch('currentModelAmenities', () => saveModelAmenities(selectedModel))">
+                        <AmenitySelector
+                            name="modelAmenities"
+                            label="Model Amenities"
+                            xModel="currentModelAmenities"
+                        />
+                    </div>
 
                     <!-- Copy from Another Model -->
                     <div x-show="availableModels.length > 1" class="card bg-base-200">

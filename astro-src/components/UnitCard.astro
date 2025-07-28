@@ -2,8 +2,8 @@
 // astro-src/components/UnitCard.astro
 import Saving from "./Saving.astro";
 import { Resource } from "sst";
-import type { UnitData, UnitTypeData, Amenity, RentSpecial, WebsiteStatus } from "../../src/types";
-import { AmenitySelector, PhotoUploader, BaseInput, BaseTextarea, BaseSelect } from "./forms";
+import type { UnitData, UnitTypeData } from "../../src/types";
+import { AmenitySelector, PhotoUploader } from "./forms";
 
 const { unit, unitTypes = [] } = Astro.props as { unit: UnitData; unitTypes: UnitTypeData[] };
 
@@ -13,10 +13,10 @@ const xData = {
     unit: unit,
     originalUnit: JSON.parse(JSON.stringify(unit)), // Deep copy for original state
     unitTypes: unitTypes,
-    selectedUnitType: null,
+    selectedUnitType: null as UnitTypeData | null,
     apiURL: apiURL,
     saving: false, // Stores the name of the field being saved
-    errors: {},
+    errors: {} as Record<string, string> & { submit?: string },
     expandedSections: {
         details: false,
         amenities: false,
@@ -41,7 +41,7 @@ const xData = {
         return JSON.stringify(this.unit) !== JSON.stringify(this.originalUnit);
     },
     
-    isInherited(fieldName) {
+    isInherited(fieldName: keyof UnitData) {
         if (!this.selectedUnitType) return false;
         
         // Check if the field value is null/undefined/empty in the unit
@@ -61,17 +61,17 @@ const xData = {
             'maxLeaseTerm': 'maxLeaseTerm'
         };
         
-        const modelField = modelFieldMap[fieldName];
+        const modelField = modelFieldMap[fieldName as keyof typeof modelFieldMap];
         if (!modelField) return false;
         
         if (Array.isArray(modelField)) {
-            return isEmptyValue && modelField.some(f => this.selectedUnitType[f] !== null && this.selectedUnitType[f] !== undefined);
+            return isEmptyValue && modelField.some(f => this.selectedUnitType![f as keyof UnitTypeData] !== null && this.selectedUnitType![f as keyof UnitTypeData] !== undefined);
         }
         
-        return isEmptyValue && this.selectedUnitType[modelField] !== null && this.selectedUnitType[modelField] !== undefined;
+        return isEmptyValue && this.selectedUnitType[modelField as keyof UnitTypeData] !== null && this.selectedUnitType[modelField as keyof UnitTypeData] !== undefined;
     },
     
-    getInheritedValue(fieldName) {
+    getInheritedValue(fieldName: keyof UnitData) {
         if (!this.selectedUnitType) return null;
         
         const modelFieldMap = {
@@ -86,21 +86,21 @@ const xData = {
             'maxLeaseTerm': 'maxLeaseTerm'
         };
         
-        const modelField = modelFieldMap[fieldName];
+        const modelField = modelFieldMap[fieldName as keyof typeof modelFieldMap];
         if (!modelField) return null;
         
         if (Array.isArray(modelField)) {
-            const [min, max] = modelField.map(f => this.selectedUnitType[f]);
+            const [min, max] = modelField.map(f => this.selectedUnitType![f as keyof UnitTypeData]);
             if (min !== null && max !== null) return `${min}-${max}`;
             if (min !== null) return `${min}+`;
             if (max !== null) return `Up to ${max}`;
             return null;
         }
         
-        return this.selectedUnitType[modelField];
+        return this.selectedUnitType[modelField as keyof UnitTypeData];
     },
     
-    getEffectiveValue(fieldName) {
+    getEffectiveValue(fieldName: keyof UnitData) {
         const unitValue = this.unit[fieldName];
         if (unitValue !== null && unitValue !== undefined && unitValue !== '') {
             return unitValue;
@@ -114,14 +114,14 @@ const xData = {
             return this.unit.unitAmenities;
         }
         // Otherwise, use model amenities if available
-        if (this.selectedUnitType && this.selectedUnitType.modelAmenities) {
+        if (this.selectedUnitType && 'modelAmenities' in this.selectedUnitType && this.selectedUnitType.modelAmenities) {
             return this.selectedUnitType.modelAmenities;
         }
         return [];
     },
     
     onModelChange() {
-        this.unit.modelID = this.selectedUnitType ? this.selectedUnitType.modelID : null;
+        this.unit.modelID = this.selectedUnitType ? this.selectedUnitType.modelID : undefined;
         // Trigger save when model changes
         this.saveUnit(this);
     },
@@ -135,21 +135,21 @@ const xData = {
         }
         
         // Validate beds (0-10)
-        if (this.unit.beds !== null && this.unit.beds !== undefined && this.unit.beds !== '') {
+        if (this.unit.beds !== null && this.unit.beds !== undefined) {
             if (this.unit.beds < 0 || this.unit.beds > 10) {
                 this.errors.beds = 'Beds must be between 0 and 10';
             }
         }
         
         // Validate baths (0-10)
-        if (this.unit.baths !== null && this.unit.baths !== undefined && this.unit.baths !== '') {
+        if (this.unit.baths !== null && this.unit.baths !== undefined) {
             if (this.unit.baths < 0 || this.unit.baths > 10) {
                 this.errors.baths = 'Baths must be between 0 and 10';
             }
         }
         
         // Validate sqft (> 0)
-        if (this.unit.sqft !== null && this.unit.sqft !== undefined && this.unit.sqft !== '') {
+        if (this.unit.sqft !== null && this.unit.sqft !== undefined) {
             if (this.unit.sqft <= 0) {
                 this.errors.sqft = 'Square footage must be greater than 0';
             }
@@ -159,7 +159,7 @@ const xData = {
         }
         
         // Validate rent (> 0)
-        if (this.unit.rent !== null && this.unit.rent !== undefined && this.unit.rent !== '') {
+        if (this.unit.rent !== null && this.unit.rent !== undefined) {
             if (this.unit.rent <= 0) {
                 this.errors.rent = 'Rent must be greater than 0';
             }
@@ -169,34 +169,34 @@ const xData = {
         }
         
         // Validate maxOccupants (1-20)
-        if (this.unit.maxOccupants !== null && this.unit.maxOccupants !== undefined && this.unit.maxOccupants !== '') {
+        if (this.unit.maxOccupants !== null && this.unit.maxOccupants !== undefined) {
             if (this.unit.maxOccupants < 1 || this.unit.maxOccupants > 20) {
                 this.errors.maxOccupants = 'Max occupants must be between 1 and 20';
             }
         }
         
         // Validate perPersonRent (>= 0)
-        if (this.unit.perPersonRent !== null && this.unit.perPersonRent !== undefined && this.unit.perPersonRent !== '') {
+        if (this.unit.perPersonRent !== null && this.unit.perPersonRent !== undefined) {
             if (this.unit.perPersonRent < 0) {
                 this.errors.perPersonRent = 'Per person rent must be 0 or greater';
             }
         }
         
         // Validate deposit (>= 0)
-        if (this.unit.deposit !== null && this.unit.deposit !== undefined && this.unit.deposit !== '') {
+        if (this.unit.deposit !== null && this.unit.deposit !== undefined) {
             if (this.unit.deposit < 0) {
                 this.errors.deposit = 'Deposit must be 0 or greater';
             }
         }
         
         // Validate lease terms
-        if (this.unit.minLeaseTerm !== null && this.unit.minLeaseTerm !== undefined && this.unit.minLeaseTerm !== '') {
+        if (this.unit.minLeaseTerm !== null && this.unit.minLeaseTerm !== undefined) {
             if (this.unit.minLeaseTerm < 1 || this.unit.minLeaseTerm > 24) {
                 this.errors.minLeaseTerm = 'Min lease term must be between 1 and 24 months';
             }
         }
         
-        if (this.unit.maxLeaseTerm !== null && this.unit.maxLeaseTerm !== undefined && this.unit.maxLeaseTerm !== '') {
+        if (this.unit.maxLeaseTerm !== null && this.unit.maxLeaseTerm !== undefined) {
             if (this.unit.maxLeaseTerm < 1 || this.unit.maxLeaseTerm > 24) {
                 this.errors.maxLeaseTerm = 'Max lease term must be between 1 and 24 months';
             }
@@ -239,11 +239,11 @@ const xData = {
         return Object.keys(this.errors).length === 0;
     },
 
-    clearFieldError(fieldName) {
+    clearFieldError(fieldName: string) {
         delete this.errors[fieldName];
     },
 
-    async saveUnit(myThis) {
+    async saveUnit(myThis?: any) {
         myThis = this || myThis; // Allow passing 'this' context
         if (!myThis.isDirty()) { return; }
 
@@ -294,7 +294,7 @@ const xData = {
         }
     },
     
-    formatCurrency(value) {
+    formatCurrency(value: number | null | undefined) {
         if (!value) return '';
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -304,7 +304,7 @@ const xData = {
         }).format(value);
     },
     
-    toggleSection(section) {
+    toggleSection(section: keyof typeof this.expandedSections) {
         this.expandedSections[section] = !this.expandedSections[section];
     }
 };
@@ -719,8 +719,8 @@ if (!unit.listingIds) unit.listingIds = {};
                         name="photos"
                         label="Unit photos"
                         xModel="unit.photos"
-                        entityType="unit"
-                        entityId={unit.unitID}
+                        buildingId={unit.buildingID}
+                        unitId={unit.unitID}
                     />
                 </div>
             </div>

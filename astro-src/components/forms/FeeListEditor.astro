@@ -1,12 +1,10 @@
 ---
-import type { Fee } from '../../../src/types';
 import { FeeType } from '../../../src/types';
 
 export interface Props {
     name: string;
     label?: string;
     xModel: string;
-    fees?: Fee[];
     required?: boolean;
     disabled?: boolean;
     class?: string;
@@ -20,7 +18,6 @@ const {
     name,
     label = 'Fees',
     xModel,
-    fees = [],
     required = false,
     disabled = false,
     class: className = '',
