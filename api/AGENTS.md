@@ -84,4 +84,6 @@ if (!body.name || !body.address) {
 - Test all HTTP methods and status codes
 - Test validation logic thoroughly
 - Test error scenarios
+- Tests are completely isolated - no SST server or AWS credentials needed
+- Run tests with `bun test`
 - See tests/api/*.test.ts for examples

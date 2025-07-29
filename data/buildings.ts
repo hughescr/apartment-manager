@@ -17,7 +17,7 @@ export async function getBuildings() {
         .options({ consistent: true })
         .send();
 
-    const buildings = _.map(scanResult.Items, item => _.omit(item, 'unitID')) as BuildingData[];
+    const buildings = _.map(scanResult.Items, item => _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md'])) as BuildingData[];
     return buildings;
 }
 
@@ -25,7 +25,7 @@ export async function getBuilding(buildingID: string) {
     const { Item } = await Building.build(GetItemCommand)
         .key({ buildingID, unitID: 'BUILDING' })
         .send();
-    return Item === undefined ? undefined : _.omit(Item, 'unitID') as BuildingData;
+    return Item === undefined ? undefined : _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
 }
 
 export async function createBuilding(building: BuildingData) {
@@ -38,7 +38,7 @@ export async function createBuilding(building: BuildingData) {
             returnValuesOnConditionFalse: 'ALL_OLD',
         })
         .send();
-    return (_.omit(Attributes, 'unitID') as BuildingData) || building;
+    return (_.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData) || building;
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
@@ -46,7 +46,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
         .item({ ...updates, buildingID, unitID: 'BUILDING' })
         .options({ returnValues: 'ALL_NEW' })
         .send();
-    return _.omit(Attributes, 'unitID') as BuildingData;
+    return _.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
 }
 
 export async function deleteBuilding(buildingID: string): Promise<boolean> {

@@ -20,8 +20,7 @@ export async function getUnitTypes(buildingID: string) {
         .options({ consistent: true })
         .send();
     return _.map(Items, (item) => {
-        const { unitID: _unitID, ...rest } = item;
-        return rest;
+        return _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']);
     }) as UnitTypeData[];
 }
 
@@ -32,8 +31,7 @@ export async function getUnitType(buildingID: string, modelID: string) {
     if(!Item) {
         return undefined;
     }
-    const { unitID: _unitID, ...rest } = Item;
-    return rest as UnitTypeData;
+    return _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
 }
 
 export async function createUnitType(unitType: UnitTypeData) {
@@ -52,8 +50,7 @@ export async function createUnitType(unitType: UnitTypeData) {
     if(!Attributes) {
         return unitType;
     }
-    const { unitID: _unitID, ...rest } = Attributes as unknown as Record<string, unknown>;
-    return rest as unknown as UnitTypeData;
+    return _.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
 }
 
 export async function updateUnitType(buildingID: string, modelID: string, updates: Partial<UnitTypeData>) {
@@ -61,8 +58,7 @@ export async function updateUnitType(buildingID: string, modelID: string, update
         .item({ ...updates, buildingID, modelID, unitID: `MODEL#${modelID}` })
         .options({ returnValues: 'ALL_NEW' })
         .send();
-    const { unitID: _unitID, ...rest } = Attributes as unknown as Record<string, unknown>;
-    return rest as unknown as UnitTypeData;
+    return _.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
 }
 
 export async function deleteUnitType(buildingID: string, modelID: string): Promise<boolean> {
@@ -82,5 +78,10 @@ export async function getUnitsByModelID(buildingID: string, modelID: string) {
         .entities(Unit)
         .query({ partition: buildingID })
         .send();
-    return _.filter(Items, ['modelID', modelID]) as UnitData[];
+    const filteredItems = _.filter(Items, ['modelID', modelID]);
+    // Remove the UNIT# prefix from unitID and omit metadata fields
+    return _.map(filteredItems, item => ({
+        ..._.omit(item, ['created', 'modified', '_et', '_ct', '_md']),
+        unitID: _.replace(item.unitID || '', /^UNIT#/, '') || item.unitID
+    })) as UnitData[];
 }

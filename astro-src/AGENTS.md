@@ -95,4 +95,6 @@ const buildings = await getBuildings();
 - Test Alpine.js interactions work
 - Test form submissions
 - Mock data layer calls
+- Tests are completely isolated - no SST server or AWS credentials needed
+- Run tests with `bun test`
 - See tests/astro/ for patterns (when created)

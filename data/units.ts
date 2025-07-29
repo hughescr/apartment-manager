@@ -24,7 +24,7 @@ export async function getUnits(buildingID: string) {
     .send();
     // Remove the UNIT# prefix from unitID when returning
     return _.map(Items, item => ({
-        ...item,
+        ..._.omit(item, ['created', 'modified', '_et', '_ct', '_md']),
         unitID: _.replace(item.unitID || '', /^UNIT#/, '') || item.unitID
     })) as UnitData[];
 }
@@ -38,7 +38,7 @@ export async function getUnit(buildingID: string, unitID: string) {
     }
     // Remove the UNIT# prefix from unitID when returning
     return {
-        ...Item,
+        ..._.omit(Item, ['created', 'modified', '_et', '_ct', '_md']),
         unitID: _.replace(Item.unitID || '', /^UNIT#/, '') || Item.unitID
     } as UnitData;
 }
@@ -82,7 +82,7 @@ export async function createUnit(unit: UnitData) {
     // Remove the UNIT# prefix from unitID when returning
     const result = Attributes as UnitData & { unitID: string };
     return {
-        ...result,
+        ..._.omit(result, ['created', 'modified', '_et', '_ct', '_md']),
         unitID: _.replace(result.unitID || '', /^UNIT#/, '') || result.unitID
     } as UnitData;
 }
@@ -118,7 +118,7 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
     }
     // Remove the UNIT# prefix from unitID when returning
     return {
-        ...Attributes,
+        ..._.omit(Attributes, ['created', 'modified', '_et', '_ct', '_md']),
         unitID: _.replace(Attributes.unitID || '', /^UNIT#/, '') || Attributes.unitID
     } as UnitData;
 }

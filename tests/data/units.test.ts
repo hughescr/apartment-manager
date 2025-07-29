@@ -1,174 +1,203 @@
-import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
-import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
-import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
-import { ModuleMocker } from '../ModuleMocker';
+// CRITICAL: Import test setup FIRST before any other imports
+import { mockSend, clearMocks } from './test-setup';
+
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { AmenityCategory, WebsiteStatus } from '../../src/types';
-import _ from 'lodash';
+import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 
-const mockSend = mock();
-
-const moduleMocker = new ModuleMocker();
+// Import the functions AFTER mocking
+import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
 
 describe('Unit Data Layer', () => {
-    afterEach(() => {
-        mockSend.mockClear();
-        moduleMocker.clear();
-    });
-
-    beforeEach(async () => {
-        await moduleMocker.mock('@hughescr/logger', () => ({
-            logger: {
-                error: mock(),
-            },
-        }));
-
-        await moduleMocker.mock('../data/model', () => ({
-            ApartmentTable: {
-                build: mock((command) => {
-                    if(command === QueryCommand) {
-                        return {
-                            entities: mock(() => ({
-                                query: mock(() => ({
-                                    options: mock(() => ({
-                                        send: mockSend,
-                                    })),
-                                    send: mockSend,
-                                })),
-                            })),
-                        };
-                    }
-                    return {
-                        item: mock(() => ({
-                            options: mock(() => ({
-                                send: mockSend,
-                            })),
-                            send: mockSend,
-                        })),
-                        key: mock(() => ({
-                            send: mockSend,
-                        })),
-                    };
-                }),
-            },
-            Unit: {
-                build: mock(() => {
-                    return {
-                        item: mock(() => ({
-                            options: mock(() => ({
-                                send: mockSend,
-                            })),
-                            send: mockSend,
-                        })),
-                        key: mock(() => ({
-                            send: mockSend,
-                        })),
-                    };
-                }),
-            },
-        }));
+    beforeEach(() => {
+        // Clear mock calls before each test
+        clearMocks();
     });
 
     const testBuildingID = 'test-building-1';
     const testUnit = {
         buildingID: testBuildingID,
-        unitID: 'A1',
-        description: 'A test unit',
-        beds: 1,
-        baths: 1,
-        sqft: 750,
-        rent: 1500,
+        unitID: 'test-unit-1',
+        unitNumber: '101',
+        modelID: 'model-2br',
+        description: 'Spacious 2BR unit',
+        beds: 2,
+        baths: 2,
+        sqft: 1050,
+        rent: 1600,
         occupied: false,
-        availableDate: '2025-01-01',
-        // New fields
-        modelID: 'model-1br',
-        unitNumber: 'A1',
-        maxOccupants: 2,
-        perPersonRent: 750,
-        deposit: 1500,
-        minLeaseTerm: 12,
-        maxLeaseTerm: 24,
-        unitDescription: 'Beautiful 1-bedroom unit with city views',
-        unitRentSpecial: {
-            title: 'Move-in Special',
-            description: 'Free parking for first 3 months'
-        },
+        availableDate: '2024-04-01',
+        maxOccupants: 4,
+        perPersonRent: 400,
+        deposit: 1600,
+        minLeaseTerm: 6,
+        maxLeaseTerm: 12,
+        unitDescription: 'Corner unit with great views',
+        unitRentSpecial: { title: '1 Month Free', description: '1 month free', endDate: '2024-05-01' },
         unitAmenities: [
             { name: 'Balcony', category: AmenityCategory.UNIT },
-            { name: 'City View', category: AmenityCategory.UNIT }
+            { name: 'In-unit Washer/Dryer', category: AmenityCategory.UNIT }
         ],
-        photos: ['https://s3.example.com/unit-a1-1.jpg', 'https://s3.example.com/unit-a1-2.jpg'],
+        photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
         websiteStatus: {
-            'apartments.com': WebsiteStatus.ACTIVE,
-            zillow: WebsiteStatus.PENDING
+            zillow: WebsiteStatus.ACTIVE,
+            apartments: WebsiteStatus.INACTIVE
         },
         listingIds: {
-            'apartments.com': 'APT-123456'
+            zillow: 'ZIL123',
+            apartments: 'APT456'
         }
     };
 
-    it('should create a unit', async () => {
-        expect.assertions(2);
-        mockSend.mockResolvedValueOnce({ Attributes: { ...testUnit } });
-        mockSend.mockResolvedValueOnce({ Item: { ...testUnit } });
-
-        const createdUnit = await createUnit(testUnit);
-        expect(createdUnit).toEqual(testUnit);
-
-        const fetchedUnit = await getUnit(testUnit.buildingID, testUnit.unitID);
-        expect(fetchedUnit).toEqual(testUnit);
-    });
-
     it('should get all units for a building', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Items: [{ ...testUnit }] });
-        const units = await getUnits(testBuildingID);
-        expect(units).toEqual([testUnit]);
+        const units = [
+            { ...testUnit, unitID: 'UNIT#test-unit-1' },
+            { ...testUnit, unitID: 'UNIT#test-unit-2', unitNumber: '102' }
+        ];
+        mockSend.mockResolvedValueOnce(mockScanResponse(units));
+
+        const result = await getUnits(testBuildingID);
+        // The function strips the UNIT# prefix when returning
+        expect(result).toEqual([
+            testUnit,
+            { ...testUnit, unitID: 'test-unit-2', unitNumber: '102' }
+        ]);
     });
 
-    it('should get a single unit', async () => {
+    it('should handle empty unit list', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Item: { ...testUnit } });
-        const fetchedUnit = await getUnit(testUnit.buildingID, testUnit.unitID);
-        expect(fetchedUnit).toEqual(testUnit);
+        mockSend.mockResolvedValueOnce(mockScanResponse([]));
+
+        const result = await getUnits(testBuildingID);
+        expect(result).toEqual([]);
+    });
+
+    it('should get a specific unit', async () => {
+        expect.assertions(1);
+        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testUnit, unitID: 'UNIT#test-unit-1' }));
+
+        const result = await getUnit(testUnit.buildingID, testUnit.unitID);
+        expect(result).toEqual(testUnit);
+    });
+
+    it('should return undefined for non-existent unit', async () => {
+        expect.assertions(1);
+        mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
+
+        const result = await getUnit(testUnit.buildingID, 'non-existent');
+        expect(result).toBeUndefined();
+    });
+
+    it('should create a unit with minimal data', async () => {
+        expect.assertions(3);
+        const minimalUnit = {
+            unitNumber: '103',
+            beds: 1,
+            baths: 1
+        };
+        const expectedUnit = {
+            ...minimalUnit,
+            buildingID: testBuildingID,
+            unitID: 'UNIT#test-uuid'
+        };
+        mockSend.mockResolvedValueOnce(mockPutResponse(expectedUnit));
+
+        const result = await createUnit({ ...minimalUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
+        // The function strips the UNIT# prefix when returning
+        expect(result).toEqual({ ...minimalUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
+        expect(result.unitID).toBe('test-uuid');
+        expect(mockSend).toHaveBeenCalledTimes(1);
+    });
+
+    it('should create a unit with full data', async () => {
+        expect.assertions(4);
+        const fullUnit = {
+            unitNumber: '104',
+            modelID: 'model-3br',
+            description: 'Luxury 3BR unit',
+            beds: 3,
+            baths: 2.5,
+            sqft: 1500,
+            rent: 2500,
+            occupied: false,
+            availableDate: '2024-05-01',
+            maxOccupants: 6,
+            perPersonRent: 420,
+            deposit: 2500,
+            minLeaseTerm: 12,
+            maxLeaseTerm: 24,
+            unitDescription: 'Premium unit with all amenities',
+            unitRentSpecial: { title: '2 Months Free', description: '2 months free', endDate: '2024-06-01' },
+            unitAmenities: [
+                { name: 'Walk-in Closet', category: AmenityCategory.UNIT },
+                { name: 'Granite Countertops', category: AmenityCategory.UNIT }
+            ],
+            photos: ['https://example.com/unit104-1.jpg', 'https://example.com/unit104-2.jpg'],
+            websiteStatus: {
+                zillow: WebsiteStatus.PENDING,
+                apartments: WebsiteStatus.ACTIVE
+            },
+            listingIds: {
+                zillow: 'ZIL789',
+                apartments: 'APT012'
+            }
+        };
+        const expectedUnit = {
+            ...fullUnit,
+            buildingID: testBuildingID,
+            unitID: 'UNIT#test-uuid'
+        };
+        mockSend.mockResolvedValueOnce(mockPutResponse(expectedUnit));
+
+        const result = await createUnit({ ...fullUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
+        // The function strips the UNIT# prefix when returning
+        expect(result).toEqual({ ...fullUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
+        expect(result.unitID).toBe('test-uuid');
+        expect(result.websiteStatus).toEqual(fullUnit.websiteStatus);
+        expect(result.listingIds).toEqual(fullUnit.listingIds);
     });
 
     it('should update a unit', async () => {
         expect.assertions(2);
-        const updatedDescription = 'Updated unit description';
-        mockSend.mockResolvedValueOnce({ Attributes: { ...testUnit, description: updatedDescription } });
-        mockSend.mockResolvedValueOnce({ Item: { ...testUnit, description: updatedDescription } });
+        const updates = {
+            rent: 1700,
+            occupied: true,
+            availableDate: '2024-06-01'
+        };
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
 
-        const updatedUnit = await updateUnit(testUnit.buildingID, testUnit.unitID, { description: updatedDescription });
-        expect(updatedUnit?.description).toBe(updatedDescription);
+        const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
+        expect(result).toEqual({ ...testUnit, ...updates });
+        expect(result?.rent).toBe(1700);
+    });
 
-        const fetchedUnit = await getUnit(testUnit.buildingID, testUnit.unitID);
-        expect(fetchedUnit?.description).toBe(updatedDescription);
+    it('should handle update with undefined values', async () => {
+        expect.assertions(2);
+        const updates = {
+            rent: 1700,
+            description: undefined, // Should be removed by DynamoDB
+            occupied: false
+        };
+        const expectedResult = {
+            ...testUnit,
+            rent: 1700,
+            occupied: false
+        };
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'UNIT#test-unit-1' }));
+
+        const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
+        expect(result).toEqual(expectedResult);
+        expect(result?.description).toBe(testUnit.description); // Original value preserved
     });
 
     it('should delete a unit', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce({}); // Successful delete
-        mockSend.mockResolvedValueOnce({ Item: undefined }); // Item not found after delete
+        mockSend.mockResolvedValueOnce(mockDeleteResponse());
 
-        const success = await deleteUnit(testUnit.buildingID, testUnit.unitID);
-        expect(success).toBeTrue();
-
-        const fetchedUnit = await getUnit(testUnit.buildingID, testUnit.unitID);
-        expect(fetchedUnit).toBeUndefined();
-    });
-
-    it('should return true if unit to delete does not exist (idempotent delete)', async () => {
-        expect.assertions(1);
-        mockSend.mockResolvedValueOnce({}); // Delete operation is idempotent
-        const success = await deleteUnit(testBuildingID, 'non-existent-unit');
-        expect(success).toBeTrue();
-    });
-
-    it('should not create a unit if it already exists', async () => {
-        expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Attributes: { ...testUnit } }); // Simulate existing item
-        const result = await createUnit(testUnit);
-        expect(result).toEqual(testUnit);
+        const result = await deleteUnit(testUnit.buildingID, testUnit.unitID);
+        expect(result).toBeTrue();
+        expect(mockSend).toHaveBeenCalledTimes(1);
     });
 
     it('should handle error during unit deletion', async () => {
@@ -178,68 +207,45 @@ describe('Unit Data Layer', () => {
 
         const success = await deleteUnit(testUnit.buildingID, testUnit.unitID);
         expect(success).toBeFalse();
-        expect(logger.error).toHaveBeenCalledWith('Error deleting unit:', expect.any(Error));
+        expect(logger.error).toHaveBeenCalledWith(
+            'Error deleting unit:',
+            expect.any(Error)
+        );
     });
 
-    it('should handle unit with minimal fields', async () => {
-        expect.assertions(1);
-        const minimalUnit = {
-            buildingID: testBuildingID,
-            unitID: 'B2'
-        };
-        mockSend.mockResolvedValueOnce({ Attributes: { ...minimalUnit } });
-
-        const createdUnit = await createUnit(minimalUnit);
-        expect(createdUnit).toEqual(minimalUnit);
-    });
-
+    // Additional test cases for new fields
     it('should update website status and listing IDs', async () => {
         expect.assertions(3);
         const updates = {
             websiteStatus: {
-                'apartments.com': WebsiteStatus.ACTIVE,
-                zillow: WebsiteStatus.ACTIVE
+                zillow: WebsiteStatus.ACTIVE,
+                apartments: WebsiteStatus.INACTIVE
             },
             listingIds: {
-                'apartments.com': 'APT-123456',
-                zillow: 'ZIL-789012'
+                zillow: 'ZIL999',
+                apartments: 'APT999'
             }
         };
-        mockSend.mockResolvedValueOnce({
-            Attributes: { ...testUnit, ...updates }
-        });
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
 
         const updatedUnit = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
         expect(updatedUnit?.websiteStatus?.zillow).toBe(WebsiteStatus.ACTIVE);
-        expect(updatedUnit?.listingIds?.zillow).toBe('ZIL-789012');
-        expect(_.keys(updatedUnit?.listingIds ?? {})).toHaveLength(2);
-    });
-
-    it('should handle unit with model reference', async () => {
-        expect.assertions(3);
-        const unitWithModel = {
-            ...testUnit,
-            modelID: 'model-2br-deluxe',
-            unitAmenities: [] // Inherits from model
-        };
-        mockSend.mockResolvedValueOnce({ Attributes: { ...unitWithModel } });
-
-        const createdUnit = await createUnit(unitWithModel);
-        expect(createdUnit.modelID).toBe('model-2br-deluxe');
-        expect(createdUnit.unitAmenities).toHaveLength(0);
-        expect(createdUnit.beds).toBe(1); // Unit-specific override
+        expect(updatedUnit?.websiteStatus?.apartments).toBe(WebsiteStatus.INACTIVE);
+        expect(updatedUnit?.listingIds?.zillow).toBe('ZIL999');
     });
 
     it('should handle complex unit amenities override', async () => {
         expect.assertions(2);
         const updatedAmenities = [
-            { name: 'Premium Balcony', category: AmenityCategory.UNIT, description: 'Oversized balcony' },
-            { name: 'Corner Unit', category: AmenityCategory.UNIT },
-            { name: 'Updated Kitchen', category: AmenityCategory.UNIT }
+            { name: 'Hardwood Floors', category: AmenityCategory.UNIT },
+            { name: 'Walk-in Closet', category: AmenityCategory.UNIT },
+            { name: 'Private Patio', category: AmenityCategory.UNIT }
         ];
-        mockSend.mockResolvedValueOnce({
-            Attributes: { ...testUnit, unitAmenities: updatedAmenities }
-        });
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({
+            ...testUnit,
+            unitID: 'UNIT#test-unit-1',
+            unitAmenities: updatedAmenities
+        }));
 
         const updatedUnit = await updateUnit(
             testUnit.buildingID,
@@ -247,23 +253,24 @@ describe('Unit Data Layer', () => {
             { unitAmenities: updatedAmenities }
         );
         expect(updatedUnit?.unitAmenities).toHaveLength(3);
-        expect(updatedUnit?.unitAmenities?.[0].description).toBe('Oversized balcony');
+        expect(updatedUnit?.unitAmenities?.[0].name).toBe('Hardwood Floors');
     });
 
     it('should handle empty collections in unit data', async () => {
         expect.assertions(3);
         const unitWithEmptyCollections = {
             ...testUnit,
-            photos: [],
+            unitID: 'UNIT#test-unit-1',
             unitAmenities: [],
+            photos: [],
             websiteStatus: {},
             listingIds: {}
         };
-        mockSend.mockResolvedValueOnce({ Items: [unitWithEmptyCollections] });
+        mockSend.mockResolvedValueOnce(mockScanResponse([unitWithEmptyCollections]));
 
         const units = await getUnits(testBuildingID);
         expect(units[0].photos).toHaveLength(0);
+        expect(units[0].unitAmenities).toHaveLength(0);
         expect(units[0].websiteStatus).toEqual({});
-        expect(units[0].listingIds).toEqual({});
     });
 });

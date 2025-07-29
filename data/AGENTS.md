@@ -61,5 +61,6 @@ const batches = chunk(items, 25);
 
 - Mock dynamodb-toolbox, NOT the raw DynamoDB client
 - Test all error scenarios (NotFound, throttling, validation)
-- Use the ModuleMocker pattern from tests/ModuleMocker.ts
+- Tests are completely isolated - no SST server or AWS credentials needed
+- Run tests with `bun test`
 - See tests/data/*.test.ts for examples

@@ -2,11 +2,11 @@
     "mcpServers": {
         "language-server": {
             "command": "${HOME}/go/bin/mcp-language-server",
-            "args": ["--workspace", ".", "--lsp", "./node_modules/.bin/typescript-language-server", "--", "--stdio"]
+            "args": ["--workspace", ".", "--lsp", "bunx", "--", "--bun", "typescript-language-server@latest", "--stdio"]
         },
         "eslint": {
             "command": "bunx",
-            "args": ["--bun", "@eslint/mcp@latest"]
+            "args": ["--bun", "https://gitpkg.vercel.app/eslint/rewrite/packages/mcp?issue246"]
         },
         "tmux": {
             "command": "bunx",

@@ -1,11 +1,12 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Resource } from 'sst';
 import { v4 as uuidv4 } from 'uuid';
 import { split, toLower, startsWith, isError } from 'lodash';
+import { getS3Client } from '../data/clients';
 
-const s3Client = new S3Client({});
+const s3Client = getS3Client();
 
 // Helper to generate a unique key for S3
 const generateS3Key = (buildingId: string, unitId: string, filename: string): string => {

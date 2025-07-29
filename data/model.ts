@@ -1,5 +1,5 @@
 import { Table, Entity } from 'dynamodb-toolbox';
-import { db, tableName } from './db';
+import { db, getTableName } from './db';
 import { item } from 'dynamodb-toolbox/schema/item';
 import { string } from 'dynamodb-toolbox/schema/string';
 import { number } from 'dynamodb-toolbox/schema/number';
@@ -9,7 +9,7 @@ import { record } from 'dynamodb-toolbox/schema/record';
 import { any } from 'dynamodb-toolbox/schema/any';
 
 export const ApartmentTable = new Table({
-    name: tableName,
+    name: getTableName(),
     partitionKey: {
         name: 'buildingID',
         type: 'string',

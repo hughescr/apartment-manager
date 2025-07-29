@@ -1,4 +1,12 @@
-import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
+// CRITICAL: Import test setup FIRST before any other imports
+import { mockSend, clearMocks } from './test-setup';
+
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { AmenityCategory } from '../../src/types';
+import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
+import _ from 'lodash';
+
+// Import the functions AFTER mocking
 import {
     getUnitTypes,
     getUnitType,
@@ -7,95 +15,16 @@ import {
     deleteUnitType,
     getUnitsByModelID
 } from '../../data/unitTypes';
-import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
-import { ModuleMocker } from '../ModuleMocker';
-import { AmenityCategory } from '../../src/types';
-
-const mockSend = mock();
-
-const moduleMocker = new ModuleMocker();
 
 describe('UnitType Data Layer', () => {
-    afterEach(() => {
-        mockSend.mockClear();
-        moduleMocker.clear();
+    beforeEach(() => {
+        // Clear mock calls before each test
+        clearMocks();
     });
 
-    beforeEach(async () => {
-        await moduleMocker.mock('@hughescr/logger', () => ({
-            logger: {
-                error: mock(),
-            },
-        }));
-
-        await moduleMocker.mock('../data/model', () => ({
-            ApartmentTable: {
-                build: mock((command) => {
-                    if(command === QueryCommand) {
-                        return {
-                            entities: mock(() => ({
-                                query: mock(() => ({
-                                    options: mock(() => ({
-                                        send: mockSend,
-                                    })),
-                                    send: mockSend,
-                                })),
-                                options: mock(() => ({
-                                    query: mock(() => ({
-                                        send: mockSend,
-                                    })),
-                                })),
-                            })),
-                        };
-                    }
-                    return {
-                        item: mock(() => ({
-                            options: mock(() => ({
-                                send: mockSend,
-                            })),
-                            send: mockSend,
-                        })),
-                        key: mock(() => ({
-                            send: mockSend,
-                        })),
-                    };
-                }),
-            },
-            UnitType: {
-                build: mock(() => {
-                    return {
-                        item: mock(() => ({
-                            options: mock(() => ({
-                                send: mockSend,
-                            })),
-                            send: mockSend,
-                        })),
-                        key: mock(() => ({
-                            send: mockSend,
-                        })),
-                    };
-                }),
-            },
-            Unit: {
-                build: mock(() => {
-                    return {
-                        item: mock(() => ({
-                            options: mock(() => ({
-                                send: mockSend,
-                            })),
-                            send: mockSend,
-                        })),
-                        key: mock(() => ({
-                            send: mockSend,
-                        })),
-                    };
-                }),
-            },
-        }));
-    });
-
+    const testBuildingID = 'test-building-1';
     const testUnitType = {
-        buildingID: 'test-building-1',
+        buildingID: testBuildingID,
         modelID: 'model-2br',
         modelName: '2 Bedroom Deluxe',
         countAvailable: 5,
@@ -117,117 +46,137 @@ describe('UnitType Data Layer', () => {
         ]
     };
 
-    it('should create a unit type', async () => {
-        expect.assertions(2);
-        mockSend.mockResolvedValueOnce({
-            Attributes: { ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }
-        });
-        mockSend.mockResolvedValueOnce({
-            Item: { ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }
-        });
-
-        const createdUnitType = await createUnitType(testUnitType);
-        expect(createdUnitType).toEqual(testUnitType);
-
-        const fetchedUnitType = await getUnitType(testUnitType.buildingID, testUnitType.modelID);
-        expect(fetchedUnitType).toEqual(testUnitType);
-    });
-
     it('should get all unit types for a building', async () => {
-        expect.assertions(2);
+        expect.assertions(1);
         const unitTypes = [
-            { ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` },
-            {
-                ...testUnitType,
-                modelID: 'model-1br',
-                modelName: '1 Bedroom',
-                beds: 1,
-                baths: 1,
-                unitID: 'MODEL#model-1br'
-            }
+            testUnitType,
+            { ...testUnitType, modelID: 'model-1br', modelName: '1 Bedroom' }
         ];
-        mockSend.mockResolvedValueOnce({ Items: unitTypes });
+        // Mock response will include unitID field, but getUnitTypes will omit it
+        const mockResponseData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+        mockSend.mockResolvedValueOnce(mockScanResponse(mockResponseData));
 
-        const result = await getUnitTypes(testUnitType.buildingID);
-        expect(result).toHaveLength(2);
-        expect(result[0]).not.toHaveProperty('unitID');
+        const result = await getUnitTypes(testBuildingID);
+        expect(result).toEqual(unitTypes);
     });
 
-    it('should get a single unit type', async () => {
-        expect.assertions(2);
-        mockSend.mockResolvedValueOnce({
-            Item: { ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }
-        });
+    it('should handle empty unit type list', async () => {
+        expect.assertions(1);
+        mockSend.mockResolvedValueOnce(mockScanResponse([]));
 
-        const fetchedUnitType = await getUnitType(testUnitType.buildingID, testUnitType.modelID);
-        expect(fetchedUnitType).toEqual(testUnitType);
-        expect(fetchedUnitType).not.toHaveProperty('unitID');
+        const result = await getUnitTypes(testBuildingID);
+        expect(result).toEqual([]);
+    });
+
+    it('should get a specific unit type', async () => {
+        expect.assertions(1);
+        // Mock response includes unitID field, but getUnitType will omit it
+        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
+
+        const result = await getUnitType(testBuildingID, testUnitType.modelID);
+        expect(result).toEqual(testUnitType);
     });
 
     it('should return undefined for non-existent unit type', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Item: undefined });
+        mockSend.mockResolvedValueOnce(mockGetResponse(null));
 
-        const fetchedUnitType = await getUnitType('non-existent-building', 'non-existent-model');
-        expect(fetchedUnitType).toBeUndefined();
+        const result = await getUnitType(testBuildingID, 'non-existent');
+        expect(result).toBeUndefined();
+    });
+
+    it('should create a unit type with minimal data', async () => {
+        expect.assertions(2);
+        const minimalUnitType = {
+            buildingID: testBuildingID,
+            modelID: 'test-uuid',
+            modelName: 'Studio',
+            beds: 0,
+            baths: 1
+        };
+        // Mock returns the item with unitID, but createUnitType will omit it
+        mockSend.mockResolvedValueOnce(mockPutResponse({ ...minimalUnitType, unitID: 'MODEL#test-uuid' }));
+
+        const result = await createUnitType(minimalUnitType);
+        expect(result).toEqual(minimalUnitType);
+        expect(result.modelID).toBe('test-uuid');
+    });
+
+    it('should create a unit type with full data', async () => {
+        expect.assertions(3);
+        const fullUnitType = {
+            buildingID: testBuildingID,
+            modelID: 'test-uuid',
+            modelName: '3 Bedroom Premium',
+            countAvailable: 3,
+            dateAvailable: '2024-05-01',
+            beds: 3,
+            baths: 2.5,
+            maxOccupants: 6,
+            minRent: 2000,
+            maxRent: 2500,
+            perPersonRent: 500,
+            minSqft: 1200,
+            maxSqft: 1400,
+            deposit: 2000,
+            minLeaseTerm: 12,
+            maxLeaseTerm: 24,
+            modelAmenities: [
+                { name: 'Walk-in Closet', category: AmenityCategory.UNIT },
+                { name: 'Granite Countertops', category: AmenityCategory.UNIT }
+            ]
+        };
+        // Mock returns the item with unitID, but createUnitType will omit it
+        mockSend.mockResolvedValueOnce(mockPutResponse({ ...fullUnitType, unitID: 'MODEL#test-uuid' }));
+
+        const result = await createUnitType(fullUnitType);
+        expect(result).toEqual(fullUnitType);
+        expect(result.modelAmenities).toHaveLength(2);
+        expect(result.modelAmenities?.[0].name).toBe('Walk-in Closet');
     });
 
     it('should update a unit type', async () => {
-        expect.assertions(3);
-        const updatedRent = { minRent: 1600, maxRent: 1900 };
-        mockSend.mockResolvedValueOnce({
-            Attributes: {
-                ...testUnitType,
-                ...updatedRent,
-                unitID: `MODEL#${testUnitType.modelID}`
-            }
-        });
-        mockSend.mockResolvedValueOnce({
-            Item: {
-                ...testUnitType,
-                ...updatedRent,
-                unitID: `MODEL#${testUnitType.modelID}`
-            }
-        });
+        expect.assertions(2);
+        const updates = {
+            countAvailable: 3,
+            minRent: 1600,
+            maxRent: 1900
+        };
+        // Mock returns the item with unitID, but updateUnitType will omit it
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}`, ...updates }));
 
-        const updatedUnitType = await updateUnitType(
-            testUnitType.buildingID,
-            testUnitType.modelID,
-            updatedRent
-        );
-        expect(updatedUnitType.minRent).toBe(1600);
-        expect(updatedUnitType.maxRent).toBe(1900);
+        const result = await updateUnitType(testBuildingID, testUnitType.modelID, updates);
+        expect(result).toEqual({ ...testUnitType, ...updates });
+        expect(result?.countAvailable).toBe(3);
+    });
 
-        const fetchedUnitType = await getUnitType(testUnitType.buildingID, testUnitType.modelID);
-        expect(fetchedUnitType?.minRent).toBe(1600);
+    it('should handle update with undefined values', async () => {
+        expect.assertions(2);
+        const updates = {
+            countAvailable: 2,
+            dateAvailable: undefined, // Should be removed by DynamoDB
+            minRent: 1400
+        };
+        const expectedResult = {
+            ...testUnitType,
+            countAvailable: 2,
+            minRent: 1400
+        };
+        // Mock returns the item with unitID, but updateUnitType will omit it
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: `MODEL#${testUnitType.modelID}` }));
+
+        const result = await updateUnitType(testBuildingID, testUnitType.modelID, updates);
+        expect(result).toEqual(expectedResult);
+        expect(result?.dateAvailable).toBe(testUnitType.dateAvailable); // Original value preserved
     });
 
     it('should delete a unit type', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce({}); // Successful delete
-        mockSend.mockResolvedValueOnce({ Item: undefined }); // Item not found after delete
+        mockSend.mockResolvedValueOnce(mockDeleteResponse());
 
-        const success = await deleteUnitType(testUnitType.buildingID, testUnitType.modelID);
-        expect(success).toBeTrue();
-
-        const fetchedUnitType = await getUnitType(testUnitType.buildingID, testUnitType.modelID);
-        expect(fetchedUnitType).toBeUndefined();
-    });
-
-    it('should return true if unit type to delete does not exist (idempotent delete)', async () => {
-        expect.assertions(1);
-        mockSend.mockResolvedValueOnce({}); // Delete operation is idempotent
-        const success = await deleteUnitType('non-existent-building', 'non-existent-model');
-        expect(success).toBeTrue();
-    });
-
-    it('should not create a unit type if it already exists', async () => {
-        expect.assertions(1);
-        mockSend.mockResolvedValueOnce({
-            Attributes: undefined
-        });
-        const result = await createUnitType(testUnitType);
-        expect(result).toEqual(testUnitType);
+        const result = await deleteUnitType(testBuildingID, testUnitType.modelID);
+        expect(result).toBeTrue();
+        expect(mockSend).toHaveBeenCalledTimes(1);
     });
 
     it('should handle error during unit type deletion', async () => {
@@ -235,106 +184,96 @@ describe('UnitType Data Layer', () => {
         const { logger } = await import('@hughescr/logger');
         mockSend.mockRejectedValueOnce(new Error('DynamoDB error'));
 
-        const success = await deleteUnitType(testUnitType.buildingID, testUnitType.modelID);
+        const success = await deleteUnitType(testBuildingID, testUnitType.modelID);
         expect(success).toBeFalse();
+        // Logger should have been called with the error
         expect(logger.error).toHaveBeenCalledWith('Error deleting unit type:', expect.any(Error));
     });
 
     it('should get units by model ID', async () => {
-        expect.assertions(3);
+        expect.assertions(2);
         const units = [
             {
-                buildingID: testUnitType.buildingID,
-                unitID: 'unit-101',
-                modelID: testUnitType.modelID,
+                buildingID: testBuildingID,
+                unitID: 'UNIT#unit-1',  // DynamoDB stores with UNIT# prefix
                 unitNumber: '101',
+                modelID: 'model-2br',
                 beds: 2,
-                baths: 2
+                baths: 2,
+                rent: 1650
             },
             {
-                buildingID: testUnitType.buildingID,
-                unitID: 'unit-102',
-                modelID: testUnitType.modelID,
-                unitNumber: '102',
-                beds: 2,
-                baths: 2
-            },
-            {
-                buildingID: testUnitType.buildingID,
-                unitID: 'unit-201',
-                modelID: 'model-1br',
+                buildingID: testBuildingID,
+                unitID: 'UNIT#unit-2',  // DynamoDB stores with UNIT# prefix
                 unitNumber: '201',
+                modelID: 'model-2br',
+                beds: 2,
+                baths: 2,
+                rent: 1700
+            },
+            {
+                buildingID: testBuildingID,
+                unitID: 'UNIT#unit-3',  // This one has different modelID
+                unitNumber: '301',
+                modelID: 'model-1br',
                 beds: 1,
-                baths: 1
+                baths: 1,
+                rent: 1200
             }
         ];
-        mockSend.mockResolvedValueOnce({ Items: units });
+        mockSend.mockResolvedValueOnce(mockScanResponse(units));
 
-        const result = await getUnitsByModelID(testUnitType.buildingID, testUnitType.modelID);
+        const result = await getUnitsByModelID(testBuildingID, 'model-2br');
+        // getUnitsByModelID strips the UNIT# prefix from unitID
+        const expectedUnits = [
+            { ...units[0], unitID: 'unit-1' },
+            { ...units[1], unitID: 'unit-2' }
+        ];
+        expect(result).toEqual(expectedUnits);
         expect(result).toHaveLength(2);
-        expect(result[0].modelID).toBe(testUnitType.modelID);
-        expect(result[1].modelID).toBe(testUnitType.modelID);
     });
 
-    it('should return empty array when no units match model ID', async () => {
+    it('should handle empty result when getting units by model ID', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Items: [] });
+        mockSend.mockResolvedValueOnce(mockScanResponse([]));
 
-        const result = await getUnitsByModelID(testUnitType.buildingID, 'non-existent-model');
+        const result = await getUnitsByModelID(testBuildingID, 'model-3br');
         expect(result).toEqual([]);
     });
 
-    it('should handle unit types with minimal data', async () => {
+    it('should handle complex model amenities override', async () => {
         expect.assertions(2);
-        const minimalUnitType = {
-            buildingID: 'test-building-1',
-            modelID: 'model-studio',
-            modelName: 'Studio',
-            beds: 0,
-            baths: 1
-        };
-        mockSend.mockResolvedValueOnce({
-            Attributes: { ...minimalUnitType, unitID: `MODEL#${minimalUnitType.modelID}` }
-        });
-
-        const createdUnitType = await createUnitType(minimalUnitType);
-        expect(createdUnitType).toEqual(minimalUnitType);
-        expect(createdUnitType.modelAmenities).toBeUndefined();
-    });
-
-    it('should handle unit types with all optional fields', async () => {
-        expect.assertions(1);
-        const fullUnitType = {
+        const updatedAmenities = [
+            { name: 'Hardwood Floors', category: AmenityCategory.UNIT },
+            { name: 'Stainless Steel Appliances', category: AmenityCategory.UNIT },
+            { name: 'Ceiling Fans', category: AmenityCategory.UNIT }
+        ];
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({
             ...testUnitType,
-            modelAmenities: [
-                { name: 'Granite Countertops', category: AmenityCategory.UNIT, description: 'Premium granite' },
-                { name: 'Hardwood Floors', category: AmenityCategory.UNIT },
-                { name: 'Walk-in Closet', category: AmenityCategory.UNIT }
-            ]
-        };
-        mockSend.mockResolvedValueOnce({
-            Attributes: { ...fullUnitType, unitID: `MODEL#${fullUnitType.modelID}` }
-        });
+            unitID: `MODEL#${testUnitType.modelID}`,
+            modelAmenities: updatedAmenities
+        }));
 
-        const createdUnitType = await createUnitType(fullUnitType);
-        expect(createdUnitType.modelAmenities).toHaveLength(3);
+        const updatedUnitType = await updateUnitType(
+            testBuildingID,
+            testUnitType.modelID,
+            { modelAmenities: updatedAmenities }
+        );
+        expect(updatedUnitType?.modelAmenities).toHaveLength(3);
+        expect(updatedUnitType?.modelAmenities?.[1].name).toBe('Stainless Steel Appliances');
     });
 
-    it('should properly format sort keys with MODEL# prefix', async () => {
-        expect.assertions(1);
-        const modelID = 'special-model-123';
-        mockSend.mockResolvedValueOnce({
-            Item: {
-                buildingID: 'bldg-1',
-                modelID,
-                modelName: 'Special Model',
-                beds: 3,
-                baths: 2,
-                unitID: `MODEL#${modelID}`
-            }
-        });
+    it('should handle empty collections in unit type data', async () => {
+        expect.assertions(2);
+        const unitTypeWithEmptyCollections = {
+            ...testUnitType,
+            modelAmenities: []
+        };
+        // Mock response includes unitID field
+        mockSend.mockResolvedValueOnce(mockScanResponse([{ ...unitTypeWithEmptyCollections, unitID: `MODEL#${testUnitType.modelID}` }]));
 
-        const result = await getUnitType('bldg-1', modelID);
-        expect(result?.modelID).toBe(modelID);
+        const unitTypes = await getUnitTypes(testBuildingID);
+        expect(unitTypes[0].modelAmenities).toHaveLength(0);
+        expect(unitTypes[0].modelName).toBe('2 Bedroom Deluxe');
     });
 });

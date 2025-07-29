@@ -1,67 +1,17 @@
-import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
-import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuilding } from '../../data/buildings';
-import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
-import { ModuleMocker } from '../ModuleMocker';
+// CRITICAL: Import test setup FIRST before any other imports
+import { mockSend, clearMocks } from './test-setup';
+
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory } from '../../src/types';
+import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 
-const mockSend = mock();
-
-const moduleMocker = new ModuleMocker();
+// Import the functions AFTER mocking
+import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuilding } from '../../data/buildings';
 
 describe('Building Data Layer', () => {
-    afterEach(() => {
-        mockSend.mockClear();
-        moduleMocker.clear();
-    });
-
-    beforeEach(async () => {
-        await moduleMocker.mock('@hughescr/logger', () => ({
-            logger: {
-                error: mock(),
-            },
-        }));
-
-        await moduleMocker.mock('../data/model', () => ({
-            ApartmentTable: {
-                build: mock((command) => {
-                    if(command === ScanCommand) {
-                        return {
-                            entities: mock(() => ({
-                                options: mock(() => ({
-                                    send: mockSend,
-                                })),
-                            })),
-                        };
-                    }
-                    return {
-                        item: mock(() => ({
-                            options: mock(() => ({
-                                send: mockSend,
-                            })),
-                            send: mockSend,
-                        })),
-                        key: mock(() => ({
-                            send: mockSend,
-                        })),
-                    };
-                }),
-            },
-            Building: {
-                build: mock(() => {
-                    return {
-                        item: mock(() => ({
-                            options: mock(() => ({
-                                send: mockSend,
-                            })),
-                            send: mockSend,
-                        })),
-                        key: mock(() => ({
-                            send: mockSend,
-                        })),
-                    };
-                }),
-            },
-        }));
+    beforeEach(() => {
+        // Clear mock calls before each test
+        clearMocks();
     });
 
     const testBuilding = {
@@ -131,8 +81,8 @@ describe('Building Data Layer', () => {
 
     it('should create a building', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce({ Attributes: { ...testBuilding } });
-        mockSend.mockResolvedValueOnce({ Item: { ...testBuilding } });
+        mockSend.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' }));
+        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(testBuilding);
         expect(createdBuilding).toEqual({ ...testBuilding });
@@ -143,14 +93,14 @@ describe('Building Data Layer', () => {
 
     it('should get all buildings', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Items: [{ ...testBuilding }] });
+        mockSend.mockResolvedValueOnce(mockScanResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
         const buildings = await getBuildings();
         expect(buildings).toEqual([{ ...testBuilding }]);
     });
 
     it('should get a single building', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Item: { ...testBuilding } });
+        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
         const fetchedBuilding = await getBuilding(testBuilding.buildingID);
         expect(fetchedBuilding).toEqual({ ...testBuilding });
     });
@@ -158,8 +108,8 @@ describe('Building Data Layer', () => {
     it('should update a building', async () => {
         expect.assertions(2);
         const updatedDescription = 'Updated description';
-        mockSend.mockResolvedValueOnce({ Attributes: { ...testBuilding, description: updatedDescription } });
-        mockSend.mockResolvedValueOnce({ Item: { ...testBuilding, description: updatedDescription } });
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
+        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
 
         const updatedBuilding = await updateBuilding(testBuilding.buildingID, { description: updatedDescription });
         expect(updatedBuilding.description).toBe(updatedDescription);
@@ -170,8 +120,8 @@ describe('Building Data Layer', () => {
 
     it('should delete a building', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce({}); // Successful delete
-        mockSend.mockResolvedValueOnce({ Item: undefined }); // Item not found after delete
+        mockSend.mockResolvedValueOnce(mockDeleteResponse()); // Successful delete
+        mockSend.mockResolvedValueOnce(mockGetResponse(undefined)); // Item not found after delete
 
         const success = await deleteBuilding(testBuilding.buildingID);
         expect(success).toBeTrue();
@@ -182,14 +132,14 @@ describe('Building Data Layer', () => {
 
     it('should return true if building to delete does not exist (idempotent delete)', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({}); // Delete operation is idempotent
+        mockSend.mockResolvedValueOnce(mockDeleteResponse()); // Delete operation is idempotent
         const success = await deleteBuilding('non-existent-building');
         expect(success).toBeTrue();
     });
 
     it('should not create a building if it already exists', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce({ Attributes: { ...testBuilding } }); // Simulate existing item
+        mockSend.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' })); // Simulate existing item
         const result = await createBuilding(testBuilding);
         expect(result).toEqual({ ...testBuilding });
     });
@@ -210,7 +160,7 @@ describe('Building Data Layer', () => {
             buildingID: 'minimal-building-1',
             street: '456 Minimal Ave'
         };
-        mockSend.mockResolvedValueOnce({ Attributes: { ...minimalBuilding } });
+        mockSend.mockResolvedValueOnce(mockPutResponse({ ...minimalBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(minimalBuilding);
         expect(createdBuilding).toEqual(minimalBuilding);
@@ -230,7 +180,7 @@ describe('Building Data Layer', () => {
                 { name: 'Sauna', category: AmenityCategory.PROPERTY, description: 'Finnish sauna' }
             ]
         };
-        mockSend.mockResolvedValueOnce({ Attributes: { ...complexBuilding } });
+        mockSend.mockResolvedValueOnce(mockPutResponse({ ...complexBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(complexBuilding);
         expect(createdBuilding.rentSpecials!).toHaveLength(2);
@@ -253,9 +203,7 @@ describe('Building Data Layer', () => {
             },
             photos: ['https://s3.example.com/new-photo1.jpg']
         };
-        mockSend.mockResolvedValueOnce({
-            Attributes: { ...testBuilding, ...updatedFields }
-        });
+        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, unitID: 'BUILDING', ...updatedFields }));
 
         const updatedBuilding = await updateBuilding(testBuilding.buildingID, updatedFields);
         expect(updatedBuilding.petPolicies!.allowed).toBe(false);

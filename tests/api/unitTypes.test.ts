@@ -1,9 +1,10 @@
-import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
-import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
-import { ModuleMocker } from '../ModuleMocker';
-import { AmenityCategory } from '../../src/types';
+// CRITICAL: Import test setup FIRST before any other imports
+import './test-setup';
 
-const moduleMocker = new ModuleMocker();
+import { describe, it, expect, mock, beforeEach, afterEach, beforeAll } from 'bun:test';
+import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
+import { AmenityCategory } from '../../src/types';
+import { noop } from 'lodash';
 
 const mockGetUnitTypes = mock();
 const mockGetUnitType = mock();
@@ -18,33 +19,9 @@ describe('Unit Types API', () => {
     let update: (event: APIGatewayProxyEventV2) => Promise<APIGatewayProxyStructuredResultV2>;
     let del: (event: APIGatewayProxyEventV2) => Promise<APIGatewayProxyStructuredResultV2>;
 
-    beforeEach(async () => {
-        // Mock SST resources first
-        await moduleMocker.mock('sst', () => ({
-            Resource: {
-                BuildingsUnits: {
-                    name: 'test-table'
-                }
-            }
-        }));
-
-        // Mock AWS SDK
-        await moduleMocker.mock('@aws-sdk/client-dynamodb', () => ({
-            DynamoDBClient: class {
-                constructor() {
-                    // DynamoDB client mock
-                }
-            }
-        }));
-
-        await moduleMocker.mock('@aws-sdk/lib-dynamodb', () => ({
-            DynamoDBDocumentClient: {
-                from: () => ({})
-            }
-        }));
-
-        // Mock data layer
-        await moduleMocker.mock('../data/unitTypes', () => ({
+    beforeAll(async () => {
+        // Mock data layer with correct path
+        mock.module('../../data/unitTypes', () => ({
             getUnitTypes: mockGetUnitTypes,
             getUnitType: mockGetUnitType,
             createUnitType: mockCreateUnitType,
@@ -61,14 +38,16 @@ describe('Unit Types API', () => {
         del = apiModule.del;
     });
 
-    afterEach(() => {
+    beforeEach(() => {
+        // Clear mock calls before each test
         mockGetUnitTypes.mockClear();
         mockGetUnitType.mockClear();
         mockCreateUnitType.mockClear();
         mockUpdateUnitType.mockClear();
         mockDeleteUnitType.mockClear();
-        moduleMocker.clear();
     });
+
+    afterEach(noop);
 
     const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
         headers: {},

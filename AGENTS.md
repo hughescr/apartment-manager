@@ -41,18 +41,18 @@
 ## ✅ MANDATORY TOOL MAPPING - MEMORIZE THIS ✅
 
 ### File Operations
-- **Finding files by pattern**: 
+- **Finding files by pattern**:
   - ❌ NEVER: `find . -name "*.ts"`
   - ✅ ALWAYS: `Glob` with `pattern: "**/*.ts"`
-  
+
 - **Searching file contents**:
   - ❌ NEVER: `grep -r "function" src/`
   - ✅ ALWAYS: `Grep` with `pattern: "function", path: "src/"`
-  
+
 - **Reading files**:
   - ❌ NEVER: `cat file.ts`
   - ✅ ALWAYS: `Read` with `file_path: "/absolute/path/to/file.ts"`
-  
+
 - **Listing directories**:
   - ❌ NEVER: `ls -la src/`
   - ✅ ALWAYS: `LS` with `path: "/absolute/path/to/src/"`
@@ -61,7 +61,7 @@
 - **TypeScript checking**:
   - ❌ NEVER: `tsc --noEmit`
   - ✅ ALWAYS: `mcp__language-server__diagnostics` with `filePath: "/path/to/file.ts"`
-  
+
 - **Linting**:
   - ❌ NEVER: `eslint src/`
   - ✅ ALWAYS: `mcp__eslint__lint-files` with `filePaths: ["/absolute/paths/to/files.ts"]`
@@ -168,7 +168,6 @@ Follow this workflow and delegate to appropriate agents at each stage:
 ### Code Quality Checks
 ❌ `eslint src/` → ✅ Use `mcp__eslint__lint-files` tool
 ❌ `tsc --noEmit` → ✅ Use `mcp__language-server__diagnostics` tool
-❌ `bun test` → ✅ `bun run test` (always use `bun run` for npm scripts)
 ❌ Any direct CLI tool → ✅ Check for MCP/specialized tool first
 
 ### TypeScript Issues
@@ -281,54 +280,28 @@ Pay special attention to these commonly violated rules:
 
 ### Running Tests
 
-**NEW APPROACH**: Tests are now decoupled from SST server management for better flexibility.
+**SIMPLIFIED APPROACH**: Tests are now completely self-contained with full AWS service mocking.
 
-#### Environment Variables for Testing
-- `E2E_BASE_URL` - Base URL for E2E tests (defaults to `http://localhost:4321`)
-- `API_BASE_URL` - Base URL for API tests (if needed)
-- Additional environment variables can be set as needed
+#### No Server Required
+Tests no longer require SST server or AWS credentials. All AWS services (DynamoDB, S3, Lambda, etc.) are properly mocked.
 
 #### Running Tests
 ```bash
-# Run all tests (uses default URLs)
-bun run test
-
-# Run tests against local SST dev server
-E2E_BASE_URL=http://localhost:4321 bun run test
-
-# Run tests against deployed environment
-E2E_BASE_URL=https://my-app.cloudfront.net bun run test
+# Run all tests
+bun test
 
 # Run specific test file
-bun run test tests/data/buildings.test.ts
+bun test tests/data/buildings.test.ts
 
 # Run tests matching a pattern
-bun run test --testNamePattern="Unit Types"
+bun test --testNamePattern="Unit Types"
+
+# Run tests in watch mode
+bun test --watch
+
+# Run tests with coverage
+bun test --coverage
 ```
-
-#### Server Management for Testing
-You are responsible for starting the appropriate server before running tests:
-
-1. **For local development testing**:
-   ```bash
-   # Terminal 1: Start SST dev server
-   bun run sst-dev
-   
-   # Terminal 2: Run tests (after server is ready)
-   E2E_BASE_URL=http://localhost:4321 bun run test
-   ```
-
-2. **For testing against deployed environments**:
-   ```bash
-   # No server to start - just point to the deployed URL
-   E2E_BASE_URL=https://staging.myapp.com bun run test
-   ```
-
-#### Benefits of This Approach
-- **Better debugging** - See server logs in real-time while tests run
-- **Flexibility** - Easy to test against different environments
-- **Simplicity** - No complex shell script wrappers
-- **Control** - Choose which server to test against
 
 ## Running the Project
 
@@ -346,14 +319,14 @@ bun run sst-dev  # NEVER use 'bun run dev'
 # Interactive AWS debugging console
 bun run dev-console
 
-# Run tests (server must be running separately for E2E/UI tests)
-bun run test
+# Run tests (fully mocked, no server required)
+bun test
 
 # Complete validation suite (linting, type checking, tests, and Astro check)
 bun run full-test
 
 # Check Astro components
-bun run astro-check
+astro check
 
 # SST diagnostics with logs
 bun run sst-diagnostics
@@ -363,7 +336,7 @@ bun run sst-diagnostics
 
 **IMPORTANT**: Use the MCP tmux server to start SST dev server asynchronously:
 
-1. **Create workspace**: Use `mcp__tmux__create_workspace` with `workspace_id: "sst-dev"`
+1. **Create a window**: Use `mcp__tmux__create_workspace` with `workspace_id: "sst-dev"`
 2. **Start SST**: Use `mcp__tmux__run_command` with:
    - `command: "bun run sst-dev"`
    - `workspace_id: "sst-dev"`
@@ -373,7 +346,7 @@ bun run sst-diagnostics
 
 **Key Points:**
 - SST automatically manages Astro and other services
-- Use `mcp__tmux__get_output` to find Astro URL (typically http://localhost:4321/)
+- Use `mcp__tmux__get_output` to find Astro URL from the "Web" section in the sidebar (typically http://localhost:4321/)
 - API and Upload URLs are shown in SST console output
 - To restart Astro: Send keys `["Enter"]` to focus Web section, `["x"]` to kill, `["Enter"]` to restart
 - **NEVER** run Astro separately - SST must manage the process
@@ -383,11 +356,11 @@ bun run sst-diagnostics
 When running `bun run sst-dev`, you'll get an interactive ncurses UI. Here's how to navigate:
 
 **Basic Navigation:**
-- `j/k` or `↓/↑` - Move up/down in the sidebar
+- `j/k` or `"Up"/"Down"` - Move up/down in the sidebar
 - `Enter` - Focus on selected section (SST, Functions, Web)
-- `Ctrl+Z` - Return to sidebar from focused section
+- `C-z` - Return to sidebar from focused section
 - `x` - Kill selected process (from sidebar)
-- `Ctrl+C` - Exit the entire SST dev server
+- `C-c` - Exit the entire SST dev server
 
 **UI Sections:**
 - **SST** - Shows infrastructure deployment status and errors
@@ -405,7 +378,7 @@ When running `bun run sst-dev`, you'll get an interactive ncurses UI. Here's how
 
 - Scripts automatically inject AWS credentials via `op run` from 1Password
 - Never run `sst` commands directly
-- If `$AWS_REGION` is not set, scripts will use 1Password for credential injection
+- If `$AWS_ACCESS_KEY_ID` is not set, scripts will use 1Password for credential injection
 
 ### MCP Tools Reference
 
@@ -436,8 +409,6 @@ For the detailed step-by-step implementation plan, including architecture detail
 - CloudFront for content delivery
 - DynamoDB for data persistence
 - Secrets Manager for credential storage
-- EventBridge for scheduled syncs
-- SNS for error notifications
 
 The application is designed to stay within AWS free tier limits for managing a small number of buildings and units.
 
@@ -471,15 +442,16 @@ For detailed module-specific patterns and rules, see:
 
 1. **Git operations** (except PRs - use `gh` for those)
    - `git add`, `git commit`, `git push`, etc.
-   
+
 2. **Package management**
    - `bun install`, `bun add <package>`
    - BUT remember: use `bunx` not `npx`, use `bun` not `npm`
-   
-3. **Running npm scripts**
-   - `bun run sst-dev`, `bun run test`, etc.
-   - Only scripts defined in package.json
-   
+
+3. **Running bun scripts and tests**
+   - `bun run sst-dev` for development server
+   - `bun test` for running tests
+   - Other scripts defined in package.json use `bun run`
+
 4. **Simple filesystem operations**
    - `mkdir` for creating directories
    - `rm` for removing files/directories
@@ -491,6 +463,7 @@ For detailed module-specific patterns and rules, see:
 3. Remember: "Tools Before Terminal - ALWAYS!"
 
 ## Resources
+**⚠️ IMPORTANT: CHECK mcp__Context7 FIRST FOR DOCUMENTATION**
 - [Astro Documentation](https://docs.astro.build/)
 - [SST Documentation](https://sst.dev/docs/)
 - [Alpine.js Documentation](https://alpinejs.dev/start-here)

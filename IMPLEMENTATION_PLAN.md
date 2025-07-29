@@ -250,7 +250,7 @@ Our tool will leverage the model/unit hierarchy internally and flatten data for 
 3. **Performance test** (10+ buildings, 100+ units)
 4. **Create INTEGRATION.md**
 5. **Document field mappings**
-6. **Run `bun run full-test`**
+6. **Run `bun run full-test`** (simplified - no AWS/SST wrappers needed)
 7. **Review AWS costs**
 
 **Gate**: All tests pass, documentation complete, costs optimized.
@@ -285,7 +285,7 @@ Track the completion status of each implementation step:
 - [ ] Write UI tests (E2E tests created but still failing - needs debugging)
 - [ ] **Gate passed**: ⚠️ (Partial - E2E tests need fixes)
 
-**Note**: E2E tests have been written with a database seeding strategy for the SSR architecture, but tests are currently failing and need debugging before Step 3 can be considered complete.
+**Note**: E2E tests have been written with a simplified testing approach (no SST server required), but tests are currently failing and need debugging before Step 3 can be considered complete.
 
 ### Step 4 – Implement and Test Site Mapping Logic
 - [ ] Create src/mappers/siteMapper.ts
@@ -352,17 +352,16 @@ Track the completion status of each implementation step:
 - [ ] Performance test (10+ buildings, 100+ units)
 - [ ] Create INTEGRATION.md
 - [ ] Document field mappings
-- [ ] Run bun run full-test
+- [ ] Run bun run full-test (simplified - no AWS/SST wrappers needed)
 - [ ] Review AWS costs
 - [ ] **Gate passed**: ❌
 
 ### Overall Progress: 2.5/10 Steps Complete (Step 3 partial - E2E tests failing)
 
-**⚠️ E2E Test Status**: E2E tests have been written with a database seeding strategy implemented (`tests/e2e/helpers/`), but tests are still failing. The test infrastructure includes:
+**⚠️ E2E Test Status**: E2E tests have been written with a simplified approach that doesn't require SST server or AWS credentials. The test infrastructure includes:
 - Test data factory for generating consistent test data
-- Database seeding scripts for populating DynamoDB
-- Cleanup scripts for removing test data
-- Test scripts in package.json for easy test execution
+- Simplified test execution with `bun test`
+- No SST server or AWS setup required for tests
 
 However, the tests themselves need debugging to resolve failures before Step 3 can be considered complete.
 

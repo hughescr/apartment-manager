@@ -88,3 +88,5 @@ api.route("POST /buildings", "api/buildings.create");
 - Test resource permissions are correct
 - Verify free tier limits aren't exceeded
 - Check all resources are properly linked
+- Unit tests for SST config don't need running infrastructure
+- Run tests with `bun test`
