@@ -5,8 +5,8 @@
             "args": ["--workspace", ".", "--lsp", "bunx", "--", "--bun", "typescript-language-server@latest", "--stdio"]
         },
         "eslint": {
-            "command": "bunx",
-            "args": ["--bun", "https://gitpkg.vercel.app/eslint/rewrite/packages/mcp?issue246"]
+            "command": "npx",
+            "args": ["https://gitpkg.vercel.app/eslint/rewrite/packages/mcp?main"]
         },
         "tmux": {
             "command": "bunx",
