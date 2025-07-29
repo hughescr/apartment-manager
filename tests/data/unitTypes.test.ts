@@ -1,7 +1,7 @@
 // CRITICAL: Import test setup FIRST before any other imports
-import { mockSend, clearMocks } from './test-setup';
+import { mockSend, clearMocks, preloadDataModules } from './test-setup';
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { AmenityCategory } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 import _ from 'lodash';
@@ -17,6 +17,19 @@ import {
 } from '../../data/unitTypes';
 
 describe('UnitType Data Layer', () => {
+    beforeAll(async () => {
+        // Preload modules to prevent race conditions
+        await preloadDataModules();
+
+        // Validate that all expected exports are available
+        expect(typeof getUnitTypes).toBe('function');
+        expect(typeof getUnitType).toBe('function');
+        expect(typeof createUnitType).toBe('function');
+        expect(typeof updateUnitType).toBe('function');
+        expect(typeof deleteUnitType).toBe('function');
+        expect(typeof getUnitsByModelID).toBe('function');
+    });
+
     beforeEach(() => {
         // Clear mock calls before each test
         clearMocks();

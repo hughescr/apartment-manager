@@ -202,19 +202,31 @@ mock.module('sst', () => ({
     }
 }));
 
+// Store reference to logger mocks for validation
+let loggerMocks: Record<string, ReturnType<typeof mock>> | undefined;
+
 // Mock the logger module
-mock.module('@hughescr/logger', () => ({
-    logger: {
-        error: mock(),
-        warn: mock(),
-        info: mock(),
-        debug: mock(),
-    },
-}));
+mock.module('@hughescr/logger', () => {
+    const errorMock = mock();
+    const warnMock = mock();
+    const infoMock = mock();
+    const debugMock = mock();
+
+    loggerMocks = {
+        error: errorMock,
+        warn: warnMock,
+        info: infoMock,
+        debug: debugMock,
+    };
+
+    return {
+        logger: loggerMocks,
+    };
+});
 
 // Now import types after mocking
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { constant } from 'lodash';
+import { constant, forEach } from 'lodash';
 
 // Create the mock send function that will be used by all tests
 export const mockSend = mock(() => Promise.resolve({}));
@@ -255,4 +267,60 @@ mock.module('crypto', () => ({
  */
 export function clearMocks() {
     mockSend.mockClear();
+    mockS3Send.mockClear();
+
+    // Clear logger mocks if available
+    if(loggerMocks) {
+        forEach(['error', 'warn', 'info', 'debug'], (method) => {
+            const mockFn = loggerMocks![method as keyof typeof loggerMocks];
+            if(mockFn?.mock) {
+                mockFn.mockClear();
+            }
+        });
+    }
+}
+
+/**
+ * Validate that mocks are in a clean state
+ * Returns validation result with any issues found
+ */
+export function validateMockState() {
+    const issues: string[] = [];
+
+    // Check mockSend
+    if(mockSend.mock && mockSend.mock.calls.length > 0) {
+        issues.push(`mockSend has ${mockSend.mock.calls.length} uncleaned calls`);
+    }
+
+    // Check mockS3Send
+    if(mockS3Send.mock && mockS3Send.mock.calls.length > 0) {
+        issues.push(`mockS3Send has ${mockS3Send.mock.calls.length} uncleaned calls`);
+    }
+
+    // Check logger mocks if available
+    if(loggerMocks) {
+        forEach(['error', 'warn', 'info', 'debug'], (method) => {
+            const mockFn = loggerMocks![method as keyof typeof loggerMocks];
+            if(mockFn?.mock && mockFn.mock.calls.length > 0) {
+                issues.push(`logger.${method} has ${mockFn.mock.calls.length} uncleaned calls`);
+            }
+        });
+    }
+
+    return {
+        isClean: issues.length === 0,
+        issues
+    };
+}
+
+/**
+ * Preload data layer modules to ensure all exports are available
+ * This prevents module loading race conditions in Bun's test runner
+ */
+export async function preloadDataModules() {
+    // Preload all data layer modules to ensure exports are resolved
+    await import('../../data/buildings');
+    await import('../../data/units');
+    await import('../../data/unitTypes');
+    await import('../../data/model');
 }
