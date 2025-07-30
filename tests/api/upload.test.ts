@@ -45,10 +45,7 @@ describe('Upload API', () => {
             }
         }));
 
-        // Mock UUID
-        mock.module('uuid', () => ({
-            v4: _.constant('mock-uuid-1234')
-        }));
+        // UUID mocking is handled by mockCrypto() which mocks crypto.randomUUID
 
         // Import handler after mocks are set up
         const uploadModule = await import('../../api/upload');
@@ -153,8 +150,8 @@ describe('Upload API', () => {
 
             expect(result.statusCode).toBe(200);
             expect(body.uploadUrl).toBe('https://s3.example.com/signed-url');
-            expect(body.key).toBe('buildings/building-1/units/unit-1/mock-uuid-1234.jpg');
-            expect(body.publicUrl).toBe('https://test-photos-bucket.s3.amazonaws.com/buildings/building-1/units/unit-1/mock-uuid-1234.jpg');
+            expect(body.key).toBe('buildings/building-1/units/unit-1/test-uuid.jpg');
+            expect(body.publicUrl).toBe('https://test-photos-bucket.s3.amazonaws.com/buildings/building-1/units/unit-1/test-uuid.jpg');
             expect(mockGetSignedUrl).toHaveBeenCalledTimes(1);
             // getSignedUrl is called with (client, command, options)
             expect(mockGetSignedUrl).toHaveBeenCalledWith(
@@ -167,11 +164,11 @@ describe('Upload API', () => {
         it('should handle different image file extensions', async () => {
             expect.assertions(5);
             const testCases = [
-                { filename: 'image.png', expected: 'mock-uuid-1234.png' },
-                { filename: 'photo.JPEG', expected: 'mock-uuid-1234.jpeg' },
-                { filename: 'picture.GIF', expected: 'mock-uuid-1234.gif' },
-                { filename: 'modern.webp', expected: 'mock-uuid-1234.webp' },
-                { filename: 'next-gen.avif', expected: 'mock-uuid-1234.avif' }
+                { filename: 'image.png', expected: 'test-uuid.png' },
+                { filename: 'photo.JPEG', expected: 'test-uuid.jpeg' },
+                { filename: 'picture.GIF', expected: 'test-uuid.gif' },
+                { filename: 'modern.webp', expected: 'test-uuid.webp' },
+                { filename: 'next-gen.avif', expected: 'test-uuid.avif' }
             ];
 
             for(const testCase of testCases) {
@@ -278,8 +275,8 @@ describe('Upload API', () => {
             const body = JSON.parse(result.body!);
 
             expect(result.statusCode).toBe(200);
-            expect(body.key).toBe('buildings/building-1/units/unit-1/mock-uuid-1234.jpg');
-            expect(body.publicUrl).toContain('mock-uuid-1234.jpg');
+            expect(body.key).toBe('buildings/building-1/units/unit-1/test-uuid.jpg');
+            expect(body.publicUrl).toContain('test-uuid.jpg');
         });
 
         it('should handle malformed request body', async () => {

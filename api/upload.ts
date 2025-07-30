@@ -2,7 +2,7 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Resource } from 'sst';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { split, toLower, startsWith, isError } from 'lodash';
 import { getS3Client } from '../data/clients';
 
@@ -12,7 +12,7 @@ const s3Client = getS3Client();
 const generateS3Key = (buildingId: string, unitId: string, filename: string): string => {
     const parts = split(filename, '.');
     const extension = toLower(parts.pop() || 'jpg');
-    const uuid = uuidv4();
+    const uuid = randomUUID();
     return `buildings/${buildingId}/units/${unitId}/${uuid}.${extension}`;
 };
 
