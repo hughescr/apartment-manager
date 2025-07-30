@@ -255,10 +255,10 @@ bunx eslint --print-config path/to/file.ts
 ```
 
 #### Understanding ESLint Rules
-Use Context7 MCP to get detailed information about specific rules:
-- Use `mcp__Context7__get-library-docs` with library ID `/eslint-stylistic/eslint-stylistic`
+Use documentation MCP to get detailed information about specific rules:
+- Use `mcp__documentation__get-library-docs` with library ID `/eslint-stylistic/eslint-stylistic`
 - Search for specific rules like `keyword-spacing`, `space-before-function-paren`, etc.
-- Context7 provides extensive examples showing correct and incorrect usage
+- documentation MCP provides extensive examples showing correct and incorrect usage
 
 #### Critical Formatting Rules
 Pay special attention to these commonly violated rules:
@@ -463,7 +463,7 @@ For detailed module-specific patterns and rules, see:
 3. Remember: "Tools Before Terminal - ALWAYS!"
 
 ## Resources
-**⚠️ IMPORTANT: CHECK mcp__Context7 FIRST FOR DOCUMENTATION**
+**⚠️ IMPORTANT: CHECK mcp__documentation FIRST FOR DOCUMENTATION**
 - [Astro Documentation](https://docs.astro.build/)
 - [SST Documentation](https://sst.dev/docs/)
 - [Alpine.js Documentation](https://alpinejs.dev/start-here)

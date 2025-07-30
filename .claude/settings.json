@@ -22,10 +22,6 @@
     "permissions": {
         "allow": [
             "mcp__browser",
-            "mcp__web-fetch",
-            "mcp__search",
-            "mcp__time",
-            "mcp__Context7",
             "mcp__eslint",
             "mcp__language-server",
             "mcp__tmux"
