@@ -1,6 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { mockS3Send } from '../data/test-setup';
+import { s3Mock } from '../data/test-setup';
 
 import { describe, it, expect, mock, beforeEach, afterEach, beforeAll } from 'bun:test';
 import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
@@ -57,7 +57,7 @@ describe('Upload API', () => {
 
     beforeEach(() => {
         // Clear mock calls before each test
-        mockS3Send.mockClear();
+        s3Mock.mockClear();
         mockGetSignedUrl.mockClear();
     });
 
@@ -324,7 +324,7 @@ describe('Upload API', () => {
     describe('DELETE /api/upload/{key} - Delete uploaded file', () => {
         it('should delete a file with valid key', async () => {
             expect.assertions(3);
-            mockS3Send.mockResolvedValueOnce({});
+            s3Mock.mockResolvedValueOnce({});
 
             const event = createMockEvent({
                 rawPath: '/api/upload/buildings/building-1/units/unit-1/uuid-1234.jpg',
@@ -342,14 +342,14 @@ describe('Upload API', () => {
 
             expect(result.statusCode).toBe(200);
             expect(body.success).toBe(true);
-            expect(mockS3Send).toHaveBeenCalledWith(
+            expect(s3Mock).toHaveBeenCalledWith(
                 expect.any(Object) // DeleteObjectCommand instance
             );
         });
 
         it('should handle URL-encoded keys', async () => {
             expect.assertions(2);
-            mockS3Send.mockResolvedValueOnce({});
+            s3Mock.mockResolvedValueOnce({});
 
             const event = createMockEvent({
                 rawPath: '/api/upload/buildings%2Fbuilding-1%2Funits%2Funit-1%2Fuuid-1234.jpg',
@@ -365,7 +365,7 @@ describe('Upload API', () => {
             const result = await callHandler(event);
 
             expect(result.statusCode).toBe(200);
-            expect(mockS3Send).toHaveBeenCalledWith(
+            expect(s3Mock).toHaveBeenCalledWith(
                 expect.any(Object) // DeleteObjectCommand instance
             );
         });
@@ -419,7 +419,7 @@ describe('Upload API', () => {
 
         it('should handle S3 deletion errors', async () => {
             expect.assertions(3);
-            mockS3Send.mockRejectedValueOnce(new Error('Access Denied'));
+            s3Mock.mockRejectedValueOnce(new Error('Access Denied'));
 
             const event = createMockEvent({
                 rawPath: '/api/upload/buildings/building-1/units/unit-1/uuid-1234.jpg',

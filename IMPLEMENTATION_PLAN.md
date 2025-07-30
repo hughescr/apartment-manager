@@ -282,12 +282,12 @@ Track the completion status of each implementation step:
 - [x] **Gate passed**: ✅
 
 ### Step 4 – Implement and Test Site Mapping Logic
-- [ ] Create src/mappers/siteMapper.ts
-- [ ] Implement model → unit inheritance logic
-- [ ] Handle site-specific requirements
-- [ ] Create test fixtures
-- [ ] Write unit tests with edge cases
-- [ ] **Gate passed**: ❌
+- [x] Create src/mappers/siteMapper.ts (implemented as modular system with types.ts, registry.ts, etc.)
+- [x] Implement model → unit inheritance logic (inheritance-resolver.ts)
+- [x] Handle site-specific requirements (apartments-com.ts, zillow.ts)
+- [x] Create test fixtures (comprehensive fixtures in tests/fixtures/mappers/)
+- [x] Write unit tests with edge cases (368 tests, 92.18% coverage)
+- [x] **Gate passed**: ✅
 
 ### Step 5 – Build Site Automation Modules
 - [ ] Set up Playwright dependency
@@ -349,7 +349,7 @@ Track the completion status of each implementation step:
 - [ ] Review AWS costs
 - [ ] **Gate passed**: ❌
 
-### Overall Progress: 3/10 Steps Complete
+### Overall Progress: 4/10 Steps Complete
 
 ## 6. Security and Compliance Considerations
 

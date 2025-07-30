@@ -1,5 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
-import { mockSend, clearMocks } from './test-setup';
+import './test-setup';
+import { dynamoDbMock, jest } from './test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory } from '../../src/types';
@@ -11,7 +12,7 @@ import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuildi
 describe('Building Data Layer', () => {
     beforeEach(() => {
         // Clear mock calls before each test
-        clearMocks();
+        jest.clearAllMocks();
     });
 
     const testBuilding = {
@@ -81,8 +82,8 @@ describe('Building Data Layer', () => {
 
     it('should create a building', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' }));
-        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' }));
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(testBuilding);
         expect(createdBuilding).toEqual({ ...testBuilding });
@@ -93,14 +94,14 @@ describe('Building Data Layer', () => {
 
     it('should get all buildings', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockScanResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
         const buildings = await getBuildings();
         expect(buildings).toEqual([{ ...testBuilding }]);
     });
 
     it('should get a single building', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
         const fetchedBuilding = await getBuilding(testBuilding.buildingID);
         expect(fetchedBuilding).toEqual({ ...testBuilding });
     });
@@ -108,8 +109,8 @@ describe('Building Data Layer', () => {
     it('should update a building', async () => {
         expect.assertions(2);
         const updatedDescription = 'Updated description';
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
-        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
 
         const updatedBuilding = await updateBuilding(testBuilding.buildingID, { description: updatedDescription });
         expect(updatedBuilding.description).toBe(updatedDescription);
@@ -120,8 +121,8 @@ describe('Building Data Layer', () => {
 
     it('should delete a building', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce(mockDeleteResponse()); // Successful delete
-        mockSend.mockResolvedValueOnce(mockGetResponse(undefined)); // Item not found after delete
+        dynamoDbMock.mockResolvedValueOnce(mockDeleteResponse()); // Successful delete
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined)); // Item not found after delete
 
         const success = await deleteBuilding(testBuilding.buildingID);
         expect(success).toBeTrue();
@@ -132,14 +133,14 @@ describe('Building Data Layer', () => {
 
     it('should return true if building to delete does not exist (idempotent delete)', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockDeleteResponse()); // Delete operation is idempotent
+        dynamoDbMock.mockResolvedValueOnce(mockDeleteResponse()); // Delete operation is idempotent
         const success = await deleteBuilding('non-existent-building');
         expect(success).toBeTrue();
     });
 
     it('should not create a building if it already exists', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' })); // Simulate existing item
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' })); // Simulate existing item
         const result = await createBuilding(testBuilding);
         expect(result).toEqual({ ...testBuilding });
     });
@@ -147,7 +148,7 @@ describe('Building Data Layer', () => {
     it('should handle error during building deletion', async () => {
         expect.assertions(2);
         const { logger } = await import('@hughescr/logger');
-        mockSend.mockRejectedValueOnce(new Error('DynamoDB error'));
+        dynamoDbMock.mockRejectedValueOnce(new Error('DynamoDB error'));
 
         const success = await deleteBuilding(testBuilding.buildingID);
         expect(success).toBeFalse();
@@ -160,7 +161,7 @@ describe('Building Data Layer', () => {
             buildingID: 'minimal-building-1',
             street: '456 Minimal Ave'
         };
-        mockSend.mockResolvedValueOnce(mockPutResponse({ ...minimalBuilding, unitID: 'BUILDING' }));
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...minimalBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(minimalBuilding);
         expect(createdBuilding).toEqual(minimalBuilding);
@@ -180,7 +181,7 @@ describe('Building Data Layer', () => {
                 { name: 'Sauna', category: AmenityCategory.PROPERTY, description: 'Finnish sauna' }
             ]
         };
-        mockSend.mockResolvedValueOnce(mockPutResponse({ ...complexBuilding, unitID: 'BUILDING' }));
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...complexBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(complexBuilding);
         expect(createdBuilding.rentSpecials!).toHaveLength(2);
@@ -203,7 +204,7 @@ describe('Building Data Layer', () => {
             },
             photos: ['https://s3.example.com/new-photo1.jpg']
         };
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, unitID: 'BUILDING', ...updatedFields }));
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, unitID: 'BUILDING', ...updatedFields }));
 
         const updatedBuilding = await updateBuilding(testBuilding.buildingID, updatedFields);
         expect(updatedBuilding.petPolicies!.allowed).toBe(false);

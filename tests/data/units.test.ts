@@ -1,5 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
-import { mockSend, clearMocks } from './test-setup';
+import './test-setup';
+import { dynamoDbMock, jest } from './test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { AmenityCategory, WebsiteStatus } from '../../src/types';
@@ -11,7 +12,7 @@ import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../dat
 describe('Unit Data Layer', () => {
     beforeEach(() => {
         // Clear mock calls before each test
-        clearMocks();
+        jest.clearAllMocks();
     });
 
     const testBuildingID = 'test-building-1';
@@ -55,7 +56,7 @@ describe('Unit Data Layer', () => {
             { ...testUnit, unitID: 'UNIT#test-unit-1' },
             { ...testUnit, unitID: 'UNIT#test-unit-2', unitNumber: '102' }
         ];
-        mockSend.mockResolvedValueOnce(mockScanResponse(units));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse(units));
 
         const result = await getUnits(testBuildingID);
         // The function strips the UNIT# prefix when returning
@@ -67,7 +68,7 @@ describe('Unit Data Layer', () => {
 
     it('should handle empty unit list', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockScanResponse([]));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
 
         const result = await getUnits(testBuildingID);
         expect(result).toEqual([]);
@@ -75,7 +76,7 @@ describe('Unit Data Layer', () => {
 
     it('should get a specific unit', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testUnit, unitID: 'UNIT#test-unit-1' }));
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnit, unitID: 'UNIT#test-unit-1' }));
 
         const result = await getUnit(testUnit.buildingID, testUnit.unitID);
         expect(result).toEqual(testUnit);
@@ -83,7 +84,7 @@ describe('Unit Data Layer', () => {
 
     it('should return undefined for non-existent unit', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
 
         const result = await getUnit(testUnit.buildingID, 'non-existent');
         expect(result).toBeUndefined();
@@ -101,13 +102,13 @@ describe('Unit Data Layer', () => {
             buildingID: testBuildingID,
             unitID: 'UNIT#test-uuid'
         };
-        mockSend.mockResolvedValueOnce(mockPutResponse(expectedUnit));
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse(expectedUnit));
 
         const result = await createUnit({ ...minimalUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
         // The function strips the UNIT# prefix when returning
         expect(result).toEqual({ ...minimalUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
         expect(result.unitID).toBe('test-uuid');
-        expect(mockSend).toHaveBeenCalledTimes(1);
+        expect(dynamoDbMock).toHaveBeenCalledTimes(1);
     });
 
     it('should handle createUnit when Attributes is not returned', async () => {
@@ -120,7 +121,7 @@ describe('Unit Data Layer', () => {
             unitID: 'test-uuid'
         };
         // Mock a response where Attributes is explicitly undefined (edge case)
-        mockSend.mockResolvedValueOnce({
+        dynamoDbMock.mockResolvedValueOnce({
             Attributes: undefined,
             $metadata: { httpStatusCode: 200 }
         });
@@ -128,7 +129,7 @@ describe('Unit Data Layer', () => {
         const result = await createUnit(unitData);
         // Should return the original unit data when Attributes is not provided
         expect(result).toEqual(unitData);
-        expect(mockSend).toHaveBeenCalledTimes(1);
+        expect(dynamoDbMock).toHaveBeenCalledTimes(1);
     });
 
     it('should create a unit with full data', async () => {
@@ -169,7 +170,7 @@ describe('Unit Data Layer', () => {
             buildingID: testBuildingID,
             unitID: 'UNIT#test-uuid'
         };
-        mockSend.mockResolvedValueOnce(mockPutResponse(expectedUnit));
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse(expectedUnit));
 
         const result = await createUnit({ ...fullUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
         // The function strips the UNIT# prefix when returning
@@ -186,7 +187,7 @@ describe('Unit Data Layer', () => {
             occupied: true,
             availableDate: '2024-06-01'
         };
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
 
         const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
         expect(result).toEqual({ ...testUnit, ...updates });
@@ -205,7 +206,7 @@ describe('Unit Data Layer', () => {
             rent: 1700,
             occupied: false
         };
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'UNIT#test-unit-1' }));
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'UNIT#test-unit-1' }));
 
         const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
         expect(result).toEqual(expectedResult);
@@ -214,17 +215,17 @@ describe('Unit Data Layer', () => {
 
     it('should delete a unit', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce(mockDeleteResponse());
+        dynamoDbMock.mockResolvedValueOnce(mockDeleteResponse());
 
         const result = await deleteUnit(testUnit.buildingID, testUnit.unitID);
         expect(result).toBeTrue();
-        expect(mockSend).toHaveBeenCalledTimes(1);
+        expect(dynamoDbMock).toHaveBeenCalledTimes(1);
     });
 
     it('should handle error during unit deletion', async () => {
         expect.assertions(2);
         const { logger } = await import('@hughescr/logger');
-        mockSend.mockRejectedValueOnce(new Error('DynamoDB error'));
+        dynamoDbMock.mockRejectedValueOnce(new Error('DynamoDB error'));
 
         const success = await deleteUnit(testUnit.buildingID, testUnit.unitID);
         expect(success).toBeFalse();
@@ -247,7 +248,7 @@ describe('Unit Data Layer', () => {
                 apartments: 'APT999'
             }
         };
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
 
         const updatedUnit = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
         expect(updatedUnit?.websiteStatus?.zillow).toBe(WebsiteStatus.ACTIVE);
@@ -262,7 +263,7 @@ describe('Unit Data Layer', () => {
             { name: 'Walk-in Closet', category: AmenityCategory.UNIT },
             { name: 'Private Patio', category: AmenityCategory.UNIT }
         ];
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
             ...testUnit,
             unitID: 'UNIT#test-unit-1',
             unitAmenities: updatedAmenities
@@ -287,7 +288,7 @@ describe('Unit Data Layer', () => {
             websiteStatus: {},
             listingIds: {}
         };
-        mockSend.mockResolvedValueOnce(mockScanResponse([unitWithEmptyCollections]));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([unitWithEmptyCollections]));
 
         const units = await getUnits(testBuildingID);
         expect(units[0].photos).toHaveLength(0);

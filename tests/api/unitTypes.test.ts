@@ -1,6 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { mockSend, clearMocks } from '../data/test-setup';
+import { dynamoDbMock, jest } from '../data/test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { APIGatewayProxyEventV2 } from 'aws-lambda';
@@ -14,7 +14,7 @@ import { list, get, create, update, del } from '../../api/unitTypes';
 describe('Unit Types API', () => {
     beforeEach(() => {
         // Clear mock calls before each test
-        clearMocks();
+        jest.clearAllMocks();
     });
 
     const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
@@ -77,7 +77,7 @@ describe('Unit Types API', () => {
             ];
             // Mock DynamoDB scan response with proper unitID format
             const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
-            mockSend.mockResolvedValueOnce(mockScanResponse(mockDbData));
+            dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockDbData));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1' }
@@ -88,12 +88,12 @@ describe('Unit Types API', () => {
             expect(result.statusCode).toBe(200);
             // The data layer strips the unitID field
             expect(JSON.parse(result.body as string)).toEqual(unitTypes);
-            expect(mockSend).toHaveBeenCalledTimes(1);
+            expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 
         it('should handle empty unit types list', async () => {
             expect.assertions(2);
-            mockSend.mockResolvedValueOnce(mockScanResponse([]));
+            dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1' }
@@ -107,7 +107,7 @@ describe('Unit Types API', () => {
 
         it('should handle data layer errors', async () => {
             expect.assertions(1);
-            mockSend.mockRejectedValueOnce(new Error('Database error'));
+            dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1' }
@@ -121,7 +121,7 @@ describe('Unit Types API', () => {
         it('should return a specific unit type', async () => {
             expect.assertions(3);
             // Mock DynamoDB get response with proper unitID format
-            mockSend.mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
@@ -131,12 +131,12 @@ describe('Unit Types API', () => {
 
             expect(result.statusCode).toBe(200);
             expect(JSON.parse(result.body as string)).toEqual(testUnitType);
-            expect(mockSend).toHaveBeenCalledTimes(1);
+            expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 
         it('should return 404 for non-existent unit type', async () => {
             expect.assertions(2);
-            mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1', modelID: 'non-existent' }
@@ -150,7 +150,7 @@ describe('Unit Types API', () => {
 
         it('should handle data layer errors', async () => {
             expect.assertions(1);
-            mockSend.mockRejectedValueOnce(new Error('Database error'));
+            dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
@@ -171,9 +171,9 @@ describe('Unit Types API', () => {
                 buildingID: 'test-building-1'
             };
             // Mock the check for existing unit type (returns undefined)
-            mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
             // Mock the create operation
-            mockSend.mockResolvedValueOnce(mockPutResponse({ ...newUnitType, unitID: `MODEL#${newUnitType.modelID}` }));
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...newUnitType, unitID: `MODEL#${newUnitType.modelID}` }));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1' },
@@ -185,7 +185,7 @@ describe('Unit Types API', () => {
 
             expect(result.statusCode).toBe(201);
             expect(JSON.parse(result.body as string)).toEqual(newUnitType);
-            expect(mockSend).toHaveBeenCalledTimes(2);
+            expect(dynamoDbMock).toHaveBeenCalledTimes(2);
         });
 
         it('should validate required fields', async () => {
@@ -234,7 +234,7 @@ describe('Unit Types API', () => {
                 buildingID: 'test-building-1'
             };
             // Mock the check for existing unit type (returns an existing item)
-            mockSend.mockResolvedValueOnce(mockGetResponse({
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse({
                 ...newUnitType,
                 unitID: `MODEL#${newUnitType.modelID}`
             }));
@@ -612,7 +612,7 @@ describe('Unit Types API', () => {
             };
             // Mock returns the updated item with unitID
             const updatedUnitType = { ...testUnitType, ...updates };
-            mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...updatedUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...updatedUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
@@ -624,7 +624,7 @@ describe('Unit Types API', () => {
 
             expect(result.statusCode).toBe(200);
             expect(JSON.parse(result.body as string)).toEqual(updatedUnitType);
-            expect(mockSend).toHaveBeenCalledTimes(1);
+            expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 
         it('should successfully update a non-existent unit type', async () => {
@@ -639,7 +639,7 @@ describe('Unit Types API', () => {
                 beds: 1, // These would be required in real DynamoDB
                 baths: 1
             };
-            mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...updatedItem, unitID: 'MODEL#non-existent' }));
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...updatedItem, unitID: 'MODEL#non-existent' }));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1', modelID: 'non-existent' },
@@ -662,7 +662,7 @@ describe('Unit Types API', () => {
             };
 
             // The data layer will use the IDs from path params, not from body
-            mockSend.mockResolvedValueOnce(mockUpdateResponse({
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnitType,
                 modelName: 'Updated Name',
                 unitID: `MODEL#${testUnitType.modelID}`
@@ -749,7 +749,7 @@ describe('Unit Types API', () => {
     describe('delete endpoint', () => {
         it('should delete a unit type', async () => {
             expect.assertions(3);
-            mockSend.mockResolvedValueOnce(mockDeleteResponse());
+            dynamoDbMock.mockResolvedValueOnce(mockDeleteResponse());
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
@@ -759,12 +759,12 @@ describe('Unit Types API', () => {
 
             expect(result.statusCode).toBe(204);
             expect(result.body).toBe('');
-            expect(mockSend).toHaveBeenCalledTimes(1);
+            expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 
         it('should handle delete errors gracefully', async () => {
             expect.assertions(2);
-            mockSend.mockRejectedValueOnce(new Error('Database error'));
+            dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
@@ -1245,7 +1245,7 @@ describe('Unit Types API', () => {
                 };
 
                 // Mock the check for existing unit type to return an existing item
-                mockSend.mockResolvedValueOnce(mockGetResponse({
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse({
                     ...newUnitType,
                     unitID: `MODEL#${newUnitType.modelID}`
                 }));
@@ -1367,8 +1367,8 @@ describe('Unit Types API', () => {
                     baths: 1
                 };
 
-                mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
-                mockSend.mockResolvedValueOnce(mockPutResponse({ ...validData0, unitID: `MODEL#${validData0.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...validData0, unitID: `MODEL#${validData0.modelID}` }));
 
                 const event0 = createMockEvent({
                     pathParameters: { buildingID: 'test-building-1' },
@@ -1388,8 +1388,8 @@ describe('Unit Types API', () => {
                     baths: 5
                 };
 
-                mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
-                mockSend.mockResolvedValueOnce(mockPutResponse({ ...validData10, unitID: `MODEL#${validData10.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...validData10, unitID: `MODEL#${validData10.modelID}` }));
 
                 const event10 = createMockEvent({
                     pathParameters: { buildingID: 'test-building-1' },
@@ -1434,8 +1434,8 @@ describe('Unit Types API', () => {
                     maxLeaseTerm: 36
                 };
 
-                mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
-                mockSend.mockResolvedValueOnce(mockPutResponse({ ...validData, unitID: `MODEL#${validData.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...validData, unitID: `MODEL#${validData.modelID}` }));
 
                 const event = createMockEvent({
                     pathParameters: { buildingID: 'test-building-1' },
@@ -1463,8 +1463,8 @@ describe('Unit Types API', () => {
                     maxSqft: 10000
                 };
 
-                mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
-                mockSend.mockResolvedValueOnce(mockPutResponse({ ...validData, unitID: `MODEL#${validData.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...validData, unitID: `MODEL#${validData.modelID}` }));
 
                 const event = createMockEvent({
                     pathParameters: { buildingID: 'test-building-1' },
@@ -1491,8 +1491,8 @@ describe('Unit Types API', () => {
                     maxOccupants: 1
                 };
 
-                mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
-                mockSend.mockResolvedValueOnce(mockPutResponse({ ...validData1, unitID: `MODEL#${validData1.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...validData1, unitID: `MODEL#${validData1.modelID}` }));
 
                 const event1 = createMockEvent({
                     pathParameters: { buildingID: 'test-building-1' },
@@ -1512,8 +1512,8 @@ describe('Unit Types API', () => {
                     maxOccupants: 20
                 };
 
-                mockSend.mockResolvedValueOnce(mockGetResponse(undefined));
-                mockSend.mockResolvedValueOnce(mockPutResponse({ ...validData20, unitID: `MODEL#${validData20.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...validData20, unitID: `MODEL#${validData20.modelID}` }));
 
                 const event20 = createMockEvent({
                     pathParameters: { buildingID: 'test-building-1' },

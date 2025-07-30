@@ -1,4 +1,5 @@
 [test]
+preload = ["./tests/setup-test-env.ts"]
 coverage = true
 coverageThreshold = { line = 0.95, function = 0.95, statement = 0.95 }
 coverageReporter = ["text", "lcov"]

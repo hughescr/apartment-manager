@@ -2,333 +2,189 @@
  * Test setup file that must be imported BEFORE any data layer modules.
  * This sets up all the necessary mocks for DynamoDB operations.
  */
-import { mock } from 'bun:test';
+import { mock, jest } from 'bun:test';
+
+// Import AWS SDK command classes before mocking
+import {
+    QueryCommand as DynamoQueryCommand,
+    GetItemCommand as DynamoGetItemCommand,
+    PutItemCommand as DynamoPutItemCommand,
+    UpdateItemCommand as DynamoUpdateItemCommand,
+    DeleteItemCommand as DynamoDeleteItemCommand,
+    TransactWriteItemsCommand as DynamoTransactWriteItemsCommand
+} from '@aws-sdk/client-dynamodb';
+
+import {
+    PutObjectCommand as S3PutObjectCommand,
+    GetObjectCommand as S3GetObjectCommand,
+    DeleteObjectCommand as S3DeleteObjectCommand,
+    ListObjectsV2Command as S3ListObjectsV2Command
+} from '@aws-sdk/client-s3';
+
+// Import lib-dynamodb commands
+import {
+    QueryCommand as LibDynamoQueryCommand,
+    GetCommand as LibDynamoGetCommand,
+    PutCommand as LibDynamoPutCommand,
+    UpdateCommand as LibDynamoUpdateCommand,
+    DeleteCommand as LibDynamoDeleteCommand,
+    TransactWriteCommand as LibDynamoTransactWriteCommand
+} from '@aws-sdk/lib-dynamodb';
 
 // Set test environment
 process.env.BUN_ENV = 'test';
 
-// Mock lodash FIRST for CommonJS compatibility with @hughescr/logger
-mock.module('lodash', () => {
-    /* eslint-disable @typescript-eslint/no-explicit-any -- Mock implementation needs to handle various types */
-    /* eslint-disable @typescript-eslint/no-empty-function -- noop needs to be an empty function */
-    /* eslint-disable lodash/prefer-lodash-method -- We're implementing lodash methods ourselves */
-    /* eslint-disable lodash/prefer-lodash-typecheck -- We're implementing lodash methods ourselves */
-    /* eslint-disable lodash/prefer-noop -- We're implementing lodash noop ourselves */
+// Mock logger
+const mockLogger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn()
+};
 
-    // Create a chainable wrapper class
-    class LodashWrapper {
-        private _value: any;
+mock.module('@hughescr/logger', () => ({
+    logger: mockLogger
+}));
 
-        constructor(value: any) {
-            this._value = value;
+// Mock functions that track calls and provide responses
+const mockDestroy = () => Promise.resolve();
+
+// Create DynamoDB mock
+const dynamoDbMock = (() => {
+    const mockFn = jest.fn();
+    // Default implementation that returns empty results
+    mockFn.mockImplementation((command: unknown) => {
+        const cmd = command as { constructor: { name: string } };
+        if(cmd.constructor.name === 'QueryCommand') {
+            return Promise.resolve({ Items: [], Count: 0 });
         }
+        if(cmd.constructor.name === 'GetItemCommand') {
+            return Promise.resolve({});
+        }
+        if(cmd.constructor.name === 'PutItemCommand') {
+            return Promise.resolve({});
+        }
+        if(cmd.constructor.name === 'UpdateItemCommand') {
+            return Promise.resolve({});
+        }
+        if(cmd.constructor.name === 'DeleteItemCommand') {
+            return Promise.resolve({});
+        }
+        if(cmd.constructor.name === 'TransactWriteItemsCommand') {
+            return Promise.resolve({});
+        }
+        return Promise.reject(new Error(`Unmocked DynamoDB command: ${cmd.constructor.name}`));
+    });
+    return mockFn;
+})();
 
-        pickBy(predicate: (value: any, key: string) => boolean): LodashWrapper {
-            if(typeof this._value !== 'object' || this._value === null) {
-                return new LodashWrapper({});
-            }
-
-            const result: any = {};
-            Object.keys(this._value).forEach((key) => {
-                if(predicate(this._value[key], key)) {
-                    result[key] = this._value[key];
-                }
+// Create S3 mock
+const s3Mock = (() => {
+    const mockFn = jest.fn();
+    // Default implementation that returns success
+    mockFn.mockImplementation((command: unknown) => {
+        const cmd = command as { constructor: { name: string } };
+        if(cmd.constructor.name === 'PutObjectCommand') {
+            return Promise.resolve({
+                ETag: '"mock-etag"',
+                VersionId: 'mock-version-id',
             });
-
-            return new LodashWrapper(result);
         }
-
-        mapValues(iteratee: ((value: any, key: string) => any) | any): LodashWrapper {
-            if(typeof this._value !== 'object' || this._value === null) {
-                return new LodashWrapper({});
-            }
-
-            const result: any = {};
-            Object.keys(this._value).forEach((key) => {
-                // Handle both function iteratees and constructor functions (like String)
-                if(typeof iteratee === 'function') {
-                    result[key] = iteratee(this._value[key], key);
-                } else {
-                    result[key] = iteratee;
-                }
+        if(cmd.constructor.name === 'GetObjectCommand') {
+            return Promise.resolve({
+                Body: {
+                    transformToString: () => Promise.resolve('mock-content'),
+                },
+                ContentType: 'text/plain',
             });
-
-            return new LodashWrapper(result);
         }
-
-        value(): any {
-            return this._value;
+        if(cmd.constructor.name === 'DeleteObjectCommand') {
+            return Promise.resolve({});
         }
-
-        fill(value: any): LodashWrapper {
-            if(Array.isArray(this._value)) {
-                return new LodashWrapper(this._value.fill(value));
-            }
-            return this;
-        }
-
-        map(iteratee: any): LodashWrapper {
-            if(Array.isArray(this._value)) {
-                return new LodashWrapper(this._value.map(iteratee));
-            }
-            return new LodashWrapper([]);
-        }
-    }
-
-    const lodashMethods = {
-        forEach: (collection: any, iteratee: any) => {
-            if(Array.isArray(collection)) {
-                collection.forEach(iteratee);
-            } else {
-                Object.keys(collection).forEach(key => iteratee(collection[key], key));
-            }
-        },
-        map: (collection: any, iteratee: any) => {
-            if(Array.isArray(collection)) {
-                return collection.map(iteratee);
-            }
-            return Object.keys(collection).map(key => iteratee(collection[key], key));
-        },
-        filter: (collection: any, predicate: any) => {
-            if(Array.isArray(collection)) {
-                if(Array.isArray(predicate)) {
-                    const [key, value] = predicate;
-                    return collection.filter(item => item[key] === value);
-                }
-                return collection.filter(predicate);
-            }
-            return [];
-        },
-        omit: (object: any, keys: string[]) => {
-            const result = { ...object };
-            keys.forEach(key => delete result[key]);
-            return result;
-        },
-        replace: (string: string, pattern: RegExp | string, replacement: string) => {
-            return string.replace(pattern, replacement);
-        },
-        constant: (value: any) => () => value,
-        isObject: (value: any) => value !== null && typeof value === 'object',
-        isString: (value: any) => typeof value === 'string',
-        startsWith: (string: string, target: string) => string.startsWith(target),
-        endsWith: (string: string, target: string) => string.endsWith(target),
-        split: (string: string, separator: string) => string.split(separator),
-        toLower: (string: string) => string.toLowerCase(),
-        every: (collection: any[], predicate: any) => collection.every(predicate),
-        keys: (object: any) => Object.keys(object),
-        noop: () => {},
-        isError: (value: any) => value instanceof Error,
-        isArray: Array.isArray,
-        some: (collection: any[], predicate: any) => collection.some(predicate),
-        trim: (string: string) => string.trim(),
-        isEmpty: (value: any) => {
-            if(value == null) {
-                return true;
-            }
-            if(Array.isArray(value) || typeof value === 'string') {
-                return value.length === 0;
-            }
-            if(typeof value === 'object') {
-                return Object.keys(value).length === 0;
-            }
-            return false;
-        },
-        isNumber: (value: any) => typeof value === 'number' && !isNaN(value),
-        fill: (array: any[], value: any) => array.fill(value),
-        // Add standalone versions of chain methods
-        pickBy: (object: any, predicate: (value: any, key: string) => boolean) => {
-            if(typeof object !== 'object' || object === null) {
-                return {};
-            }
-
-            const result: any = {};
-            Object.keys(object).forEach((key) => {
-                if(predicate(object[key], key)) {
-                    result[key] = object[key];
-                }
+        if(cmd.constructor.name === 'ListObjectsV2Command') {
+            return Promise.resolve({
+                Contents: [],
+                IsTruncated: false,
             });
-
-            return result;
-        },
-        mapValues: (object: any, iteratee: ((value: any, key: string) => any) | any) => {
-            if(typeof object !== 'object' || object === null) {
-                return {};
-            }
-
-            const result: any = {};
-            Object.keys(object).forEach((key) => {
-                // Handle both function iteratees and constructor functions (like String)
-                if(typeof iteratee === 'function') {
-                    result[key] = iteratee(object[key], key);
-                } else {
-                    result[key] = iteratee;
-                }
-            });
-
-            return result;
-        },
-    };
-
-    // Create the main lodash function that creates chainable wrappers
-    const lodashChain = Object.assign(
-        (value: any) => new LodashWrapper(value),
-        lodashMethods,
-        {
-            // Add chain method for compatibility
-            chain: (value: any) => new LodashWrapper(value)
         }
-    );
-
-    /* eslint-enable @typescript-eslint/no-explicit-any -- Re-enable after mock implementation */
-    /* eslint-enable @typescript-eslint/no-empty-function -- Re-enable after mock implementation */
-    /* eslint-enable lodash/prefer-lodash-method -- Re-enable after mock implementation */
-    /* eslint-enable lodash/prefer-lodash-typecheck -- Re-enable after mock implementation */
-    /* eslint-enable lodash/prefer-noop -- Re-enable after mock implementation */
-
-    // Support both ESM and CommonJS usage
-    // The default export should be the chainable function itself
-    return {
-        ...lodashChain,  // This includes both the function and all methods
-        'default': lodashChain,
-    };
-});
+        return Promise.reject(new Error(`Unmocked S3 command: ${cmd.constructor.name}`));
+    });
+    return mockFn;
+})();
 
 // Mock the SST module FIRST before any other imports can access it
 mock.module('sst', () => ({
     Resource: {
         BuildingsUnits: {
             name: 'test-table-name'
+        },
+        ProfilesBucket: {
+            name: 'test-profile-bucket'
+        },
+        ListingsBucket: {
+            name: 'test-listings-bucket'
         }
     }
 }));
 
-// Store reference to logger mocks for validation
-let loggerMocks: Record<string, ReturnType<typeof mock>> | undefined;
-
-// Mock the logger module
-mock.module('@hughescr/logger', () => {
-    const errorMock = mock();
-    const warnMock = mock();
-    const infoMock = mock();
-    const debugMock = mock();
-
-    loggerMocks = {
-        error: errorMock,
-        warn: warnMock,
-        info: infoMock,
-        debug: debugMock,
-    };
-
-    return {
-        logger: loggerMocks,
-    };
-});
-
-// Now import types after mocking
-import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import type { S3Client } from '@aws-sdk/client-s3';
-import { constant, forEach } from 'lodash';
-
-// Create the mock send function that will be used by all tests
-export const mockSend = mock(() => Promise.resolve({}));
-
-// Create mock S3 send function that can be accessed by tests
-export const mockS3Send = mock(() => Promise.resolve({}));
-
-// Create a mock DynamoDB Document Client
-const mockDynamoClient = {
-    send: mockSend
-} as unknown as DynamoDBDocumentClient;
-
-// Create a mock S3 Client
-const mockS3Client = {
-    send: mockS3Send
-} as unknown as S3Client;
-
-// Mock the clients module to return our mock clients
-mock.module('../../data/clients', () => ({
-    getDynamoClient: (injectedClient?: DynamoDBDocumentClient) => injectedClient || mockDynamoClient,
-    getS3Client: (injectedClient?: S3Client) => injectedClient || mockS3Client
+// Mock AWS SDK v3 DynamoDB Client
+mock.module('@aws-sdk/client-dynamodb', () => ({
+    DynamoDBClient: class MockDynamoDBClient {
+        send = dynamoDbMock;
+        destroy = mockDestroy;
+    },
+    // Re-export command classes
+    QueryCommand: DynamoQueryCommand,
+    GetItemCommand: DynamoGetItemCommand,
+    PutItemCommand: DynamoPutItemCommand,
+    UpdateItemCommand: DynamoUpdateItemCommand,
+    DeleteItemCommand: DynamoDeleteItemCommand,
+    TransactWriteItemsCommand: DynamoTransactWriteItemsCommand,
 }));
 
-// Mock the db module to return our mock client and table name
-mock.module('../../data/db', () => ({
-    db: mockDynamoClient,
-    tableName: 'test-table-name',
-    getTableName: constant('test-table-name')
+// Mock AWS SDK v3 S3 Client
+mock.module('@aws-sdk/client-s3', () => ({
+    S3Client: class MockS3Client {
+        send = s3Mock;
+        destroy = mockDestroy;
+    },
+    // Re-export command classes
+    PutObjectCommand: S3PutObjectCommand,
+    GetObjectCommand: S3GetObjectCommand,
+    DeleteObjectCommand: S3DeleteObjectCommand,
+    ListObjectsV2Command: S3ListObjectsV2Command,
 }));
 
-// Mock the config module to return test configuration
-mock.module('../../data/config', () => ({
-    getConfig: (overrides?: { tableName?: string }) => ({
-        tableName: overrides?.tableName || 'test-table-name'
-    })
+// Mock AWS SDK v3 lib-dynamodb (Document Client)
+mock.module('@aws-sdk/lib-dynamodb', () => ({
+    DynamoDBDocumentClient: {
+        from: (_client: unknown, _config?: unknown) => ({
+            send: dynamoDbMock,
+            destroy: mockDestroy,
+            config: {}
+        })
+    },
+    // Re-export command classes
+    QueryCommand: LibDynamoQueryCommand,
+    GetCommand: LibDynamoGetCommand,
+    PutCommand: LibDynamoPutCommand,
+    UpdateCommand: LibDynamoUpdateCommand,
+    DeleteCommand: LibDynamoDeleteCommand,
+    TransactWriteCommand: LibDynamoTransactWriteCommand
 }));
 
-// Mock crypto for ID generation
-mock.module('crypto', () => ({
-    randomUUID: mock(constant('test-uuid'))
-}));
+// Export mocks for test files to use
+export { dynamoDbMock, s3Mock };
 
-/**
- * Helper to clear all mock calls between tests
- */
-export function clearMocks() {
-    mockSend.mockClear();
-    mockS3Send.mockClear();
+// Re-export jest for convenience
+export { jest };
 
-    // Clear logger mocks if available
-    if(loggerMocks) {
-        forEach(['error', 'warn', 'info', 'debug'], (method) => {
-            const mockFn = loggerMocks![method as keyof typeof loggerMocks];
-            if(mockFn?.mock) {
-                mockFn.mockClear();
-            }
-        });
-    }
-}
-
-/**
- * Validate that mocks are in a clean state
- * Returns validation result with any issues found
- */
-export function validateMockState() {
-    const issues: string[] = [];
-
-    // Check mockSend
-    if(mockSend.mock && mockSend.mock.calls.length > 0) {
-        issues.push(`mockSend has ${mockSend.mock.calls.length} uncleaned calls`);
-    }
-
-    // Check mockS3Send
-    if(mockS3Send.mock && mockS3Send.mock.calls.length > 0) {
-        issues.push(`mockS3Send has ${mockS3Send.mock.calls.length} uncleaned calls`);
-    }
-
-    // Check logger mocks if available
-    if(loggerMocks) {
-        forEach(['error', 'warn', 'info', 'debug'], (method) => {
-            const mockFn = loggerMocks![method as keyof typeof loggerMocks];
-            if(mockFn?.mock && mockFn.mock.calls.length > 0) {
-                issues.push(`logger.${method} has ${mockFn.mock.calls.length} uncleaned calls`);
-            }
-        });
-    }
-
-    return {
-        isClean: issues.length === 0,
-        issues
-    };
-}
-
-/**
- * Preload data layer modules to ensure all exports are available
- * This prevents module loading race conditions in Bun's test runner
- */
-export async function preloadDataModules() {
-    // Preload all data layer modules to ensure exports are resolved
-    await import('../../data/buildings');
-    await import('../../data/units');
-    await import('../../data/unitTypes');
-    await import('../../data/model');
-}
+// Re-export lib-dynamodb commands for tests to use
+export {
+    LibDynamoQueryCommand as QueryCommand,
+    LibDynamoGetCommand as GetCommand,
+    LibDynamoPutCommand as PutCommand,
+    LibDynamoUpdateCommand as UpdateCommand,
+    LibDynamoDeleteCommand as DeleteCommand,
+    LibDynamoTransactWriteCommand as TransactWriteCommand
+};

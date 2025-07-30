@@ -1,0 +1,364 @@
+{
+  "beds": {
+    "apartments_com_model": {
+      "selector": "#beds-select",
+      "required": true,
+      "validation": {
+        "minValue": 0,
+        "maxValue": 10
+      }
+    },
+    "apartments_com_unit": {
+      "selector": "#unitBeds-select",
+      "required": true
+    },
+    "zillow": {
+      "selector": "#bedroom-count",
+      "required": true,
+      "defaultValue": 0
+    }
+  },
+  "baths": {
+    "apartments_com_model": {
+      "selector": "#baths-select",
+      "required": true,
+      "validation": {
+        "minValue": 1,
+        "maxValue": 10
+      }
+    },
+    "apartments_com_unit": "#unitBaths-select",
+    "zillow": {
+      "selector": "#bathroom-count",
+      "required": true,
+      "defaultValue": 1
+    }
+  },
+  "rent": {
+    "apartments_com_model": {
+      "selector": "#minRent-input",
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "currency"
+        }
+      }
+    },
+    "apartments_com_unit": "#unitRent-input",
+    "zillow": {
+      "selector": "#monthly-rent",
+      "required": true,
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "currency",
+          "includeSymbol": false
+        }
+      }
+    }
+  },
+  "sqft": {
+    "apartments_com_model": "#minSqft-input",
+    "apartments_com_unit": "#unitSqft-input",
+    "zillow": {
+      "selector": "#square-footage",
+      "validation": {
+        "minValue": 100,
+        "maxValue": 10000
+      }
+    }
+  },
+  "deposit": {
+    "apartments_com_model": "#deposit-input",
+    "apartments_com_unit": "#unitDeposit-input",
+    "zillow": {
+      "selector": "#security-deposit",
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "currency",
+          "includeSymbol": false
+        }
+      }
+    }
+  },
+  "propertyType": {
+    "apartments_com": {
+      "selector": "#property-type-select",
+      "transform": {
+        "type": "enum",
+        "params": {
+          "mapping": "propertyType"
+        }
+      }
+    },
+    "zillow": {
+      "selector": "#property-type",
+      "transform": {
+        "type": "enum",
+        "params": {
+          "mapping": "propertyType"
+        }
+      }
+    }
+  },
+  "yearBuilt": {
+    "apartments_com": "#year-built-input",
+    "zillow": {
+      "selector": "#year-built",
+      "validation": {
+        "minValue": 1800,
+        "maxValue": 2030
+      }
+    }
+  },
+  "petPolicy": {
+    "apartments_com_allowed": {
+      "selector": "#pets-allowed-checkbox",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "petPolicyAllowed"
+        }
+      }
+    },
+    "apartments_com_types": {
+      "selector": "#pet-types-select",
+      "transform": {
+        "type": "enum",
+        "params": {
+          "mapping": "petType",
+          "multiple": true
+        }
+      }
+    },
+    "apartments_com_deposit": "#pet-deposit-input",
+    "apartments_com_fee": "#pet-fee-input",
+    "zillow_allowed": {
+      "selector": "#pets-allowed",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "petPolicyToZillow"
+        }
+      }
+    },
+    "zillow_types": "#allowed-pet-types"
+  },
+  "parking": {
+    "apartments_com": {
+      "selector": "#parking-options-select",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "parkingOptions"
+        }
+      }
+    },
+    "zillow": {
+      "selector": "#parking-type",
+      "transform": {
+        "type": "enum",
+        "params": {
+          "mapping": "parkingType"
+        }
+      }
+    }
+  },
+  "utilities": {
+    "apartments_com_water": "#water-included-checkbox",
+    "apartments_com_sewer": "#sewer-included-checkbox",
+    "apartments_com_trash": "#trash-included-checkbox",
+    "apartments_com_gas": "#gas-included-checkbox",
+    "apartments_com_electricity": "#electricity-included-checkbox",
+    "zillow_included": {
+      "selector": "#utilities-included",
+      "transform": {
+        "type": "merge",
+        "params": {
+          "fields": ["water", "sewer", "trash", "gas", "electricity"],
+          "format": "csv"
+        }
+      }
+    }
+  },
+  "amenities": {
+    "apartments_com_property": {
+      "selector": "#property-amenities-multiselect",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "amenityCategories",
+          "category": "property"
+        }
+      }
+    },
+    "apartments_com_unit": {
+      "selector": "#unit-amenities-multiselect",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "amenityCategories",
+          "category": "unit"
+        }
+      }
+    },
+    "zillow_interior": {
+      "selector": "#interior-amenities",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "amenityCategories",
+          "category": "unit"
+        }
+      }
+    },
+    "zillow_property": {
+      "selector": "#property-amenities",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "amenityCategories",
+          "category": "property"
+        }
+      }
+    }
+  },
+  "photos": {
+    "apartments_com": {
+      "selector": "#photo-upload-input",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "photoUrls"
+        }
+      }
+    },
+    "zillow": {
+      "selector": "#photos-upload",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "photoUrls"
+        }
+      }
+    }
+  },
+  "availableDate": {
+    "apartments_com_model": {
+      "selector": "#date-available-input",
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "MM/DD/YYYY"
+        }
+      }
+    },
+    "apartments_com_unit": {
+      "selector": "#unit-available-date",
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "MM/DD/YYYY"
+        }
+      }
+    },
+    "zillow": {
+      "selector": "#available-date",
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "YYYY-MM-DD"
+        }
+      }
+    }
+  },
+  "leaseTerms": {
+    "apartments_com_min": {
+      "selector": "#min-lease-term-select",
+      "defaultValue": 12
+    },
+    "apartments_com_max": {
+      "selector": "#max-lease-term-select",
+      "defaultValue": 12
+    },
+    "zillow": {
+      "selector": "#lease-length",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "leaseTermsToMonths"
+        }
+      }
+    }
+  },
+  "applicationFee": {
+    "apartments_com": {
+      "selector": "#application-fee-input",
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "currency"
+        }
+      }
+    },
+    "zillow": {
+      "selector": "#application-fee",
+      "transform": {
+        "type": "format",
+        "params": {
+          "format": "currency",
+          "includeSymbol": false
+        }
+      }
+    }
+  },
+  "screeningCriteria": {
+    "apartments_com_income": {
+      "selector": "#income-ratio-input",
+      "defaultValue": 3
+    },
+    "apartments_com_credit": {
+      "selector": "#min-credit-score-input",
+      "defaultValue": 600
+    },
+    "zillow_income": {
+      "selector": "#income-requirement",
+      "transform": {
+        "type": "custom",
+        "params": {
+          "transformer": "incomeRatioToText"
+        }
+      }
+    },
+    "zillow_credit": "#credit-score-requirement"
+  },
+  "unitNumber": {
+    "apartments_com": "#unit-number-input",
+    "zillow": "#unit-number"
+  },
+  "address": {
+    "apartments_com_street": "#street-address-input",
+    "apartments_com_city": "#city-input",
+    "apartments_com_state": "#state-select",
+    "apartments_com_zip": "#zip-input",
+    "zillow_full": {
+      "selector": "#property-address",
+      "transform": {
+        "type": "merge",
+        "params": {
+          "fields": ["street", "city", "state", "zip"],
+          "format": "address"
+        }
+      }
+    }
+  },
+  "contactInfo": {
+    "apartments_com_name": "#contact-name",
+    "apartments_com_phone": "#contact-phone",
+    "apartments_com_email": "#contact-email",
+    "zillow_name": "#landlord-name",
+    "zillow_phone": "#landlord-phone",
+    "zillow_email": "#landlord-email"
+  }
+}

@@ -1,5 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
-import { mockSend, clearMocks, preloadDataModules } from './test-setup';
+import './test-setup';
+import { dynamoDbMock, jest } from './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { AmenityCategory } from '../../src/types';
@@ -17,10 +18,7 @@ import {
 } from '../../data/unitTypes';
 
 describe('UnitType Data Layer', () => {
-    beforeAll(async () => {
-        // Preload modules to prevent race conditions
-        await preloadDataModules();
-
+    beforeAll(() => {
         // Validate that all expected exports are available
         expect(typeof getUnitTypes).toBe('function');
         expect(typeof getUnitType).toBe('function');
@@ -32,7 +30,7 @@ describe('UnitType Data Layer', () => {
 
     beforeEach(() => {
         // Clear mock calls before each test
-        clearMocks();
+        jest.clearAllMocks();
     });
 
     const testBuildingID = 'test-building-1';
@@ -67,7 +65,7 @@ describe('UnitType Data Layer', () => {
         ];
         // Mock response will include unitID field, but getUnitTypes will omit it
         const mockResponseData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
-        mockSend.mockResolvedValueOnce(mockScanResponse(mockResponseData));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockResponseData));
 
         const result = await getUnitTypes(testBuildingID);
         expect(result).toEqual(unitTypes);
@@ -75,7 +73,7 @@ describe('UnitType Data Layer', () => {
 
     it('should handle empty unit type list', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockScanResponse([]));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
 
         const result = await getUnitTypes(testBuildingID);
         expect(result).toEqual([]);
@@ -84,7 +82,7 @@ describe('UnitType Data Layer', () => {
     it('should get a specific unit type', async () => {
         expect.assertions(1);
         // Mock response includes unitID field, but getUnitType will omit it
-        mockSend.mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
 
         const result = await getUnitType(testBuildingID, testUnitType.modelID);
         expect(result).toEqual(testUnitType);
@@ -92,7 +90,7 @@ describe('UnitType Data Layer', () => {
 
     it('should return undefined for non-existent unit type', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockGetResponse(null));
+        dynamoDbMock.mockResolvedValueOnce(mockGetResponse(null));
 
         const result = await getUnitType(testBuildingID, 'non-existent');
         expect(result).toBeUndefined();
@@ -108,7 +106,7 @@ describe('UnitType Data Layer', () => {
             baths: 1
         };
         // Mock returns the item with unitID, but createUnitType will omit it
-        mockSend.mockResolvedValueOnce(mockPutResponse({ ...minimalUnitType, unitID: 'MODEL#test-uuid' }));
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...minimalUnitType, unitID: 'MODEL#test-uuid' }));
 
         const result = await createUnitType(minimalUnitType);
         expect(result).toEqual(minimalUnitType);
@@ -140,7 +138,7 @@ describe('UnitType Data Layer', () => {
             ]
         };
         // Mock returns the item with unitID, but createUnitType will omit it
-        mockSend.mockResolvedValueOnce(mockPutResponse({ ...fullUnitType, unitID: 'MODEL#test-uuid' }));
+        dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...fullUnitType, unitID: 'MODEL#test-uuid' }));
 
         const result = await createUnitType(fullUnitType);
         expect(result).toEqual(fullUnitType);
@@ -156,7 +154,7 @@ describe('UnitType Data Layer', () => {
             maxRent: 1900
         };
         // Mock returns the item with unitID, but updateUnitType will omit it
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}`, ...updates }));
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}`, ...updates }));
 
         const result = await updateUnitType(testBuildingID, testUnitType.modelID, updates);
         expect(result).toEqual({ ...testUnitType, ...updates });
@@ -176,7 +174,7 @@ describe('UnitType Data Layer', () => {
             minRent: 1400
         };
         // Mock returns the item with unitID, but updateUnitType will omit it
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: `MODEL#${testUnitType.modelID}` }));
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: `MODEL#${testUnitType.modelID}` }));
 
         const result = await updateUnitType(testBuildingID, testUnitType.modelID, updates);
         expect(result).toEqual(expectedResult);
@@ -185,17 +183,17 @@ describe('UnitType Data Layer', () => {
 
     it('should delete a unit type', async () => {
         expect.assertions(2);
-        mockSend.mockResolvedValueOnce(mockDeleteResponse());
+        dynamoDbMock.mockResolvedValueOnce(mockDeleteResponse());
 
         const result = await deleteUnitType(testBuildingID, testUnitType.modelID);
         expect(result).toBeTrue();
-        expect(mockSend).toHaveBeenCalledTimes(1);
+        expect(dynamoDbMock).toHaveBeenCalledTimes(1);
     });
 
     it('should handle error during unit type deletion', async () => {
         expect.assertions(2);
         const { logger } = await import('@hughescr/logger');
-        mockSend.mockRejectedValueOnce(new Error('DynamoDB error'));
+        dynamoDbMock.mockRejectedValueOnce(new Error('DynamoDB error'));
 
         const success = await deleteUnitType(testBuildingID, testUnitType.modelID);
         expect(success).toBeFalse();
@@ -234,7 +232,7 @@ describe('UnitType Data Layer', () => {
                 rent: 1200
             }
         ];
-        mockSend.mockResolvedValueOnce(mockScanResponse(units));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse(units));
 
         const result = await getUnitsByModelID(testBuildingID, 'model-2br');
         // getUnitsByModelID strips the UNIT# prefix from unitID
@@ -248,7 +246,7 @@ describe('UnitType Data Layer', () => {
 
     it('should handle empty result when getting units by model ID', async () => {
         expect.assertions(1);
-        mockSend.mockResolvedValueOnce(mockScanResponse([]));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
 
         const result = await getUnitsByModelID(testBuildingID, 'model-3br');
         expect(result).toEqual([]);
@@ -261,7 +259,7 @@ describe('UnitType Data Layer', () => {
             { name: 'Stainless Steel Appliances', category: AmenityCategory.UNIT },
             { name: 'Ceiling Fans', category: AmenityCategory.UNIT }
         ];
-        mockSend.mockResolvedValueOnce(mockUpdateResponse({
+        dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
             ...testUnitType,
             unitID: `MODEL#${testUnitType.modelID}`,
             modelAmenities: updatedAmenities
@@ -283,7 +281,7 @@ describe('UnitType Data Layer', () => {
             modelAmenities: []
         };
         // Mock response includes unitID field
-        mockSend.mockResolvedValueOnce(mockScanResponse([{ ...unitTypeWithEmptyCollections, unitID: `MODEL#${testUnitType.modelID}` }]));
+        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([{ ...unitTypeWithEmptyCollections, unitID: `MODEL#${testUnitType.modelID}` }]));
 
         const unitTypes = await getUnitTypes(testBuildingID);
         expect(unitTypes[0].modelAmenities).toHaveLength(0);
