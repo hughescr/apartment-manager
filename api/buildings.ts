@@ -2,6 +2,7 @@ import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-l
 import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuilding } from '../data/buildings';
 import { BuildingData } from '../src/types';
 import _ from 'lodash';
+import { validateId, validateTextField, sanitizeObject, validateNumericValue, validateArraySize } from './security-validation';
 
 // Helper validation functions to reduce complexity
 function validateAddress(data: Partial<BuildingData>, errors: Record<string, string>): void {
@@ -103,26 +104,106 @@ function validateScreeningCriteria(data: Partial<BuildingData>, errors: Record<s
     }
 }
 
-// Main validation function for building data
-function validateBuildingData(data: Partial<BuildingData>, isCreate = false): { isValid: boolean, errors: Record<string, string> } {
-    const errors: Record<string, string> = {};
+// Helper function to sanitize text fields
+function sanitizeTextFields(data: Partial<BuildingData>, errors: Record<string, string>): Partial<BuildingData> {
+    const sanitized: Partial<BuildingData> = {};
+    const textFields: (keyof BuildingData)[] = ['buildingName', 'description', 'notes', 'street', 'city', 'state'];
 
-    // Required fields for creation
-    if(isCreate && (!data.buildingID || _.trim(data.buildingID) === '')) {
-        errors.buildingID = 'Building ID is required';
+    for(const field of textFields) {
+        if(data[field] !== undefined) {
+            const { value, error } = validateTextField(data[field] as string, field);
+            if(error) {
+                errors[field] = error;
+            } else if(value !== undefined) {
+                sanitized[field] = value as BuildingData[typeof field];
+            }
+        }
     }
 
+    return sanitized;
+}
+
+// Helper function to copy and validate numeric fields
+function copyNumericFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
+    const numericFields: (keyof BuildingData)[] = ['zip', 'yearBuilt', 'numberStories', 'totalUnits', 'leaseLength', 'applicationFee'];
+
+    for(const field of numericFields) {
+        if(data[field] !== undefined) {
+            sanitized[field] = data[field];
+        }
+    }
+}
+
+// Helper function to copy complex fields
+function copyComplexFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
+    if(data.contactInfo) {
+        sanitized.contactInfo = data.contactInfo;
+    }
+    if(data.rentSpecials) {
+        sanitized.rentSpecials = data.rentSpecials;
+    }
+    if(data.incomeRestrictions) {
+        sanitized.incomeRestrictions = data.incomeRestrictions;
+    }
+    if(data.screeningCriteria) {
+        sanitized.screeningCriteria = data.screeningCriteria;
+    }
+}
+
+// Main validation function for building data
+function validateBuildingData(data: Partial<BuildingData>, isCreate = false): { isValid: boolean, errors: Record<string, string>, sanitizedData: Partial<BuildingData> } {
+    const errors: Record<string, string> = {};
+    let sanitized: Partial<BuildingData> = {};
+
+    // Validate and sanitize buildingID
+    if(isCreate || data.buildingID !== undefined) {
+        const idError = validateId(data.buildingID || '', 'buildingID');
+        if(idError) {
+            errors.buildingID = idError;
+        } else {
+            sanitized.buildingID = data.buildingID;
+        }
+    }
+
+    // Sanitize text fields
+    const textFieldData = sanitizeTextFields(data, errors);
+    sanitized = { ...sanitized, ...textFieldData };
+
+    // Copy other fields after validation
+    copyNumericFields(data, sanitized);
+    copyComplexFields(data, sanitized);
+
     // Run all validation checks
-    validateAddress(data, errors);
-    validateNumericFields(data, errors);
-    validateContactInfo(data, errors);
-    validateRentSpecials(data, errors);
-    validateIncomeRestrictions(data, errors);
-    validateScreeningCriteria(data, errors);
+    validateAddress(sanitized, errors);
+    validateNumericFields(sanitized, errors);
+    validateContactInfo(sanitized, errors);
+    validateRentSpecials(sanitized, errors);
+    validateIncomeRestrictions(sanitized, errors);
+    validateScreeningCriteria(sanitized, errors);
+
+    // Additional numeric validations
+    const yearError = validateNumericValue(sanitized.yearBuilt, 'yearBuilt', 1800, new Date().getFullYear() + 1);
+    if(yearError) {
+        errors.yearBuilt = yearError;
+    }
+
+    const applicationFeeError = validateNumericValue(sanitized.applicationFee, 'applicationFee', 0, Number.MAX_SAFE_INTEGER);
+    if(applicationFeeError) {
+        errors.applicationFee = applicationFeeError;
+    }
+
+    // Validate arrays
+    if(sanitized.rentSpecials) {
+        const arrayError = validateArraySize(sanitized.rentSpecials, 'rentSpecials', 50);
+        if(arrayError) {
+            errors.rentSpecials = arrayError;
+        }
+    }
 
     return {
         isValid: _.keys(errors).length === 0,
-        errors
+        errors,
+        sanitizedData: sanitized
     };
 }
 
@@ -135,56 +216,94 @@ export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => {
 };
 
 export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
-    const building = await getBuilding(evt.pathParameters?.buildingID ?? '');
+    const buildingID = evt.pathParameters?.buildingID ?? '';
+
+    // Validate buildingID
+    const idError = validateId(buildingID, 'buildingID');
+    if(idError) {
+        return { statusCode: 404, body: 'Not Found' };
+    }
+
+    const building = await getBuilding(buildingID);
     return building ? { statusCode: 200, body: JSON.stringify(building) } : { statusCode: 404, body: 'Not Found' };
 };
 
 export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
+    let rawData;
     try {
-        const data = JSON.parse(evt.body || '{}');
-        const validation = validateBuildingData(data, true);
-
-        if(!validation.isValid) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
-            };
-        }
-
-        const newBuilding = await createBuilding(data);
-        return { statusCode: 201, body: JSON.stringify(newBuilding) };
+        rawData = JSON.parse(evt.body || '{}');
     } catch{
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Invalid request body' }),
         };
     }
+
+    // Sanitize object to prevent prototype pollution
+    const data = sanitizeObject(rawData);
+
+    const validation = validateBuildingData(data, true);
+
+    if(!validation.isValid) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
+        };
+    }
+
+    const newBuilding = await createBuilding(validation.sanitizedData as BuildingData);
+    // Ensure we return the sanitized data, not the raw response
+    const responseData = {
+        ...validation.sanitizedData,
+        ..._.pick(newBuilding, ['created', 'modified'])
+    };
+    return { statusCode: 201, body: JSON.stringify(responseData) };
 };
 
 export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
+    const buildingID = evt.pathParameters?.buildingID ?? '';
+
+    // Validate buildingID
+    const idError = validateId(buildingID, 'buildingID');
+    if(idError) {
+        return { statusCode: 404, body: 'Not Found' };
+    }
+
+    let rawData;
     try {
-        const buildingID = evt.pathParameters?.buildingID ?? '';
-        const data = JSON.parse(evt.body || '{}');
-        const validation = validateBuildingData(data, false);
-
-        if(!validation.isValid) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
-            };
-        }
-
-        const updatedBuilding = await updateBuilding(buildingID, data);
-        return updatedBuilding ? { statusCode: 200, body: JSON.stringify(updatedBuilding) } : { statusCode: 404, body: 'Not Found' };
+        rawData = JSON.parse(evt.body || '{}');
     } catch{
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Invalid request body' }),
         };
     }
+
+    // Sanitize object to prevent prototype pollution
+    const data = sanitizeObject(rawData);
+
+    const validation = validateBuildingData(data, false);
+
+    if(!validation.isValid) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
+        };
+    }
+
+    const updatedBuilding = await updateBuilding(buildingID, validation.sanitizedData);
+    return updatedBuilding ? { statusCode: 200, body: JSON.stringify(updatedBuilding) } : { statusCode: 404, body: 'Not Found' };
 };
 
 export const del = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
-    const success = await deleteBuilding(evt.pathParameters?.buildingID ?? '');
+    const buildingID = evt.pathParameters?.buildingID ?? '';
+
+    // Validate buildingID
+    const idError = validateId(buildingID, 'buildingID');
+    if(idError) {
+        return { statusCode: 404, body: 'Not Found' };
+    }
+
+    const success = await deleteBuilding(buildingID);
     return success ? { statusCode: 204, body: '' } : { statusCode: 404, body: 'Not Found' };
 };

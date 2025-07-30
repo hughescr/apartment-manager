@@ -777,6 +777,701 @@ describe('Unit Types API', () => {
         });
     });
 
+    describe('edge case tests', () => {
+        describe('HTTP headers and request handling', () => {
+            it('should handle missing Content-Type header', async () => {
+                expect.assertions(2);
+                const data = {
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1'
+                };
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(data),
+                    headers: {} // No Content-Type
+                });
+
+                // The API should still process JSON body even without Content-Type
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...data, unitID: `MODEL#${data.modelID}` }));
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(201);
+                expect(JSON.parse(result.body as string)).toEqual(data);
+            });
+
+            it('should handle invalid Content-Type header', async () => {
+                expect.assertions(2);
+                const data = {
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1'
+                };
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'text/plain' } // Wrong Content-Type
+                });
+
+                // The API should still process JSON body regardless of Content-Type
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...data, unitID: `MODEL#${data.modelID}` }));
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(201);
+                expect(JSON.parse(result.body as string)).toEqual(data);
+            });
+
+            it('should handle very large Content-Length header', async () => {
+                expect.assertions(2);
+                const data = {
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1'
+                };
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(data),
+                    headers: {
+                        'content-type': 'application/json',
+                        'content-length': '999999999' // Very large but body is small
+                    }
+                });
+
+                // The API should process based on actual body, not header
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...data, unitID: `MODEL#${data.modelID}` }));
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(201);
+                expect(JSON.parse(result.body as string)).toEqual(data);
+            });
+
+            it('should handle requests with Authorization headers', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    headers: {
+                        authorization: 'Bearer fake-token',
+                        'x-api-key': 'fake-api-key'
+                    }
+                });
+
+                const unitTypes = [testUnitType];
+                const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockDbData));
+
+                const result = await list(event);
+
+                expect(result.statusCode).toBe(200);
+                expect(JSON.parse(result.body as string)).toEqual(unitTypes);
+            });
+        });
+
+        describe('request body edge cases', () => {
+            it('should handle extremely large JSON payload', async () => {
+                expect.assertions(2);
+                // Create a large object with many fields
+                const largeData: Record<string, unknown> = {
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1'
+                };
+
+                // Add 1000 extra fields
+                for(let i = 0; i < 1000; i++) {
+                    largeData[`extra_field_${i}`] = _.repeat('x', 100);
+                }
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(largeData),
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                // The API should ignore extra fields and process normally
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1',
+                    unitID: 'MODEL#test-model'
+                }));
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(201);
+                const created = JSON.parse(result.body as string);
+                expect(created.modelID).toBe('test-model');
+            });
+
+            it('should handle deeply nested JSON structures', async () => {
+                expect.assertions(2);
+                // Create a deeply nested object
+                let deeplyNested: Record<string, unknown> = { value: 'deep' };
+                for(let i = 0; i < 100; i++) {
+                    deeplyNested = { nested: deeplyNested };
+                }
+
+                const data = {
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1',
+                    deepData: deeplyNested
+                };
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                // The API should handle and ignore the deep nesting
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1',
+                    unitID: 'MODEL#test-model'
+                }));
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(201);
+                const created = JSON.parse(result.body as string);
+                expect(created.modelID).toBe('test-model');
+            });
+
+            it('should handle malformed JSON with truncation', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: '{"modelID": "test", "modelName": "Test', // Truncated JSON
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(400);
+                expect(JSON.parse(result.body as string)).toEqual({ error: 'Invalid request body' });
+            });
+
+            it('should handle JSON with special Unicode sequences', async () => {
+                expect.assertions(2);
+                // \uDEAD is actually a valid Unicode escape sequence, just unpaired surrogate
+                // The JSON will parse successfully but validation will fail
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: '{"modelID": "test", "modelName": "Test\uDEAD", "beds": 2, "baths": 2, "buildingID": "test-building-1"}',
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                // Check for existing first
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                // Then create
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                    modelID: 'test',
+                    modelName: 'Test\uDEAD',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1',
+                    unitID: 'MODEL#test'
+                }));
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(201);
+                const created = JSON.parse(result.body as string);
+                expect(created.modelID).toBe('test');
+            });
+
+            it('should handle empty body', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: '',
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(400);
+                const response = JSON.parse(result.body as string);
+                expect(response.error).toBe('Validation failed');
+            });
+
+            it('should handle null body', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: null as unknown as string,
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(400);
+                const response = JSON.parse(result.body as string);
+                expect(response.error).toBe('Validation failed');
+            });
+
+            it('should handle undefined body', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: undefined,
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(400);
+                const response = JSON.parse(result.body as string);
+                expect(response.error).toBe('Validation failed');
+            });
+        });
+
+        describe('path parameter validation', () => {
+            it('should handle SQL injection attempts in buildingID', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: {
+                        buildingID: "test'; DROP TABLE units; --",
+                        modelID: 'model-1'
+                    }
+                });
+
+                // DynamoDB is NoSQL, so SQL injection doesn't apply, but test handling
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+
+                const result = await get(event);
+
+                expect(result.statusCode).toBe(404);
+                expect(result.body).toBe('Not Found');
+            });
+
+            it('should handle XSS attempts in modelID', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: {
+                        buildingID: 'test-building-1',
+                        modelID: '<script>alert("xss")</script>'
+                    }
+                });
+
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+
+                const result = await get(event);
+
+                expect(result.statusCode).toBe(404);
+                expect(result.body).toBe('Not Found');
+            });
+
+            it('should handle very long path parameters', async () => {
+                expect.assertions(2);
+                const veryLongId = _.repeat('a', 10000); // 10K characters
+                const event = createMockEvent({
+                    pathParameters: {
+                        buildingID: veryLongId,
+                        modelID: 'model-1'
+                    }
+                });
+
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+
+                const result = await get(event);
+
+                expect(result.statusCode).toBe(404);
+                expect(result.body).toBe('Not Found');
+            });
+
+            it('should handle missing path parameters', async () => {
+                expect.assertions(3);
+                const event = createMockEvent({
+                    pathParameters: undefined
+                });
+
+                dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
+
+                const result = await list(event);
+
+                expect(result.statusCode).toBe(200);
+                expect(JSON.parse(result.body as string)).toEqual([]);
+                // Verify it used empty string as buildingID
+                expect(dynamoDbMock).toHaveBeenCalledTimes(1);
+            });
+
+            it('should handle null path parameters', async () => {
+                expect.assertions(3);
+                const event = createMockEvent({
+                    pathParameters: null as unknown as Record<string, string | undefined>
+                });
+
+                dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
+
+                const result = await list(event);
+
+                expect(result.statusCode).toBe(200);
+                expect(JSON.parse(result.body as string)).toEqual([]);
+                expect(dynamoDbMock).toHaveBeenCalledTimes(1);
+            });
+
+            it('should handle special characters in path parameters', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: {
+                        buildingID: 'building%20with%20spaces',
+                        modelID: 'model#with$special@chars!'
+                    }
+                });
+
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+
+                const result = await get(event);
+
+                expect(result.statusCode).toBe(404);
+                expect(result.body).toBe('Not Found');
+            });
+        });
+
+        describe('HTTP method validation', () => {
+            it('should handle invalid HTTP method in request context', async () => {
+                expect.assertions(2);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    requestContext: {
+                        ...createMockEvent().requestContext,
+                        http: {
+                            ...createMockEvent().requestContext.http,
+                            method: 'INVALID' as unknown as 'GET'
+                        }
+                    }
+                });
+
+                const unitTypes = [testUnitType];
+                const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockDbData));
+
+                // The handler doesn't check method, so it should work normally
+                const result = await list(event);
+
+                expect(result.statusCode).toBe(200);
+                expect(JSON.parse(result.body as string)).toEqual(unitTypes);
+            });
+        });
+
+        describe('CORS and response headers', () => {
+            it('should not include CORS headers in responses', async () => {
+                expect.assertions(3);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    headers: {
+                        origin: 'https://malicious-site.com'
+                    }
+                });
+
+                const unitTypes = [testUnitType];
+                const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockDbData));
+
+                const result = await list(event);
+
+                expect(result.statusCode).toBe(200);
+                expect(result.headers).toBeUndefined(); // No CORS headers added
+                expect(JSON.parse(result.body as string)).toEqual(unitTypes);
+            });
+        });
+
+        describe('concurrent request handling', () => {
+            it('should handle concurrent requests for the same resource', async () => {
+                expect.assertions(6);
+                const buildingID = 'test-building-1';
+                const modelID = 'model-2br';
+
+                // Create multiple events for concurrent requests
+                const event1 = createMockEvent({
+                    pathParameters: { buildingID, modelID }
+                });
+                const event2 = createMockEvent({
+                    pathParameters: { buildingID, modelID }
+                });
+                const event3 = createMockEvent({
+                    pathParameters: { buildingID, modelID }
+                });
+
+                // Mock responses for all three requests
+                dynamoDbMock
+                    .mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${modelID}` }))
+                    .mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${modelID}` }))
+                    .mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${modelID}` }));
+
+                // Execute requests concurrently
+                const [result1, result2, result3] = await Promise.all([
+                    get(event1),
+                    get(event2),
+                    get(event3)
+                ]);
+
+                // All should return the same successful response
+                expect(result1.statusCode).toBe(200);
+                expect(result2.statusCode).toBe(200);
+                expect(result3.statusCode).toBe(200);
+                expect(JSON.parse(result1.body as string)).toEqual(testUnitType);
+                expect(JSON.parse(result2.body as string)).toEqual(testUnitType);
+                expect(JSON.parse(result3.body as string)).toEqual(testUnitType);
+            });
+
+            it('should handle concurrent requests for the same unit type creation', async () => {
+                expect.assertions(3);
+                const data = {
+                    modelID: 'concurrent-model',
+                    modelName: 'Concurrent Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1'
+                };
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                // Simulate that unit type was created between check and create
+                // First check shows it doesn't exist
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                // But the create fails because another request created it first
+                // This simulates a condition check failure in DynamoDB
+                dynamoDbMock.mockResolvedValueOnce({});
+
+                const result = await create(event);
+
+                // The create should succeed (our data layer returns the input on condition failure)
+                expect(result.statusCode).toBe(201);
+                expect(JSON.parse(result.body as string).modelID).toBe('concurrent-model');
+                expect(dynamoDbMock).toHaveBeenCalledTimes(2);
+            });
+        });
+
+        describe('error response consistency', () => {
+            it('should return consistent error format for validation errors', async () => {
+                expect.assertions(4);
+                const invalidData = {
+                    modelID: '',
+                    modelName: '',
+                    buildingID: 'test-building-1',
+                    beds: -1,
+                    baths: 'not-a-number' as unknown as number
+                };
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(invalidData),
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(400);
+                const response = JSON.parse(result.body as string);
+                expect(response).toHaveProperty('error', 'Validation failed');
+                expect(response).toHaveProperty('errors');
+                expect(typeof response.errors).toBe('object');
+            });
+
+            it('should return consistent error format for JSON parse errors', async () => {
+                expect.assertions(3);
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: '{{{{invalid json',
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(400);
+                const response = JSON.parse(result.body as string);
+                expect(response).toHaveProperty('error', 'Invalid request body');
+                expect(response.errors).toBeUndefined(); // No validation errors for parse failure
+            });
+
+            it('should return consistent 404 format', async () => {
+                expect.assertions(4);
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1', modelID: 'non-existent' }
+                });
+
+                const result = await get(event);
+
+                expect(result.statusCode).toBe(404);
+                expect(result.body).toBe('Not Found');
+                expect(result.headers).toBeUndefined();
+                expect(typeof result.body).toBe('string'); // Not JSON
+            });
+
+            it('should return consistent 409 format', async () => {
+                expect.assertions(3);
+                const data = {
+                    modelID: 'existing',
+                    modelName: 'Existing',
+                    beds: 1,
+                    baths: 1,
+                    buildingID: 'test-building-1'
+                };
+
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...data, unitID: `MODEL#${data.modelID}` }));
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(409);
+                const response = JSON.parse(result.body as string);
+                expect(response).toHaveProperty('error', 'Unit type already exists');
+                expect(response.errors).toBeUndefined();
+            });
+        });
+
+        describe('extra fields handling', () => {
+            it('should ignore unexpected fields in create request', async () => {
+                expect.assertions(3);
+                const data = {
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1',
+                    unexpectedField1: 'should be ignored',
+                    unexpectedField2: 12345,
+                    unexpectedField3: { nested: 'object' },
+                    unexpectedField4: ['array', 'values']
+                };
+
+                dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+                dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                    modelID: 'test-model',
+                    modelName: 'Test Model',
+                    beds: 2,
+                    baths: 2,
+                    buildingID: 'test-building-1',
+                    unitID: 'MODEL#test-model'
+                }));
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1' },
+                    body: JSON.stringify(data),
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await create(event);
+
+                expect(result.statusCode).toBe(201);
+                const created = JSON.parse(result.body as string);
+                expect(created).not.toHaveProperty('unexpectedField1');
+                expect(created).not.toHaveProperty('unexpectedField2');
+            });
+
+            it('should ignore unexpected fields in update request', async () => {
+                expect.assertions(3);
+                const updates = {
+                    modelName: 'Updated Name',
+                    minRent: 1600,
+                    extraField: 'should be ignored',
+                    anotherExtra: true
+                };
+
+                const updatedData = {
+                    ...testUnitType,
+                    modelName: 'Updated Name',
+                    minRent: 1600
+                };
+
+                dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...updatedData, unitID: `MODEL#${testUnitType.modelID}` }));
+
+                const event = createMockEvent({
+                    pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                    body: JSON.stringify(updates),
+                    headers: { 'content-type': 'application/json' }
+                });
+
+                const result = await update(event);
+
+                expect(result.statusCode).toBe(200);
+                const updated = JSON.parse(result.body as string);
+                expect(updated).not.toHaveProperty('extraField');
+                expect(updated).not.toHaveProperty('anotherExtra');
+            });
+        });
+
+        describe('Lambda context edge cases', () => {
+            it('should handle missing requestContext', async () => {
+                expect.assertions(2);
+                const event = {
+                    ...createMockEvent(),
+                    requestContext: undefined as unknown as APIGatewayProxyEventV2['requestContext']
+                };
+
+                const unitTypes = [testUnitType];
+                const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockDbData));
+
+                const result = await list(event);
+
+                expect(result.statusCode).toBe(200);
+                expect(JSON.parse(result.body as string)).toEqual(unitTypes);
+            });
+
+            it('should handle event with minimal required fields only', async () => {
+                expect.assertions(2);
+                const minimalEvent = {
+                    version: '2.0',
+                    headers: {},
+                    isBase64Encoded: false,
+                    rawPath: '',
+                    rawQueryString: '',
+                    routeKey: '',
+                    pathParameters: { buildingID: 'test-building-1' }
+                } as APIGatewayProxyEventV2;
+
+                const unitTypes = [testUnitType];
+                const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+                dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockDbData));
+
+                const result = await list(minimalEvent);
+
+                expect(result.statusCode).toBe(200);
+                expect(JSON.parse(result.body as string)).toEqual(unitTypes);
+            });
+        });
+    });
+
     describe('validation edge cases', () => {
         describe('create endpoint validation', () => {
             it('should reject empty modelName', async () => {

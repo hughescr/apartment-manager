@@ -5,12 +5,15 @@ import { Resource } from 'sst';
 import { randomUUID } from 'crypto';
 import { split, toLower, startsWith, isError } from 'lodash';
 import { getS3Client } from '../data/clients';
+import { validateId, validatePath } from './security-validation';
 
 const s3Client = getS3Client();
 
 // Helper to generate a unique key for S3
 const generateS3Key = (buildingId: string, unitId: string, filename: string): string => {
-    const parts = split(filename, '.');
+    // Remove any path information from filename
+    const basename = filename.split(/[/\\]/).pop() || filename;
+    const parts = split(basename, '.');
     const extension = toLower(parts.pop() || 'jpg');
     const uuid = randomUUID();
     return `buildings/${buildingId}/units/${unitId}/${uuid}.${extension}`;
@@ -33,6 +36,24 @@ const handleUploadRequest = async (body: string | null) => {
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Missing required fields' })
+        };
+    }
+
+    // Validate IDs to prevent path traversal
+    const buildingIdError = validateId(buildingId, 'buildingId');
+    const unitIdError = validateId(unitId, 'unitId');
+    if(buildingIdError || unitIdError) {
+        return {
+            statusCode: 403,
+            body: JSON.stringify({ error: 'Invalid key path' })
+        };
+    }
+
+    // Validate filename doesn't contain path traversal
+    if(!validatePath(filename)) {
+        return {
+            statusCode: 403,
+            body: JSON.stringify({ error: 'Invalid key path' })
         };
     }
 
@@ -83,6 +104,14 @@ const handleDeleteRequest = async (path: string) => {
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Missing key parameter' })
+        };
+    }
+
+    // Validate key doesn't contain path traversal
+    if(!validatePath(key)) {
+        return {
+            statusCode: 403,
+            body: JSON.stringify({ error: 'Invalid key path' })
         };
     }
 

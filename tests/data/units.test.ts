@@ -3,11 +3,12 @@ import './test-setup';
 import { dynamoDbMock, jest } from './test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { AmenityCategory, WebsiteStatus } from '../../src/types';
+import { AmenityCategory, WebsiteStatus, Amenity, RentSpecial } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 
 // Import the functions AFTER mocking
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
+import _ from 'lodash';
 
 describe('Unit Data Layer', () => {
     beforeEach(() => {
@@ -294,5 +295,498 @@ describe('Unit Data Layer', () => {
         expect(units[0].photos).toHaveLength(0);
         expect(units[0].unitAmenities).toHaveLength(0);
         expect(units[0].websiteStatus).toEqual({});
+    });
+
+    // Edge case tests for UNIT# prefix handling
+    describe('UNIT# prefix edge cases', () => {
+        it('should handle unitID without UNIT# prefix correctly', async () => {
+            expect.assertions(1);
+            // Some edge case where unitID doesn't have prefix (shouldn't happen but defensive)
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnit, unitID: 'test-unit-1' }));
+
+            const result = await getUnit(testUnit.buildingID, testUnit.unitID);
+            expect(result?.unitID).toBe('test-unit-1');
+        });
+
+        it('should handle unitID with double UNIT# prefix', async () => {
+            expect.assertions(1);
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnit, unitID: 'UNIT#UNIT#test-unit-1' }));
+
+            const result = await getUnit(testUnit.buildingID, testUnit.unitID);
+            expect(result?.unitID).toBe('UNIT#test-unit-1');
+        });
+
+        it('should handle unitID with UNIT# in middle of string', async () => {
+            expect.assertions(1);
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnit, unitID: 'UNIT#test-UNIT#-1' }));
+
+            const result = await getUnit(testUnit.buildingID, testUnit.unitID);
+            expect(result?.unitID).toBe('test-UNIT#-1');
+        });
+
+        it('should handle empty unitID after prefix', async () => {
+            expect.assertions(1);
+            // When unitID is just 'UNIT#', after stripping it becomes empty, but fallback returns original
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnit, unitID: 'UNIT#' }));
+
+            const result = await getUnit(testUnit.buildingID, testUnit.unitID);
+            expect(result?.unitID).toBe('UNIT#'); // Fallback returns original when stripped value is empty
+        });
+
+        it('should handle missing unitID in response', async () => {
+            expect.assertions(1);
+            // Return undefined to simulate item not found
+            dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
+
+            const result = await getUnit(testUnit.buildingID, 'missing-unit');
+            expect(result).toBeUndefined();
+        });
+    });
+
+    // Edge cases for special characters in unitID
+    describe('Special characters in unitID', () => {
+        it('should handle unitID with forward slashes', async () => {
+            expect.assertions(2);
+            const unitID = 'unit/123/a';
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: `UNIT#${unitID}` }));
+
+            const result = await createUnit({ ...testUnit, unitID });
+            expect(result.unitID).toBe(unitID);
+            expect(dynamoDbMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle unitID with hash symbols', async () => {
+            expect.assertions(1);
+            const unitID = 'unit#123#special';
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: `UNIT#${unitID}` }));
+
+            const result = await createUnit({ ...testUnit, unitID });
+            expect(result.unitID).toBe(unitID);
+        });
+
+        it('should handle unitID with percent encoding', async () => {
+            expect.assertions(1);
+            const unitID = 'unit%20with%20spaces';
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: `UNIT#${unitID}` }));
+
+            const result = await createUnit({ ...testUnit, unitID });
+            expect(result.unitID).toBe(unitID);
+        });
+
+        it('should handle unitID with unicode characters', async () => {
+            expect.assertions(1);
+            const unitID = 'unit-🏠-emoji';
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: `UNIT#${unitID}` }));
+
+            const result = await createUnit({ ...testUnit, unitID });
+            expect(result.unitID).toBe(unitID);
+        });
+
+        it('should handle very long unitID', async () => {
+            expect.assertions(1);
+            const unitID = _.repeat('u', 1000); // 1000 character unitID
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: `UNIT#${unitID}` }));
+
+            const result = await createUnit({ ...testUnit, unitID });
+            expect(result.unitID).toBe(unitID);
+        });
+    });
+
+    // WebsiteStatus partial updates edge cases
+    describe('WebsiteStatus partial updates', () => {
+        it('should update only one website status without affecting others', async () => {
+            expect.assertions(3);
+            const existingUnit = {
+                ...testUnit,
+                websiteStatus: {
+                    zillow: WebsiteStatus.ACTIVE,
+                    apartments: WebsiteStatus.INACTIVE,
+                    realtor: WebsiteStatus.PENDING
+                }
+            };
+            const updates = {
+                websiteStatus: {
+                    zillow: WebsiteStatus.ERROR // Only updating zillow
+                }
+            };
+            const expectedResult = {
+                ...existingUnit,
+                websiteStatus: {
+                    ...existingUnit.websiteStatus,
+                    zillow: WebsiteStatus.ERROR
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'UNIT#test-unit-1' }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
+            expect(result?.websiteStatus?.zillow).toBe(WebsiteStatus.ERROR);
+            expect(result?.websiteStatus?.apartments).toBe(WebsiteStatus.INACTIVE);
+            expect(result?.websiteStatus?.realtor).toBe(WebsiteStatus.PENDING);
+        });
+
+        it('should handle invalid website names in websiteStatus', async () => {
+            expect.assertions(2);
+            const updates = {
+                websiteStatus: {
+                    invalidSite: 'active' as unknown as WebsiteStatus,
+                    zillow: WebsiteStatus.ACTIVE
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                websiteStatus: updates.websiteStatus
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
+            expect(result?.websiteStatus?.invalidSite).toBe('active');
+            expect(result?.websiteStatus?.zillow).toBe(WebsiteStatus.ACTIVE);
+        });
+
+        it('should handle null vs undefined for clearing websiteStatus values', async () => {
+            expect.assertions(3);
+            const updates = {
+                websiteStatus: {
+                    zillow: null as unknown as WebsiteStatus, // null should be converted to undefined
+                    apartments: undefined // undefined should be filtered out
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                websiteStatus: {} // Empty after filtering
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
+            expect(result?.websiteStatus).toEqual({});
+            expect(result?.websiteStatus?.zillow).toBeUndefined();
+            expect(result?.websiteStatus?.apartments).toBeUndefined();
+        });
+
+        it('should handle invalid enum string values for WebsiteStatus', async () => {
+            expect.assertions(1);
+            const updates = {
+                websiteStatus: {
+                    zillow: 'INVALID_STATUS' as unknown as WebsiteStatus
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                websiteStatus: { zillow: 'INVALID_STATUS' }
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
+            expect(result?.websiteStatus?.zillow).toBe('INVALID_STATUS');
+        });
+    });
+
+    // Orphaned units and referential integrity
+    describe('Orphaned units and referential integrity', () => {
+        it('should create unit referencing non-existent modelID', async () => {
+            expect.assertions(2);
+            const orphanedUnit = {
+                ...testUnit,
+                modelID: 'non-existent-model'
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...orphanedUnit, unitID: 'UNIT#test-unit-1' }));
+
+            const result = await createUnit(orphanedUnit);
+            expect(result.modelID).toBe('non-existent-model');
+            expect(result.unitID).toBe('test-unit-1');
+        });
+
+        it('should handle unit creation with non-existent buildingID', async () => {
+            expect.assertions(2);
+            const invalidBuilding = 'non-existent-building';
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                ...testUnit,
+                buildingID: invalidBuilding,
+                unitID: 'UNIT#test-unit-1'
+            }));
+
+            const result = await createUnit({ ...testUnit, buildingID: invalidBuilding });
+            expect(result.buildingID).toBe(invalidBuilding);
+            expect(result.unitID).toBe('test-unit-1');
+        });
+    });
+
+    // Concurrent updates and race conditions
+    describe('Concurrent updates and race conditions', () => {
+        it('should handle concurrent updates to the same unit', async () => {
+            expect.assertions(4);
+            const update1 = { rent: 1800 };
+            const update2 = { occupied: true };
+
+            // Simulate two concurrent updates
+            dynamoDbMock
+                .mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...update1 }))
+                .mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...update1, ...update2 }));
+
+            const [result1, result2] = await Promise.all([
+                updateUnit(testUnit.buildingID, testUnit.unitID, update1),
+                updateUnit(testUnit.buildingID, testUnit.unitID, update2)
+            ]);
+
+            expect(result1?.rent).toBe(1800);
+            expect(result1?.occupied).toBe(false); // Original value
+            expect(result2?.rent).toBe(1800); // Should have both updates
+            expect(result2?.occupied).toBe(true);
+        });
+
+        it('should handle race condition in unit creation (duplicate unitID)', async () => {
+            expect.assertions(3);
+            // First call succeeds
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: 'UNIT#duplicate-id' }));
+            // Second call fails with condition check (unit already exists)
+            dynamoDbMock.mockRejectedValueOnce({
+                name: 'ConditionalCheckFailedException',
+                message: 'The conditional request failed'
+            });
+
+            const unit1Promise = createUnit({ ...testUnit, unitID: 'duplicate-id' });
+            const unit2Promise = createUnit({ ...testUnit, unitID: 'duplicate-id' });
+
+            const result1 = await unit1Promise;
+            expect(result1.unitID).toBe('duplicate-id');
+
+            await expect(unit2Promise).rejects.toMatchObject({
+                name: 'ConditionalCheckFailedException'
+            });
+            expect(dynamoDbMock).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    // Array manipulation edge cases
+    describe('Array manipulation edge cases', () => {
+        it('should handle photos array with duplicate URLs', async () => {
+            expect.assertions(2);
+            const duplicatePhotos = [
+                'https://example.com/photo1.jpg',
+                'https://example.com/photo1.jpg', // Duplicate
+                'https://example.com/photo2.jpg'
+            ];
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                photos: duplicatePhotos
+            }));
+
+            const result = await createUnit({ ...testUnit, photos: duplicatePhotos });
+            expect(result.photos).toHaveLength(3);
+            expect(result.photos).toEqual(duplicatePhotos);
+        });
+
+        it('should handle amenities array with empty objects', async () => {
+            expect.assertions(2);
+            const invalidAmenities = [
+                { name: 'Valid Amenity', category: AmenityCategory.UNIT },
+                {} as Amenity, // Invalid empty object
+                { name: '', category: AmenityCategory.UNIT }, // Empty name
+                { name: 'No Category', category: AmenityCategory.UNIT } as Amenity // Missing category
+            ];
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                unitAmenities: invalidAmenities
+            }));
+
+            const result = await createUnit({ ...testUnit, unitAmenities: invalidAmenities });
+            expect(result.unitAmenities).toHaveLength(4);
+            expect(result.unitAmenities).toEqual(invalidAmenities);
+        });
+
+        it('should handle very large arrays', async () => {
+            expect.assertions(2);
+            const largePhotosArray = _.fill(Array(1000), 'https://example.com/photo.jpg');
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                photos: largePhotosArray
+            }));
+
+            const result = await createUnit({ ...testUnit, photos: largePhotosArray });
+            expect(result.photos).toHaveLength(1000);
+            expect(result.photos?.[999]).toBe('https://example.com/photo.jpg');
+        });
+    });
+
+    // Number field edge cases
+    describe('Number field edge cases', () => {
+        it('should handle negative rent values', async () => {
+            expect.assertions(1);
+            const negativeRent = { rent: -100 };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                ...negativeRent
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, negativeRent);
+            expect(result?.rent).toBe(-100);
+        });
+
+        it('should handle decimal beds and baths', async () => {
+            expect.assertions(2);
+            const decimalRooms = { beds: 2.5, baths: 1.75 };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                ...decimalRooms
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, decimalRooms);
+            expect(result?.beds).toBe(2.5);
+            expect(result?.baths).toBe(1.75);
+        });
+
+        it('should handle very large numbers', async () => {
+            expect.assertions(3);
+            const largeNumbers = {
+                rent: 999999999,
+                sqft: 50000,
+                maxOccupants: 100
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                ...largeNumbers
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, largeNumbers);
+            expect(result?.rent).toBe(999999999);
+            expect(result?.sqft).toBe(50000);
+            expect(result?.maxOccupants).toBe(100);
+        });
+
+        it('should handle zero values for numeric fields', async () => {
+            expect.assertions(4);
+            const zeroValues = {
+                rent: 0,
+                beds: 0,
+                baths: 0,
+                sqft: 0
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                ...zeroValues
+            }));
+
+            const result = await createUnit({ ...testUnit, ...zeroValues });
+            expect(result.rent).toBe(0);
+            expect(result.beds).toBe(0);
+            expect(result.baths).toBe(0);
+            expect(result.sqft).toBe(0);
+        });
+    });
+
+    // Edge cases for date fields
+    describe('Date field edge cases', () => {
+        it('should handle invalid date format', async () => {
+            expect.assertions(1);
+            const invalidDate = { availableDate: 'not-a-date' };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                ...invalidDate
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, invalidDate);
+            expect(result?.availableDate).toBe('not-a-date');
+        });
+
+        it('should handle far future dates', async () => {
+            expect.assertions(1);
+            const futureDate = { availableDate: '2999-12-31' };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                ...futureDate
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, futureDate);
+            expect(result?.availableDate).toBe('2999-12-31');
+        });
+    });
+
+    // Error handling edge cases
+    describe('Error handling edge cases', () => {
+        it('should handle DynamoDB service unavailable error', async () => {
+            expect.assertions(2);
+            dynamoDbMock.mockRejectedValueOnce({
+                name: 'ServiceUnavailable',
+                message: 'DynamoDB is currently unavailable'
+            });
+
+            await expect(getUnits(testBuildingID)).rejects.toMatchObject({
+                name: 'ServiceUnavailable'
+            });
+            expect(dynamoDbMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle malformed DynamoDB response', async () => {
+            expect.assertions(1);
+            // Response missing Items array
+            dynamoDbMock.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
+
+            const result = await getUnits(testBuildingID);
+            expect(result).toEqual([]);
+        });
+
+        it('should handle update with no Attributes returned', async () => {
+            expect.assertions(1);
+            dynamoDbMock.mockResolvedValueOnce({
+                $metadata: { httpStatusCode: 200 }
+                // No Attributes field
+            });
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, { rent: 1800 });
+            expect(result).toBeUndefined();
+        });
+    });
+
+    // Complex object updates
+    describe('Complex object updates', () => {
+        it('should handle updating nested rentSpecial object', async () => {
+            expect.assertions(3);
+            const rentSpecialUpdate = {
+                unitRentSpecial: {
+                    title: 'Summer Special',
+                    description: 'Get 2 months free!',
+                    endDate: '2024-08-31'
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                ...rentSpecialUpdate
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, rentSpecialUpdate);
+            expect(result?.unitRentSpecial?.title).toBe('Summer Special');
+            expect(result?.unitRentSpecial?.description).toBe('Get 2 months free!');
+            expect(result?.unitRentSpecial?.endDate).toBe('2024-08-31');
+        });
+
+        it('should handle partial rentSpecial updates', async () => {
+            expect.assertions(3);
+            const partialSpecialUpdate = {
+                unitRentSpecial: {
+                    title: 'Updated Title'
+                    // Missing description and endDate
+                } as RentSpecial
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
+                ...testUnit,
+                unitID: 'UNIT#test-unit-1',
+                unitRentSpecial: partialSpecialUpdate.unitRentSpecial
+            }));
+
+            const result = await updateUnit(testUnit.buildingID, testUnit.unitID, partialSpecialUpdate);
+            expect(result?.unitRentSpecial?.title).toBe('Updated Title');
+            expect(result?.unitRentSpecial?.description).toBeUndefined();
+            expect(result?.unitRentSpecial?.endDate).toBeUndefined();
+        });
     });
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
+import _ from 'lodash';
 import { TransformerRegistry, createTransformerRegistry } from '../../../src/mappers/transformers/transformer-registry.js';
 import type { TransformerFunction } from '../../../src/mappers/types.js';
 
@@ -11,15 +12,15 @@ describe('TransformerRegistry', () => {
 
     describe('register', () => {
         it('should register a transformer function', () => {
-            const transformer: TransformerFunction<string, string> = value => value.toUpperCase();
+            const transformer: TransformerFunction<string, string> = value => _.toUpper(value);
             registry.register('uppercase', transformer);
 
             expect(registry.has('uppercase')).toBe(true);
         });
 
         it('should overwrite existing transformer with the same name', () => {
-            const transformer1: TransformerFunction<string, string> = value => value.toUpperCase();
-            const transformer2: TransformerFunction<string, string> = value => value.toLowerCase();
+            const transformer1: TransformerFunction<string, string> = value => _.toUpper(value);
+            const transformer2: TransformerFunction<string, string> = value => _.toLower(value);
 
             registry.register('myTransformer', transformer1);
             registry.register('myTransformer', transformer2);
@@ -207,8 +208,12 @@ describe('TransformerRegistry', () => {
                 const format = params?.format as string || 'iso';
                 const locale = params?.locale as string || 'en-US';
 
-                if(format === 'iso') { return value.toISOString(); }
-                if(format === 'locale') { return value.toLocaleDateString(locale); }
+                if(format === 'iso') {
+                    return value.toISOString();
+                }
+                if(format === 'locale') {
+                    return value.toLocaleDateString(locale);
+                }
                 return value.toString();
             };
 
@@ -224,8 +229,8 @@ describe('TransformerRegistry', () => {
 
     describe('different transformer types', () => {
         it('should handle string transformers', () => {
-            const trim: TransformerFunction<string, string> = value => value.trim();
-            const reverse: TransformerFunction<string, string> = value => value.split('').reverse().join('');
+            const trim: TransformerFunction<string, string> = value => _.trim(value);
+            const reverse: TransformerFunction<string, string> = value => _.split(value, '').reverse().join('');
 
             registry.register('trim', trim);
             registry.register('reverse', reverse);
@@ -333,7 +338,7 @@ describe('createTransformerRegistry', () => {
 
     it('should create registry that supports all operations', () => {
         const registry = createTransformerRegistry();
-        const transformer: TransformerFunction<string, string> = value => value.toUpperCase();
+        const transformer: TransformerFunction<string, string> = value => _.toUpper(value);
 
         // Test all methods work on created registry
         registry.register('upper', transformer);
@@ -351,8 +356,8 @@ describe('Integration tests', () => {
         const registry = createTransformerRegistry();
 
         // Register various transformers
-        registry.register('trim', (value: string) => value.trim());
-        registry.register('uppercase', (value: string) => value.toUpperCase());
+        registry.register('trim', (value: string) => _.trim(value));
+        registry.register('uppercase', (value: string) => _.toUpper(value));
         registry.register('prefix', (value: string, params) => {
             const prefix = params?.prefix as string || '';
             return `${prefix}${value}`;
@@ -363,13 +368,19 @@ describe('Integration tests', () => {
         let result = input;
 
         const trimmer = registry.get('trim');
-        if(trimmer) { result = trimmer(result) as string; }
+        if(trimmer) {
+            result = trimmer(result) as string;
+        }
 
         const uppercaser = registry.get('uppercase');
-        if(uppercaser) { result = uppercaser(result) as string; }
+        if(uppercaser) {
+            result = uppercaser(result) as string;
+        }
 
         const prefixer = registry.get('prefix');
-        if(prefixer) { result = prefixer(result, { prefix: 'PROCESSED: ' }) as string; }
+        if(prefixer) {
+            result = prefixer(result, { prefix: 'PROCESSED: ' }) as string;
+        }
 
         expect(result).toBe('PROCESSED: HELLO WORLD');
     });
@@ -395,5 +406,396 @@ describe('Integration tests', () => {
         expect(registry.list()).toEqual([]);
         expect(registry.has('t1')).toBe(false);
         expect(registry.has('t2')).toBe(false);
+    });
+});
+
+describe('Edge Cases - Wrong Input Types', () => {
+    it('should handle passing wrong types to string transformers', () => {
+        const registry = createTransformerRegistry();
+        const stringTransformer: TransformerFunction<string, string> = value => _.toUpper(value);
+        registry.register('uppercase', stringTransformer);
+
+        const transformer = registry.get('uppercase');
+
+        // Passing number instead of string - lodash toUpper converts to string
+        expect(transformer?.(123 as unknown as string)).toBe('123');
+
+        // Passing null - lodash toUpper returns empty string
+        expect(transformer?.(null as unknown as string)).toBe('');
+
+        // Passing undefined - lodash toUpper returns empty string
+        expect(transformer?.(undefined as unknown as string)).toBe('');
+
+        // Passing object - lodash toUpper calls toString
+        expect(transformer?.({} as unknown as string)).toBe('[OBJECT OBJECT]');
+
+        // Passing array - lodash toUpper calls toString
+        expect(transformer?.([1, 2, 3] as unknown as string)).toBe('1,2,3');
+    });
+
+    it('should handle passing wrong types to number transformers', () => {
+        const registry = createTransformerRegistry();
+        const numberTransformer: TransformerFunction<number, number> = value => value * 2;
+        registry.register('double', numberTransformer);
+
+        const transformer = registry.get('double');
+
+        // Passing string instead of number
+        expect(transformer?.('abc' as unknown as number)).toBe(NaN);
+
+        // Passing string that looks like number
+        expect(transformer?.('123' as unknown as number)).toBe(246); // JS coercion
+
+        // Passing boolean
+        expect(transformer?.(true as unknown as number)).toBe(2); // true coerces to 1
+        expect(transformer?.(false as unknown as number)).toBe(0); // false coerces to 0
+    });
+
+    it('should handle type coercion edge cases', () => {
+        const registry = createTransformerRegistry();
+        const concatTransformer: TransformerFunction<string, string> = (value, params) => {
+            const suffix = params?.suffix as string || '';
+            return value + suffix;
+        };
+        registry.register('concat', concatTransformer);
+
+        const transformer = registry.get('concat');
+
+        // Number gets coerced to string
+        expect(transformer?.(42 as unknown as string, { suffix: ' answer' })).toBe('42 answer');
+
+        // Boolean gets coerced to string
+        expect(transformer?.(true as unknown as string, { suffix: ' value' })).toBe('true value');
+    });
+});
+
+describe('Edge Cases - Transformer Chains with Failures', () => {
+    it('should handle failure in the middle of a transformer chain', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('step1', (value: string) => _.trim(value));
+        registry.register('step2', (value: string) => {
+            if(value === 'error') {
+                throw new Error('Step 2 failed');
+            }
+            return _.toUpper(value);
+        });
+        registry.register('step3', (value: string) => `[${value}]`);
+
+        // Test normal flow
+        let result = '  hello  ';
+        result = registry.get('step1')?.(result) as string;
+        result = registry.get('step2')?.(result) as string;
+        result = registry.get('step3')?.(result) as string;
+        expect(result).toBe('[HELLO]');
+
+        // Test failure in middle
+        let errorResult = '  error  ';
+        errorResult = registry.get('step1')?.(errorResult) as string;
+        expect(() => registry.get('step2')?.(errorResult)).toThrow('Step 2 failed');
+    });
+
+    it('should handle partial success in transformer chains', () => {
+        const registry = createTransformerRegistry();
+        const results: string[] = [];
+
+        registry.register('logger', (value: string) => {
+            results.push(`Logged: ${value}`);
+            return value;
+        });
+        registry.register('failer', () => {
+            throw new Error('Transform failed');
+        });
+        registry.register('unreachable', (value: string) => {
+            results.push('Should not reach here');
+            return value;
+        });
+
+        let value = 'test';
+        value = registry.get('logger')?.(value) as string;
+
+        expect(() => registry.get('failer')?.(value)).toThrow('Transform failed');
+        expect(results).toEqual(['Logged: test']);
+        expect(results).not.toContain('Should not reach here');
+    });
+});
+
+describe('Edge Cases - Registry Modification During Transformation', () => {
+    it('should handle registry modification during transformation', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('modifier', (value: string) => {
+            // Modify registry during transformation
+            registry.register('new-transformer', (v: string) => _.toLower(v));
+            registry.clear();
+            return _.toUpper(value);
+        });
+
+        const modifier = registry.get('modifier');
+        expect(modifier).toBeDefined();
+
+        const result = modifier?.('hello');
+        expect(result).toBe('HELLO');
+
+        // Registry should be empty after clear
+        expect(registry.list()).toEqual([]);
+        expect(registry.get('modifier')).toBeUndefined();
+        expect(registry.get('new-transformer')).toBeUndefined();
+    });
+
+    it('should handle self-replacement during transformation', () => {
+        const registry = createTransformerRegistry();
+        let callCount = 0;
+
+        registry.register('self-replacer', (value: string) => {
+            callCount++;
+            // Replace self during execution
+            registry.register('self-replacer', (v: string) => _.toLower(v));
+            return _.toUpper(value);
+        });
+
+        const transformer1 = registry.get('self-replacer');
+        const result1 = transformer1?.('hello');
+        expect(result1).toBe('HELLO');
+        expect(callCount).toBe(1);
+
+        // Second call should use the new transformer
+        const transformer2 = registry.get('self-replacer');
+        const result2 = transformer2?.('WORLD');
+        expect(result2).toBe('world');
+        expect(callCount).toBe(1); // Original not called again
+    });
+});
+
+describe('Edge Cases - Transformers Throwing Exceptions', () => {
+    it('should propagate exceptions from transformers', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('thrower', () => {
+            throw new Error('Transformer error');
+        });
+        registry.register('type-error', (value: unknown) => {
+            return (value as Record<string, () => unknown>).nonExistentMethod();
+        });
+        registry.register('range-error', () => {
+            const arr = new Array(-1); // RangeError
+            return arr;
+        });
+
+        expect(() => registry.get('thrower')?.('any')).toThrow('Transformer error');
+        expect(() => registry.get('type-error')?.('any')).toThrow();
+        expect(() => registry.get('range-error')?.('any')).toThrow(RangeError);
+    });
+
+    it('should handle transformers that throw non-Error objects', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('string-thrower', () => {
+            throw 'String error';
+        });
+        registry.register('number-thrower', () => {
+            throw 42;
+        });
+        registry.register('object-thrower', () => {
+            throw { error: 'Object error' };
+        });
+
+        expect(() => registry.get('string-thrower')?.('any')).toThrow('String error');
+        expect(() => registry.get('number-thrower')?.('any')).toThrow();
+        expect(() => registry.get('object-thrower')?.('any')).toThrow();
+    });
+});
+
+describe('Edge Cases - Transformers Returning Undefined', () => {
+    it('should handle transformers returning undefined when value expected', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('undefined-returner', () => undefined);
+        registry.register('conditional-undefined', (value: number) => {
+            return value > 0 ? value * 2 : undefined;
+        });
+
+        expect(registry.get('undefined-returner')?.('any')).toBeUndefined();
+        expect(registry.get('conditional-undefined')?.(5)).toBe(10);
+        expect(registry.get('conditional-undefined')?.(-5)).toBeUndefined();
+    });
+
+    it('should handle undefined in transformer chains', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('maybe-undefined', (value: string) => {
+            return value === 'skip' ? undefined : _.toUpper(value);
+        });
+        registry.register('handle-undefined', (value: string | undefined) => {
+            return value ?? 'DEFAULT';
+        });
+
+        // Normal case
+        let result = registry.get('maybe-undefined')?.('hello');
+        result = registry.get('handle-undefined')?.(result);
+        expect(result).toBe('HELLO');
+
+        // Undefined case
+        let undefinedResult = registry.get('maybe-undefined')?.('skip');
+        undefinedResult = registry.get('handle-undefined')?.(undefinedResult);
+        expect(undefinedResult).toBe('DEFAULT');
+    });
+});
+
+describe('Edge Cases - Memory and Performance', () => {
+    it('should handle very large number of transformers', () => {
+        const registry = createTransformerRegistry();
+        const count = 10000;
+
+        // Register many transformers
+        for(let i = 0; i < count; i++) {
+            registry.register(`transformer-${i}`, (value: number) => value + i);
+        }
+
+        expect(registry.list()).toHaveLength(count);
+        expect(registry.has('transformer-5000')).toBe(true);
+        expect(registry.get('transformer-9999')?.(1)).toBe(10000);
+
+        // Clear should work efficiently
+        registry.clear();
+        expect(registry.list()).toHaveLength(0);
+    });
+
+    it('should handle transformers with closures and memory references', () => {
+        const registry = createTransformerRegistry();
+        const largeArray = _.fill(new Array(1000000), 0);
+
+        registry.register('closure-transformer', (value: number) => {
+            // Transformer closes over large array
+            return value + largeArray.length;
+        });
+
+        const transformer = registry.get('closure-transformer');
+        expect(transformer?.(5)).toBe(1000005);
+
+        // Clear registry should allow garbage collection
+        registry.clear();
+        expect(registry.has('closure-transformer')).toBe(false);
+    });
+});
+
+describe('Edge Cases - Invalid Transformer Registration', () => {
+    it('should handle registration with null or undefined transformers', () => {
+        const registry = createTransformerRegistry();
+
+        // These should not throw but behavior is undefined
+        registry.register('null-transformer', null as unknown as TransformerFunction);
+        registry.register('undefined-transformer', undefined as unknown as TransformerFunction);
+
+        expect(registry.has('null-transformer')).toBe(true);
+        expect(registry.has('undefined-transformer')).toBe(true);
+
+        // Getting and calling them will fail
+        const nullTransformer = registry.get('null-transformer');
+        const undefinedTransformer = registry.get('undefined-transformer');
+
+        // Optional chaining returns undefined, doesn't throw
+        expect(nullTransformer?.('test')).toBeUndefined();
+        expect(undefinedTransformer?.('test')).toBeUndefined();
+    });
+
+    it('should handle registration with non-function values', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('string-as-transformer', 'not a function' as unknown as TransformerFunction);
+        registry.register('number-as-transformer', 42 as unknown as TransformerFunction);
+        registry.register('object-as-transformer', { transform: _.constant('value') } as unknown as TransformerFunction);
+
+        // Non-function values will throw when called
+        expect(() => {
+            const transformer = registry.get('string-as-transformer');
+            transformer?.('test');
+        }).toThrow();
+
+        expect(() => {
+            const transformer = registry.get('number-as-transformer');
+            transformer?.('test');
+        }).toThrow();
+
+        expect(() => {
+            const transformer = registry.get('object-as-transformer');
+            transformer?.('test');
+        }).toThrow();
+    });
+});
+
+describe('Edge Cases - Concurrent Access', () => {
+    it('should handle rapid registration and retrieval', () => {
+        const registry = createTransformerRegistry();
+        const results: number[] = [];
+
+        // Simulate concurrent-like access
+        for(let i = 0; i < 100; i++) {
+            registry.register(`t${i}`, (value: number) => value + i);
+            const transformer = registry.get(`t${i}`);
+            if(transformer) {
+                results.push(transformer(1));
+            }
+        }
+
+        expect(results).toHaveLength(100);
+        expect(results[0]).toBe(1);
+        expect(results[99]).toBe(100);
+    });
+
+    it('should handle interleaved register/clear operations', () => {
+        const registry = createTransformerRegistry();
+
+        registry.register('t1', v => v);
+        registry.register('t2', v => v);
+        expect(registry.list()).toHaveLength(2);
+
+        registry.clear();
+        expect(registry.list()).toHaveLength(0);
+
+        registry.register('t3', v => v);
+        expect(registry.list()).toHaveLength(1);
+        expect(registry.has('t1')).toBe(false);
+        expect(registry.has('t3')).toBe(true);
+    });
+});
+
+describe('Edge Cases - Transformer Side Effects', () => {
+    it('should handle transformers with side effects', () => {
+        const registry = createTransformerRegistry();
+        const sideEffects: string[] = [];
+
+        registry.register('side-effect-transformer', (value: string) => {
+            sideEffects.push(`Processing: ${value}`);
+            return _.toUpper(value);
+        });
+
+        const transformer = registry.get('side-effect-transformer');
+
+        expect(transformer?.('hello')).toBe('HELLO');
+        expect(transformer?.('world')).toBe('WORLD');
+        expect(sideEffects).toEqual(['Processing: hello', 'Processing: world']);
+    });
+
+    it('should handle transformers that modify their input', () => {
+        const registry = createTransformerRegistry();
+
+        interface MutableObject {
+            value: string
+            processed?: boolean
+        }
+
+        registry.register('mutating-transformer', (obj: MutableObject) => {
+            obj.processed = true; // Mutates input
+            return { ...obj, value: _.toUpper(obj.value) };
+        });
+
+        const input: MutableObject = { value: 'test' };
+        const transformer = registry.get('mutating-transformer');
+        const result = transformer?.(input) as MutableObject;
+
+        expect(result.value).toBe('TEST');
+        expect(result.processed).toBe(true);
+        expect(input.processed).toBe(true); // Input was mutated
     });
 });

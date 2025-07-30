@@ -12,7 +12,7 @@ import {
     expectedApartmentsComUnitType,
     expectedApartmentsComUnit
 } from '../../fixtures/mappers';
-import { PropertyType, UtilityType, ParkingType, PetType, AmenityCategory } from '../../../src/types';
+import { PropertyType, UtilityType, ParkingType, PetType, AmenityCategory, FeeType } from '../../../src/types';
 import type { BuildingData, UnitTypeData, UnitData } from '../../../src/types';
 
 describe('ApartmentsComMapper', () => {
@@ -554,6 +554,469 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(buildingLongDesc);
 
             expect(result.description).toBe(longDescription);
+        });
+
+        // Whitespace-only required fields
+        it('should treat whitespace-only fields as valid (trimming happens elsewhere)', () => {
+            const buildingWhitespace: BuildingData = {
+                buildingID: 'BLDG-001',
+                street: '   ',
+                city: '\t\t',
+                state: '\n\n',
+                zip: '    '
+            };
+
+            const result = mapper.validateBuilding(buildingWhitespace);
+
+            // Current implementation treats whitespace as valid
+            expect(result.isValid).toBe(true);
+            expect(result.errors).toHaveLength(0);
+        });
+
+        it('should treat whitespace in unit type names as valid', () => {
+            const whitespaceUnitType: UnitTypeData = {
+                ...basicUnitType,
+                modelName: '   '
+            };
+
+            const result = mapper.validateUnitType(whitespaceUnitType);
+
+            // Current implementation treats whitespace as valid
+            expect(result.isValid).toBe(true);
+            expect(result.errors).toHaveLength(0);
+        });
+
+        // Invalid enum values
+        it('should handle invalid enum values gracefully', () => {
+            const invalidEnumBuilding: BuildingData = {
+                ...basicBuilding,
+                propertyType: 'INVALID_TYPE' as PropertyType,
+                parkingOptions: [
+                    {
+                        type: 'INVALID_PARKING' as ParkingType,
+                        included: true
+                    }
+                ],
+                petPolicies: {
+                    allowed: true,
+                    types: ['INVALID_PET' as PetType]
+                }
+            };
+
+            expect(() => mapper.mapBuilding(invalidEnumBuilding)).not.toThrow();
+        });
+
+        // NaN/Infinity values
+        it('should handle NaN/Infinity in numeric fields', () => {
+            const nanBuilding: BuildingData = {
+                ...basicBuilding,
+                yearBuilt: NaN,
+                totalUnits: Infinity,
+                applicationFee: -Infinity
+            };
+
+            const result = mapper.mapBuilding(nanBuilding);
+
+            expect(result.yearBuilt).toBeNaN();
+            expect(result.totalUnits).toBe(Infinity);
+            expect(result.applicationFee).toBe(-Infinity);
+        });
+
+        it('should default missing numeric values to 0 but preserve NaN/Infinity', () => {
+            const nanUnit: UnitData = {
+                ...basicUnit,
+                beds: NaN,
+                baths: Infinity,
+                rent: -Infinity,
+                sqft: -0
+            };
+
+            const context = {
+                unit: nanUnit,
+                unitType: undefined,
+                building: basicBuilding
+            };
+
+            const result = mapper.mapUnit(context);
+
+            // NaN gets defaulted to 0, but Infinity is preserved
+            expect(result.beds).toBe(0);
+            expect(result.baths).toBe(Infinity);
+            expect(result.rent).toBe(-Infinity);
+            expect(result.sqft).toBe(-0);
+        });
+
+        // Extremely long descriptions exceeding API limits
+        it('should handle descriptions exceeding 10000 characters', () => {
+            const veryLongDesc = _.repeat('Lorem ipsum dolor sit amet. ', 400); // ~11200 chars
+            const unitLongDesc: UnitData = {
+                ...basicUnit,
+                unitDescription: veryLongDesc
+            };
+
+            const context = {
+                unit: unitLongDesc,
+                unitType: basicUnitType,
+                building: basicBuilding
+            };
+
+            const result = mapper.mapUnit(context);
+
+            expect(result.description).toBe(veryLongDesc);
+            // Truncation should be handled by the sync layer
+        });
+
+        // HTML/Script injection
+        it('should preserve HTML/script content (sanitization is downstream)', () => {
+            const maliciousContent = '<script>alert("XSS")</script><img src=x onerror=alert(1)>';
+            const maliciousBuilding: BuildingData = {
+                ...basicBuilding,
+                propertyDescription: maliciousContent,
+                propertyAmenities: [
+                    { name: '<b>Bold Amenity</b>', category: AmenityCategory.PROPERTY }
+                ]
+            };
+
+            const result = mapper.mapBuilding(maliciousBuilding);
+
+            expect(result.description).toBe(maliciousContent);
+            expect(result.amenities).toContain('<b>Bold Amenity</b>');
+        });
+
+        // Invalid date formats
+        it('should handle various invalid date formats', () => {
+            const invalidDates = [
+                { input: 'not-a-date', expected: undefined },
+                { input: '2024-13-45', expected: undefined }, // Invalid month/day
+                { input: '2024/01/01', expected: '01/01/2024' }, // Valid date, different format
+                { input: 'January 1, 2024', expected: '01/01/2024' }, // Valid date, different format
+                { input: '', expected: undefined }
+            ];
+
+            _.forEach(invalidDates, ({ input, expected }) => {
+                const unitInvalidDate: UnitData = {
+                    ...basicUnit,
+                    availableDate: input
+                };
+
+                const context = {
+                    unit: unitInvalidDate,
+                    unitType: basicUnitType,
+                    building: basicBuilding
+                };
+
+                const result = mapper.mapUnit(context);
+
+                expect(result.dateAvailable).toBe(expected);
+            });
+        });
+
+        // Currency formatting edge cases
+        it('should format currency values correctly', () => {
+            const currencyBuilding: BuildingData = {
+                ...basicBuilding,
+                applicationFee: 0.00,
+                oneTimeFees: [
+                    { name: 'Penny Fee', amount: 0.01, type: FeeType.APPLICATION },
+                    { name: 'Large Fee', amount: 99999.99, type: FeeType.ADMIN },
+                    { name: 'Negative Fee', amount: -50, type: FeeType.MOVE_IN },
+                    { name: 'Fractional Fee', amount: 123.456, type: FeeType.CLEANING }
+                ]
+            };
+
+            const result = mapper.mapBuilding(currencyBuilding);
+
+            expect(result.fees).toContainEqual(
+                expect.objectContaining({ type: 'Application Fee', amount: '$0.01' })
+            );
+            expect(result.fees).toContainEqual(
+                expect.objectContaining({ type: 'Administrative Fee', amount: '$99,999.99' })
+            );
+            expect(result.fees).toContainEqual(
+                expect.objectContaining({ type: 'Move-in Fee', amount: '$-50' })
+            );
+        });
+
+        // Extremely large arrays
+        it('should handle extremely large amenity arrays', () => {
+            const manyAmenities = _.times(200, (i) => {
+                let category: AmenityCategory;
+                if(i % 3 === 0) {
+                    category = AmenityCategory.UNIT;
+                } else if(i % 3 === 1) {
+                    category = AmenityCategory.PROPERTY;
+                } else {
+                    category = AmenityCategory.COMMUNITY;
+                }
+                return {
+                    name: `Amenity ${i}`,
+                    category
+                };
+            });
+
+            const buildingManyAmenities: BuildingData = {
+                ...basicBuilding,
+                propertyAmenities: manyAmenities
+            };
+
+            const result = mapper.mapBuilding(buildingManyAmenities);
+
+            expect(result.amenities).toBeDefined();
+            expect(result.amenities.length).toBe(200);
+        });
+
+        it('should handle extremely large photo arrays', () => {
+            const manyPhotos = _.times(150, i => `https://example.com/photo${i}.jpg`);
+
+            const buildingManyPhotos: BuildingData = {
+                ...basicBuilding,
+                photos: manyPhotos
+            };
+
+            const result = mapper.mapBuilding(buildingManyPhotos);
+
+            expect(result.photos).toBeDefined();
+            expect(result.photos.length).toBe(150);
+        });
+
+        // Phone number format validation
+        it('should handle various phone number formats', () => {
+            const phoneFormats = [
+                '(123) 456-7890',
+                '123-456-7890',
+                '1234567890',
+                '+1 (123) 456-7890',
+                '123.456.7890',
+                'invalid-phone'
+            ];
+
+            _.forEach(phoneFormats, (phone) => {
+                const buildingWithPhone: BuildingData = {
+                    ...basicBuilding,
+                    contactInfo: { phone, email: 'test@example.com' }
+                };
+
+                const result = mapper.mapBuilding(buildingWithPhone);
+
+                expect(result.contactInfo!.phone).toBe(phone);
+            });
+        });
+
+        // URL validation for photos
+        it('should handle various URL formats in photos', () => {
+            const photoUrls = [
+                'https://example.com/photo.jpg',
+                'http://example.com/photo.jpg',
+                'ftp://example.com/photo.jpg',
+                'javascript:alert(1)',
+                'data:image/png;base64,iVBORw0KGgo',
+                '/relative/path/photo.jpg',
+                'not-a-url',
+                ''
+            ];
+
+            const buildingWithPhotos: BuildingData = {
+                ...basicBuilding,
+                photos: photoUrls
+            };
+
+            const result = mapper.mapBuilding(buildingWithPhotos);
+
+            expect(result.photos).toEqual(photoUrls);
+            // URL validation should be handled by the sync layer
+        });
+
+        // Missing required fields at different inheritance levels
+        it('should handle missing model fields with unit override', () => {
+            const incompleteModel: UnitTypeData = {
+                buildingID: 'BLDG-001',
+                modelID: 'MODEL-001',
+                modelName: 'Incomplete',
+                beds: undefined as unknown as number,
+                baths: undefined as unknown as number,
+                minRent: undefined,
+                maxRent: undefined
+            };
+
+            const completeUnit: UnitData = {
+                ...basicUnit,
+                beds: 2,
+                baths: 1.5,
+                rent: 1800
+            };
+
+            const context = {
+                unit: completeUnit,
+                unitType: incompleteModel,
+                building: basicBuilding
+            };
+
+            const result = mapper.mapUnit(context);
+
+            expect(result.beds).toBe(2);
+            expect(result.baths).toBe(1.5);
+            expect(result.rent).toBe(1800);
+        });
+
+        // Conflicting data between inheritance levels
+        it('should resolve conflicting amenities correctly', () => {
+            const unitAmenities: UnitData = {
+                ...basicUnit,
+                unitAmenities: [
+                    { name: 'Hardwood Floors', category: AmenityCategory.UNIT },
+                    { name: 'Balcony', category: AmenityCategory.UNIT }
+                ]
+            };
+
+            const modelAmenities: UnitTypeData = {
+                ...basicUnitType,
+                modelAmenities: [
+                    { name: 'Carpet Floors', category: AmenityCategory.UNIT }, // Conflicts with unit
+                    { name: 'Dishwasher', category: AmenityCategory.UNIT }
+                ]
+            };
+
+            const buildingAmenities: BuildingData = {
+                ...basicBuilding,
+                propertyAmenities: [
+                    { name: 'Pool', category: AmenityCategory.PROPERTY },
+                    { name: 'Gym', category: AmenityCategory.PROPERTY }
+                ]
+            };
+
+            const context = {
+                unit: unitAmenities,
+                unitType: modelAmenities,
+                building: buildingAmenities
+            };
+
+            const result = mapper.mapUnit(context);
+
+            // Should filter to only unit amenities for units
+            expect(result.amenities).toContain('Wood Floors');
+            expect(result.amenities).toContain('Balcony');
+            expect(result.amenities).toContain('Dishwasher');
+            expect(result.amenities).not.toContain('Pool'); // Property amenity
+        });
+
+        // Reserved keywords in Apartments.com system
+        it('should handle reserved keywords in text fields', () => {
+            const reservedBuilding: BuildingData = {
+                ...basicBuilding,
+                propertyDescription: 'null undefined false true delete',
+                propertyAmenities: [
+                    { name: 'SELECT * FROM', category: AmenityCategory.PROPERTY },
+                    { name: 'DROP TABLE', category: AmenityCategory.PROPERTY },
+                    { name: '<iframe>', category: AmenityCategory.PROPERTY }
+                ]
+            };
+
+            const result = mapper.mapBuilding(reservedBuilding);
+
+            expect(result.description).toBe('null undefined false true delete');
+            expect(result.amenities).toContain('SELECT * FROM');
+        });
+
+        // Timezone edge cases
+        it('should format dates correctly across timezones', () => {
+            const timezoneUnit: UnitData = {
+                ...basicUnit,
+                availableDate: '2024-01-01T00:00:00Z' // Midnight UTC
+            };
+
+            const context = {
+                unit: timezoneUnit,
+                unitType: basicUnitType,
+                building: basicBuilding
+            };
+
+            const result = mapper.mapUnit(context);
+
+            // Should format to MM/DD/YYYY regardless of timezone
+            expect(result.dateAvailable).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
+        });
+
+        // Empty strings vs null/undefined
+        it('should handle empty strings differently from null/undefined', () => {
+            const emptyStringsUnit: UnitData = {
+                ...basicUnit,
+                unitDescription: '',
+                unitNumber: '',
+                availableDate: ''
+            };
+
+            const context = {
+                unit: emptyStringsUnit,
+                unitType: basicUnitType,
+                building: basicBuilding
+            };
+
+            const result = mapper.mapUnit(context);
+
+            // Empty string descriptions are preserved
+            expect(result.description).toBeUndefined(); // No description inherited
+            expect(result.unitNumber).toBe(basicUnit.unitID); // Falls back to unitID
+            expect(result.dateAvailable).toBeUndefined(); // Invalid date
+        });
+
+        // Transformer function errors
+        it('should handle errors in transformation gracefully', () => {
+            const invalidUtility: BuildingData = {
+                ...basicBuilding,
+                utilitiesIncluded: {
+                    ['INVALID_UTILITY' as UtilityType]: true
+                }
+            };
+
+            expect(() => mapper.mapBuilding(invalidUtility)).not.toThrow();
+        });
+
+        // Unicode and special characters
+        it('should handle unicode and international characters', () => {
+            const unicodeBuilding: BuildingData = {
+                ...basicBuilding,
+                propertyDescription: '🏢 Luksusowe mieszkanie w centrum Warszawy',
+                street: '123 Rue de la Paix',
+                city: 'São Paulo',
+                propertyAmenities: [
+                    { name: '🏊‍♂️ Swimming Pool', category: AmenityCategory.PROPERTY },
+                    { name: 'Café & Restaurant', category: AmenityCategory.PROPERTY },
+                    { name: '中文设施', category: AmenityCategory.PROPERTY }
+                ]
+            };
+
+            const result = mapper.mapBuilding(unicodeBuilding);
+
+            expect(result.description).toBe('🏢 Luksusowe mieszkanie w centrum Warszawy');
+            expect(result.address.street).toBe('123 Rue de la Paix');
+            expect(result.address.city).toBe('São Paulo');
+            expect(result.amenities.length).toBe(3);
+        });
+
+        // Zero and negative values
+        it('should handle zero and negative values appropriately', () => {
+            const zeroUnit: UnitData = {
+                ...basicUnit,
+                beds: 0, // Studio
+                baths: 0, // Invalid but should handle
+                rent: -100, // Invalid
+                sqft: 0,
+                deposit: -500
+            };
+
+            const context = {
+                unit: zeroUnit,
+                unitType: undefined,
+                building: basicBuilding
+            };
+
+            const result = mapper.mapUnit(context);
+
+            expect(result.beds).toBe(0);
+            expect(result.baths).toBe(0);
+            expect(result.rent).toBe(-100); // Preserves negative values
+            expect(result.sqft).toBe(0);
+            expect(result.deposit).toBe(-500); // Preserves negative deposit
         });
     });
 });

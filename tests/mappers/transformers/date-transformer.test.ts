@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Mocking Date constructor requires any */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import _ from 'lodash';
 import {
     createDateFormatter,
     parseDateToISO,
@@ -132,10 +133,10 @@ describe('Date Transformer', () => {
         });
 
         it('should handle date overflow (JavaScript behavior)', () => {
-            // JavaScript Date constructor automatically adjusts invalid dates
-            expect(parseDateToISO('13/32/2024')).toBe('2025-02-01'); // Month 13 = Jan+1, day 32 = Feb 1
-            expect(parseDateToISO('02/30/2024')).toBe('2024-03-01'); // Feb 30 = Mar 1
-            expect(parseDateToISO('04/31/2024')).toBe('2024-05-01'); // Apr 31 = May 1
+            // Our strict validation rejects dates with invalid month/day values
+            expect(parseDateToISO('13/32/2024')).toBeUndefined(); // Invalid month 13
+            expect(parseDateToISO('02/30/2024')).toBeUndefined(); // Feb 30 doesn't exist
+            expect(parseDateToISO('04/31/2024')).toBeUndefined(); // Apr only has 30 days
         });
 
         it('should handle undefined and empty values', () => {
@@ -274,8 +275,9 @@ describe('Date Transformer', () => {
 
         it('should handle date objects as strings', () => {
             const dateString = new Date('2024-03-15').toString();
+            // toString() format like "Fri Mar 15 2024..." is not supported
             const parsed = parseDateToISO(dateString);
-            expect(parsed).toBe('2024-03-15');
+            expect(parsed).toBeUndefined();
         });
 
         it('should handle timezone differences', () => {
@@ -284,6 +286,206 @@ describe('Date Transformer', () => {
             const utcDate = '2024-03-15T00:00:00Z';
             const result = formatter(utcDate);
             expect(result).toMatch(/2024-03-1[45]/); // Could be 14th or 15th depending on timezone
+        });
+
+        // Wrong input types
+        it('should handle wrong input types for createDateFormatter', () => {
+            const formatter = createDateFormatter('MM/DD/YYYY');
+
+            // Number instead of string
+            expect(formatter(123 as unknown as string)).toBeUndefined();
+
+            // Boolean
+            expect(formatter(true as unknown as string)).toBeUndefined();
+
+            // Object
+            expect(formatter({} as unknown as string)).toBeUndefined();
+
+            // Array
+            expect(formatter([] as unknown as string)).toBeUndefined();
+
+            // Function
+            expect(formatter(_.noop as unknown as string)).toBeUndefined();
+        });
+
+        it('should handle malformed date strings', () => {
+            const formatter = createDateFormatter('MM/DD/YYYY');
+
+            // Invalid month
+            expect(formatter('2024-13-15')).toBeUndefined();
+            expect(formatter('2024-00-15')).toBeUndefined();
+
+            // Invalid day - our strict validation rejects these
+            expect(formatter('2024-01-32')).toBeUndefined(); // Day 32 doesn't exist
+            expect(formatter('2024-01-00')).toBeUndefined();
+
+            // Incomplete dates - JavaScript parses these as valid dates
+            expect(formatter('2024-01')).toBe('01/01/2024'); // JS interprets as Jan 1, 2024
+            expect(formatter('2024')).toBe('01/01/2024'); // JS interprets as Jan 1, 2024
+
+            // Wrong format
+            expect(formatter('15-03-2024')).toBeUndefined(); // DD-MM-YYYY
+            expect(formatter('2024/03/15')).toBe('03/15/2024'); // Different separator
+
+            // Random strings
+            expect(formatter('not a date')).toBeUndefined();
+            expect(formatter('12345')).toBe('01/01/12345'); // JS interprets as year 12345
+            expect(formatter('null')).toBeUndefined();
+        });
+
+        it('should handle infinity and NaN dates', () => {
+            const formatter = createDateFormatter('MM/DD/YYYY');
+
+            // Infinity
+            expect(formatter('Infinity')).toBeUndefined();
+            expect(formatter('-Infinity')).toBeUndefined();
+
+            // NaN
+            expect(formatter('NaN')).toBeUndefined();
+        });
+
+        // Transformer chain failures
+        it('should handle date formatter with unknown formats', () => {
+            const formatters = [
+                createDateFormatter('DD/MM/YYYY'), // Not supported
+                createDateFormatter('YYYY/MM/DD'), // Not supported
+                createDateFormatter(''), // Empty format
+                createDateFormatter(null as unknown as string),
+                createDateFormatter(undefined as unknown as string),
+                createDateFormatter({} as unknown as string)
+            ];
+
+            _.forEach(formatters, (formatter) => {
+                // Should return original value for unknown formats
+                expect(formatter('2024-03-15')).toBe('2024-03-15');
+            });
+        });
+
+        // Memory and performance edge cases
+        it('should handle very long date strings', () => {
+            const formatter = createDateFormatter('MM/DD/YYYY');
+            const longString = '2024-03-15' + _.repeat('x', 10000);
+
+            expect(formatter(longString)).toBeUndefined();
+        });
+
+        it('should handle date calculations near epoch boundaries', () => {
+            // Near Unix epoch (1970-01-01)
+            expect(parseDateToISO('1970-01-01')).toBe('1970-01-01');
+            expect(parseDateToISO('1969-12-31')).toBe('1969-12-31');
+
+            // JavaScript Date min/max values
+            expect(parseDateToISO('0000-01-01')).toBeDefined();
+            expect(parseDateToISO('9999-12-31')).toBeDefined();
+        });
+
+        // daysUntil edge cases
+        it('should handle daysUntil with extreme date differences', () => {
+            // Very far future
+            expect(daysUntil('2100-01-01')).toBeGreaterThan(25000);
+
+            // Very far past
+            expect(daysUntil('1900-01-01')).toBeLessThan(-45000);
+
+            // Same date but different times
+            expect(daysUntil('2024-03-15T00:00:00Z')).toBe(0);
+            expect(daysUntil('2024-03-15T23:59:59Z')).toBe(0);
+        });
+
+        // isDateInPast edge cases
+        it('should handle isDateInPast with millisecond precision', () => {
+            const now = new Date().toISOString();
+            const nowPlus1ms = new Date(Date.now() + 1).toISOString();
+            const nowMinus1ms = new Date(Date.now() - 1).toISOString();
+
+            expect(isDateInPast(now)).toBe(false); // Exactly now
+            expect(isDateInPast(nowPlus1ms)).toBe(false);
+            expect(isDateInPast(nowMinus1ms)).toBe(true);
+        });
+
+        // formatAvailability edge cases
+        it('should handle formatAvailability with special date values', () => {
+            // Very far future
+            expect(formatAvailability('2100-01-01')).toMatch(/^Available \d{2}\/\d{2}\/\d{4}$/);
+
+            // Invalid dates default to "Available Now"
+            expect(formatAvailability('invalid')).toBe('Available Now');
+            expect(formatAvailability(null as unknown as string)).toBe('Available Now');
+            expect(formatAvailability(123 as unknown as string)).toBe('Available Now');
+            expect(formatAvailability({} as unknown as string)).toBe('Available Now');
+        });
+
+        // Date parsing with various formats
+        it('should handle parseDateToISO with unconventional formats', () => {
+            // ISO formats with timezone
+            expect(parseDateToISO('2024-03-15T12:00:00+05:00')).toBe('2024-03-15');
+            expect(parseDateToISO('2024-03-15T12:00:00-08:00')).toBe('2024-03-15');
+
+            // Partial ISO formats
+            expect(parseDateToISO('2024-03-15T12:00')).toBe('2024-03-15');
+            expect(parseDateToISO('2024-03-15T12')).toBeUndefined();
+
+            // Various separators
+            expect(parseDateToISO('2024.03.15')).toBe('2024-03-15');
+            expect(parseDateToISO('2024 03 15')).toBe('2024-03-15');
+
+            // With extra text
+            expect(parseDateToISO('Date: 2024-03-15')).toBeUndefined();
+            expect(parseDateToISO('2024-03-15 (Friday)')).toBe('2024-03-15');
+        });
+
+        // Concurrent operations
+        it('should handle concurrent date operations', () => {
+            const dates = Array.from({ length: 100 }, (__, i) => {
+                const d = new Date('2024-01-01');
+                d.setDate(d.getDate() + i);
+                const isoString = d.toISOString();
+                return _.split(isoString, 'T')[0];
+            });
+
+            const formatter = createDateFormatter('MM/DD/YYYY');
+            const results = _.map(dates, d => formatter(d));
+
+            // All should be formatted correctly
+            _.forEach(results, (result) => {
+                expect(result).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
+            });
+        });
+
+        // Error handling in date calculations
+        it('should handle errors in date arithmetic gracefully', () => {
+            // Test daysUntil with dates that might cause overflow
+            expect(() => daysUntil('10000-01-01')).not.toThrow();
+            expect(() => daysUntil('-10000-01-01')).not.toThrow();
+
+            // Test with malformed dates that Date constructor might accept
+            expect(() => daysUntil('2024-15-45')).not.toThrow(); // JS might adjust this
+        });
+
+        // Locale-specific edge cases
+        it('should handle different locale date formats in parseDateToISO', () => {
+            // European format (DD/MM/YYYY)
+            expect(parseDateToISO('15/03/2024')).toBeUndefined(); // Ambiguous - could be March 15 or invalid
+
+            // European format DD/MM/YYYY - our parser assumes MM/DD/YYYY
+            expect(parseDateToISO('31/12/2024')).toBeUndefined(); // 31 is not a valid month
+
+            // Named months
+            expect(parseDateToISO('March 15, 2024')).toBe('2024-03-15');
+            expect(parseDateToISO('15 March 2024')).toBe('2024-03-15');
+            expect(parseDateToISO('15-Mar-24')).toBe('2024-03-15');
+        });
+
+        // Date formatter parameter edge cases
+        it('should handle date formatter with special parameters', () => {
+            // Formatter with parameters object in second arg (if supported)
+            const formatter = createDateFormatter('MM/DD/YYYY');
+            const date = '2024-03-15';
+
+            // Should ignore extra parameters
+            expect((formatter as any)(date, { extra: 'param' })).toBe('03/15/2024');
+            expect((formatter as any)(date, null)).toBe('03/15/2024');
+            expect((formatter as any)(date, 123)).toBe('03/15/2024');
         });
     });
 });

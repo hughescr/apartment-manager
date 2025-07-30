@@ -55,22 +55,23 @@ const dynamoDbMock = (() => {
     // Default implementation that returns empty results
     mockFn.mockImplementation((command: unknown) => {
         const cmd = command as { constructor: { name: string } };
+        // Handle both client-dynamodb and lib-dynamodb commands
         if(cmd.constructor.name === 'QueryCommand') {
             return Promise.resolve({ Items: [], Count: 0 });
         }
-        if(cmd.constructor.name === 'GetItemCommand') {
+        if(cmd.constructor.name === 'GetItemCommand' || cmd.constructor.name === 'GetCommand') {
             return Promise.resolve({});
         }
-        if(cmd.constructor.name === 'PutItemCommand') {
+        if(cmd.constructor.name === 'PutItemCommand' || cmd.constructor.name === 'PutCommand') {
             return Promise.resolve({});
         }
-        if(cmd.constructor.name === 'UpdateItemCommand') {
+        if(cmd.constructor.name === 'UpdateItemCommand' || cmd.constructor.name === 'UpdateCommand') {
             return Promise.resolve({});
         }
-        if(cmd.constructor.name === 'DeleteItemCommand') {
+        if(cmd.constructor.name === 'DeleteItemCommand' || cmd.constructor.name === 'DeleteCommand') {
             return Promise.resolve({});
         }
-        if(cmd.constructor.name === 'TransactWriteItemsCommand') {
+        if(cmd.constructor.name === 'TransactWriteItemsCommand' || cmd.constructor.name === 'TransactWriteCommand') {
             return Promise.resolve({});
         }
         return Promise.reject(new Error(`Unmocked DynamoDB command: ${cmd.constructor.name}`));
@@ -123,6 +124,9 @@ mock.module('sst', () => ({
         },
         ListingsBucket: {
             name: 'test-listings-bucket'
+        },
+        PhotosBucket: {
+            name: 'test-photos-bucket'
         }
     }
 }));
@@ -178,6 +182,11 @@ export { dynamoDbMock, s3Mock };
 
 // Re-export jest for convenience
 export { jest };
+
+// Mock s3-request-presigner
+mock.module('@aws-sdk/s3-request-presigner', () => ({
+    getSignedUrl: jest.fn().mockResolvedValue('https://test-bucket.s3.amazonaws.com/signed-url')
+}));
 
 // Re-export lib-dynamodb commands for tests to use
 export {

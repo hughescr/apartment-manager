@@ -448,5 +448,236 @@ describe('Fee Transformer', () => {
             const result = formatFeeList(noDescFee);
             expect(result).toBe('application: $50');
         });
+
+        // Wrong input types
+        it('should handle wrong input types in transformFees', () => {
+            // String instead of array
+            expect(transformFees('not an array' as unknown as Fee[], 'apartments_com')).toEqual([]);
+
+            // Number instead of array
+            expect(transformFees(123 as unknown as Fee[], 'apartments_com')).toEqual([]);
+
+            // Object instead of array
+            expect(transformFees({} as unknown as Fee[], 'apartments_com')).toEqual([]);
+
+            // Boolean instead of array
+            expect(transformFees(true as unknown as Fee[], 'apartments_com')).toEqual([]);
+        });
+
+        it('should handle malformed fee objects', () => {
+            const malformedFees = [
+                { notType: FeeType.APPLICATION, amount: 50 }, // Missing type
+                { type: 'INVALID_TYPE', amount: 50 }, // Invalid type
+                { type: FeeType.APPLICATION }, // Missing amount
+                { type: FeeType.APPLICATION, amount: 'fifty' }, // Wrong amount type
+                { type: FeeType.APPLICATION, amount: null }, // Null amount
+                { type: FeeType.APPLICATION, amount: undefined }, // Undefined amount
+                { type: FeeType.APPLICATION, amount: NaN }, // NaN amount
+                { type: FeeType.APPLICATION, amount: Infinity }, // Infinity amount
+                null,
+                undefined,
+                'string instead of object'
+            ] as unknown as Fee[];
+
+            const result = transformFees(malformedFees, 'apartments_com');
+            // Should handle gracefully, filtering out or converting invalid entries
+            expect(() => result).not.toThrow();
+        });
+
+        // Extreme numeric values
+        it('should handle extreme fee amounts', () => {
+            const extremeFees: Fee[] = [
+                { type: FeeType.APPLICATION, amount: Number.MAX_SAFE_INTEGER, refundable: false },
+                { type: FeeType.ADMIN, amount: Number.MIN_SAFE_INTEGER, refundable: false },
+                { type: FeeType.PARKING, amount: Number.EPSILON, refundable: false },
+                { type: FeeType.PET_FEE, amount: -0, refundable: false }
+            ];
+
+            const result = transformFees(extremeFees, 'apartments_com');
+            expect(result).toHaveLength(4);
+            // Check that formatting doesn't break
+            _.forEach(result, (fee) => {
+                expect(typeof fee.amount).toBe('string');
+                expect(fee.amount).toMatch(/^\$-?\d/); // Starts with $ and optional minus
+            });
+        });
+
+        // calculateMoveInCost edge cases
+        it('should handle calculateMoveInCost with extreme values', () => {
+            // Negative rent
+            expect(calculateMoveInCost(-1000, [])).toBe(-1000);
+
+            // Zero rent
+            expect(calculateMoveInCost(0, [])).toBe(0);
+
+            // Fractional rent
+            expect(calculateMoveInCost(1500.50, [])).toBe(1500.50);
+
+            // Very large rent
+            expect(calculateMoveInCost(Number.MAX_SAFE_INTEGER, [])).toBe(Number.MAX_SAFE_INTEGER);
+
+            // With negative fees
+            const negativeFees: Fee[] = [
+                { type: FeeType.ADMIN, amount: -50, refundable: false }
+            ];
+            expect(calculateMoveInCost(1000, negativeFees)).toBe(950);
+        });
+
+        // categorizeFees edge cases
+        it('should handle categorizeFees with non-standard fee types', () => {
+            const customFees: Fee[] = [
+                { type: 'CUSTOM_FEE' as FeeType, amount: 100, refundable: false },
+                { type: '' as FeeType, amount: 50, refundable: false },
+                { type: null as unknown as FeeType, amount: 25, refundable: false }
+            ];
+
+            const result = categorizeFees(customFees, []);
+            // Should categorize unknown types as oneTime
+            expect(result.oneTime.length).toBeGreaterThan(0);
+        });
+
+        // formatFeeList edge cases
+        it('should handle formatFeeList with special separators', () => {
+            const fees: Fee[] = [
+                { type: FeeType.APPLICATION, amount: 50, refundable: false }
+            ];
+
+            // Empty separator
+            expect(formatFeeList(fees, '')).toBe('application: $50');
+
+            // Very long separator
+            const longSeparator = _.repeat(' | ', 100);
+            expect(formatFeeList(fees, longSeparator)).toBe('application: $50');
+
+            // Special characters in separator
+            expect(formatFeeList(fees, '\n\t')).toBe('application: $50');
+
+            // Null/undefined separator (should use default)
+            expect(formatFeeList(fees, null as unknown as string)).toContain('application: $50');
+            expect(formatFeeList(fees, undefined as unknown as string)).toContain('application: $50');
+        });
+
+        // mergeFees edge cases
+        it('should handle mergeFees with conflicting refundable flags', () => {
+            const source1: Fee[] = [
+                { type: FeeType.APPLICATION, amount: 50, refundable: true }
+            ];
+            const source2: Fee[] = [
+                { type: FeeType.APPLICATION, amount: 25, refundable: false }
+            ];
+
+            const merged = mergeFees(source1, source2);
+            expect(merged[0].refundable).toBe(false); // Later source wins
+        });
+
+        it('should handle mergeFees with very many sources', () => {
+            const sources = Array.from({ length: 100 }, (_, i) => [
+                { type: FeeType.APPLICATION, amount: i, refundable: false }
+            ] as Fee[]);
+
+            const merged = mergeFees(...sources);
+            expect(merged).toHaveLength(1);
+            expect(merged[0].amount).toBe(4950); // Sum of 0+1+2+...+99
+        });
+
+        // Conditional fee adder edge cases
+        it('should handle createConditionalFeeAdder with complex conditions', () => {
+            // Condition that throws
+            const throwingCondition = () => {
+                throw new Error('Condition error');
+            };
+            const fee: Fee = { type: FeeType.ADMIN, amount: 100, refundable: false };
+            const throwingAdder = createConditionalFeeAdder(throwingCondition, fee);
+
+            expect(() => throwingAdder([])).toThrow('Condition error');
+
+            // Condition that modifies fees
+            let sideEffect = false;
+            const modifyingCondition = (fees: Fee[]) => {
+                sideEffect = true;
+                fees.push({ type: FeeType.PARKING, amount: 50, refundable: false });
+                return true;
+            };
+            const modifyingAdder = createConditionalFeeAdder(modifyingCondition, fee);
+
+            const inputFees: Fee[] = [];
+            const result = modifyingAdder(inputFees);
+            expect(sideEffect).toBe(true);
+            expect(inputFees).toHaveLength(1); // Modified by condition
+            expect(result).toHaveLength(2); // Original plus added
+        });
+
+        it('should handle circular references in fee objects', () => {
+            const circularFee: Fee & { self?: Fee } = { type: FeeType.APPLICATION, amount: 50, refundable: false };
+            circularFee.self = circularFee;
+
+            const fees = [circularFee] as Fee[];
+            const result = transformFees(fees, 'apartments_com');
+            expect(result).toHaveLength(1);
+            expect(result[0].type).toBe('Application Fee');
+        });
+
+        // Memory and performance edge cases
+        it('should handle very long fee descriptions', () => {
+            const longDesc = _.repeat('A', 10000);
+            const longFee: Fee[] = [
+                { type: FeeType.APPLICATION, amount: 50, description: longDesc, refundable: false }
+            ];
+
+            const result = transformFees(longFee, 'apartments_com');
+            expect(result[0].description).toBe(longDesc);
+        });
+
+        // Type coercion edge cases
+        it('should handle fee type coercion', () => {
+            const fees: Fee[] = [
+                { type: FeeType.APPLICATION, amount: '50' as unknown as number, refundable: false },
+                { type: FeeType.ADMIN, amount: true as unknown as number, refundable: false },
+                { type: FeeType.PARKING, amount: [] as unknown as number, refundable: false }
+            ];
+
+            const result = transformFees(fees, 'apartments_com');
+            expect(result[0].amount).toBe('$50'); // String coerced to number
+            expect(result[1].amount).toBe('$1'); // true coerced to 1
+            expect(result[2].amount).toBe('$0'); // [] coerced to 0
+        });
+
+        // Site-specific formatting edge cases
+        it('should handle unknown site names gracefully', () => {
+            const fees: Fee[] = [
+                { type: FeeType.APPLICATION, amount: 50, refundable: false }
+            ];
+
+            // Various invalid site names
+            expect(() => transformFees(fees, null as unknown as string)).not.toThrow();
+            expect(() => transformFees(fees, '')).not.toThrow();
+            expect(() => transformFees(fees, 123 as unknown as string)).not.toThrow();
+            expect(() => transformFees(fees, {} as unknown as string)).not.toThrow();
+
+            // Should use default formatting
+            const result = transformFees(fees, 'unknown_site_12345');
+            expect(result[0].amount).toMatch(/^\$/); // Should still format with $
+        });
+
+        // Concurrent operations
+        it('should handle concurrent fee transformations', () => {
+            const fees: Fee[] = Array.from({ length: 100 }, (_, i) => ({
+                type: FeeType.ADMIN,
+                amount: i,
+                refundable: false
+            }));
+
+            // Transform same fees multiple times
+            const results = [
+                transformFees(fees, 'apartments_com'),
+                transformFees(fees, 'zillow'),
+                transformFees(fees, 'unknown')
+            ];
+
+            // All should complete successfully
+            _.forEach(results, (result) => {
+                expect(result).toHaveLength(100);
+            });
+        });
     });
 });

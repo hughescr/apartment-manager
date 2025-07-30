@@ -69,6 +69,9 @@ export function createAmenityNameTransformer(
     const mappings = amenityNameMappings[siteId] || {};
 
     return (name: string): string => {
+        if(!_.isString(name)) {
+            throw new TypeError(`Expected string, got ${typeof name}`);
+        }
         return mappings[name] || name;
     };
 }
@@ -109,7 +112,10 @@ export function transformAmenities(
         filtered = filterAmenitiesByCategory(amenities, category);
     }
 
-    return _.map(filtered, amenity => transformer(amenity.name));
+    return _(filtered)
+        .filter(amenity => amenity && _.isObject(amenity) && _.isString(amenity.name))
+        .map(amenity => transformer(amenity.name))
+        .value();
 }
 
 /**

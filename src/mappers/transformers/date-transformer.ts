@@ -12,6 +12,11 @@ export function createDateFormatter(format: string): TransformerFunction<string 
             return undefined;
         }
 
+        // Ensure value is a string
+        if(typeof value !== 'string') {
+            return undefined;
+        }
+
         const date = new Date(value);
         if(isNaN(date.getTime())) {
             return undefined;
@@ -70,6 +75,11 @@ export function parseDateToISO(value: string | undefined): string | undefined {
         return undefined;
     }
 
+    // Ensure value is a string
+    if(typeof value !== 'string') {
+        return undefined;
+    }
+
     // Try to parse various formats
     const patterns = [
         // ISO format
@@ -94,16 +104,28 @@ export function parseDateToISO(value: string | undefined): string | undefined {
             }
 
             const date = new Date(year, month - 1, day);
-            if(!isNaN(date.getTime())) {
+            if(!isNaN(date.getTime()) &&
+              date.getFullYear() === year &&
+              date.getMonth() === month - 1 &&
+              date.getDate() === day) {
                 return formatYYYYMMDD(date);
             }
         }
     }
 
-    // Try native Date parsing as fallback
-    const date = new Date(value);
-    if(!isNaN(date.getTime())) {
-        return formatYYYYMMDD(date);
+    // Try native Date parsing as fallback only for common formats
+    // Reject if the string contains unexpected text
+    if(/^\d{4}-\d{2}-\d{2}/.test(value) ||
+      /^\w+ \d{1,2}, \d{4}$/.test(value) ||
+      /^\d{1,2} \w+ \d{4}$/.test(value) ||
+      /^\d{4}\/\d{2}\/\d{2}$/.test(value) ||
+      /^\d{4}\.\d{2}\.\d{2}$/.test(value) ||
+      /^\d{4} \d{2} \d{2}$/.test(value) ||
+      /^\d{1,2}-\w{3}-\d{2}$/.test(value)) { // Support DD-Mon-YY format
+        const date = new Date(value);
+        if(!isNaN(date.getTime())) {
+            return formatYYYYMMDD(date);
+        }
     }
 
     return undefined;
