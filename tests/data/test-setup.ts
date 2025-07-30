@@ -226,6 +226,7 @@ mock.module('@hughescr/logger', () => {
 
 // Now import types after mocking
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import type { S3Client } from '@aws-sdk/client-s3';
 import { constant, forEach } from 'lodash';
 
 // Create the mock send function that will be used by all tests
@@ -242,12 +243,12 @@ const mockDynamoClient = {
 // Create a mock S3 Client
 const mockS3Client = {
     send: mockS3Send
-};
+} as unknown as S3Client;
 
 // Mock the clients module to return our mock clients
 mock.module('../../data/clients', () => ({
-    getDynamoClient: () => mockDynamoClient,
-    getS3Client: () => mockS3Client
+    getDynamoClient: (injectedClient?: DynamoDBDocumentClient) => injectedClient || mockDynamoClient,
+    getS3Client: (injectedClient?: S3Client) => injectedClient || mockS3Client
 }));
 
 // Mock the db module to return our mock client and table name
@@ -255,6 +256,13 @@ mock.module('../../data/db', () => ({
     db: mockDynamoClient,
     tableName: 'test-table-name',
     getTableName: constant('test-table-name')
+}));
+
+// Mock the config module to return test configuration
+mock.module('../../data/config', () => ({
+    getConfig: (overrides?: { tableName?: string }) => ({
+        tableName: overrides?.tableName || 'test-table-name'
+    })
 }));
 
 // Mock crypto for ID generation

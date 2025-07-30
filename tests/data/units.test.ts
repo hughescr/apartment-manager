@@ -110,6 +110,27 @@ describe('Unit Data Layer', () => {
         expect(mockSend).toHaveBeenCalledTimes(1);
     });
 
+    it('should handle createUnit when Attributes is not returned', async () => {
+        expect.assertions(2);
+        const unitData = {
+            unitNumber: '103B',
+            beds: 2,
+            baths: 1,
+            buildingID: testBuildingID,
+            unitID: 'test-uuid'
+        };
+        // Mock a response where Attributes is explicitly undefined (edge case)
+        mockSend.mockResolvedValueOnce({
+            Attributes: undefined,
+            $metadata: { httpStatusCode: 200 }
+        });
+
+        const result = await createUnit(unitData);
+        // Should return the original unit data when Attributes is not provided
+        expect(result).toEqual(unitData);
+        expect(mockSend).toHaveBeenCalledTimes(1);
+    });
+
     it('should create a unit with full data', async () => {
         expect.assertions(4);
         const fullUnit = {

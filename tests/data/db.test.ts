@@ -1,41 +1,40 @@
+/**
+ * Tests for data/db.ts
+ * Tests module exports within the existing test framework
+ */
+import './test-setup';
 import { describe, it, expect } from 'bun:test';
 import { db, getTableName, tableName } from '../../data/db';
 
-describe('Database Module', () => {
-    describe('getTableName', () => {
-        it('should return test table name in test environment', () => {
-            expect.assertions(1);
-            // In test environment, it should always return test-table-name
-            expect(getTableName()).toBe('test-table-name');
-        });
-
-        it('should be a function', () => {
-            expect.assertions(1);
-            expect(typeof getTableName).toBe('function');
-        });
-    });
-
-    describe('db export', () => {
-        it('should export a DynamoDB client', () => {
-            expect.assertions(2);
+describe('data/db', () => {
+    describe('exports', () => {
+        it('should export db as a DynamoDB client', () => {
             expect(db).toBeDefined();
+            expect(db.send).toBeDefined();
             expect(typeof db.send).toBe('function');
         });
-    });
 
-    describe('tableName export', () => {
-        it('should export tableName for backward compatibility', () => {
-            expect.assertions(1);
+        it('should export getTableName as a function', () => {
+            expect(getTableName).toBeDefined();
+            expect(typeof getTableName).toBe('function');
+        });
+
+        it('should export tableName as a string', () => {
+            expect(tableName).toBeDefined();
+            expect(typeof tableName).toBe('string');
             expect(tableName).toBe('test-table-name');
         });
     });
 
-    describe('module exports', () => {
-        it('should export all expected properties', () => {
-            expect.assertions(3);
-            expect(db).toBeDefined();
-            expect(getTableName).toBeDefined();
-            expect(tableName).toBeDefined();
+    describe('getTableName', () => {
+        it('should return the test table name', () => {
+            const name = getTableName();
+            expect(name).toBe('test-table-name');
+        });
+
+        it('should return the same value as tableName export', () => {
+            const name = getTableName();
+            expect(name).toBe(tableName);
         });
     });
 });

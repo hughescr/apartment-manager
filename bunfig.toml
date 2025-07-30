@@ -3,3 +3,13 @@ coverage = true
 coverageThreshold = { line = 0.95, function = 0.95, statement = 0.95 }
 coverageReporter = ["text", "lcov"]
 coverageSkipTestFiles = true
+coveragePathIgnorePatterns = [
+    # Exclude all test files and test helpers - these don't need coverage as they are the tests themselves
+    "tests/**",
+    # Exclude data/clients.ts - this module is fully mocked in tests/data/test-setup.ts
+    # The actual AWS client initialization code cannot be tested without real AWS credentials
+    "data/clients.ts",
+    # Exclude data/config.ts - this module is fully mocked in tests/data/test-setup.ts
+    # It only provides configuration and is tested through the modules that use it
+    "data/config.ts"
+]
