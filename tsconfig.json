@@ -24,10 +24,17 @@
         ]
     },
     "include": [
-        "astro-src/**/*",
-        "astro-src/global.d.ts",
+        ".astro/types.d.ts",
         "sst-env.d.ts",
-        ".astro/types.d.ts"
+        "sst.config.ts",
+
+        "sst/**/*",
+        "data/**/*",
+        "api/**/*",
+        "src/**/*",
+        "astro-src/**/*",
+
+        // "tests/**/*"
     ],
     "exclude": [
         "node_modules",
