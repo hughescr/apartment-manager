@@ -1,6 +1,43 @@
-import { mock } from 'bun:test';
-import { constant } from 'lodash';
+import { jest } from 'bun:test';
 
+/**
+ * DEPRECATED: This file contains legacy mock functions that use mock.module().
+ * These create global state and cause cross-test contamination.
+ *
+ * Use the centralized test-setup.ts files instead:
+ * - tests/data/test-setup.ts for data layer tests
+ * - tests/api/test-setup.ts for API tests
+ *
+ * If you need test-specific mocking, use spyOn or dependency injection patterns.
+ */
+
+/**
+ * Mock factory for crypto.randomUUID that can be used in individual tests
+ * without global module mocking.
+ */
+export function createMockRandomUUID(returnValue = 'test-uuid') {
+    return jest.fn().mockReturnValue(returnValue);
+}
+
+/**
+ * Mock factory for S3 request presigner that can be used in individual tests
+ * without global module mocking.
+ */
+export function createMockGetSignedUrl(returnValue = 'https://presigned-url.example.com') {
+    return jest.fn().mockResolvedValue(returnValue);
+}
+
+/**
+ * Utility to create a mock AWS client send function with customizable responses
+ */
+export function createMockSendFunction(defaultResponse = {}) {
+    return jest.fn().mockImplementation(() => Promise.resolve(defaultResponse));
+}
+
+/**
+ * LEGACY INTERFACES - Kept for backward compatibility
+ * DO NOT USE THESE IN NEW TESTS
+ */
 interface MockSendFunction {
     (...args: unknown[]): Promise<unknown>
     mock: {
@@ -36,118 +73,69 @@ export interface S3Mocks {
 }
 
 /**
- * Mock DynamoDB at the module level. This should be called in beforeAll() at the file level.
- * Returns mock functions that can be used for assertions in tests.
+ * DEPRECATED: Use centralized test-setup.ts instead
+ *
+ * This function uses mock.module() which creates global state that persists
+ * across all tests, causing contamination. The proper approach is to use
+ * the centralized mocks in test-setup.ts files.
+ *
+ * @deprecated Use tests/data/test-setup.ts or tests/api/test-setup.ts
  */
 export function mockDynamoDB(): DynamoDBMocks {
-    const mockSend = mock(() => Promise.resolve({})) as MockSendFunction;
-
-    const DynamoDBDocumentClient = {
-        from: mock(() => ({
-            send: mockSend
-        }))
-    };
-
-    const GetCommand = mock(() => ({}));
-    const PutCommand = mock(() => ({}));
-    const QueryCommand = mock(() => ({}));
-    const UpdateCommand = mock(() => ({}));
-    const DeleteCommand = mock(() => ({}));
-    const BatchWriteCommand = mock(() => ({}));
-    const BatchGetCommand = mock(() => ({}));
-    const ScanCommand = mock(() => ({}));
-    const TransactGetCommand = mock(() => ({}));
-    const TransactWriteCommand = mock(() => ({}));
-
-    // Mock the lib-dynamodb module
-    mock.module('@aws-sdk/lib-dynamodb', () => ({
-        DynamoDBDocumentClient,
-        GetCommand,
-        PutCommand,
-        QueryCommand,
-        UpdateCommand,
-        DeleteCommand,
-        BatchWriteCommand,
-        BatchGetCommand,
-        ScanCommand,
-        TransactGetCommand,
-        TransactWriteCommand
-    }));
-
-    // Also mock the client-dynamodb module for completeness
-    mock.module('@aws-sdk/client-dynamodb', () => ({
-        DynamoDBClient: mock(() => ({}))
-    }));
-
-    return {
-        mockSend,
-        DynamoDBDocumentClient,
-        GetCommand,
-        PutCommand,
-        QueryCommand,
-        UpdateCommand,
-        DeleteCommand,
-        BatchWriteCommand,
-        BatchGetCommand,
-        ScanCommand,
-        TransactGetCommand,
-        TransactWriteCommand
-    };
+    throw new Error(
+        'mockDynamoDB() is deprecated due to cross-test contamination. ' +
+        'Use centralized test-setup.ts files instead. ' +
+        'Import "./test-setup" or "../data/test-setup" at the top of your test file.'
+    );
 }
 
 /**
- * Mock S3 at the module level. This should be called in beforeAll() at the file level.
- * Returns mock functions that can be used for assertions in tests.
+ * DEPRECATED: Use centralized test-setup.ts instead
+ *
+ * This function uses mock.module() which creates global state that persists
+ * across all tests, causing contamination. The proper approach is to use
+ * the centralized mocks in test-setup.ts files.
+ *
+ * @deprecated Use tests/data/test-setup.ts or tests/api/test-setup.ts
  */
 export function mockS3(): S3Mocks {
-    const mockSend = mock(() => Promise.resolve({})) as MockSendFunction;
-
-    const S3Client = mock(() => ({
-        send: mockSend
-    }));
-
-    const PutObjectCommand = mock(() => ({}));
-    const DeleteObjectCommand = mock(() => ({}));
-    const GetObjectCommand = mock(() => ({}));
-
-    mock.module('@aws-sdk/client-s3', () => ({
-        S3Client,
-        PutObjectCommand,
-        DeleteObjectCommand,
-        GetObjectCommand
-    }));
-
-    return {
-        mockSend,
-        S3Client,
-        PutObjectCommand,
-        DeleteObjectCommand,
-        GetObjectCommand
-    };
+    throw new Error(
+        'mockS3() is deprecated due to cross-test contamination. ' +
+        'Use centralized test-setup.ts files instead. ' +
+        'Import "./test-setup" or "../data/test-setup" at the TOP of your test file.'
+    );
 }
 
 /**
- * Mock crypto module for ID generation
+ * DEPRECATED: Use spyOn pattern instead
+ *
+ * This function uses mock.module() which creates global state that can cause
+ * cross-test contamination. For crypto mocking, use dependency injection or
+ * spy on the crypto module in individual tests.
+ *
+ * @deprecated Use jest.spyOn(crypto, 'randomUUID') in individual tests
  */
 export function mockCrypto() {
-    const mockRandomUUID = mock(constant('test-uuid'));
-
-    mock.module('crypto', () => ({
-        randomUUID: mockRandomUUID
-    }));
-
-    return { mockRandomUUID };
+    throw new Error(
+        'mockCrypto() is deprecated due to cross-test contamination. ' +
+        'Use jest.spyOn(crypto, "randomUUID") in your test setup instead, ' +
+        'or use the createMockRandomUUID() helper for dependency injection.'
+    );
 }
 
 /**
- * Mock S3 Request Presigner
+ * DEPRECATED: Use spyOn pattern instead
+ *
+ * This function uses mock.module() which creates global state that can cause
+ * cross-test contamination. For S3 presigner mocking, use dependency injection
+ * or spy on the module in individual tests.
+ *
+ * @deprecated Use jest.spyOn or dependency injection patterns
  */
 export function mockS3RequestPresigner() {
-    const mockGetSignedUrl = mock(() => Promise.resolve('https://presigned-url.example.com'));
-
-    mock.module('@aws-sdk/s3-request-presigner', () => ({
-        getSignedUrl: mockGetSignedUrl
-    }));
-
-    return { mockGetSignedUrl };
+    throw new Error(
+        'mockS3RequestPresigner() is deprecated due to cross-test contamination. ' +
+        'Use jest.spyOn on the getSignedUrl import in your test, ' +
+        'or use the createMockGetSignedUrl() helper for dependency injection.'
+    );
 }

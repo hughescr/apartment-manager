@@ -190,7 +190,7 @@ describe('Security Validation Tests', () => {
 
                 // Should return 403 Forbidden for invalid paths
                 expect(response.statusCode).toBe(403);
-                expect(JSON.parse(response.body)).toHaveProperty('error', 'Invalid key path');
+                expect(JSON.parse(response.body)).toHaveProperty('error', 'Forbidden');
             }
         });
 

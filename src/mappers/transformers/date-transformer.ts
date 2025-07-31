@@ -13,7 +13,7 @@ export function createDateFormatter(format: string): TransformerFunction<string 
         }
 
         // Ensure value is a string
-        if(typeof value !== 'string') {
+        if(!_.isString(value)) {
             return undefined;
         }
 
@@ -76,11 +76,19 @@ export function parseDateToISO(value: string | undefined): string | undefined {
     }
 
     // Ensure value is a string
-    if(typeof value !== 'string') {
+    if(!_.isString(value)) {
         return undefined;
     }
 
     // Try to parse various formats
+    const result = tryParseWithPatterns(value) || tryParseWithNativeDate(value);
+    return result;
+}
+
+/**
+ * Try to parse date using known patterns.
+ */
+function tryParseWithPatterns(value: string): string | undefined {
     const patterns = [
         // ISO format
         /^(\d{4})-(\d{2})-(\d{2})$/,
@@ -93,35 +101,64 @@ export function parseDateToISO(value: string | undefined): string | undefined {
     for(const pattern of patterns) {
         const match = value.match(pattern);
         if(match) {
-            let year: number, month: number, day: number;
-
-            if(pattern === patterns[0]) {
-                // ISO format
-                [, year, month, day] = _.map(match, Number);
-            } else {
-                // US format
-                [, month, day, year] = _.map(match, Number);
-            }
-
-            const date = new Date(year, month - 1, day);
-            if(!isNaN(date.getTime()) &&
-              date.getFullYear() === year &&
-              date.getMonth() === month - 1 &&
-              date.getDate() === day) {
-                return formatYYYYMMDD(date);
+            const result = parseMatchedPattern(match, pattern, patterns[0]);
+            if(result) {
+                return result;
             }
         }
     }
 
-    // Try native Date parsing as fallback only for common formats
-    // Reject if the string contains unexpected text
-    if(/^\d{4}-\d{2}-\d{2}/.test(value) ||
-      /^\w+ \d{1,2}, \d{4}$/.test(value) ||
-      /^\d{1,2} \w+ \d{4}$/.test(value) ||
-      /^\d{4}\/\d{2}\/\d{2}$/.test(value) ||
-      /^\d{4}\.\d{2}\.\d{2}$/.test(value) ||
-      /^\d{4} \d{2} \d{2}$/.test(value) ||
-      /^\d{1,2}-\w{3}-\d{2}$/.test(value)) { // Support DD-Mon-YY format
+    return undefined;
+}
+
+/**
+ * Parse a matched pattern and validate the date.
+ */
+function parseMatchedPattern(match: RegExpMatchArray, pattern: RegExp, isoPattern: RegExp): string | undefined {
+    let year: number, month: number, day: number;
+
+    if(pattern === isoPattern) {
+        // ISO format
+        [, year, month, day] = _.map(match, Number);
+    } else {
+        // US format
+        [, month, day, year] = _.map(match, Number);
+    }
+
+    const date = new Date(year, month - 1, day);
+    if(isValidDate(date, year, month, day)) {
+        return formatYYYYMMDD(date);
+    }
+
+    return undefined;
+}
+
+/**
+ * Check if a date is valid and matches the expected values.
+ */
+function isValidDate(date: Date, year: number, month: number, day: number): boolean {
+    return !isNaN(date.getTime()) &&
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day;
+}
+
+/**
+ * Try to parse date using native Date parsing for common formats.
+ */
+function tryParseWithNativeDate(value: string): string | undefined {
+    const commonFormats = [
+        /^\d{4}-\d{2}-\d{2}/.test(value),
+        /^\w+ \d{1,2}, \d{4}$/.test(value),
+        /^\d{1,2} \w+ \d{4}$/.test(value),
+        /^\d{4}\/\d{2}\/\d{2}$/.test(value),
+        /^\d{4}\.\d{2}\.\d{2}$/.test(value),
+        /^\d{4} \d{2} \d{2}$/.test(value),
+        /^\d{1,2}-\w{3}-\d{2}$/.test(value), // Support DD-Mon-YY format
+    ];
+
+    const isCommonFormat = _.some(commonFormats);
+    if(isCommonFormat) {
         const date = new Date(value);
         if(!isNaN(date.getTime())) {
             return formatYYYYMMDD(date);

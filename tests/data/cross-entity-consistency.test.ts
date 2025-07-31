@@ -15,6 +15,8 @@ describe('Cross-Entity Consistency Tests', () => {
     beforeEach(() => {
         // Clear mock calls before each test
         jest.clearAllMocks();
+        // Reset the mock queue to ensure each test starts fresh
+        dynamoDbMock.mockReset();
     });
 
     const testBuilding = {

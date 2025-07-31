@@ -803,14 +803,14 @@ describe('Type Definitions', () => {
         describe('Empty and Null Enum Values', () => {
             it('should accept null/undefined enum values in optional fields', () => {
                 const fee: Fee = {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: null enum value
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing null assignment to enum type for edge case validation
                     type: null as any, // Type system allows this with 'as any'
                     amount: 100
                 };
                 expect(fee.type).toBeNull();
 
                 const fee2: Fee = {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: undefined enum value
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing undefined assignment to enum type for edge case validation
                     type: undefined as any,
                     amount: 100
                 };
@@ -820,7 +820,7 @@ describe('Type Definitions', () => {
             it('should handle undefined enum values in arrays', () => {
                 const policy: PetPolicy = {
                     allowed: true,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: null/undefined in enum array
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing array with mixed valid/invalid enum values including null/undefined
                     types: [PetType.DOG, undefined as any, PetType.CAT, null as any]
                 };
                 expect(policy.types).toContain(undefined);
@@ -847,14 +847,14 @@ describe('Type Definitions', () => {
             it('should accept numeric values as enum with type assertion', () => {
                 const amenity: Amenity = {
                     name: 'Test',
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: numeric value as enum
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing numeric value assignment to enum type for edge case testing
                     category: 123 as any as AmenityCategory
                 };
                 expect(amenity.category).toBe(123);
 
                 const amenity2: Amenity = {
                     name: 'Test2',
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: boolean value as enum
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing boolean value assignment to enum type for edge case testing
                     category: true as any as AmenityCategory
                 };
                 expect(amenity2.category).toBe(true);
@@ -862,12 +862,12 @@ describe('Type Definitions', () => {
 
             it('should accept object types as enum values', () => {
                 const parking: ParkingOption = {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: object as enum value
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing object assignment to enum type to verify type system behavior
                     type: { invalid: 'object' } as any as ParkingType,
                     included: true
                 };
                 expect(typeof parking.type).toBe('object');
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing property on object-typed enum
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing property on object assigned to enum type for test verification
                 expect((parking.type as any).invalid).toBe('object');
             });
         });
@@ -899,9 +899,9 @@ describe('Type Definitions', () => {
                         PetType.DOG,
                         'not-a-pet' as PetType,
                         PetType.CAT,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: numeric in enum array
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing numeric value in enum array for edge case validation
                         123 as any,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: null in enum array
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing null value in enum array for edge case validation
                         null as any,
                         PetType.BIRD
                     ]
@@ -937,11 +937,11 @@ describe('Type Definitions', () => {
             });
 
             it('should handle case variations in day names', () => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing flexible key types for office hours
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Creating flexible Record type for testing various day name formats
                 const hours: Record<string, any> = {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: uppercase day name
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing uppercase day name as key for case sensitivity validation
                     ['MONDAY' as any]: { open: '09:00', close: '17:00' },
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: mixed case day name
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing title case day name as key for case sensitivity validation
                     ['Monday' as any]: { open: '10:00', close: '18:00' },
                     ['monday']: { open: '11:00', close: '19:00' },
                     [DayOfWeek.MONDAY]: { open: '12:00', close: '20:00' }
@@ -1253,36 +1253,36 @@ describe('Type Definitions', () => {
             it('should accept invalid day names as keys', () => {
                 const tours: TourAvailability = {
                     tourHours: {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: invalid day name
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing invalid day name as key for edge case validation
                         ['INVALID_DAY' as any]: { open: '09:00', close: '17:00' },
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: non-standard day name
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing custom string as day name key for edge case validation
                         ['everyday' as any]: { open: '10:00', close: '18:00' },
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: empty string as day
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing empty string as day name key for edge case validation
                         ['' as any]: { open: '11:00', close: '19:00' }
                     }
                 };
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing invalid day key
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing invalid day name key for test verification
                 expect(tours.tourHours!['INVALID_DAY' as any]).toBeDefined();
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing empty string key
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing empty string key for test verification
                 expect(tours.tourHours!['' as any]).toBeDefined();
             });
 
             it('should accept numeric keys for days', () => {
                 const contact: ContactInfo = {
                     officeHours: {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: numeric 0 as day key
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing numeric zero as day name key for edge case validation
                         [0 as any]: { open: '09:00', close: '17:00' }, // Numeric 0
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: string number as day key
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing string '1' as day name key for edge case validation
                         ['1' as any]: { open: '10:00', close: '18:00' }, // String '1'
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing edge case: out-of-range numeric day
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing out-of-range number as day name key for edge case validation
                         [7 as any]: { open: '11:00', close: '19:00' } // Out of range
                     }
                 };
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing numeric day key
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing numeric zero key for test verification
                 expect(contact.officeHours![0 as any]).toBeDefined();
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing string numeric day key
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing string '1' key for test verification
                 expect(contact.officeHours!['1' as any]).toBeDefined();
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing out-of-range day key
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing out-of-range number key for test verification
                 expect(contact.officeHours![7 as any]).toBeDefined();
             });
         });

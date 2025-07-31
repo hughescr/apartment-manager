@@ -50,29 +50,31 @@ export class InheritanceResolver implements IInheritanceResolver {
         unit: UnitData,
         unitType: UnitTypeData
     ): void {
-        // Basic fields
-        resolved.beds = unit.beds ?? unitType.beds;
-        resolved.baths = unit.baths ?? unitType.baths;
+        // Basic fields - preserve null values as intentional overrides
+        resolved.beds = unit.beds !== undefined ? unit.beds : unitType.beds;
+        resolved.baths = unit.baths !== undefined ? unit.baths : unitType.baths;
 
         // Square footage - use unit's specific value or model's min
-        resolved.sqft = unit.sqft ?? unitType.minSqft;
+        resolved.sqft = unit.sqft !== undefined ? unit.sqft : unitType.minSqft;
 
         // Rent - use unit's specific value or model's min
-        resolved.rent = unit.rent ?? unitType.minRent;
+        resolved.rent = unit.rent !== undefined ? unit.rent : unitType.minRent;
 
         // Occupancy
-        resolved.maxOccupants = unit.maxOccupants ?? unitType.maxOccupants;
-        resolved.perPersonRent = unit.perPersonRent ?? unitType.perPersonRent;
+        resolved.maxOccupants = unit.maxOccupants !== undefined ? unit.maxOccupants : unitType.maxOccupants;
+        resolved.perPersonRent = unit.perPersonRent !== undefined ? unit.perPersonRent : unitType.perPersonRent;
 
         // Deposit
-        resolved.deposit = unit.deposit ?? unitType.deposit;
+        resolved.deposit = unit.deposit !== undefined ? unit.deposit : unitType.deposit;
 
         // Lease terms
-        resolved.minLeaseTerm = unit.minLeaseTerm ?? unitType.minLeaseTerm;
-        resolved.maxLeaseTerm = unit.maxLeaseTerm ?? unitType.maxLeaseTerm;
+        resolved.minLeaseTerm = unit.minLeaseTerm !== undefined ? unit.minLeaseTerm : unitType.minLeaseTerm;
+        resolved.maxLeaseTerm = unit.maxLeaseTerm !== undefined ? unit.maxLeaseTerm : unitType.maxLeaseTerm;
 
-        // Amenities - merge with unit amenities taking precedence
-        if(!unit.unitAmenities && unitType.modelAmenities) {
+        // Amenities - handle null as intentional override to "no amenities"
+        if(unit.unitAmenities !== undefined) {
+            resolved.unitAmenities = unit.unitAmenities;
+        } else if(unitType.modelAmenities) {
             resolved.unitAmenities = unitType.modelAmenities;
         }
     }
@@ -86,11 +88,11 @@ export class InheritanceResolver implements IInheritanceResolver {
         building: BuildingData
     ): void {
         // Lease terms from building if not set by unit or model
-        resolved.minLeaseTerm = resolved.minLeaseTerm ?? building.leaseLength;
-        resolved.maxLeaseTerm = resolved.maxLeaseTerm ?? building.leaseLength;
+        resolved.minLeaseTerm = resolved.minLeaseTerm !== undefined ? resolved.minLeaseTerm : building.leaseLength;
+        resolved.maxLeaseTerm = resolved.maxLeaseTerm !== undefined ? resolved.maxLeaseTerm : building.leaseLength;
 
-        // Photos - unit photos take precedence, but can include building photos
-        if(!resolved.photos || resolved.photos.length === 0) {
+        // Photos - only inherit if photos is undefined (null means intentional override to no photos)
+        if(resolved.photos === undefined) {
             resolved.photos = building.photos;
         }
     }
@@ -116,7 +118,9 @@ export class InheritanceResolver implements IInheritanceResolver {
         for(const source of sources) {
             if(source) {
                 for(const amenity of source) {
-                    amenityMap.set(amenity.name, amenity);
+                    if(amenity && amenity.name) {
+                        amenityMap.set(amenity.name, amenity);
+                    }
                 }
             }
         }

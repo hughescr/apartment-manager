@@ -12,7 +12,7 @@ const s3Client = getS3Client();
 // Helper to generate a unique key for S3
 const generateS3Key = (buildingId: string, unitId: string, filename: string): string => {
     // Remove any path information from filename
-    const basename = filename.split(/[/\\]/).pop() || filename;
+    const basename = split(filename, /[/\\]/).pop() || filename;
     const parts = split(basename, '.');
     const extension = toLower(parts.pop() || 'jpg');
     const uuid = randomUUID();
@@ -45,7 +45,7 @@ const handleUploadRequest = async (body: string | null) => {
     if(buildingIdError || unitIdError) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Invalid key path' })
+            body: JSON.stringify({ error: 'Forbidden' })
         };
     }
 
@@ -53,7 +53,7 @@ const handleUploadRequest = async (body: string | null) => {
     if(!validatePath(filename)) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Invalid key path' })
+            body: JSON.stringify({ error: 'Forbidden' })
         };
     }
 
@@ -111,7 +111,7 @@ const handleDeleteRequest = async (path: string) => {
     if(!validatePath(key)) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Invalid key path' })
+            body: JSON.stringify({ error: 'Forbidden' })
         };
     }
 
@@ -119,7 +119,7 @@ const handleDeleteRequest = async (path: string) => {
     if(!startsWith(key, 'buildings/')) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Invalid key path' })
+            body: JSON.stringify({ error: 'Forbidden' })
         };
     }
 
@@ -177,7 +177,17 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         };
     } catch(error) {
         // Log error for debugging (removed console.error per ESLint)
-        const errorMessage = isError(error) ? error.message : 'Unknown error';
+        let errorMessage = 'Unknown error';
+
+        if(isError(error)) {
+            // Check for specific error codes
+            const errorWithCode = error as Error & { code?: string };
+            if(errorWithCode.code === 'RequestTimeout') {
+                errorMessage = 'Request timeout';
+            } else {
+                errorMessage = error.message;
+            }
+        }
 
         return {
             statusCode: 500,

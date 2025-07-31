@@ -26,7 +26,7 @@ const VALID_ZIP_PATTERN = /^\d{5}(?:-\d{4})?$/;
  * Validates an ID field (buildingID, unitID, modelID) for security issues
  */
 export function validateId(id: string, fieldName: string): string | null {
-    if(!id || typeof id !== 'string') {
+    if(!id || !_.isString(id)) {
         return `${fieldName} is required`;
     }
 
@@ -73,29 +73,36 @@ export function sanitizeHtml(text: string): string {
     let cdataIndex = 0;
 
     // Extract and replace CDATA sections with placeholders
-    let processedText = text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, (match) => {
+    let processedText = _.replace(text, /<!\[CDATA\[([\s\S]*?)\]\]>/g, (match) => {
         cdataSections[cdataIndex] = match;
         return `${cdataPlaceholder}${cdataIndex++}`;
     });
 
     // Only remove dangerous tags and attributes, preserve other content
-    processedText = processedText
+    processedText = _.replace(processedText,
         // Remove script tags and their content
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    processedText = _.replace(processedText,
         // Remove other dangerous tags but keep their content
-        .replace(/<\s*(iframe|embed|object|applet|form|input|button|textarea|select|option|optgroup|fieldset|label|output|keygen|datalist|script|style|link|meta|base)\b[^>]*>/gi, '')
-        .replace(/<\/\s*(iframe|embed|object|applet|form|input|button|textarea|select|option|optgroup|fieldset|label|output|keygen|datalist|script|style|link|meta|base)\s*>/gi, '')
+        /<\s*(iframe|embed|object|applet|form|input|button|textarea|select|option|optgroup|fieldset|label|output|keygen|datalist|script|style|link|meta|base)\b[^>]*>/gi, '');
+    processedText = _.replace(processedText,
+        /<\/\s*(iframe|embed|object|applet|form|input|button|textarea|select|option|optgroup|fieldset|label|output|keygen|datalist|script|style|link|meta|base)\s*>/gi, '');
+    processedText = _.replace(processedText,
         // Remove event handlers
-        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-        .replace(/on\w+\s*=\s*[^\s>]*/gi, '')
+        /on\w+\s*=\s*["'][^"']*["']/gi, '');
+    processedText = _.replace(processedText,
+        /on\w+\s*=\s*[^\s>]*/gi, '');
+    processedText = _.replace(processedText,
         // Remove javascript: protocol
-        .replace(/javascript:/gi, '')
+        /javascript:/gi, '');
+    processedText = _.replace(processedText,
         // Remove data: protocol in certain contexts
-        .replace(/data:text\/html/gi, '')
-        .replace(/vbscript:/gi, '');
+        /data:text\/html/gi, '');
+    processedText = _.replace(processedText,
+        /vbscript:/gi, '');
 
     // Restore CDATA sections
-    processedText = processedText.replace(new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (match, index) => {
+    processedText = _.replace(processedText, new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (match, index) => {
         return cdataSections[parseInt(index)] || '';
     });
 
@@ -113,7 +120,7 @@ export function validateTextField(text: string | undefined, fieldName: string, r
         };
     }
 
-    if(typeof text !== 'string') {
+    if(!_.isString(text)) {
         return {
             value: undefined,
             error: `${fieldName} must be a string`
@@ -141,22 +148,32 @@ export function validateTextField(text: string | undefined, fieldName: string, r
  * Validates a path for path traversal attempts
  */
 export function validatePath(path: string): boolean {
-    if(!path || typeof path !== 'string') {
+    if(!path || !_.isString(path)) {
         return false;
     }
 
-    // Check for path traversal patterns
-    if(PATH_TRAVERSAL_PATTERN.test(path)) {
+    // Decode URL-encoded characters to catch encoded path traversal attempts
+    let decodedPath: string;
+    try {
+        decodedPath = decodeURIComponent(path);
+    } catch{
+        // Invalid URL encoding is suspicious
         return false;
     }
 
-    // Check for null bytes
-    if(NULL_BYTE_PATTERN.test(path)) {
+    // Check both original and decoded paths for path traversal patterns
+    if(PATH_TRAVERSAL_PATTERN.test(path) || PATH_TRAVERSAL_PATTERN.test(decodedPath)) {
         return false;
     }
 
-    // Check for absolute paths
-    if(path.startsWith('/') || path.match(/^[a-z]:\\/i)) {
+    // Check both original and decoded paths for null bytes
+    if(NULL_BYTE_PATTERN.test(path) || NULL_BYTE_PATTERN.test(decodedPath)) {
+        return false;
+    }
+
+    // Check both original and decoded paths for absolute paths
+    if(_.startsWith(path, '/') || path.match(/^[a-z]:\\/i) ||
+      _.startsWith(decodedPath, '/') || decodedPath.match(/^[a-z]:\\/i)) {
         return false;
     }
 
@@ -178,7 +195,7 @@ export function validateNumericValue(value: number | undefined, fieldName: strin
         return null;
     }
 
-    if(typeof value !== 'number' || !Number.isFinite(value)) {
+    if(!_.isNumber(value) || !Number.isFinite(value)) {
         return `${fieldName} must be a valid number`;
     }
 
@@ -201,7 +218,7 @@ export function validateNumericValue(value: number | undefined, fieldName: strin
  * Validates array size to prevent DoS
  */
 export function validateArraySize(array: unknown[], fieldName: string, maxSize = 100): string | null {
-    if(!Array.isArray(array)) {
+    if(!_.isArray(array)) {
         return null;
     }
 

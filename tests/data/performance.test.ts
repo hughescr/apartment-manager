@@ -39,7 +39,7 @@ describe('Data Layer Performance Tests', () => {
 
             // First call returns partial results with LastEvaluatedKey
             dynamoDbMock.mockResolvedValueOnce({
-                Items: page1.map(b => ({ ...b, _et: 'Building', _ct: new Date().toISOString(), _md: new Date().toISOString() })),
+                Items: _.map(page1, b => ({ ...b, _et: 'Building', _ct: new Date().toISOString(), _md: new Date().toISOString() })),
                 LastEvaluatedKey: { buildingID: 'building-249', unitID: 'BUILDING' }
             });
 
@@ -71,7 +71,7 @@ describe('Data Layer Performance Tests', () => {
             const page1 = largeUnits.slice(0, 500);
 
             dynamoDbMock.mockResolvedValueOnce({
-                Items: page1.map(u => ({ ...u, _et: 'Unit', _ct: new Date().toISOString(), _md: new Date().toISOString() })),
+                Items: _.map(page1, u => ({ ...u, _et: 'Unit', _ct: new Date().toISOString(), _md: new Date().toISOString() })),
                 LastEvaluatedKey: { buildingID: 'test-building', unitID: 'UNIT#unit-499' },
                 Count: 500
             });
@@ -100,7 +100,7 @@ describe('Data Layer Performance Tests', () => {
 
             // Mock first page
             dynamoDbMock.mockResolvedValueOnce({
-                Items: allBuildings.slice(0, pageSize).map(b => ({
+                Items: _.map(allBuildings.slice(0, pageSize), b => ({
                     ...b,
                     _et: 'Building',
                     _ct: new Date().toISOString(),
@@ -204,11 +204,11 @@ describe('Data Layer Performance Tests', () => {
 
             // Process buildings one by one
             const results = await Promise.allSettled(
-                buildings.map(b => createBuilding(b))
+                _.map(buildings, b => createBuilding(b))
             );
 
-            const successful = results.filter(r => r.status === 'fulfilled');
-            const failed = results.filter(r => r.status === 'rejected');
+            const successful = _.filter(results, { status: 'fulfilled' });
+            const failed = _.filter(results, { status: 'rejected' });
 
             expect(successful).toHaveLength(10);
             expect(failed).toHaveLength(15);
@@ -231,21 +231,21 @@ describe('Data Layer Performance Tests', () => {
             // This test documents what batch operations would look like
 
             // Simulate individual gets (current behavior)
-            const mockResponses = keys.slice(0, 5).map(key =>
+            const mockResponses = _.map(keys.slice(0, 5), key =>
                 mockGetResponse({ ...key, street: 'Test Street' })
             );
 
-            mockResponses.forEach((response) => {
+            _.forEach(mockResponses, (response) => {
                 dynamoDbMock.mockResolvedValueOnce(response);
             });
 
             // Get first 5 buildings individually
             const results = await Promise.all(
-                keys.slice(0, 5).map(key => getBuilding(key.buildingID))
+                _.map(keys.slice(0, 5), key => getBuilding(key.buildingID))
             );
 
             expect(results).toHaveLength(5);
-            expect(results.every(r => r !== undefined)).toBe(true);
+            expect(_.every(results, r => r !== undefined)).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(5); // Individual calls, not batched
         });
 
@@ -298,7 +298,7 @@ describe('Data Layer Performance Tests', () => {
 
             // Cannot query by occupied status without GSI
             // Would need to filter in memory
-            const occupiedUnits = units.filter(u => u.occupied === true);
+            const occupiedUnits = _.filter(units, { occupied: true });
             expect(occupiedUnits).toHaveLength(1);
         });
 
@@ -330,7 +330,7 @@ describe('Data Layer Performance Tests', () => {
 
             // Filter in memory (inefficient without GSI)
             const filterStart = performance.now();
-            const availableUnits = units.filter(u => !u.occupied);
+            const availableUnits = _.filter(units, u => !u.occupied);
             const _filterTime = performance.now() - filterStart;
 
             expect(units).toHaveLength(1000);
@@ -395,7 +395,7 @@ describe('Data Layer Performance Tests', () => {
             expect(buildings).toHaveLength(100);
 
             // Would need to filter in memory for state
-            const caBuildings = buildings.filter(b => b.state === 'CA');
+            const caBuildings = _.filter(buildings, { state: 'CA' });
             expect(caBuildings).toHaveLength(10);
 
             // Scan examined all 100 items to find 10
@@ -410,7 +410,7 @@ describe('Data Layer Performance Tests', () => {
             const buildingIds = _.times(10, i => `building-${i}`);
 
             // Mock responses for each building
-            buildingIds.forEach((id) => {
+            _.forEach(buildingIds, (id) => {
                 dynamoDbMock.mockResolvedValueOnce({
                     Items: _.times(5, j => ({
                         buildingID: id,
@@ -427,13 +427,13 @@ describe('Data Layer Performance Tests', () => {
 
             // Execute queries in parallel
             const results = await Promise.all(
-                buildingIds.map(id => getUnits(id))
+                _.map(buildingIds, id => getUnits(id))
             );
 
             const duration = performance.now() - startTime;
 
             expect(results).toHaveLength(10);
-            expect(results.every(units => units.length === 5)).toBe(true);
+            expect(_.every(results, { length: 5 })).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(10);
 
             // Parallel execution should be faster than sequential
@@ -564,7 +564,7 @@ describe('Data Layer Performance Tests', () => {
             const _duration = performance.now() - startTime;
 
             expect(results).toHaveLength(requestCount);
-            expect(results.every(r => r !== undefined)).toBe(true);
+            expect(_.every(results, r => r !== undefined)).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(requestCount);
         });
 
@@ -590,7 +590,7 @@ describe('Data Layer Performance Tests', () => {
             const duration = performance.now() - startTime;
 
             expect(results).toHaveLength(burstSize);
-            expect(results.every(r => r !== undefined)).toBe(true);
+            expect(_.every(results, r => r !== undefined)).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(burstSize);
 
             // Parallel should be faster than sequential
@@ -667,13 +667,13 @@ describe('Data Layer Performance Tests', () => {
             );
 
             expect(results).toHaveLength(5);
-            expect(results.every(r => r?.street === '123 Cache St')).toBe(true);
+            expect(_.every(results, r => r?.street === '123 Cache St')).toBe(true);
 
             // Without caching, each request hits DynamoDB
             expect(dynamoDbMock).toHaveBeenCalledTimes(5);
 
             // Document inefficiency - 5 identical requests
-            expect(_.uniq(results.map(r => r?.buildingID)).length).toBe(1);
+            expect(_(results).map('buildingID').uniq().size()).toBe(1);
         });
 
         it('should show potential memory savings with caching', async () => {
@@ -761,7 +761,7 @@ describe('Data Layer Performance Tests', () => {
             const allUnits = await getUnits('sparse-test');
 
             // Must scan all 1000 to find 10 with specials
-            const unitsWithSpecials = allUnits.filter(u => u.unitRentSpecial);
+            const unitsWithSpecials = _.filter(allUnits, 'unitRentSpecial');
 
             expect(allUnits).toHaveLength(1000);
             expect(unitsWithSpecials).toHaveLength(10);
@@ -877,7 +877,7 @@ describe('Data Layer Performance Tests', () => {
             };
 
             // Document findings
-            expect(Object.keys(performanceIssues).length).toBe(9);
+            expect(_.keys(performanceIssues).length).toBe(9);
 
             // Verify current implementation limitations
             expect(performanceIssues.pagination).toContain('Not implemented');

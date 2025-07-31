@@ -177,16 +177,25 @@ mock.module('@aws-sdk/lib-dynamodb', () => ({
     TransactWriteCommand: LibDynamoTransactWriteCommand
 }));
 
+// Mock crypto module for consistent UUIDs in tests
+const mockRandomUUID = jest.fn().mockReturnValue('test-uuid');
+mock.module('crypto', () => ({
+    randomUUID: mockRandomUUID
+}));
+
+// Mock S3 request presigner with default implementation
+const mockGetSignedUrl = jest.fn().mockResolvedValue('https://presigned-url.example.com');
+mock.module('@aws-sdk/s3-request-presigner', () => ({
+    getSignedUrl: mockGetSignedUrl
+}));
+
 // Export mocks for test files to use
-export { dynamoDbMock, s3Mock };
+export { dynamoDbMock, s3Mock, mockRandomUUID, mockGetSignedUrl };
 
 // Re-export jest for convenience
 export { jest };
 
-// Mock s3-request-presigner
-mock.module('@aws-sdk/s3-request-presigner', () => ({
-    getSignedUrl: jest.fn().mockResolvedValue('https://test-bucket.s3.amazonaws.com/signed-url')
-}));
+// Note: s3-request-presigner mock is handled per-test in individual test files
 
 // Re-export lib-dynamodb commands for tests to use
 export {

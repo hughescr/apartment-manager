@@ -732,7 +732,7 @@ describe('InheritanceResolver', () => {
     describe('Deep Inheritance Chains', () => {
         it('should handle deeply nested inheritance (10+ levels)', () => {
             // Test with deeply nested amenity descriptions
-            const deeplyNestedAmenities = Array.from({ length: 15 }, (_, i) => ({
+            const deeplyNestedAmenities = Array.from({ length: 15 }, (_item, i) => ({
                 name: `Level${i}`,
                 category: AmenityCategory.UNIT,
                 description: _.repeat('A', 1000) // Large description
