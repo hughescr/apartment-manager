@@ -36,7 +36,6 @@
     "sst": "^3.17.10"
   },
   "devDependencies": {
-    "tailwindcss": "^4.1.11",
     "@astrojs/check": "^0.9.4",
     "@astrojs/ts-plugin": "^1.10.4",
     "@hughescr/eslint-config-default": "^3.0.4",
@@ -52,6 +51,7 @@
     "eslint-plugin-package-json": "^0.48.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^26.1.0",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0"
   },

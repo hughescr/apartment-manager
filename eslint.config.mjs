@@ -21,11 +21,11 @@ export default
         },
     },
     {
-        files: ['package.json'],
         ...packageJson.configs.recommended,
         rules: {
+            ...packageJson.configs.recommended.rules,
             strict: 'off',
-        },
+        }
     },
     {
         files: ['**/*.js', '**/*.mjs'],
