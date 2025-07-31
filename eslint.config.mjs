@@ -1,4 +1,5 @@
 import defaultConfig from '@hughescr/eslint-config-default';
+import packageJson from 'eslint-plugin-package-json';
 
 import tseslint from 'typescript-eslint';
 
@@ -17,6 +18,13 @@ export default
             '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
             '@stylistic/operator-linebreak': 'off',
             'n/no-missing-import': 'off',
+        },
+    },
+    {
+        files: ['package.json'],
+        ...packageJson.configs.recommended,
+        rules: {
+            strict: 'off',
         },
     },
     {
