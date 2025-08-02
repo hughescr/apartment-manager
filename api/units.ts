@@ -132,16 +132,31 @@ function sanitizeTextAndArrayFields(
 ): Partial<UnitData> {
     const sanitized: Partial<UnitData> = {};
 
-    // Sanitize text fields
-    const textFields: (keyof UnitData)[] = ['unitNumber', 'description', 'notes'];
-    for(const field of textFields) {
-        if(data[field] !== undefined) {
-            const { value, error } = validateTextField(data[field] as string, field);
-            if(error) {
-                errors[field] = error;
-            } else if(value !== undefined) {
-                sanitized[field] = value as UnitData[typeof field];
-            }
+    // Sanitize text fields individually for type safety
+    if(data.unitNumber !== undefined) {
+        const { value, error } = validateTextField(data.unitNumber, 'unitNumber');
+        if(error) {
+            errors.unitNumber = error;
+        } else if(value !== undefined) {
+            sanitized.unitNumber = value;
+        }
+    }
+
+    if(data.description !== undefined) {
+        const { value, error } = validateTextField(data.description, 'description');
+        if(error) {
+            errors.description = error;
+        } else if(value !== undefined) {
+            sanitized.description = value;
+        }
+    }
+
+    if(data.notes !== undefined) {
+        const { value, error } = validateTextField(data.notes, 'notes');
+        if(error) {
+            errors.notes = error;
+        } else if(value !== undefined) {
+            sanitized.notes = value;
         }
     }
 
@@ -149,24 +164,49 @@ function sanitizeTextAndArrayFields(
     if(data.features) {
         sanitized.features = _.map(data.features, item => validateTextField(item, 'feature').value || item);
     }
-    if(data.amenities) {
-        sanitized.amenities = _.map(data.amenities, item => validateTextField(item, 'amenity').value || item);
+    if(data.unitAmenities) {
+        sanitized.unitAmenities = data.unitAmenities;
     }
 
     return sanitized;
+}
+
+// Helper function to copy numeric fields
+function copyNumericFields(data: Partial<UnitData>, sanitized: Partial<UnitData>): void {
+    if(data.beds !== undefined) {
+        sanitized.beds = data.beds;
+    }
+    if(data.baths !== undefined) {
+        sanitized.baths = data.baths;
+    }
+    if(data.sqft !== undefined) {
+        sanitized.sqft = data.sqft;
+    }
+    if(data.rent !== undefined) {
+        sanitized.rent = data.rent;
+    }
+    if(data.perPersonRent !== undefined) {
+        sanitized.perPersonRent = data.perPersonRent;
+    }
+    if(data.deposit !== undefined) {
+        sanitized.deposit = data.deposit;
+    }
+    if(data.minLeaseTerm !== undefined) {
+        sanitized.minLeaseTerm = data.minLeaseTerm;
+    }
+    if(data.maxLeaseTerm !== undefined) {
+        sanitized.maxLeaseTerm = data.maxLeaseTerm;
+    }
+    if(data.maxOccupants !== undefined) {
+        sanitized.maxOccupants = data.maxOccupants;
+    }
 }
 
 // Helper function to copy other fields
 function copyOtherFields(data: Partial<UnitData>): Partial<UnitData> {
     const sanitized: Partial<UnitData> = {};
 
-    // Copy numeric fields
-    const numericFields: (keyof UnitData)[] = ['beds', 'baths', 'sqft', 'rent', 'perPersonRent', 'deposit', 'minLeaseTerm', 'maxLeaseTerm', 'maxOccupants'];
-    for(const field of numericFields) {
-        if(data[field] !== undefined) {
-            sanitized[field] = data[field];
-        }
-    }
+    copyNumericFields(data, sanitized);
 
     // Copy other fields
     if(data.modelID !== undefined) {
@@ -177,6 +217,21 @@ function copyOtherFields(data: Partial<UnitData>): Partial<UnitData> {
     }
     if(data.photos !== undefined) {
         sanitized.photos = data.photos;
+    }
+    if(data.occupied !== undefined) {
+        sanitized.occupied = data.occupied;
+    }
+    if(data.unitDescription !== undefined) {
+        sanitized.unitDescription = data.unitDescription;
+    }
+    if(data.unitRentSpecial !== undefined) {
+        sanitized.unitRentSpecial = data.unitRentSpecial;
+    }
+    if(data.websiteStatus !== undefined) {
+        sanitized.websiteStatus = data.websiteStatus;
+    }
+    if(data.listingIds !== undefined) {
+        sanitized.listingIds = data.listingIds;
     }
 
     return sanitized;
@@ -215,10 +270,10 @@ function validateUnitData(data: Partial<UnitData>, isCreate = false, urlBuilding
             errors.features = arrayError;
         }
     }
-    if(sanitized.amenities) {
-        const arrayError = validateArraySize(sanitized.amenities, 'amenities', 100);
+    if(sanitized.unitAmenities) {
+        const arrayError = validateArraySize(sanitized.unitAmenities, 'unitAmenities', 100);
         if(arrayError) {
-            errors.amenities = arrayError;
+            errors.unitAmenities = arrayError;
         }
     }
     if(sanitized.photos) {

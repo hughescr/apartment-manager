@@ -1,4 +1,4 @@
-export * from './transformer-registry.js';
+export { TransformerRegistry, createTransformerRegistry } from './transformer-registry.js';
 export * from './enum-transformer.js';
 export * from './date-transformer.js';
 export * from './price-transformer.js';

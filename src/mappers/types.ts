@@ -47,7 +47,7 @@ export interface FieldMappingEntry {
     }
 }
 
-export type FieldMappingConfig = Record<string, Record<string, string | FieldMappingEntry>>;
+export type FieldMappingConfig = Record<string, Record<string, string | FieldMappingEntry | undefined> | undefined>;
 
 export type TransformerFunction<TInput = unknown, TOutput = unknown> = (value: TInput, params?: Record<string, unknown>) => TOutput;
 

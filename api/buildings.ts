@@ -104,33 +104,57 @@ function validateScreeningCriteria(data: Partial<BuildingData>, errors: Record<s
     }
 }
 
+// Helper function to sanitize a single text field
+function sanitizeTextField<K extends keyof BuildingData>(
+    data: Partial<BuildingData>,
+    field: K,
+    errors: Record<string, string>,
+    sanitized: Partial<BuildingData>
+): void {
+    const value = data[field];
+    if(value !== undefined && _.isString(value)) {
+        const { value: sanitizedValue, error } = validateTextField(value, field);
+        if(error) {
+            errors[field] = error;
+        } else if(sanitizedValue !== undefined) {
+            (sanitized as Record<string, unknown>)[field] = sanitizedValue;
+        }
+    }
+}
+
 // Helper function to sanitize text fields
 function sanitizeTextFields(data: Partial<BuildingData>, errors: Record<string, string>): Partial<BuildingData> {
     const sanitized: Partial<BuildingData> = {};
-    const textFields: (keyof BuildingData)[] = ['buildingName', 'description', 'notes', 'street', 'city', 'state'];
 
-    for(const field of textFields) {
-        if(data[field] !== undefined) {
-            const { value, error } = validateTextField(data[field] as string, field);
-            if(error) {
-                errors[field] = error;
-            } else if(value !== undefined) {
-                sanitized[field] = value as BuildingData[typeof field];
-            }
-        }
-    }
+    sanitizeTextField(data, 'buildingName', errors, sanitized);
+    sanitizeTextField(data, 'description', errors, sanitized);
+    sanitizeTextField(data, 'notes', errors, sanitized);
+    sanitizeTextField(data, 'street', errors, sanitized);
+    sanitizeTextField(data, 'city', errors, sanitized);
+    sanitizeTextField(data, 'state', errors, sanitized);
 
     return sanitized;
 }
 
 // Helper function to copy and validate numeric fields
 function copyNumericFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
-    const numericFields: (keyof BuildingData)[] = ['zip', 'yearBuilt', 'numberStories', 'totalUnits', 'leaseLength', 'applicationFee'];
-
-    for(const field of numericFields) {
-        if(data[field] !== undefined) {
-            sanitized[field] = data[field];
-        }
+    if(data.zip !== undefined) {
+        sanitized.zip = data.zip;
+    }
+    if(data.yearBuilt !== undefined) {
+        sanitized.yearBuilt = data.yearBuilt;
+    }
+    if(data.numberStories !== undefined) {
+        sanitized.numberStories = data.numberStories;
+    }
+    if(data.totalUnits !== undefined) {
+        sanitized.totalUnits = data.totalUnits;
+    }
+    if(data.leaseLength !== undefined) {
+        sanitized.leaseLength = data.leaseLength;
+    }
+    if(data.applicationFee !== undefined) {
+        sanitized.applicationFee = data.applicationFee;
     }
 }
 

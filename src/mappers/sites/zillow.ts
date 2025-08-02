@@ -378,7 +378,7 @@ export class ZillowMapper implements SiteMapper {
 
         return {
             allowed: true,
-            types: policy.types ? _.map(policy.types, petTransformer) : undefined,
+            types: policy.types ? _.map(policy.types, (type: PetType) => petTransformer(type)) : undefined,
             maxCount: policy.maxCount,
             weightLimit: policy.weightLimit,
             deposit: totalPetFees > 0 ? totalPetFees : undefined,

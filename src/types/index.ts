@@ -173,11 +173,13 @@ export interface Amenity {
 export interface BuildingData {
     // Existing fields
     buildingID: string
+    buildingName?: string
     street?: string
     city?: string
     state?: string
     zip?: string
     description?: string
+    notes?: string
     yearBuilt?: number
     numberStories?: number
     totalUnits?: number
@@ -233,6 +235,8 @@ export interface UnitData {
     buildingID: string
     unitID: string
     description?: string
+    notes?: string
+    features?: string[]
     beds?: number
     baths?: number
     sqft?: number
@@ -302,6 +306,8 @@ export type PartialUnitTypeData = Partial<Omit<UnitTypeData, 'buildingID' | 'mod
 
 // Default values helper
 export const getDefaultBuildingData = (): Partial<BuildingData> => ({
+    buildingName: '',
+    notes: '',
     propertyType: PropertyType.APARTMENT,
     roomsForRent: false,
     shortTermLeaseAllowed: false,
@@ -342,6 +348,8 @@ export const getDefaultBuildingData = (): Partial<BuildingData> => ({
 });
 
 export const getDefaultUnitData = (): Partial<UnitData> => ({
+    notes: '',
+    features: [],
     occupied: false,
     minLeaseTerm: 12,
     maxLeaseTerm: 12,

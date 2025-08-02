@@ -13,20 +13,18 @@ import { createPriceFormatter } from './price-transformer.js';
 export function transformFees(
     fees: Fee[] | undefined,
     siteId: string
-): { type: string, amount: string, description?: string, refundable?: boolean }[] {
+): { type: string, amount: number, description?: string, refundable?: boolean }[] {
     // Check if fees is actually an array
     if(!fees || !_.isArray(fees) || fees.length === 0) {
         return [];
     }
 
-    const formatter = createPriceFormatter(siteId !== 'zillow');
-
     // Filter out null/undefined fees and map valid ones
     const compactFees = _.compact(fees);
-    const validFees = _.filter(compactFees, fee => fee && _.isObject(fee) && fee.type);
+    const validFees = _.filter(compactFees, (fee): fee is Fee => fee && _.isObject(fee) && !!fee.type);
     return _.map(validFees, fee => ({
         type: transformFeeTypeName(fee.type, siteId),
-        amount: formatter(fee.amount) || '0',
+        amount: fee.amount || 0,
         description: fee.description,
         refundable: fee.refundable
     }));

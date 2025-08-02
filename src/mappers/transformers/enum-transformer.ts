@@ -363,5 +363,5 @@ export function transformEnumArray<T extends string>(
     customMappings?: EnumMapping<T>[]
 ): string[] {
     const transformer = createEnumTransformer(enumType, siteId, customMappings);
-    return _.map(values, transformer);
+    return _.map(values, (value: T) => transformer(value));
 }

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import type { TransformerFunction } from '../types.js';
+import type { TransformerFunction, MappedAmenity } from '../types.js';
 import type { Amenity } from '../../types/index.js';
 import { AmenityCategory } from '../../types/index.js';
 
@@ -100,7 +100,7 @@ export function transformAmenities(
     amenities: Amenity[] | undefined,
     siteId: string,
     category?: AmenityCategory
-): string[] {
+): MappedAmenity[] {
     if(!amenities || amenities.length === 0) {
         return [];
     }
@@ -114,7 +114,10 @@ export function transformAmenities(
 
     return _(filtered)
         .filter(amenity => amenity && _.isObject(amenity) && _.isString(amenity.name))
-        .map(amenity => transformer(amenity.name))
+        .map(amenity => ({
+            name: transformer(amenity.name),
+            category: amenity.category || 'other'
+        }))
         .value();
 }
 

@@ -1,7 +1,19 @@
-export * from './types.js';
-export * from './registry.js';
-export * from './inheritance-resolver.js';
-export * from './transformers/index.js';
+// Export types
+export type * from './types.js';
+
+// Export implementation classes (avoid naming conflicts)
+export { MapperRegistry, getMapperRegistry, resetMapperRegistry } from './registry.js';
+export { InheritanceResolver, inheritanceResolver } from './inheritance-resolver.js';
+
+// Export transformers (avoid the TransformerRegistry interface/class conflict)
+export { TransformerRegistry, createTransformerRegistry } from './transformers/transformer-registry.js';
+export * from './transformers/enum-transformer.js';
+export * from './transformers/date-transformer.js';
+export * from './transformers/price-transformer.js';
+export * from './transformers/amenity-transformer.js';
+export * from './transformers/fee-transformer.js';
+export * from './transformers/photo-transformer.js';
+
 export * from './sites/index.js';
 
 // Register default mappers
