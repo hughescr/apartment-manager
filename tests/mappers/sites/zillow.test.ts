@@ -14,12 +14,28 @@ import {
 } from '../../fixtures/mappers';
 import { PropertyType, UtilityType, ParkingType, PetType, AmenityCategory, FeeType } from '../../../src/types';
 import type { BuildingData, UnitTypeData, UnitData } from '../../../src/types';
+import type { FieldMappingConfig, TransformerRegistry, UnitMappingContext } from '../../../src/mappers/types';
 
 describe('ZillowMapper', () => {
     let mapper: ZillowMapper;
+    let mockFieldMappings: FieldMappingConfig;
+    let mockTransformers: TransformerRegistry;
 
     beforeEach(() => {
         mapper = new ZillowMapper();
+        mockFieldMappings = {};
+        mockTransformers = {
+            get: () => undefined,
+            register: _.noop
+        };
+    });
+
+    const _createContext = (unit: UnitData, unitType?: UnitTypeData, building?: BuildingData): UnitMappingContext => ({
+        unit,
+        unitType,
+        building: building || basicBuilding,
+        fieldMappings: mockFieldMappings,
+        transformers: mockTransformers
     });
 
     describe('Basic Properties', () => {
@@ -71,7 +87,7 @@ describe('ZillowMapper', () => {
             // Zillow doesn't use currency symbols
             const appFee = _.find(result.fees, fee => fee.type.includes('Application'));
             expect(appFee).toBeDefined();
-            expect(appFee!.amount).not.toMatch(/^\$/);
+            expect(String(appFee!.amount)).not.toMatch(/^\$/);
         });
 
         it('should handle utilities differently', () => {
@@ -173,18 +189,14 @@ describe('ZillowMapper', () => {
             const result = mapper.mapUnitType(unitTypeWithAmenities, basicBuilding);
 
             expect(result.amenities).toBeDefined();
-            expect(result.amenities).toContain('Air conditioning'); // Zillow uses lowercase
-            expect(result.amenities).toContain('In unit laundry'); // Different terminology
+            expect(_.map(result.amenities, 'name')).toContain('Air conditioning'); // Zillow uses lowercase
+            expect(_.map(result.amenities, 'name')).toContain('In unit laundry'); // Different terminology
         });
     });
 
     describe('mapUnit', () => {
         it('should flatten all data into unit for Zillow', () => {
-            const context = {
-                unit: basicUnit,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(basicUnit, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -194,11 +206,7 @@ describe('ZillowMapper', () => {
         });
 
         it('should map complete unit with flattened data', () => {
-            const context = {
-                unit: completeUnit,
-                unitType: completeUnitType,
-                building: completeBuilding
-            };
+            const context = _createContext(completeUnit, completeUnitType, completeBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -212,18 +220,14 @@ describe('ZillowMapper', () => {
                 unitNumber: '101'
             };
 
-            const context = {
-                unit: unitMinimal,
-                unitType: completeUnitType,
-                building: completeBuilding
-            };
+            const context = _createContext(unitMinimal, completeUnitType, completeBuilding);
 
             const result = mapper.mapUnit(context);
 
             // Should have inherited values from model and building
-            expect(result.beds).toBe(completeUnitType.beds);
-            expect(result.baths).toBe(completeUnitType.baths);
-            expect(result.rent).toBe(completeUnitType.minRent);
+            expect(result.beds).toBe(completeUnitType.beds!);
+            expect(result.baths).toBe(completeUnitType.baths!);
+            expect(result.rent).toBe(completeUnitType.minRent!);
         });
 
         it('should merge all amenities for Zillow', () => {
@@ -249,19 +253,15 @@ describe('ZillowMapper', () => {
                 ]
             };
 
-            const context = {
-                unit: unitWithAmenities,
-                unitType: unitTypeWithAmenities,
-                building: buildingWithAmenities
-            };
+            const context = _createContext(unitWithAmenities, unitTypeWithAmenities, buildingWithAmenities);
 
             const result = mapper.mapUnit(context);
 
             // Zillow includes all amenities in the unit listing
-            expect(result.amenities).toContain('Balcony/deck/patio'); // Transformed name
-            expect(result.amenities).toContain('Dishwasher');
-            expect(result.amenities).toContain('Fitness center');
-            expect(result.amenities).toContain('Pets allowed'); // Transformed name
+            expect(_.map(result.amenities, 'name')).toContain('Balcony/deck/patio'); // Transformed name
+            expect(_.map(result.amenities, 'name')).toContain('Dishwasher');
+            expect(_.map(result.amenities, 'name')).toContain('Fitness center');
+            expect(_.map(result.amenities, 'name')).toContain('Pets allowed'); // Transformed name
         });
 
         it('should use proper date formatting for Zillow', () => {
@@ -270,11 +270,7 @@ describe('ZillowMapper', () => {
                 availableDate: '2024-06-15'
             };
 
-            const context = {
-                unit: unitWithDate,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitWithDate, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -283,16 +279,12 @@ describe('ZillowMapper', () => {
         });
 
         it('should handle missing unit type gracefully', () => {
-            const context = {
-                unit: completeUnit,
-                unitType: undefined,
-                building: completeBuilding
-            };
+            const context = _createContext(completeUnit, undefined, completeBuilding);
 
             const result = mapper.mapUnit(context);
 
             expect(result.modelName).toBeUndefined();
-            expect(result.beds).toBe(completeUnit.beds);
+            expect(result.beds).toBe(completeUnit.beds!);
         });
 
         it('should include building description when unit has none', () => {
@@ -301,11 +293,7 @@ describe('ZillowMapper', () => {
                 unitDescription: undefined
             };
 
-            const context = {
-                unit: unitNoDesc,
-                unitType: basicUnitType,
-                building: completeBuilding
-            };
+            const context = _createContext(unitNoDesc, basicUnitType, completeBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -371,7 +359,7 @@ describe('ZillowMapper', () => {
                 const result = mapper.validateUnit(minimalUnit);
 
                 // Zillow might require more fields since it's flattened
-                expect(result.errors.length).toBeGreaterThanOrEqual(0);
+                expect(result.errors?.length).toBeGreaterThanOrEqual(0);
             });
 
             it('should validate that unit has sufficient data when flattened', () => {
@@ -394,11 +382,7 @@ describe('ZillowMapper', () => {
 
     describe('Zillow-Specific Behavior', () => {
         it('should flatten three-tier hierarchy', () => {
-            const context = {
-                unit: basicUnit,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(basicUnit, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -420,9 +404,9 @@ describe('ZillowMapper', () => {
 
             const amenities = mapper.mapBuilding(buildingWithAmenities).amenities;
 
-            expect(amenities).toContain('Pool'); // Simplified
-            expect(amenities).toContain('Air conditioning'); // Lowercase
-            expect(amenities).toContain('Pets allowed'); // Different term
+            expect(_.map(amenities, 'name')).toContain('Pool'); // Simplified
+            expect(_.map(amenities, 'name')).toContain('Air conditioning'); // Lowercase
+            expect(_.map(amenities, 'name')).toContain('Pets allowed'); // Different term
         });
 
         it('should format data for Zillow API requirements', () => {
@@ -432,7 +416,7 @@ describe('ZillowMapper', () => {
             expect(result.fees).toBeDefined();
             _.forEach(result.fees, (fee) => {
                 // No currency symbols in amounts
-                expect(fee.amount).not.toContain('$');
+                expect(String(fee.amount)).not.toContain('$');
             });
         });
     });
@@ -462,11 +446,11 @@ describe('ZillowMapper', () => {
         });
 
         it('should handle units with no photos', () => {
-            const context = {
-                unit: { ...basicUnit, photos: [] },
-                unitType: basicUnitType,
-                building: { ...basicBuilding, photos: [] }
-            };
+            const context = _createContext(
+                { ...basicUnit, photos: [] },
+                basicUnitType,
+                { ...basicBuilding, photos: [] }
+            );
 
             const result = mapper.mapUnit(context);
 
@@ -492,11 +476,7 @@ describe('ZillowMapper', () => {
                 unitDescription: specialDesc
             };
 
-            const context = {
-                unit: unitSpecialDesc,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitSpecialDesc, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -542,11 +522,7 @@ describe('ZillowMapper', () => {
                 sqft: 0
             };
 
-            const context = {
-                unit: unitWithNaN,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitWithNaN, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -581,11 +557,7 @@ describe('ZillowMapper', () => {
                 unitDescription: maliciousDesc
             };
 
-            const context = {
-                unit: unitMalicious,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitMalicious, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -600,11 +572,7 @@ describe('ZillowMapper', () => {
                 availableDate: 'not-a-date'
             };
 
-            const context = {
-                unit: unitInvalidDate,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitInvalidDate, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -617,12 +585,12 @@ describe('ZillowMapper', () => {
                 ...basicBuilding,
                 applicationFee: 0.00,
                 oneTimeFees: [
-                    { name: 'Penny Fee', amount: 0.01, type: FeeType.APPLICATION },
-                    { name: 'Max Fee', amount: 99999.99, type: FeeType.ADMIN },
-                    { name: 'Negative Fee', amount: -50, type: FeeType.MOVE_IN }
+                    { type: FeeType.APPLICATION, amount: 0.01, description: 'Penny Fee' },
+                    { type: FeeType.ADMIN, amount: 99999.99, description: 'Max Fee' },
+                    { type: FeeType.MOVE_IN, amount: -50, description: 'Negative Fee' }
                 ],
                 monthlyFees: [
-                    { name: 'Zero Fee', amount: 0, type: FeeType.PARKING }
+                    { type: FeeType.PARKING, amount: 0, description: 'Zero Fee' }
                 ]
             };
 
@@ -631,10 +599,10 @@ describe('ZillowMapper', () => {
             expect(result.applicationFee).toBe(0);
             expect(result.fees).toBeDefined();
             expect(result.fees).toContainEqual(
-                expect.objectContaining({ type: 'Application', amount: '0.01' })
+                expect.objectContaining({ type: 'Application', amount: 0.01 })
             );
             expect(result.fees).toContainEqual(
-                expect.objectContaining({ type: 'Administrative', amount: '99,999.99' })
+                expect.objectContaining({ type: 'Administrative', amount: 99999.99 })
             );
         });
 
@@ -653,22 +621,22 @@ describe('ZillowMapper', () => {
             const result = mapper.mapBuilding(buildingManyAmenities);
 
             expect(result.amenities).toBeDefined();
-            expect(result.amenities.length).toBe(150);
+            expect(result.amenities!.length).toBe(150);
         });
 
         it('should handle extremely large photo arrays', () => {
             const manyPhotos = _.times(200, i => `https://example.com/photo${i}.jpg`);
 
-            const context = {
-                unit: { ...basicUnit, photos: manyPhotos.slice(0, 100) },
-                unitType: basicUnitType,
-                building: { ...basicBuilding, photos: manyPhotos.slice(100) }
-            };
+            const context = _createContext(
+                { ...basicUnit, photos: manyPhotos.slice(0, 100) },
+                basicUnitType,
+                { ...basicBuilding, photos: manyPhotos.slice(100) }
+            );
 
             const result = mapper.mapUnit(context);
 
             expect(result.photos).toBeDefined();
-            expect(result.photos.length).toBe(200);
+            expect(result.photos?.length).toBe(200);
         });
 
         // Phone number validation
@@ -724,11 +692,7 @@ describe('ZillowMapper', () => {
                 baths: 2
             };
 
-            const context = {
-                unit: completeUnitData,
-                unitType: incompleteUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(completeUnitData, incompleteUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -752,11 +716,7 @@ describe('ZillowMapper', () => {
                 maxRent: 1800
             };
 
-            const context = {
-                unit: conflictingUnit,
-                unitType: conflictingModel,
-                building: completeBuilding
-            };
+            const context = _createContext(conflictingUnit, conflictingModel, completeBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -782,7 +742,7 @@ describe('ZillowMapper', () => {
             const result = mapper.mapBuilding(buildingReserved);
 
             expect(result.amenities).toBeDefined();
-            expect(result.amenities.length).toBe(4);
+            expect(result.amenities!.length).toBe(4);
         });
 
         // Timezone edge cases
@@ -792,11 +752,7 @@ describe('ZillowMapper', () => {
                 availableDate: '2024-12-31T23:59:59Z' // New Year's Eve UTC
             };
 
-            const context = {
-                unit: timezoneUnit,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(timezoneUnit, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -857,19 +813,17 @@ describe('ZillowMapper', () => {
             expect(result.description).toBe('🏠 Élégant château with café ☕');
             expect(result.address.street).toBe('123 Główna ulica');
             // Amenity names are preserved as-is when no transformation mapping exists
-            expect(result.amenities).toContain('游泳池 (Swimming Pool)');
-            expect(result.amenities).toContain('Sauna & Spa™');
+            expect(_.map(result.amenities, 'name')).toContain('游泳池 (Swimming Pool)');
+            expect(_.map(result.amenities, 'name')).toContain('Sauna & Spa™');
         });
     });
 
     describe('Custom Field Mappings', () => {
         it('should accept custom field mappings', () => {
-            const customMappings = {
+            const customMappings: Partial<FieldMappingConfig> = {
                 propertyType: {
-                    zillow: {
-                        apartment: 'Apartment Home',
-                        condo: 'Condominium Unit'
-                    }
+                    apartment: 'Apartment Home',
+                    condo: 'Condominium Unit'
                 }
             };
 

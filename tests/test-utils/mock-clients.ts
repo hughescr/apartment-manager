@@ -13,9 +13,9 @@ import type { S3Client } from '@aws-sdk/client-s3';
  * @returns Mock DynamoDB Document Client
  */
 export function createMockDynamoClient(
-    sendImplementation?: () => Promise<unknown>
+    sendImplementation?: (command: unknown) => Promise<unknown>
 ): DynamoDBDocumentClient {
-    const mockSend = mock(sendImplementation || (() => Promise.resolve({})));
+    const mockSend = mock(sendImplementation || ((_command: unknown) => Promise.resolve({})));
 
     return {
         send: mockSend,
@@ -29,9 +29,9 @@ export function createMockDynamoClient(
  * @returns Mock S3 Client
  */
 export function createMockS3Client(
-    sendImplementation?: () => Promise<unknown>
+    sendImplementation?: (command: unknown) => Promise<unknown>
 ): S3Client {
-    const mockSend = mock(sendImplementation || (() => Promise.resolve({})));
+    const mockSend = mock(sendImplementation || ((_command: unknown) => Promise.resolve({})));
 
     return {
         send: mockSend,
@@ -152,9 +152,9 @@ export function createTrackedDynamoClient(
 ): TrackedMockClient<DynamoDBDocumentClient> {
     const calls: { command: unknown, response: unknown }[] = [];
 
-    const sendImplementation = async (command: unknown) => {
+    const sendImplementation = async (command: unknown): Promise<unknown> => {
         const commandName = command?.constructor.name || 'UnknownCommand';
-        const response = responses?.get(commandName) || {};
+        const response = responses?.get(commandName) || {} as unknown;
         calls.push({ command, response });
         return response;
     };
@@ -179,14 +179,14 @@ export function createTrackedS3Client(
 ): TrackedMockClient<S3Client> {
     const calls: { command: unknown, response: unknown }[] = [];
 
-    const sendImplementation = async (command: unknown) => {
+    const sendImplementation = async (command: unknown): Promise<unknown> => {
         const commandName = command?.constructor.name || 'UnknownCommand';
-        const response = responses?.get(commandName) || {};
+        const response = responses?.get(commandName) || {} as unknown;
         calls.push({ command, response });
         return response;
     };
 
-    const client = createMockS3Client(sendImplementation);
+    const client = createMockS3Client(sendImplementation as (command: unknown) => Promise<unknown>);
 
     return {
         client,

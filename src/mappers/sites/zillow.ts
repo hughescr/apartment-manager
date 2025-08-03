@@ -28,7 +28,7 @@ import {
     categorizeFees,
     mergeAmenities
 } from '../transformers/index.js';
-import fieldMappingsV2 from '../field-mappings-v2.json';
+// import fieldMappingsV2 from '../field-mappings-v2.json'; // Reserved for future field mapping features
 
 /**
  * Zillow Rental Manager mapper implementation.
@@ -38,10 +38,8 @@ export class ZillowMapper implements SiteMapper {
     readonly siteId = 'zillow';
     readonly siteName = 'Zillow Rental Manager';
 
-    private readonly fieldMappings: FieldMappingConfig;
-
-    constructor(customFieldMappings?: Partial<FieldMappingConfig>) {
-        this.fieldMappings = _.merge({}, fieldMappingsV2, customFieldMappings);
+    constructor(_customFieldMappings?: Partial<FieldMappingConfig>) {
+        // Field mappings parameter kept for future extensibility
     }
 
     /**

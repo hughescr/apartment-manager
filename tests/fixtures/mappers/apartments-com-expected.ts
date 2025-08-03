@@ -34,49 +34,49 @@ export const completeBuildingExpected: MappedBuilding = {
     fees: [
         {
             type: 'Application Fee',
-            amount: '$75',
+            amount: 75,
             description: 'Non-refundable application processing fee',
             refundable: false
         },
         {
             type: 'Administrative Fee',
-            amount: '$250',
+            amount: 250,
             description: 'Administrative fee for lease preparation',
             refundable: false
         },
         {
             type: 'Move-in Fee',
-            amount: '$150',
+            amount: 150,
             description: 'Move-in coordination fee',
             refundable: false
         },
         {
             type: 'Pet Fee',
-            amount: '$50',
+            amount: 50,
             description: 'Monthly pet rent per pet',
             refundable: undefined
         },
         {
             type: 'Parking Fee',
-            amount: '$200',
+            amount: 200,
             description: 'Monthly parking fee for garage space',
             refundable: undefined
         },
         {
             type: 'Storage Fee',
-            amount: '$75',
+            amount: 75,
             description: 'Monthly storage unit fee',
             refundable: undefined
         },
         {
             type: 'Security Deposit',
-            amount: '$2,500',
+            amount: 2500,
             description: 'Refundable security deposit',
             refundable: true
         },
         {
             type: 'Key Deposit',
-            amount: '$100',
+            amount: 100,
             description: 'Refundable key and fob deposit',
             refundable: true
         }
@@ -122,13 +122,13 @@ export const completeBuildingExpected: MappedBuilding = {
         restrictions: 'All pets must be registered with management. Dogs require proof of training.'
     },
     amenities: [
-        'Pool',
-        'Gym',
-        'Rooftop Terrace',
-        'Business Center',
-        'Dog Park',
-        'Concierge Service',
-        'Controlled Access'
+        { name: 'Pool', category: 'Property' },
+        { name: 'Gym', category: 'Property' },
+        { name: 'Rooftop Terrace', category: 'Property' },
+        { name: 'Business Center', category: 'Property' },
+        { name: 'Dog Park', category: 'Property' },
+        { name: 'Concierge Service', category: 'Community' },
+        { name: 'Controlled Access', category: 'Community' }
     ],
     contactInfo: {
         name: 'Luxury Living Leasing Office',
@@ -313,11 +313,11 @@ export const completeUnitTypeExpected: MappedUnitType = {
     countAvailable: 2,
     dateAvailable: '02/15/2024',
     amenities: [
-        'Floor-to-Ceiling Windows',
-        'Premium Appliances',
-        'Wine Fridge',
-        'Smart Home Features',
-        'Fireplace'
+        { name: 'Floor-to-Ceiling Windows', category: 'Unit' },
+        { name: 'Premium Appliances', category: 'Unit' },
+        { name: 'Wine Fridge', category: 'Unit' },
+        { name: 'Smart Home Features', category: 'Unit' },
+        { name: 'Fireplace', category: 'Unit' }
     ],
     photos: []
 };
@@ -356,15 +356,15 @@ export const completeUnitExpected: MappedUnit = {
         maxMonths: 24
     },
     amenities: [
-        'Floor-to-Ceiling Windows',
-        'Premium Appliances',
-        'Wine Fridge',
-        'Smart Home Features',
-        'Fireplace',
-        'Corner Windows',
-        'City Views',
-        'Recently Renovated',
-        'Wood Floors'
+        { name: 'Floor-to-Ceiling Windows', category: 'Unit' },
+        { name: 'Premium Appliances', category: 'Unit' },
+        { name: 'Wine Fridge', category: 'Unit' },
+        { name: 'Smart Home Features', category: 'Unit' },
+        { name: 'Fireplace', category: 'Unit' },
+        { name: 'Corner Windows', category: 'Unit' },
+        { name: 'City Views', category: 'Unit' },
+        { name: 'Recently Renovated', category: 'Unit' },
+        { name: 'Wood Floors', category: 'Unit' }
     ],
     photos: [
         'https://s3.amazonaws.com/bucket/unit-complete-001/living-room.jpg',

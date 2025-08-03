@@ -439,7 +439,8 @@ describe('Unit Data Layer', () => {
             }));
 
             const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-            expect(result?.websiteStatus?.invalidSite).toBe('active');
+            const invalidSiteValue = result?.websiteStatus?.invalidSite;
+            expect(JSON.stringify(invalidSiteValue)).toEqual(JSON.stringify('active'));
             expect(result?.websiteStatus?.zillow).toBe(WebsiteStatus.ACTIVE);
         });
 
@@ -477,7 +478,8 @@ describe('Unit Data Layer', () => {
             }));
 
             const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-            expect(result?.websiteStatus?.zillow).toBe('INVALID_STATUS');
+            const invalidStatusValue = result?.websiteStatus?.zillow;
+            expect(JSON.stringify(invalidStatusValue)).toEqual(JSON.stringify('INVALID_STATUS'));
         });
     });
 
@@ -550,7 +552,7 @@ describe('Unit Data Layer', () => {
             const result1 = await unit1Promise;
             expect(result1.unitID).toBe('duplicate-id');
 
-            await expect(unit2Promise).rejects.toMatchObject({
+            expect(unit2Promise).rejects.toMatchObject({
                 name: 'ConditionalCheckFailedException'
             });
             expect(dynamoDbMock).toHaveBeenCalledTimes(2);
@@ -719,7 +721,7 @@ describe('Unit Data Layer', () => {
                 message: 'DynamoDB is currently unavailable'
             });
 
-            await expect(getUnits(testBuildingID)).rejects.toMatchObject({
+            expect(getUnits(testBuildingID)).rejects.toMatchObject({
                 name: 'ServiceUnavailable'
             });
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);

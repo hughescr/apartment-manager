@@ -17,33 +17,41 @@ describe('Unit Types API', () => {
         jest.clearAllMocks();
     });
 
-    const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
-        headers: {},
-        isBase64Encoded: false,
-        rawPath: '/api/buildings/test-building-1/unit-types',
-        rawQueryString: '',
-        requestContext: {
-            accountId: 'test-account',
-            apiId: 'test-api',
-            domainName: 'test.com',
-            domainPrefix: 'test',
-            http: {
-                method: 'GET',
-                path: '/api/buildings/test-building-1/unit-types',
-                protocol: 'HTTP/1.1',
-                sourceIp: '127.0.0.1',
-                userAgent: 'test-agent',
+    const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => {
+        const baseEvent: APIGatewayProxyEventV2 = {
+            headers: {},
+            isBase64Encoded: false,
+            rawPath: '/api/buildings/test-building-1/unit-types',
+            rawQueryString: '',
+            requestContext: {
+                accountId: 'test-account',
+                apiId: 'test-api',
+                domainName: 'test.com',
+                domainPrefix: 'test',
+                http: {
+                    method: 'GET',
+                    path: '/api/buildings/test-building-1/unit-types',
+                    protocol: 'HTTP/1.1',
+                    sourceIp: '127.0.0.1',
+                    userAgent: 'test-agent',
+                },
+                requestId: 'test-request-id',
+                routeKey: 'GET /api/buildings/{buildingID}/unit-types',
+                stage: 'test',
+                time: '01/Jan/2024:00:00:00 +0000',
+                timeEpoch: 1704067200000,
             },
-            requestId: 'test-request-id',
             routeKey: 'GET /api/buildings/{buildingID}/unit-types',
-            stage: 'test',
-            time: '01/Jan/2024:00:00:00 +0000',
-            timeEpoch: 1704067200000,
-        },
-        routeKey: 'GET /api/buildings/{buildingID}/unit-types',
-        version: '2.0',
-        ...overrides,
-    });
+            version: '2.0',
+        };
+        // Merge overrides while preserving required properties
+        const result = { ...baseEvent, ...overrides };
+        // Ensure requestContext is preserved
+        if(overrides.requestContext) {
+            result.requestContext = { ...baseEvent.requestContext, ...overrides.requestContext };
+        }
+        return result;
+    };
 
     const testUnitType = {
         buildingID: 'test-building-1',
@@ -1433,10 +1441,13 @@ describe('Unit Types API', () => {
         describe('Lambda context edge cases', () => {
             it('should handle missing requestContext', async () => {
                 expect.assertions(2);
+                const baseEvent = createMockEvent();
+                // Intentionally create a malformed event for edge case testing
+                const { requestContext: _requestContext, ...eventWithoutRequestContext } = baseEvent;
                 const event = {
-                    ...createMockEvent(),
+                    ...eventWithoutRequestContext,
                     requestContext: undefined as unknown as APIGatewayProxyEventV2['requestContext']
-                };
+                } as unknown as APIGatewayProxyEventV2;
 
                 const unitTypes = [testUnitType];
                 const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
@@ -1450,15 +1461,9 @@ describe('Unit Types API', () => {
 
             it('should handle event with minimal required fields only', async () => {
                 expect.assertions(2);
-                const minimalEvent = {
-                    version: '2.0',
-                    headers: {},
-                    isBase64Encoded: false,
-                    rawPath: '',
-                    rawQueryString: '',
-                    routeKey: '',
+                const minimalEvent = createMockEvent({
                     pathParameters: { buildingID: 'test-building-1' }
-                } as APIGatewayProxyEventV2;
+                });
 
                 const unitTypes = [testUnitType];
                 const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));

@@ -835,13 +835,13 @@ describe('Type Definitions', () => {
                     buildingID: 'bldg-123',
                     propertyType: 'invalid-type' as PropertyType
                 };
-                expect(building.propertyType).toBe('invalid-type');
+                expect(building.propertyType as string).toBe('invalid-type');
 
                 const building2: BuildingData = {
                     buildingID: 'bldg-456',
                     propertyType: 'APARTMENT' as PropertyType // Wrong case
                 };
-                expect(building2.propertyType).toBe('APARTMENT');
+                expect(building2.propertyType as string).toBe('APARTMENT');
             });
 
             it('should accept numeric values as enum with type assertion', () => {
@@ -850,14 +850,14 @@ describe('Type Definitions', () => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing numeric value assignment to enum type for edge case testing
                     category: 123 as any as AmenityCategory
                 };
-                expect(amenity.category).toBe(123);
+                expect(amenity.category as unknown).toBe(123);
 
                 const amenity2: Amenity = {
                     name: 'Test2',
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing boolean value assignment to enum type for edge case testing
                     category: true as any as AmenityCategory
                 };
-                expect(amenity2.category).toBe(true);
+                expect(amenity2.category as unknown).toBe(true);
             });
 
             it('should accept object types as enum values', () => {
@@ -908,8 +908,8 @@ describe('Type Definitions', () => {
                 };
                 expect(policy.types).toHaveLength(6);
                 expect(policy.types![0]).toBe(PetType.DOG);
-                expect(policy.types![1]).toBe('not-a-pet');
-                expect(policy.types![3]).toBe(123);
+                expect(policy.types![1] as string).toBe('not-a-pet');
+                expect(policy.types![3] as unknown).toBe(123);
             });
 
             it('should accept very large enum arrays', () => {
@@ -930,10 +930,10 @@ describe('Type Definitions', () => {
                     site3: 'AcTiVe' as WebsiteStatus, // Random case
                     site4: WebsiteStatus.ACTIVE // Correct
                 };
-                expect(status.site1).toBe('ACTIVE');
-                expect(status.site2).toBe('Active');
-                expect(status.site3).toBe('AcTiVe');
-                expect(status.site4).toBe('active');
+                expect(status.site1 as string).toBe('ACTIVE');
+                expect(status.site2 as string).toBe('Active');
+                expect(status.site3 as string).toBe('AcTiVe');
+                expect(status.site4 as string).toBe('active');
             });
 
             it('should handle case variations in day names', () => {
@@ -944,7 +944,7 @@ describe('Type Definitions', () => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing title case day name as key for case sensitivity validation
                     ['Monday' as any]: { open: '10:00', close: '18:00' },
                     ['monday']: { open: '11:00', close: '19:00' },
-                    [DayOfWeek.MONDAY]: { open: '12:00', close: '20:00' }
+                    ['mondayCorrect']: { open: '12:00', close: '20:00' }
                 };
                 expect(hours.MONDAY).toBeDefined();
                 expect(hours.Monday).toBeDefined();
@@ -959,13 +959,13 @@ describe('Type Definitions', () => {
                     type: '  application  ' as FeeType,
                     amount: 50
                 };
-                expect(fee.type).toBe('  application  ');
+                expect(fee.type as string).toBe('  application  ');
 
                 const fee2: Fee = {
                     type: '\tapplication\n' as FeeType,
                     amount: 50
                 };
-                expect(fee2.type).toBe('\tapplication\n');
+                expect(fee2.type as string).toBe('\tapplication\n');
             });
 
             it('should accept enum values with internal spaces', () => {
@@ -973,13 +973,13 @@ describe('Type Definitions', () => {
                     type: 'external unit' as StorageType, // Missing hyphen
                     included: true
                 };
-                expect(storage.type).toBe('external unit');
+                expect(storage.type as string).toBe('external unit');
 
                 const property: BuildingData = {
                     buildingID: 'bldg-123',
                     propertyType: 'single family' as PropertyType // Missing hyphen
                 };
-                expect(property.propertyType).toBe('single family');
+                expect(property.propertyType as string).toBe('single family');
             });
         });
 
@@ -1001,7 +1001,7 @@ describe('Type Definitions', () => {
                     type: "'; DROP TABLE fees; --" as FeeType,
                     amount: 100
                 };
-                expect(fee.type).toBe("'; DROP TABLE fees; --");
+                expect(fee.type as string).toBe("'; DROP TABLE fees; --");
             });
 
             it('should handle very long enum string values', () => {
@@ -1021,7 +1021,7 @@ describe('Type Definitions', () => {
                     buildingID: 'bldg-123',
                     propertyType: combined as PropertyType
                 };
-                expect(building.propertyType).toBe('apartmentcondo');
+                expect(building.propertyType as string).toBe('apartmentcondo');
             });
 
             it('should handle enum values that look like other types', () => {
@@ -1029,19 +1029,19 @@ describe('Type Definitions', () => {
                     type: 'true' as ParkingType, // String that looks like boolean
                     included: true
                 };
-                expect(parking.type).toBe('true');
+                expect(parking.type as string).toBe('true');
 
                 const parking2: ParkingOption = {
                     type: '123' as ParkingType, // String that looks like number
                     included: false
                 };
-                expect(parking2.type).toBe('123');
+                expect(parking2.type as string).toBe('123');
 
                 const parking3: ParkingOption = {
                     type: 'null' as ParkingType, // String that looks like null
                     included: true
                 };
-                expect(parking3.type).toBe('null');
+                expect(parking3.type as string).toBe('null');
             });
         });
     });
@@ -1052,7 +1052,8 @@ describe('Type Definitions', () => {
                 const special: RentSpecial = {
                     title: 'Invalid Dates',
                     startDate: 'not-a-date',
-                    endDate: 'definitely not a date either'
+                    endDate: 'definitely not a date either',
+                    description: 'Testing invalid date formats'
                 };
                 expect(special.startDate).toBe('not-a-date');
                 expect(special.endDate).toBe('definitely not a date either');
@@ -1078,7 +1079,8 @@ describe('Type Definitions', () => {
                 const special: RentSpecial = {
                     title: 'Wrong Separators',
                     startDate: '2024/12/31', // Slashes instead of hyphens
-                    endDate: '2024.12.31' // Dots instead of hyphens
+                    endDate: '2024.12.31', // Dots instead of hyphens
+                    description: 'Testing wrong date separators'
                 };
                 expect(special.startDate).toBe('2024/12/31');
                 expect(special.endDate).toBe('2024.12.31');
@@ -1172,8 +1174,8 @@ describe('Type Definitions', () => {
                         [DayOfWeek.TUESDAY]: { open: '-5:00', close: '99:00' }
                     }
                 };
-                expect(contact.officeHours![DayOfWeek.MONDAY].open).toBe('25:00');
-                expect(contact.officeHours![DayOfWeek.TUESDAY].open).toBe('-5:00');
+                expect(contact.officeHours?.[DayOfWeek.MONDAY]?.open).toBe('25:00');
+                expect(contact.officeHours?.[DayOfWeek.TUESDAY]?.open).toBe('-5:00');
             });
 
             it('should accept minutes outside 0-59 range', () => {
@@ -1183,8 +1185,8 @@ describe('Type Definitions', () => {
                         [DayOfWeek.THURSDAY]: { open: '09:-30', close: '17:150' }
                     }
                 };
-                expect(tours.tourHours![DayOfWeek.WEDNESDAY].open).toBe('12:70');
-                expect(tours.tourHours![DayOfWeek.THURSDAY].close).toBe('17:150');
+                expect(tours.tourHours?.[DayOfWeek.WEDNESDAY]?.open).toBe('12:70');
+                expect(tours.tourHours?.[DayOfWeek.THURSDAY]?.close).toBe('17:150');
             });
 
             it('should accept non-numeric time values', () => {
@@ -1194,8 +1196,8 @@ describe('Type Definitions', () => {
                         [DayOfWeek.SATURDAY]: { open: 'morning', close: 'evening' }
                     }
                 };
-                expect(contact.officeHours![DayOfWeek.FRIDAY].open).toBe('noon');
-                expect(contact.officeHours![DayOfWeek.SATURDAY].close).toBe('evening');
+                expect(contact.officeHours?.[DayOfWeek.FRIDAY]?.open).toBe('noon');
+                expect(contact.officeHours?.[DayOfWeek.SATURDAY]?.close).toBe('evening');
             });
 
             it('should accept time with wrong separators', () => {
@@ -1206,9 +1208,9 @@ describe('Type Definitions', () => {
                         [DayOfWeek.TUESDAY]: { open: '09 00', close: '17 00' } // Spaces
                     }
                 };
-                expect(tours.tourHours![DayOfWeek.SUNDAY].open).toBe('09.00');
-                expect(tours.tourHours![DayOfWeek.MONDAY].open).toBe('09-00');
-                expect(tours.tourHours![DayOfWeek.TUESDAY].open).toBe('09 00');
+                expect(tours.tourHours?.[DayOfWeek.SUNDAY]?.open).toBe('09.00');
+                expect(tours.tourHours?.[DayOfWeek.MONDAY]?.open).toBe('09-00');
+                expect(tours.tourHours?.[DayOfWeek.TUESDAY]?.open).toBe('09 00');
             });
 
             it('should accept 12-hour format with AM/PM', () => {
@@ -1219,9 +1221,9 @@ describe('Type Definitions', () => {
                         [DayOfWeek.WEDNESDAY]: { open: '9:00 am', close: '5:00 pm' } // Lowercase
                     }
                 };
-                expect(contact.officeHours![DayOfWeek.MONDAY].open).toBe('9:00 AM');
-                expect(contact.officeHours![DayOfWeek.TUESDAY].open).toBe('9:00AM');
-                expect(contact.officeHours![DayOfWeek.WEDNESDAY].close).toBe('5:00 pm');
+                expect(contact.officeHours?.[DayOfWeek.MONDAY]?.open).toBe('9:00 AM');
+                expect(contact.officeHours?.[DayOfWeek.TUESDAY]?.open).toBe('9:00AM');
+                expect(contact.officeHours?.[DayOfWeek.WEDNESDAY]?.close).toBe('5:00 pm');
             });
 
             it('should accept empty or missing time components', () => {
@@ -1232,9 +1234,9 @@ describe('Type Definitions', () => {
                         [DayOfWeek.WEDNESDAY]: { open: '9:', close: ':30' }
                     }
                 };
-                expect(tours.tourHours![DayOfWeek.MONDAY].open).toBe('');
-                expect(tours.tourHours![DayOfWeek.TUESDAY].open).toBe(':');
-                expect(tours.tourHours![DayOfWeek.WEDNESDAY].close).toBe(':30');
+                expect(tours.tourHours?.[DayOfWeek.MONDAY]?.open).toBe('');
+                expect(tours.tourHours?.[DayOfWeek.TUESDAY]?.open).toBe(':');
+                expect(tours.tourHours?.[DayOfWeek.WEDNESDAY]?.close).toBe(':30');
             });
         });
 
@@ -1246,8 +1248,8 @@ describe('Type Definitions', () => {
                         [DayOfWeek.SATURDAY]: { open: '23:30', close: '00:30' } // 11:30 PM to 12:30 AM
                     }
                 };
-                expect(tours.tourHours![DayOfWeek.FRIDAY].close).toBe('02:00');
-                expect(tours.tourHours![DayOfWeek.SATURDAY].close).toBe('00:30');
+                expect(tours.tourHours?.[DayOfWeek.FRIDAY]?.close).toBe('02:00');
+                expect(tours.tourHours?.[DayOfWeek.SATURDAY]?.close).toBe('00:30');
             });
 
             it('should accept invalid day names as keys', () => {
@@ -1262,9 +1264,9 @@ describe('Type Definitions', () => {
                     }
                 };
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing invalid day name key for test verification
-                expect(tours.tourHours!['INVALID_DAY' as any]).toBeDefined();
+                expect((tours.tourHours as any)?.INVALID_DAY).toBeDefined();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing empty string key for test verification
-                expect(tours.tourHours!['' as any]).toBeDefined();
+                expect((tours.tourHours as any)?.['']).toBeDefined();
             });
 
             it('should accept numeric keys for days', () => {
@@ -1279,11 +1281,11 @@ describe('Type Definitions', () => {
                     }
                 };
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing numeric zero key for test verification
-                expect(contact.officeHours![0 as any]).toBeDefined();
+                expect((contact.officeHours as any)?.[0]).toBeDefined();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing string '1' key for test verification
-                expect(contact.officeHours!['1' as any]).toBeDefined();
+                expect((contact.officeHours as any)?.['1']).toBeDefined();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing out-of-range number key for test verification
-                expect(contact.officeHours![7 as any]).toBeDefined();
+                expect((contact.officeHours as any)?.[7]).toBeDefined();
             });
         });
 
@@ -1315,7 +1317,8 @@ describe('Type Definitions', () => {
                 const special: RentSpecial = {
                     title: 'DST Special',
                     startDate: '2024-03-10T02:30:00', // During spring forward (might not exist)
-                    endDate: '2024-11-03T01:30:00' // During fall back (happens twice)
+                    endDate: '2024-11-03T01:30:00', // During fall back (happens twice)
+                    description: 'Testing DST transition dates'
                 };
                 expect(special.startDate).toBe('2024-03-10T02:30:00');
                 expect(special.endDate).toBe('2024-11-03T01:30:00');
@@ -1739,8 +1742,8 @@ describe('Type Definitions', () => {
                         [DayOfWeek.WEDNESDAY]: { open: '12:00 PM', close: '5:00 PM' } // Wrong format
                     }
                 };
-                expect(contact.officeHours![DayOfWeek.MONDAY].open).toBe('25:00');
-                expect(contact.officeHours![DayOfWeek.MONDAY].close).toBe('12:70');
+                expect(contact.officeHours?.[DayOfWeek.MONDAY]?.open).toBe('25:00');
+                expect(contact.officeHours?.[DayOfWeek.MONDAY]?.close).toBe('12:70');
             });
 
             it('should accept office hours crossing midnight', () => {
@@ -1749,8 +1752,8 @@ describe('Type Definitions', () => {
                         [DayOfWeek.FRIDAY]: { open: '22:00', close: '02:00' } // Closes after midnight
                     }
                 };
-                expect(contact.officeHours![DayOfWeek.FRIDAY].open).toBe('22:00');
-                expect(contact.officeHours![DayOfWeek.FRIDAY].close).toBe('02:00');
+                expect(contact.officeHours?.[DayOfWeek.FRIDAY]?.open).toBe('22:00');
+                expect(contact.officeHours?.[DayOfWeek.FRIDAY]?.close).toBe('02:00');
                 // Note: This might be valid for 24-hour properties, but needs business logic
             });
 
@@ -1760,7 +1763,7 @@ describe('Type Definitions', () => {
                         [DayOfWeek.SATURDAY]: { open: '14:00', close: '09:00' } // Closes before opening
                     }
                 };
-                expect(tours.tourHours![DayOfWeek.SATURDAY].close).toBe('09:00');
+                expect(tours.tourHours?.[DayOfWeek.SATURDAY]?.close).toBe('09:00');
             });
         });
 
@@ -1822,25 +1825,29 @@ describe('Type Definitions', () => {
             it('should accept invalid storage dimension formats', () => {
                 const storage: StorageOption = {
                     type: StorageType.EXTERNAL_UNIT,
-                    dimensions: '5x' // Missing second dimension
+                    dimensions: '5x', // Missing second dimension
+                    included: false
                 };
                 expect(storage.dimensions).toBe('5x');
 
                 const storage2: StorageOption = {
                     type: StorageType.EXTERNAL_UNIT,
-                    dimensions: 'x10' // Missing first dimension
+                    dimensions: 'x10', // Missing first dimension
+                    included: false
                 };
                 expect(storage2.dimensions).toBe('x10');
 
                 const storage3: StorageOption = {
                     type: StorageType.EXTERNAL_UNIT,
-                    dimensions: 'large' // Not a dimension format
+                    dimensions: 'large', // Not a dimension format
+                    included: false
                 };
                 expect(storage3.dimensions).toBe('large');
 
                 const storage4: StorageOption = {
                     type: StorageType.EXTERNAL_UNIT,
-                    dimensions: '5.5x10.5x8' // Three dimensions (might be valid for height)
+                    dimensions: '5.5x10.5x8', // Three dimensions (might be valid for height)
+                    included: false
                 };
                 expect(storage4.dimensions).toBe('5.5x10.5x8');
             });

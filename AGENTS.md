@@ -60,7 +60,7 @@
 ### Code Quality
 - **TypeScript checking**:
   - ❌ NEVER: `tsc --noEmit`
-  - ✅ ALWAYS: `mcp__language-server__diagnostics` with `filePath: "/path/to/file.ts"`
+  - ✅ ALWAYS: `mcp__language-server__diagnostics` with `filePath: "/path/to/file.ts" and `
 
 - **Linting**:
   - ❌ NEVER: `eslint src/`
@@ -225,7 +225,7 @@ This project extends an existing apartment management web application to support
 
 ### TypeScript Configuration
 - TypeScript with strict type checking
-- `noEmit` is already configured in tsconfig.json - just run `tsc`
+- `noEmit` is already configured in tsconfig.json
 - **IGNORE** TypeScript errors from `.sst` directory - these are SST framework files
 - **FOCUS** only on fixing errors in application code
 - Example: Errors in `.sst/platform/src/components/base/base-ssr-site.ts` are SST's responsibility
@@ -244,7 +244,13 @@ This project extends an existing apartment management web application to support
 - **ESLint**: `mcp__eslint__lint-files` with absolute file paths
   - Example: `mcp__eslint__lint-files` with `filePaths: ["/absolute/path/to/file.ts"]`
 - **TypeScript**: `mcp__language-server__diagnostics` for type checking
-  - Example: `mcp__language-server__diagnostics` with `filePath: "/absolute/path/to/file.ts"`
+     Critical Instructions:
+     - Use mcp__language-server__diagnostics with contextLines: true to get full diagnostic information
+     - Use mcp__language-server__hover to inspect type information at specific locations
+     - Use mcp__language-server__definition to examine the function signatures
+     - NEVER use tsc directly - always use MCP language server tools
+     - Use mcp__language-server__edit_file for making the fixes
+     - NEVER use Edit/MultiEdit for fixing language server diagnostics
 
 ### ESLint Compliance
 
@@ -379,19 +385,6 @@ When running `bun run sst-dev`, you'll get an interactive ncurses UI. Here's how
 - Scripts automatically inject AWS credentials via `op run` from 1Password
 - Never run `sst` commands directly
 - If `$AWS_ACCESS_KEY_ID` is not set, scripts will use 1Password for credential injection
-
-### MCP Tools Reference
-
-**Code Quality Tools** (preferred over direct commands):
-- `mcp__eslint__lint-files`: Lint TypeScript/JavaScript files
-- `mcp__language-server__diagnostics`: Get TypeScript diagnostics
-
-**Language Server Tools**:
-- `mcp__language-server__hover`: Get type information and documentation
-- `mcp__language-server__definition`: Read source code definitions
-- `mcp__language-server__references`: Find all usages of a symbol
-- `mcp__language-server__rename_symbol`: Rename symbols across the codebase
-- `mcp__language-server__edit_file`: Apply multiple edits to a file
 
 ## Implementation Plan
 

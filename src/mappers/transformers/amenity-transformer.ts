@@ -2,6 +2,7 @@ import _ from 'lodash';
 import type { TransformerFunction, MappedAmenity } from '../types.js';
 import type { Amenity } from '../../types/index.js';
 import { AmenityCategory } from '../../types/index.js';
+import { createEnumTransformer } from './enum-transformer.js';
 
 /**
  * Common amenity name mappings for different sites.
@@ -39,22 +40,6 @@ const amenityNameMappings: Record<string, Record<string, string>> = {
         Elevator: 'Elevator',
         Doorman: 'Doorman',
         Concierge: 'Concierge'
-    }
-};
-
-/**
- * Site-specific amenity categories.
- */
-const _siteCategoryMappings: Record<string, Record<AmenityCategory, string[]>> = {
-    apartments_com: {
-        [AmenityCategory.UNIT]: ['Kitchen', 'Bathroom', 'Living Space', 'Climate'],
-        [AmenityCategory.PROPERTY]: ['Building', 'Parking', 'Security', 'Accessibility'],
-        [AmenityCategory.COMMUNITY]: ['Recreation', 'Services', 'Outdoor']
-    },
-    zillow: {
-        [AmenityCategory.UNIT]: ['Interior'],
-        [AmenityCategory.PROPERTY]: ['Property', 'Building'],
-        [AmenityCategory.COMMUNITY]: ['Community', 'Additional']
     }
 };
 
@@ -112,11 +97,17 @@ export function transformAmenities(
         filtered = filterAmenitiesByCategory(amenities, category);
     }
 
+    // Create category transformer for this site
+    const categoryTransformer = createEnumTransformer<AmenityCategory>(
+        'amenityCategory',
+        siteId
+    );
+
     return _(filtered)
         .filter(amenity => amenity && _.isObject(amenity) && _.isString(amenity.name))
         .map(amenity => ({
             name: transformer(amenity.name),
-            category: amenity.category || 'other'
+            category: categoryTransformer(amenity.category) || 'other'
         }))
         .value();
 }
@@ -169,8 +160,8 @@ export function amenityListToString(
     amenities: Amenity[] | undefined,
     siteId: string
 ): string {
-    const names = transformAmenities(amenities, siteId);
-    return names.join(', ');
+    const mappedAmenities = transformAmenities(amenities, siteId);
+    return _.map(mappedAmenities, 'name').join(', ');
 }
 
 /**

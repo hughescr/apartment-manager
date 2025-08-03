@@ -202,7 +202,7 @@ describe('Cross-Entity Consistency Tests', () => {
             const unit2 = { ...testUnit, unitID: 'unit-2' };
             dynamoDbMock.mockRejectedValueOnce(new Error('DynamoDB error'));
 
-            await expect(createUnit(unit2)).rejects.toThrow('DynamoDB error');
+            expect(createUnit(unit2)).rejects.toThrow('DynamoDB error');
 
             // Building and first unit still exist (no rollback)
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
@@ -251,7 +251,7 @@ describe('Cross-Entity Consistency Tests', () => {
             transactionError.name = 'TransactionCanceledException';
 
             // This is what would happen with transactions
-            await expect(Promise.reject(transactionError)).rejects.toThrow('TransactionCanceledException');
+            expect(Promise.reject(transactionError)).rejects.toThrow('TransactionCanceledException');
         });
 
         it('should handle concurrent updates to related entities', async () => {

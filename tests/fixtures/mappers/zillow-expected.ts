@@ -35,49 +35,49 @@ export const completeBuildingZillowExpected: MappedBuilding = {
     fees: [
         {
             type: 'Application',
-            amount: '75',
+            amount: 75,
             description: 'Non-refundable application processing fee',
             refundable: false
         },
         {
             type: 'Administrative',
-            amount: '250',
+            amount: 250,
             description: 'Administrative fee for lease preparation',
             refundable: false
         },
         {
             type: 'Move-in',
-            amount: '150',
+            amount: 150,
             description: 'Move-in coordination fee',
             refundable: false
         },
         {
             type: 'Pet',
-            amount: '50',
+            amount: 50,
             description: 'Monthly pet rent per pet',
             refundable: undefined
         },
         {
             type: 'Parking',
-            amount: '200',
+            amount: 200,
             description: 'Monthly parking fee for garage space',
             refundable: undefined
         },
         {
             type: 'Storage',
-            amount: '75',
+            amount: 75,
             description: 'Monthly storage unit fee',
             refundable: undefined
         },
         {
             type: 'Security Deposit',
-            amount: '2,500',
+            amount: 2500,
             description: 'Refundable security deposit',
             refundable: true
         },
         {
             type: 'Key Deposit',
-            amount: '100',
+            amount: 100,
             description: 'Refundable key and fob deposit',
             refundable: true
         }
@@ -120,13 +120,13 @@ export const completeBuildingZillowExpected: MappedBuilding = {
         restrictions: 'Breed restrictions: Pit Bull, Rottweiler, German Shepherd, Doberman. All pets must be registered with management. Dogs require proof of training.'
     },
     amenities: [
-        'Pool',
-        'Fitness center',
-        'Rooftop Terrace',
-        'Business Center',
-        'Dog Park',
-        'Concierge Service',
-        'Controlled Access'
+        { name: 'Pool', category: 'Property' },
+        { name: 'Fitness center', category: 'Property' },
+        { name: 'Rooftop Terrace', category: 'Property' },
+        { name: 'Business Center', category: 'Property' },
+        { name: 'Dog Park', category: 'Property' },
+        { name: 'Concierge Service', category: 'Community' },
+        { name: 'Controlled Access', category: 'Community' }
     ],
     contactInfo: {
         name: 'Luxury Living Leasing Office',
@@ -216,11 +216,11 @@ export const completeUnitTypeZillowExpected: MappedUnitType = {
     countAvailable: 2,
     dateAvailable: '2024-02-15',
     amenities: [
-        'Floor-to-Ceiling Windows',
-        'Premium Appliances',
-        'Wine Fridge',
-        'Smart Home Features',
-        'Fireplace'
+        { name: 'Floor-to-Ceiling Windows', category: 'Interior' },
+        { name: 'Premium Appliances', category: 'Interior' },
+        { name: 'Wine Fridge', category: 'Interior' },
+        { name: 'Smart Home Features', category: 'Interior' },
+        { name: 'Fireplace', category: 'Interior' }
     ],
     photos: []
 };
@@ -245,22 +245,22 @@ export const completeUnitZillowExpected: MappedUnit = {
         maxMonths: 24
     },
     amenities: [
-        'Pool',
-        'Fitness center',
-        'Rooftop Terrace',
-        'Business Center',
-        'Dog Park',
-        'Concierge Service',
-        'Controlled Access',
-        'Floor-to-Ceiling Windows',
-        'Premium Appliances',
-        'Wine Fridge',
-        'Smart Home Features',
-        'Fireplace',
-        'Corner Windows',
-        'City Views',
-        'Recently Renovated',
-        'Hardwood floors'
+        { name: 'Pool', category: 'Property' },
+        { name: 'Fitness center', category: 'Property' },
+        { name: 'Rooftop Terrace', category: 'Property' },
+        { name: 'Business Center', category: 'Property' },
+        { name: 'Dog Park', category: 'Property' },
+        { name: 'Concierge Service', category: 'Community' },
+        { name: 'Controlled Access', category: 'Community' },
+        { name: 'Floor-to-Ceiling Windows', category: 'Interior' },
+        { name: 'Premium Appliances', category: 'Interior' },
+        { name: 'Wine Fridge', category: 'Interior' },
+        { name: 'Smart Home Features', category: 'Interior' },
+        { name: 'Fireplace', category: 'Interior' },
+        { name: 'Corner Windows', category: 'Interior' },
+        { name: 'City Views', category: 'Interior' },
+        { name: 'Recently Renovated', category: 'Interior' },
+        { name: 'Hardwood floors', category: 'Interior' }
     ],
     photos: [
         // Unit photos first
@@ -335,11 +335,11 @@ export const inheritingUnitZillowExpected: MappedUnit = {
         // Model amenities
         {
             name: 'Walk-In Closet',
-            category: 'Unit'
+            category: 'Interior'
         },
         {
             name: 'Balcony',
-            category: 'Unit'
+            category: 'Interior'
         }
     ],
     photos: [
@@ -432,15 +432,15 @@ export const studentRoomZillowExpected: MappedUnit = {
         // Model amenities
         {
             name: 'Furnished',
-            category: 'Unit'
+            category: 'Interior'
         },
         {
             name: 'Shared Kitchen',
-            category: 'Unit'
+            category: 'Interior'
         },
         {
             name: 'Shared Bathroom',
-            category: 'Unit'
+            category: 'Interior'
         },
         {
             name: 'Study Room Access',

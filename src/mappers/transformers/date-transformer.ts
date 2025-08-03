@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { DateTime } from 'luxon';
 import type { TransformerFunction } from '../types.js';
 
 /**
@@ -17,52 +18,24 @@ export function createDateFormatter(format: string): TransformerFunction<string 
             return undefined;
         }
 
-        const date = new Date(value);
-        if(isNaN(date.getTime())) {
+        // Parse the date using our flexible parser
+        const dateTime = parseDateToDateTime(value);
+        if(!dateTime || !dateTime.isValid) {
             return undefined;
         }
 
+        // Format according to the requested format
         switch(format) {
             case 'MM/DD/YYYY':
-                return formatMMDDYYYY(date);
+                return dateTime.toFormat('MM/dd/yyyy');
             case 'YYYY-MM-DD':
-                return formatYYYYMMDD(date);
+                return dateTime.toISODate() ?? undefined;
             case 'MM-DD-YYYY':
-                return formatMMDDYYYYDash(date);
+                return dateTime.toFormat('MM-dd-yyyy');
             default:
                 return value;
         }
     };
-}
-
-/**
- * Format date as MM/DD/YYYY
- */
-function formatMMDDYYYY(date: Date): string {
-    const month = _.padStart(String(date.getMonth() + 1), 2, '0');
-    const day = _.padStart(String(date.getDate()), 2, '0');
-    const year = date.getFullYear();
-    return `${month}/${day}/${year}`;
-}
-
-/**
- * Format date as YYYY-MM-DD (ISO format)
- */
-function formatYYYYMMDD(date: Date): string {
-    const year = date.getFullYear();
-    const month = _.padStart(String(date.getMonth() + 1), 2, '0');
-    const day = _.padStart(String(date.getDate()), 2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-/**
- * Format date as MM-DD-YYYY
- */
-function formatMMDDYYYYDash(date: Date): string {
-    const month = _.padStart(String(date.getMonth() + 1), 2, '0');
-    const day = _.padStart(String(date.getDate()), 2, '0');
-    const year = date.getFullYear();
-    return `${month}-${day}-${year}`;
 }
 
 /**
@@ -80,92 +53,70 @@ export function parseDateToISO(value: string | undefined): string | undefined {
         return undefined;
     }
 
-    // Try to parse various formats
-    const result = tryParseWithPatterns(value) || tryParseWithNativeDate(value);
-    return result;
+    const dateTime = parseDateToDateTime(value);
+    return dateTime?.isValid ? (dateTime.toISODate() ?? undefined) : undefined;
 }
 
 /**
- * Try to parse date using known patterns.
+ * Parse a date string to a Luxon DateTime object using various formats.
+ * @param value The date string to parse
+ * @returns DateTime object or null if invalid
  */
-function tryParseWithPatterns(value: string): string | undefined {
-    const patterns = [
-        // ISO format
-        /^(\d{4})-(\d{2})-(\d{2})$/,
-        // US format with slashes
-        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
-        // US format with dashes
-        /^(\d{1,2})-(\d{1,2})-(\d{4})$/,
+function parseDateToDateTime(value: unknown): DateTime | null {
+    // Define the formats we want to support explicitly
+    const formats = [
+        'yyyy-MM-dd',     // ISO format: 2024-03-15
+        'MM/dd/yyyy',     // US format with slashes: 03/15/2024
+        'M/d/yyyy',       // US format with slashes, single digits: 3/5/2024
+        'MM-dd-yyyy',     // US format with dashes: 03-15-2024
+        'M-d-yyyy',       // US format with dashes, single digits: 3-5-2024
+        'LLLL d, yyyy',   // Natural language: March 15, 2024
+        'd LLLL yyyy',    // Natural language: 15 March 2024
+        'yyyy/MM/dd',     // Alternative format: 2024/03/15
+        'yyyy.MM.dd',     // Alternative format: 2024.03.15
+        'yyyy MM dd',     // Alternative format: 2024 03 15
+        'd-LLL-yy',       // Abbreviated format: 15-Mar-24
     ];
 
-    for(const pattern of patterns) {
-        const match = value.match(pattern);
-        if(match) {
-            const result = parseMatchedPattern(match, pattern, patterns[0]);
-            if(result) {
-                return result;
-            }
+    // Type safety check
+    if(!_.isString(value)) {
+        return null;
+    }
+
+    // Try each format with Luxon
+    for(const format of formats) {
+        const parsed = DateTime.fromFormat(value, format);
+        if(parsed.isValid) {
+            return parsed;
         }
     }
 
-    return undefined;
-}
-
-/**
- * Parse a matched pattern and validate the date.
- */
-function parseMatchedPattern(match: RegExpMatchArray, pattern: RegExp, isoPattern: RegExp): string | undefined {
-    let year: number, month: number, day: number;
-
-    if(pattern === isoPattern) {
-        // ISO format
-        [, year, month, day] = _.map(match, Number);
-    } else {
-        // US format
-        [, month, day, year] = _.map(match, Number);
+    // Try ISO parsing for datetime strings with time components
+    // But be strict - only accept complete ISO formats
+    const isoDateTime = DateTime.fromISO(value);
+    if(isoDateTime.isValid) {
+        return isoDateTime;
     }
 
-    const date = new Date(year, month - 1, day);
-    if(isValidDate(date, year, month, day)) {
-        return formatYYYYMMDD(date);
+    // Try SQL format
+    const sqlDateTime = DateTime.fromSQL(value);
+    if(sqlDateTime.isValid) {
+        return sqlDateTime;
     }
 
-    return undefined;
-}
-
-/**
- * Check if a date is valid and matches the expected values.
- */
-function isValidDate(date: Date, year: number, month: number, day: number): boolean {
-    return !isNaN(date.getTime()) &&
-      date.getFullYear() === year &&
-      date.getMonth() === month - 1 &&
-      date.getDate() === day;
-}
-
-/**
- * Try to parse date using native Date parsing for common formats.
- */
-function tryParseWithNativeDate(value: string): string | undefined {
-    const commonFormats = [
-        /^\d{4}-\d{2}-\d{2}/.test(value),
-        /^\w+ \d{1,2}, \d{4}$/.test(value),
-        /^\d{1,2} \w+ \d{4}$/.test(value),
-        /^\d{4}\/\d{2}\/\d{2}$/.test(value),
-        /^\d{4}\.\d{2}\.\d{2}$/.test(value),
-        /^\d{4} \d{2} \d{2}$/.test(value),
-        /^\d{1,2}-\w{3}-\d{2}$/.test(value), // Support DD-Mon-YY format
-    ];
-
-    const isCommonFormat = _.some(commonFormats);
-    if(isCommonFormat) {
-        const date = new Date(value);
-        if(!isNaN(date.getTime())) {
-            return formatYYYYMMDD(date);
-        }
+    // Try RFC2822 format
+    const rfcDateTime = DateTime.fromRFC2822(value);
+    if(rfcDateTime.isValid) {
+        return rfcDateTime;
     }
 
-    return undefined;
+    // Try HTTP format
+    const httpDateTime = DateTime.fromHTTP(value);
+    if(httpDateTime.isValid) {
+        return httpDateTime;
+    }
+
+    return null;
 }
 
 /**
@@ -178,18 +129,15 @@ export function daysUntil(value: string | undefined): number | undefined {
         return undefined;
     }
 
-    const targetDate = new Date(value);
-    if(isNaN(targetDate.getTime())) {
+    const targetDateTime = parseDateToDateTime(value);
+    if(!targetDateTime || !targetDateTime.isValid) {
         return undefined;
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    targetDate.setHours(0, 0, 0, 0);
+    const today = DateTime.now().startOf('day');
+    const target = targetDateTime.startOf('day');
 
-    const diffTime = targetDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+    const diffDays = Math.ceil(target.diff(today, 'days').days);
     return diffDays;
 }
 
@@ -203,12 +151,27 @@ export function isDateInPast(value: string | undefined): boolean {
         return false;
     }
 
-    const date = new Date(value);
-    if(isNaN(date.getTime())) {
+    const dateTime = parseDateToDateTime(value);
+    if(!dateTime || !dateTime.isValid) {
         return false;
     }
 
-    return date < new Date();
+    const now = DateTime.now();
+
+    // Check if the input has time components by looking for indicators
+    const hasTimeComponent = value.includes('T') ||
+      value.includes(':') ||
+      /\d{2}:\d{2}/.test(value);
+
+    if(hasTimeComponent) {
+        // For datetime values, use precise comparison
+        return dateTime < now;
+    } else {
+        // For date-only values, compare at start of day
+        const today = now.startOf('day');
+        const targetDay = dateTime.startOf('day');
+        return targetDay < today;
+    }
 }
 
 /**

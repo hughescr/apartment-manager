@@ -22,9 +22,10 @@ export function transformFees(
     // Filter out null/undefined fees and map valid ones
     const compactFees = _.compact(fees);
     const validFees = _.filter(compactFees, (fee): fee is Fee => fee && _.isObject(fee) && !!fee.type);
+
     return _.map(validFees, fee => ({
         type: transformFeeTypeName(fee.type, siteId),
-        amount: fee.amount || 0,
+        amount: Number(fee.amount) || 0,
         description: fee.description,
         refundable: fee.refundable
     }));

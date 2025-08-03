@@ -94,7 +94,7 @@ describe('InheritanceResolver', () => {
             expect(resolved.sqft).toBe(925);
             expect(resolved.rent).toBe(1600);
             expect(resolved.unitDescription).toBe('Corner unit with great views');
-            expect(resolved.photos).toEqual(unitData.photos);
+            expect(resolved.photos).toEqual(unitData.photos!);
         });
 
         it('should inherit lease terms from building if not in unit or model', () => {
@@ -119,13 +119,13 @@ describe('InheritanceResolver', () => {
         it('should inherit amenities from model when unit has none', () => {
             const resolved = resolver.resolveUnitValues(unitData, unitTypeData, buildingData);
 
-            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities);
+            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities!);
         });
 
         it('should use unit photos when available', () => {
             const resolved = resolver.resolveUnitValues(unitData, unitTypeData, buildingData);
 
-            expect(resolved.photos).toEqual(unitData.photos);
+            expect(resolved.photos).toEqual(unitData.photos!);
         });
 
         it('should use building photos when unit has none', () => {
@@ -136,7 +136,7 @@ describe('InheritanceResolver', () => {
 
             const resolved = resolver.resolveUnitValues(unitWithoutPhotos, unitTypeData, buildingData);
 
-            expect(resolved.photos).toEqual(buildingData.photos);
+            expect(resolved.photos).toEqual(buildingData.photos!);
         });
 
         it('should handle missing unit type', () => {
@@ -561,7 +561,7 @@ describe('InheritanceResolver', () => {
 
             const resolved = resolver.resolveUnitValues(unitWithNested, unitTypeData, buildingData);
 
-            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities);
+            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities!);
         });
 
         it('should handle circular reference prevention', () => {
@@ -605,11 +605,11 @@ describe('InheritanceResolver', () => {
             const resolved = resolver.resolveUnitValues(unitWithStringNumbers, unitTypeData, buildingData);
 
             // Strings should be preserved as-is (no automatic conversion)
-            expect(resolved.beds).toBe('2');
-            expect(resolved.baths).toBe('1.5');
-            expect(resolved.sqft).toBe('900');
-            expect(resolved.rent).toBe('1500');
-            expect(resolved.deposit).toBe('1000');
+            expect(resolved.beds as unknown).toBe('2');
+            expect(resolved.baths as unknown).toBe('1.5');
+            expect(resolved.sqft as unknown).toBe('900');
+            expect(resolved.rent as unknown).toBe('1500');
+            expect(resolved.deposit as unknown).toBe('1000');
         });
 
         it('should handle boolean type coercion', () => {
@@ -622,7 +622,7 @@ describe('InheritanceResolver', () => {
             const resolved = resolver.resolveUnitValues(unitWithBooleanStrings, unitTypeData, buildingData);
 
             // String 'true' should be preserved as-is
-            expect(resolved.occupied).toBe('true');
+            expect(resolved.occupied as unknown).toBe('true');
             expect(typeof resolved.occupied).toBe('string');
         });
 
@@ -640,8 +640,8 @@ describe('InheritanceResolver', () => {
             const result = resolver.applyDefaults(unit, defaults);
 
             // String '0' is truthy, so it should be preserved
-            expect(result.beds).toBe('0');
-            expect(result.rent).toBe('0');
+            expect(result.beds as unknown).toBe('0');
+            expect(result.rent as unknown).toBe('0');
         });
     });
 
@@ -871,7 +871,7 @@ describe('InheritanceResolver', () => {
 
             // Symbol properties should not affect normal operation
             expect(resolved.buildingID).toBe('BLDG-001');
-            expect(resolved[symbolKey]).toBe('symbol value');
+            expect((resolved as unknown as Record<symbol, unknown>)[symbolKey]).toBe('symbol value');
         });
 
         it('should handle non-enumerable properties', () => {
@@ -887,7 +887,7 @@ describe('InheritanceResolver', () => {
 
             const resolved = resolver.resolveUnitValues(unit, unitTypeData, buildingData);
 
-            expect((unit as Record<string, unknown>).hiddenProperty).toBe('hidden');
+            expect((unit as unknown as Record<string, unknown>).hiddenProperty).toBe('hidden');
             expect(_.keys(resolved)).not.toContain('hiddenProperty');
         });
     });
@@ -1003,12 +1003,12 @@ describe('InheritanceResolver', () => {
             const unitWithMixedPhotos: UnitData = {
                 buildingID: 'BLDG-001',
                 unitID: 'UNIT-001',
-                photos: mixedPhotos
+                photos: mixedPhotos as unknown as string[]
             };
 
             const resolved = resolver.resolveUnitValues(unitWithMixedPhotos, unitTypeData, buildingData);
 
-            expect(resolved.photos).toBe(mixedPhotos);
+            expect(resolved.photos as unknown).toBe(mixedPhotos);
             expect(resolved.photos).toHaveLength(7);
         });
 
@@ -1021,7 +1021,7 @@ describe('InheritanceResolver', () => {
                 { name: 'Another', category: AmenityCategory.PROPERTY }
             ];
 
-            const merged = resolver.mergeAmenities(mixedAmenities, [], []);
+            const merged = resolver.mergeAmenities(mixedAmenities as unknown as Amenity[], [], []);
 
             // Map will process all items, including invalid ones
             expect(merged.length).toBeGreaterThanOrEqual(2);
@@ -1040,7 +1040,7 @@ describe('InheritanceResolver', () => {
             const resolved = resolver.resolveUnitValues(unitWithDateObj, unitTypeData, buildingData);
 
             // Date object should be preserved
-            expect(resolved.availableDate).toBe(dateObj);
+            expect(resolved.availableDate as unknown).toBe(dateObj);
             expect(resolved.availableDate).toBeInstanceOf(Date);
         });
 
@@ -1054,7 +1054,7 @@ describe('InheritanceResolver', () => {
 
             const resolved = resolver.resolveUnitValues(unitWithInvalidDate, unitTypeData, buildingData);
 
-            expect(resolved.availableDate).toBe(invalidDate);
+            expect(resolved.availableDate as unknown).toBe(invalidDate);
             expect(Number.isNaN((resolved.availableDate as unknown as Date).getTime())).toBe(true);
         });
     });
@@ -1070,7 +1070,7 @@ describe('InheritanceResolver', () => {
 
             const resolved = resolver.resolveUnitValues(unitWithRegex, unitTypeData, buildingData);
 
-            expect(resolved.unitDescription).toBe(regexPattern);
+            expect(resolved.unitDescription as unknown).toBe(regexPattern);
             expect(resolved.unitDescription).toBeInstanceOf(RegExp);
         });
     });
@@ -1086,7 +1086,7 @@ describe('InheritanceResolver', () => {
 
             const resolved = resolver.resolveUnitValues(unitWithFunction, unitTypeData, buildingData);
 
-            expect(resolved.unitDescription).toBe(testFunction);
+            expect(resolved.unitDescription as unknown).toBe(testFunction);
             expect(typeof resolved.unitDescription).toBe('function');
         });
 
@@ -1173,7 +1173,7 @@ describe('InheritanceResolver', () => {
             const result = resolver.applyDefaults(unit, complexDefaults);
 
             expect(result.photos).toEqual(['default1.jpg', 'default2.jpg']);
-            expect(result.unitAmenities).toEqual(complexDefaults.unitAmenities);
+            expect(result.unitAmenities).toEqual(complexDefaults.unitAmenities!);
         });
     });
 

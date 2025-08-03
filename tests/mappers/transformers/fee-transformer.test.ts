@@ -28,13 +28,13 @@ describe('Fee Transformer', () => {
             expect(result).toHaveLength(5);
             expect(result[0]).toEqual({
                 type: 'Application Fee',
-                amount: '$50',
+                amount: 50,
                 description: 'Application fee',
                 refundable: false
             });
             expect(result[1]).toEqual({
                 type: 'Security Deposit',
-                amount: '$1,000',
+                amount: 1000,
                 description: 'Security deposit',
                 refundable: true
             });
@@ -46,13 +46,13 @@ describe('Fee Transformer', () => {
             expect(result).toHaveLength(5);
             expect(result[0]).toEqual({
                 type: 'Application',
-                amount: '50',
+                amount: 50,
                 description: 'Application fee',
                 refundable: false
             });
             expect(result[1]).toEqual({
                 type: 'Security Deposit',
-                amount: '1,000',
+                amount: 1000,
                 description: 'Security deposit',
                 refundable: true
             });
@@ -70,7 +70,7 @@ describe('Fee Transformer', () => {
             const result = transformFees(testFees, 'unknown_site');
 
             expect(result).toHaveLength(5);
-            expect(result[0].amount).toBe('$50');
+            expect(result[0].amount).toBe(50);
             expect(result[0].type).toBe('Application Fee');
         });
 
@@ -80,7 +80,7 @@ describe('Fee Transformer', () => {
             ];
 
             const result = transformFees(zeroFee, 'apartments_com');
-            expect(result[0].amount).toBe('$0');
+            expect(result[0].amount).toBe(0);
         });
 
         it('should handle negative amounts', () => {
@@ -89,7 +89,7 @@ describe('Fee Transformer', () => {
             ];
 
             const result = transformFees(negativeFee, 'apartments_com');
-            expect(result[0].amount).toBe('$-50');
+            expect(result[0].amount).toBe(-50);
         });
     });
 
@@ -417,7 +417,7 @@ describe('Fee Transformer', () => {
             ];
 
             const result = transformFees(largeFee, 'apartments_com');
-            expect(result[0].amount).toBe('$1,000,000');
+            expect(result[0].amount).toBe(1000000);
         });
 
         it('should handle decimal amounts', () => {
@@ -426,7 +426,7 @@ describe('Fee Transformer', () => {
             ];
 
             const result = transformFees(decimalFee, 'apartments_com');
-            expect(result[0].amount).toBe('$49.99');
+            expect(result[0].amount).toBe(49.99);
         });
 
         it('should handle many fees', () => {
@@ -495,10 +495,9 @@ describe('Fee Transformer', () => {
 
             const result = transformFees(extremeFees, 'apartments_com');
             expect(result).toHaveLength(4);
-            // Check that formatting doesn't break
+            // Check that extreme amounts are handled correctly as numbers
             _.forEach(result, (fee) => {
-                expect(typeof fee.amount).toBe('string');
-                expect(fee.amount).toMatch(/^\$-?\d/); // Starts with $ and optional minus
+                expect(typeof fee.amount).toBe('number');
             });
         });
 
@@ -637,9 +636,9 @@ describe('Fee Transformer', () => {
             ];
 
             const result = transformFees(fees, 'apartments_com');
-            expect(result[0].amount).toBe('$50'); // String coerced to number
-            expect(result[1].amount).toBe('$1'); // true coerced to 1
-            expect(result[2].amount).toBe('$0'); // [] coerced to 0
+            expect(result[0].amount).toBe(50); // String coerced to number
+            expect(result[1].amount).toBe(1); // true coerced to 1
+            expect(result[2].amount).toBe(0); // [] coerced to 0
         });
 
         // Site-specific formatting edge cases
@@ -656,7 +655,7 @@ describe('Fee Transformer', () => {
 
             // Should use default formatting
             const result = transformFees(fees, 'unknown_site_12345');
-            expect(result[0].amount).toMatch(/^\$/); // Should still format with $
+            expect(typeof result[0].amount).toBe('number'); // Should return number
         });
 
         // Concurrent operations

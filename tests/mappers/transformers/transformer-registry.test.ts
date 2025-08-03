@@ -12,15 +12,15 @@ describe('TransformerRegistry', () => {
 
     describe('register', () => {
         it('should register a transformer function', () => {
-            const transformer: TransformerFunction<string, string> = value => _.toUpper(value);
+            const transformer: TransformerFunction = value => _.toUpper(value as string);
             registry.register('uppercase', transformer);
 
             expect(registry.has('uppercase')).toBe(true);
         });
 
         it('should overwrite existing transformer with the same name', () => {
-            const transformer1: TransformerFunction<string, string> = value => _.toUpper(value);
-            const transformer2: TransformerFunction<string, string> = value => _.toLower(value);
+            const transformer1: TransformerFunction = value => _.toUpper(value as string);
+            const transformer2: TransformerFunction = value => _.toLower(value as string);
 
             registry.register('myTransformer', transformer1);
             registry.register('myTransformer', transformer2);
@@ -50,7 +50,7 @@ describe('TransformerRegistry', () => {
 
     describe('get', () => {
         it('should retrieve a registered transformer', () => {
-            const transformer: TransformerFunction<number, string> = value => value.toString();
+            const transformer: TransformerFunction = value => (value as number).toString();
             registry.register('toString', transformer);
 
             const retrieved = registry.get('toString');
@@ -190,9 +190,9 @@ describe('TransformerRegistry', () => {
 
     describe('transformer functions with parameters', () => {
         it('should handle transformer with optional parameters', () => {
-            const multiplier: TransformerFunction<number, number> = (value, params) => {
+            const multiplier: TransformerFunction = (value, params) => {
                 const factor = params?.factor as number || 1;
-                return value * factor;
+                return (value as number) * factor;
             };
 
             registry.register('multiply', multiplier);
@@ -204,17 +204,18 @@ describe('TransformerRegistry', () => {
         });
 
         it('should handle complex transformer with multiple parameters', () => {
-            const formatter: TransformerFunction<Date, string> = (value, params) => {
+            const formatter: TransformerFunction = (value, params) => {
                 const format = params?.format as string || 'iso';
                 const locale = params?.locale as string || 'en-US';
+                const dateValue = value as Date;
 
                 if(format === 'iso') {
-                    return value.toISOString();
+                    return dateValue.toISOString();
                 }
                 if(format === 'locale') {
-                    return value.toLocaleDateString(locale);
+                    return dateValue.toLocaleDateString(locale);
                 }
-                return value.toString();
+                return dateValue.toString();
             };
 
             registry.register('dateFormat', formatter);
@@ -229,8 +230,8 @@ describe('TransformerRegistry', () => {
 
     describe('different transformer types', () => {
         it('should handle string transformers', () => {
-            const trim: TransformerFunction<string, string> = value => _.trim(value);
-            const reverse: TransformerFunction<string, string> = value => _.split(value, '').reverse().join('');
+            const trim: TransformerFunction = value => _.trim(value as string);
+            const reverse: TransformerFunction = value => _.split(value as string, '').reverse().join('');
 
             registry.register('trim', trim);
             registry.register('reverse', reverse);
@@ -240,8 +241,8 @@ describe('TransformerRegistry', () => {
         });
 
         it('should handle number transformers', () => {
-            const round: TransformerFunction<number, number> = value => Math.round(value);
-            const percentage: TransformerFunction<number, string> = value => `${(value * 100).toFixed(2)}%`;
+            const round: TransformerFunction = value => Math.round(value as number);
+            const percentage: TransformerFunction = value => `${((value as number) * 100).toFixed(2)}%`;
 
             registry.register('round', round);
             registry.register('percentage', percentage);
@@ -251,8 +252,8 @@ describe('TransformerRegistry', () => {
         });
 
         it('should handle boolean transformers', () => {
-            const negate: TransformerFunction<boolean, boolean> = value => !value;
-            const toYesNo: TransformerFunction<boolean, string> = value => (value ? 'Yes' : 'No');
+            const negate: TransformerFunction = value => !(value as boolean);
+            const toYesNo: TransformerFunction = value => ((value as boolean) ? 'Yes' : 'No');
 
             registry.register('negate', negate);
             registry.register('toYesNo', toYesNo);
@@ -263,9 +264,9 @@ describe('TransformerRegistry', () => {
         });
 
         it('should handle array transformers', () => {
-            const joinArray: TransformerFunction<string[], string> = (value, params) => {
+            const joinArray: TransformerFunction = (value, params) => {
                 const separator = params?.separator as string || ', ';
-                return value.join(separator);
+                return (value as string[]).join(separator);
             };
 
             registry.register('join', joinArray);
@@ -280,8 +281,9 @@ describe('TransformerRegistry', () => {
                 lastName: string
             }
 
-            const fullName: TransformerFunction<Person, string> = (value) => {
-                return `${value.firstName} ${value.lastName}`;
+            const fullName: TransformerFunction = (value) => {
+                const person = value as Person;
+                return `${person.firstName} ${person.lastName}`;
             };
 
             registry.register('fullName', fullName);
@@ -302,8 +304,8 @@ describe('TransformerRegistry', () => {
         });
 
         it('should handle null/undefined transformers', () => {
-            const nullHandler: TransformerFunction<string | null, string> = (value) => {
-                return value ?? 'default';
+            const nullHandler: TransformerFunction = (value) => {
+                return (value as string | null) ?? 'default';
             };
 
             registry.register('nullHandler', nullHandler);
@@ -338,7 +340,7 @@ describe('createTransformerRegistry', () => {
 
     it('should create registry that supports all operations', () => {
         const registry = createTransformerRegistry();
-        const transformer: TransformerFunction<string, string> = value => _.toUpper(value);
+        const transformer: TransformerFunction = value => _.toUpper(value as string);
 
         // Test all methods work on created registry
         registry.register('upper', transformer);
@@ -356,11 +358,11 @@ describe('Integration tests', () => {
         const registry = createTransformerRegistry();
 
         // Register various transformers
-        registry.register('trim', (value: string) => _.trim(value));
-        registry.register('uppercase', (value: string) => _.toUpper(value));
-        registry.register('prefix', (value: string, params) => {
+        registry.register('trim', value => _.trim(value as string));
+        registry.register('uppercase', value => _.toUpper(value as string));
+        registry.register('prefix', (value, params) => {
             const prefix = params?.prefix as string || '';
-            return `${prefix}${value}`;
+            return `${prefix}${value as string}`;
         });
 
         // Use transformers in sequence
@@ -397,7 +399,7 @@ describe('Integration tests', () => {
         expect(registry.list()).toHaveLength(2);
 
         // Overwrite one
-        registry.register('t1', (v: number) => v * 2);
+        registry.register('t1', v => (v as number) * 2);
         expect(registry.list()).toHaveLength(2);
         expect(registry.get('t1')?.(5)).toBe(10);
 
@@ -412,7 +414,7 @@ describe('Integration tests', () => {
 describe('Edge Cases - Wrong Input Types', () => {
     it('should handle passing wrong types to string transformers', () => {
         const registry = createTransformerRegistry();
-        const stringTransformer: TransformerFunction<string, string> = value => _.toUpper(value);
+        const stringTransformer: TransformerFunction = value => _.toUpper(value as string);
         registry.register('uppercase', stringTransformer);
 
         const transformer = registry.get('uppercase');
@@ -435,7 +437,7 @@ describe('Edge Cases - Wrong Input Types', () => {
 
     it('should handle passing wrong types to number transformers', () => {
         const registry = createTransformerRegistry();
-        const numberTransformer: TransformerFunction<number, number> = value => value * 2;
+        const numberTransformer: TransformerFunction = value => (value as number) * 2;
         registry.register('double', numberTransformer);
 
         const transformer = registry.get('double');
@@ -453,9 +455,9 @@ describe('Edge Cases - Wrong Input Types', () => {
 
     it('should handle type coercion edge cases', () => {
         const registry = createTransformerRegistry();
-        const concatTransformer: TransformerFunction<string, string> = (value, params) => {
+        const concatTransformer: TransformerFunction = (value, params) => {
             const suffix = params?.suffix as string || '';
-            return value + suffix;
+            return (value as string) + suffix;
         };
         registry.register('concat', concatTransformer);
 
@@ -473,14 +475,15 @@ describe('Edge Cases - Transformer Chains with Failures', () => {
     it('should handle failure in the middle of a transformer chain', () => {
         const registry = createTransformerRegistry();
 
-        registry.register('step1', (value: string) => _.trim(value));
-        registry.register('step2', (value: string) => {
-            if(value === 'error') {
+        registry.register('step1', value => _.trim(value as string));
+        registry.register('step2', (value) => {
+            const stringValue = value as string;
+            if(stringValue === 'error') {
                 throw new Error('Step 2 failed');
             }
-            return _.toUpper(value);
+            return _.toUpper(stringValue);
         });
-        registry.register('step3', (value: string) => `[${value}]`);
+        registry.register('step3', value => `[${value as string}]`);
 
         // Test normal flow
         let result = '  hello  ';
@@ -499,16 +502,18 @@ describe('Edge Cases - Transformer Chains with Failures', () => {
         const registry = createTransformerRegistry();
         const results: string[] = [];
 
-        registry.register('logger', (value: string) => {
-            results.push(`Logged: ${value}`);
-            return value;
+        registry.register('logger', (value) => {
+            const stringValue = value as string;
+            results.push(`Logged: ${stringValue}`);
+            return stringValue;
         });
         registry.register('failer', () => {
             throw new Error('Transform failed');
         });
-        registry.register('unreachable', (value: string) => {
+        registry.register('unreachable', (value) => {
+            const stringValue = value as string;
             results.push('Should not reach here');
-            return value;
+            return stringValue;
         });
 
         let value = 'test';
@@ -524,11 +529,11 @@ describe('Edge Cases - Registry Modification During Transformation', () => {
     it('should handle registry modification during transformation', () => {
         const registry = createTransformerRegistry();
 
-        registry.register('modifier', (value: string) => {
+        registry.register('modifier', (value) => {
             // Modify registry during transformation
-            registry.register('new-transformer', (v: string) => _.toLower(v));
+            registry.register('new-transformer', v => _.toLower(v as string));
             registry.clear();
-            return _.toUpper(value);
+            return _.toUpper(value as string);
         });
 
         const modifier = registry.get('modifier');
@@ -547,11 +552,11 @@ describe('Edge Cases - Registry Modification During Transformation', () => {
         const registry = createTransformerRegistry();
         let callCount = 0;
 
-        registry.register('self-replacer', (value: string) => {
+        registry.register('self-replacer', (value) => {
             callCount++;
             // Replace self during execution
-            registry.register('self-replacer', (v: string) => _.toLower(v));
-            return _.toUpper(value);
+            registry.register('self-replacer', v => _.toLower(v as string));
+            return _.toUpper(value as string);
         });
 
         const transformer1 = registry.get('self-replacer');
@@ -611,8 +616,9 @@ describe('Edge Cases - Transformers Returning Undefined', () => {
         const registry = createTransformerRegistry();
 
         registry.register('undefined-returner', () => undefined);
-        registry.register('conditional-undefined', (value: number) => {
-            return value > 0 ? value * 2 : undefined;
+        registry.register('conditional-undefined', (value) => {
+            const numberValue = value as number;
+            return numberValue > 0 ? numberValue * 2 : undefined;
         });
 
         expect(registry.get('undefined-returner')?.('any')).toBeUndefined();
@@ -623,11 +629,12 @@ describe('Edge Cases - Transformers Returning Undefined', () => {
     it('should handle undefined in transformer chains', () => {
         const registry = createTransformerRegistry();
 
-        registry.register('maybe-undefined', (value: string) => {
-            return value === 'skip' ? undefined : _.toUpper(value);
+        registry.register('maybe-undefined', (value) => {
+            const stringValue = value as string;
+            return stringValue === 'skip' ? undefined : _.toUpper(stringValue);
         });
-        registry.register('handle-undefined', (value: string | undefined) => {
-            return value ?? 'DEFAULT';
+        registry.register('handle-undefined', (value) => {
+            return (value as string | undefined) ?? 'DEFAULT';
         });
 
         // Normal case
@@ -649,7 +656,7 @@ describe('Edge Cases - Memory and Performance', () => {
 
         // Register many transformers
         for(let i = 0; i < count; i++) {
-            registry.register(`transformer-${i}`, (value: number) => value + i);
+            registry.register(`transformer-${i}`, value => (value as number) + i);
         }
 
         expect(registry.list()).toHaveLength(count);
@@ -665,9 +672,9 @@ describe('Edge Cases - Memory and Performance', () => {
         const registry = createTransformerRegistry();
         const largeArray = _.fill(new Array(1000000), 0);
 
-        registry.register('closure-transformer', (value: number) => {
+        registry.register('closure-transformer', (value) => {
             // Transformer closes over large array
-            return value + largeArray.length;
+            return (value as number) + largeArray.length;
         });
 
         const transformer = registry.get('closure-transformer');
@@ -731,10 +738,10 @@ describe('Edge Cases - Concurrent Access', () => {
 
         // Simulate concurrent-like access
         for(let i = 0; i < 100; i++) {
-            registry.register(`t${i}`, (value: number) => value + i);
+            registry.register(`t${i}`, value => (value as number) + i);
             const transformer = registry.get(`t${i}`);
             if(transformer) {
-                results.push(transformer(1));
+                results.push(transformer(1) as number);
             }
         }
 
@@ -765,9 +772,10 @@ describe('Edge Cases - Transformer Side Effects', () => {
         const registry = createTransformerRegistry();
         const sideEffects: string[] = [];
 
-        registry.register('side-effect-transformer', (value: string) => {
-            sideEffects.push(`Processing: ${value}`);
-            return _.toUpper(value);
+        registry.register('side-effect-transformer', (value) => {
+            const stringValue = value as string;
+            sideEffects.push(`Processing: ${stringValue}`);
+            return _.toUpper(stringValue);
         });
 
         const transformer = registry.get('side-effect-transformer');
@@ -785,9 +793,10 @@ describe('Edge Cases - Transformer Side Effects', () => {
             processed?: boolean
         }
 
-        registry.register('mutating-transformer', (obj: MutableObject) => {
-            obj.processed = true; // Mutates input
-            return { ...obj, value: _.toUpper(obj.value) };
+        registry.register('mutating-transformer', (obj) => {
+            const mutableObj = obj as MutableObject;
+            mutableObj.processed = true; // Mutates input
+            return { ...mutableObj, value: _.toUpper(mutableObj.value) };
         });
 
         const input: MutableObject = { value: 'test' };

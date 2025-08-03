@@ -12,6 +12,7 @@ import {
 } from '../../../src/mappers/transformers/amenity-transformer';
 import { AmenityCategory } from '../../../src/types';
 import type { Amenity } from '../../../src/types';
+import type { MappedAmenity } from '../../../src/mappers/types';
 
 describe('Amenity Transformer', () => {
     // Test amenities
@@ -118,25 +119,27 @@ describe('Amenity Transformer', () => {
         it('should transform all amenities for a site', () => {
             const result = transformAmenities(testAmenities, 'apartments_com');
 
-            expect(result).toEqual([
-                'A/C',
-                'Dishwasher',
-                'Wood Floors',
-                'Pool',
-                'Gym',
-                'Pet Friendly',
-                'Concierge Service'
-            ]);
+            const expected: MappedAmenity[] = [
+                { name: 'A/C', category: 'Unit' } as MappedAmenity,
+                { name: 'Dishwasher', category: 'Unit' } as MappedAmenity,
+                { name: 'Wood Floors', category: 'Unit' } as MappedAmenity,
+                { name: 'Pool', category: 'Property' } as MappedAmenity,
+                { name: 'Gym', category: 'Property' } as MappedAmenity,
+                { name: 'Pet Friendly', category: 'Community' } as MappedAmenity,
+                { name: 'Concierge Service', category: 'Community' } as MappedAmenity
+            ];
+            expect(result).toEqual(expected);
         });
 
         it('should transform amenities with category filter', () => {
             const result = transformAmenities(testAmenities, 'zillow', AmenityCategory.UNIT);
 
-            expect(result).toEqual([
-                'Air conditioning',
-                'Dishwasher',
-                'Hardwood floors'
-            ]);
+            const expected: MappedAmenity[] = [
+                { name: 'Air conditioning', category: 'Interior' } as MappedAmenity,
+                { name: 'Dishwasher', category: 'Interior' } as MappedAmenity,
+                { name: 'Hardwood floors', category: 'Interior' } as MappedAmenity
+            ];
+            expect(result).toEqual(expected);
         });
 
         it('should handle undefined amenities', () => {
@@ -150,7 +153,11 @@ describe('Amenity Transformer', () => {
         it('should handle unknown sites', () => {
             const result = transformAmenities(testAmenities, 'unknown_site');
 
-            expect(result).toEqual(_.map(testAmenities, 'name'));
+            const expected: MappedAmenity[] = _.map(testAmenities, amenity => ({
+                name: amenity.name,
+                category: amenity.category as string
+            } as MappedAmenity));
+            expect(result).toEqual(expected);
         });
     });
 
@@ -368,7 +375,12 @@ describe('Amenity Transformer', () => {
             ];
 
             const result = transformAmenities(specialAmenities, 'apartments_com');
-            expect(result).toEqual(['A/C & Heating', '24/7 Security', 'BBQ/Picnic Area']);
+            const expected: MappedAmenity[] = [
+                { name: 'A/C & Heating', category: 'Unit' } as MappedAmenity,
+                { name: '24/7 Security', category: 'Property' } as MappedAmenity,
+                { name: 'BBQ/Picnic Area', category: 'Community' } as MappedAmenity
+            ];
+            expect(result).toEqual(expected);
         });
 
         it('should handle very long amenity lists', () => {
@@ -437,9 +449,10 @@ describe('Amenity Transformer', () => {
                 'string instead of object'
             ] as unknown as Amenity[];
 
-            const result = transformAmenities(malformedAmenities, 'apartments_com');
             // Should handle gracefully, filtering out invalid entries
-            expect(() => result).not.toThrow();
+            const result = transformAmenities(malformedAmenities, 'apartments_com');
+            expect(result).toBeDefined();
+            expect(_.isArray(result)).toBe(true);
         });
 
         // Memory and performance edge cases
@@ -450,7 +463,8 @@ describe('Amenity Transformer', () => {
             ];
 
             const result = transformAmenities(longAmenity, 'apartments_com');
-            expect(result[0]).toBe(longName);
+            const expected: MappedAmenity = { name: longName, category: 'Unit' } as MappedAmenity;
+            expect(result[0]).toEqual(expected);
         });
 
         it('should handle circular references in amenity objects', () => {
@@ -458,7 +472,8 @@ describe('Amenity Transformer', () => {
             circularAmenity.self = circularAmenity;
 
             const result = transformAmenities([circularAmenity], 'apartments_com');
-            expect(result).toEqual(['Circular']);
+            const expected: MappedAmenity[] = [{ name: 'Circular', category: 'Unit' } as MappedAmenity];
+            expect(result).toEqual(expected);
         });
 
         // Concurrent modification scenarios
@@ -578,9 +593,6 @@ describe('Amenity Transformer', () => {
         // Transformer chain failures
         it('should handle transformer errors gracefully', () => {
             // Create a transformer that throws
-            const _errorTransformer = () => {
-                throw new Error('Transform failed');
-            };
 
             // This would need to be tested if we could inject custom transformers
             // For now, test with invalid site names that might cause issues

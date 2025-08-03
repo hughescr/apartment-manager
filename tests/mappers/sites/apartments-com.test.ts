@@ -14,12 +14,28 @@ import {
 } from '../../fixtures/mappers';
 import { PropertyType, UtilityType, ParkingType, PetType, AmenityCategory, FeeType } from '../../../src/types';
 import type { BuildingData, UnitTypeData, UnitData } from '../../../src/types';
+import type { FieldMappingConfig, TransformerRegistry, UnitMappingContext } from '../../../src/mappers/types';
 
 describe('ApartmentsComMapper', () => {
     let mapper: ApartmentsComMapper;
+    let mockFieldMappings: FieldMappingConfig;
+    let mockTransformers: TransformerRegistry;
 
     beforeEach(() => {
         mapper = new ApartmentsComMapper();
+        mockFieldMappings = {};
+        mockTransformers = {
+            get: () => undefined,
+            register: _.noop
+        };
+    });
+
+    const _createContext = (unit: UnitData, unitType?: UnitTypeData, building?: BuildingData): UnitMappingContext => ({
+        unit,
+        unitType,
+        building: building || basicBuilding,
+        fieldMappings: mockFieldMappings,
+        transformers: mockTransformers
     });
 
     describe('Basic Properties', () => {
@@ -68,10 +84,10 @@ describe('ApartmentsComMapper', () => {
             expect(result.fees).toBeDefined();
             expect(result.fees!.length).toBeGreaterThan(0);
 
-            // Check that fees are transformed with currency symbols
+            // Check that fees are transformed correctly
             const appFee = _.find(result.fees, fee => fee.type.includes('Application'));
             expect(appFee).toBeDefined();
-            expect(appFee!.amount).toMatch(/^\$/);
+            expect(appFee!.amount).toBe(75);
         });
 
         it('should transform utilities correctly', () => {
@@ -79,7 +95,7 @@ describe('ApartmentsComMapper', () => {
                 ...basicBuilding,
                 utilitiesIncluded: {
                     [UtilityType.WATER]: true,
-                    [UtilityType.ELECTRIC]: false,
+                    [UtilityType.ELECTRICITY]: false,
                     [UtilityType.GAS]: true
                 }
             };
@@ -192,16 +208,16 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnitType(completeUnitType, basicBuilding);
 
             expect(result.sqft).toBeDefined();
-            expect(result.sqft!.min).toBe(completeUnitType.minSqft);
-            expect(result.sqft!.max).toBe(completeUnitType.maxSqft);
+            expect(result.sqft!.min).toBe(completeUnitType.minSqft!);
+            expect(result.sqft!.max).toBe(completeUnitType.maxSqft!);
         });
 
         it('should handle rent ranges', () => {
             const result = mapper.mapUnitType(completeUnitType, basicBuilding);
 
             expect(result.rent).toBeDefined();
-            expect(result.rent!.min).toBe(completeUnitType.minRent);
-            expect(result.rent!.max).toBe(completeUnitType.maxRent);
+            expect(result.rent!.min).toBe(completeUnitType.minRent!);
+            expect(result.rent!.max).toBe(completeUnitType.maxRent!);
         });
 
         it('should transform amenities', () => {
@@ -216,8 +232,8 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnitType(unitTypeWithAmenities, basicBuilding);
 
             expect(result.amenities).toBeDefined();
-            expect(result.amenities).toContain('A/C');
-            expect(result.amenities).toContain('Dishwasher');
+            expect(_.map(result.amenities, 'name')).toContain('A/C');
+            expect(_.map(result.amenities, 'name')).toContain('Dishwasher');
         });
 
         it('should default photos to empty array', () => {
@@ -229,11 +245,7 @@ describe('ApartmentsComMapper', () => {
 
     describe('mapUnit', () => {
         it('should map basic unit data', () => {
-            const context = {
-                unit: basicUnit,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(basicUnit, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -243,11 +255,7 @@ describe('ApartmentsComMapper', () => {
         });
 
         it('should map complete unit data', () => {
-            const context = {
-                unit: completeUnit,
-                unitType: completeUnitType,
-                building: completeBuilding
-            };
+            const context = _createContext(completeUnit, completeUnitType, completeBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -261,11 +269,7 @@ describe('ApartmentsComMapper', () => {
                 baths: undefined
             };
 
-            const context = {
-                unit: unitWithoutBeds,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitWithoutBeds, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -295,18 +299,14 @@ describe('ApartmentsComMapper', () => {
                 ]
             };
 
-            const context = {
-                unit: unitWithAmenities,
-                unitType: unitTypeWithAmenities,
-                building: buildingWithAmenities
-            };
+            const context = _createContext(unitWithAmenities, unitTypeWithAmenities, buildingWithAmenities);
 
             const result = mapper.mapUnit(context);
 
             // Should only include unit-category amenities for units
-            expect(result.amenities).toContain('Wood Floors');
-            expect(result.amenities).toContain('A/C');
-            expect(result.amenities).not.toContain('Pool'); // Property amenity filtered out
+            expect(_.map(result.amenities, 'name')).toContain('Wood Floors');
+            expect(_.map(result.amenities, 'name')).toContain('A/C');
+            expect(_.map(result.amenities, 'name')).not.toContain('Pool'); // Property amenity filtered out
         });
 
         it('should format available date', () => {
@@ -315,11 +315,7 @@ describe('ApartmentsComMapper', () => {
                 availableDate: '2024-04-01'
             };
 
-            const context = {
-                unit: unitWithDate,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitWithDate, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -327,11 +323,7 @@ describe('ApartmentsComMapper', () => {
         });
 
         it('should handle missing unit type', () => {
-            const context = {
-                unit: basicUnit,
-                unitType: undefined,
-                building: basicBuilding
-            };
+            const context = _createContext(basicUnit, undefined, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -347,11 +339,7 @@ describe('ApartmentsComMapper', () => {
                 rent: undefined
             };
 
-            const context = {
-                unit: unitWithMissing,
-                unitType: undefined,
-                building: basicBuilding
-            };
+            const context = _createContext(unitWithMissing, undefined, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -462,8 +450,8 @@ describe('ApartmentsComMapper', () => {
                 const result = mapper.validateUnit(invalidUnit);
 
                 expect(result.isValid).toBe(false);
-                expect(result.errors).toHaveLength(1);
-                expect(result.errors[0].field).toBe('unitNumber');
+                expect(result.errors!).toHaveLength(1);
+                expect(result.errors![0].field).toBe('unitNumber');
             });
 
             it('should accept unit with only unitID', () => {
@@ -494,12 +482,10 @@ describe('ApartmentsComMapper', () => {
 
     describe('Custom Field Mappings', () => {
         it('should accept custom field mappings in constructor', () => {
-            const customMappings = {
+            const customMappings: Partial<FieldMappingConfig> = {
                 propertyType: {
-                    apartments_com: {
-                        apartment: 'Apt',
-                        condo: 'Condominium'
-                    }
+                    apartment: 'Apt',
+                    condo: 'Condominium'
                 }
             };
 
@@ -631,11 +617,7 @@ describe('ApartmentsComMapper', () => {
                 sqft: -0
             };
 
-            const context = {
-                unit: nanUnit,
-                unitType: undefined,
-                building: basicBuilding
-            };
+            const context = _createContext(nanUnit, undefined, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -654,11 +636,7 @@ describe('ApartmentsComMapper', () => {
                 unitDescription: veryLongDesc
             };
 
-            const context = {
-                unit: unitLongDesc,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(unitLongDesc, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -680,7 +658,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(maliciousBuilding);
 
             expect(result.description).toBe(maliciousContent);
-            expect(result.amenities).toContain('<b>Bold Amenity</b>');
+            expect(_.map(result.amenities, 'name')).toContain('<b>Bold Amenity</b>');
         });
 
         // Invalid date formats
@@ -699,15 +677,11 @@ describe('ApartmentsComMapper', () => {
                     availableDate: input
                 };
 
-                const context = {
-                    unit: unitInvalidDate,
-                    unitType: basicUnitType,
-                    building: basicBuilding
-                };
+                const context = _createContext(unitInvalidDate, basicUnitType, basicBuilding);
 
                 const result = mapper.mapUnit(context);
 
-                expect(result.dateAvailable).toBe(expected);
+                expect(result.dateAvailable).toBe(expected!);
             });
         });
 
@@ -717,23 +691,23 @@ describe('ApartmentsComMapper', () => {
                 ...basicBuilding,
                 applicationFee: 0.00,
                 oneTimeFees: [
-                    { name: 'Penny Fee', amount: 0.01, type: FeeType.APPLICATION },
-                    { name: 'Large Fee', amount: 99999.99, type: FeeType.ADMIN },
-                    { name: 'Negative Fee', amount: -50, type: FeeType.MOVE_IN },
-                    { name: 'Fractional Fee', amount: 123.456, type: FeeType.CLEANING }
+                    { description: 'Penny Fee', amount: 0.01, type: FeeType.APPLICATION },
+                    { description: 'Large Fee', amount: 99999.99, type: FeeType.ADMIN },
+                    { description: 'Negative Fee', amount: -50, type: FeeType.MOVE_IN },
+                    { description: 'Fractional Fee', amount: 123.456, type: FeeType.CLEANING }
                 ]
             };
 
             const result = mapper.mapBuilding(currencyBuilding);
 
             expect(result.fees).toContainEqual(
-                expect.objectContaining({ type: 'Application Fee', amount: '$0.01' })
+                expect.objectContaining({ type: 'Application Fee', amount: 0.01 })
             );
             expect(result.fees).toContainEqual(
-                expect.objectContaining({ type: 'Administrative Fee', amount: '$99,999.99' })
+                expect.objectContaining({ type: 'Administrative Fee', amount: 99999.99 })
             );
             expect(result.fees).toContainEqual(
-                expect.objectContaining({ type: 'Move-in Fee', amount: '$-50' })
+                expect.objectContaining({ type: 'Move-in Fee', amount: -50 })
             );
         });
 
@@ -762,7 +736,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(buildingManyAmenities);
 
             expect(result.amenities).toBeDefined();
-            expect(result.amenities.length).toBe(200);
+            expect(result.amenities!.length).toBe(200);
         });
 
         it('should handle extremely large photo arrays', () => {
@@ -776,7 +750,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(buildingManyPhotos);
 
             expect(result.photos).toBeDefined();
-            expect(result.photos.length).toBe(150);
+            expect(result.photos!.length).toBe(150);
         });
 
         // Phone number format validation
@@ -845,11 +819,7 @@ describe('ApartmentsComMapper', () => {
                 rent: 1800
             };
 
-            const context = {
-                unit: completeUnit,
-                unitType: incompleteModel,
-                building: basicBuilding
-            };
+            const context = _createContext(completeUnit, incompleteModel, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -884,19 +854,15 @@ describe('ApartmentsComMapper', () => {
                 ]
             };
 
-            const context = {
-                unit: unitAmenities,
-                unitType: modelAmenities,
-                building: buildingAmenities
-            };
+            const context = _createContext(unitAmenities, modelAmenities, buildingAmenities);
 
             const result = mapper.mapUnit(context);
 
             // Should filter to only unit amenities for units
-            expect(result.amenities).toContain('Wood Floors');
-            expect(result.amenities).toContain('Balcony');
-            expect(result.amenities).toContain('Dishwasher');
-            expect(result.amenities).not.toContain('Pool'); // Property amenity
+            expect(_.map(result.amenities, 'name')).toContain('Wood Floors');
+            expect(_.map(result.amenities, 'name')).toContain('Balcony');
+            expect(_.map(result.amenities, 'name')).toContain('Dishwasher');
+            expect(_.map(result.amenities, 'name')).not.toContain('Pool'); // Property amenity
         });
 
         // Reserved keywords in Apartments.com system
@@ -914,7 +880,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(reservedBuilding);
 
             expect(result.description).toBe('null undefined false true delete');
-            expect(result.amenities).toContain('SELECT * FROM');
+            expect(_.map(result.amenities, 'name')).toContain('SELECT * FROM');
         });
 
         // Timezone edge cases
@@ -924,11 +890,7 @@ describe('ApartmentsComMapper', () => {
                 availableDate: '2024-01-01T00:00:00Z' // Midnight UTC
             };
 
-            const context = {
-                unit: timezoneUnit,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(timezoneUnit, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -945,11 +907,7 @@ describe('ApartmentsComMapper', () => {
                 availableDate: ''
             };
 
-            const context = {
-                unit: emptyStringsUnit,
-                unitType: basicUnitType,
-                building: basicBuilding
-            };
+            const context = _createContext(emptyStringsUnit, basicUnitType, basicBuilding);
 
             const result = mapper.mapUnit(context);
 
@@ -990,7 +948,7 @@ describe('ApartmentsComMapper', () => {
             expect(result.description).toBe('🏢 Luksusowe mieszkanie w centrum Warszawy');
             expect(result.address.street).toBe('123 Rue de la Paix');
             expect(result.address.city).toBe('São Paulo');
-            expect(result.amenities.length).toBe(3);
+            expect(result.amenities!.length).toBe(3);
         });
 
         // Zero and negative values
@@ -1004,11 +962,7 @@ describe('ApartmentsComMapper', () => {
                 deposit: -500
             };
 
-            const context = {
-                unit: zeroUnit,
-                unitType: undefined,
-                building: basicBuilding
-            };
+            const context = _createContext(zeroUnit, undefined, basicBuilding);
 
             const result = mapper.mapUnit(context);
 

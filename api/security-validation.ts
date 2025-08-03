@@ -102,7 +102,7 @@ export function sanitizeHtml(text: string): string {
         /vbscript:/gi, '');
 
     // Restore CDATA sections
-    processedText = _.replace(processedText, new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (match, index) => {
+    processedText = _.replace(processedText, new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (_, index) => {
         return cdataSections[parseInt(index)] || '';
     });
 

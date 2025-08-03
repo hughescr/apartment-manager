@@ -20,8 +20,10 @@ describe('Date Transformer', () => {
             constructor(...args: any[]) {
                 if(args.length === 0) {
                     super(mockDate.getTime());
+                } else if(args.length === 1) {
+                    super(args[0]);
                 } else {
-                    super(...args);
+                    super(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
                 }
             }
 
@@ -248,23 +250,24 @@ describe('Date Transformer', () => {
         it('should handle leap years correctly', () => {
             const formatter = createDateFormatter('MM/DD/YYYY');
             expect(formatter('2024-02-29')).toBe('02/29/2024'); // 2024 is a leap year
-            expect(formatter('2023-02-29')).toBe('03/01/2023'); // 2023 is not a leap year, JS rolls over to March 1
+            expect(formatter('2023-02-29')).toBeUndefined(); // 2023 is not a leap year, Luxon correctly rejects invalid dates
         });
 
         it('should handle year boundaries', () => {
-            // Test with mocked date at year end
-            global.Date = class extends originalDate {
-                constructor(...args: any[]) {
-                    if(args.length === 0) {
-                        super('2024-12-31T12:00:00Z');
-                    } else {
-                        super(...args);
-                    }
-                }
-            } as any;
+            // Use JavaScript Date for calculating expected days
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-            expect(daysUntil('2025-01-01')).toBe(1);
-            expect(daysUntil('2024-12-30')).toBe(-1);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowISO = _.split(tomorrow.toISOString(), 'T')[0];
+
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayISO = _.split(yesterday.toISOString(), 'T')[0];
+
+            expect(daysUntil(tomorrowISO)).toBe(1);
+            expect(daysUntil(yesterdayISO)).toBe(-1);
         });
 
         it('should handle extreme dates', () => {
@@ -319,9 +322,9 @@ describe('Date Transformer', () => {
             expect(formatter('2024-01-32')).toBeUndefined(); // Day 32 doesn't exist
             expect(formatter('2024-01-00')).toBeUndefined();
 
-            // Incomplete dates - JavaScript parses these as valid dates
-            expect(formatter('2024-01')).toBe('01/01/2024'); // JS interprets as Jan 1, 2024
-            expect(formatter('2024')).toBe('01/01/2024'); // JS interprets as Jan 1, 2024
+            // Incomplete dates - Luxon accepts year-month as valid ISO format
+            expect(formatter('2024-01')).toBe('01/01/2024'); // ISO accepts YYYY-MM format
+            expect(formatter('2024')).toBe('01/01/2024'); // ISO accepts YYYY format
 
             // Wrong format
             expect(formatter('15-03-2024')).toBeUndefined(); // DD-MM-YYYY
@@ -329,7 +332,7 @@ describe('Date Transformer', () => {
 
             // Random strings
             expect(formatter('not a date')).toBeUndefined();
-            expect(formatter('12345')).toBe('01/01/12345'); // JS interprets as year 12345
+            expect(formatter('12345')).toBeUndefined(); // Luxon correctly rejects bare years
             expect(formatter('null')).toBeUndefined();
         });
 
@@ -423,7 +426,7 @@ describe('Date Transformer', () => {
 
             // Partial ISO formats
             expect(parseDateToISO('2024-03-15T12:00')).toBe('2024-03-15');
-            expect(parseDateToISO('2024-03-15T12')).toBeUndefined();
+            expect(parseDateToISO('2024-03-15T12')).toBe('2024-03-15'); // Luxon accepts partial ISO formats
 
             // Various separators
             expect(parseDateToISO('2024.03.15')).toBe('2024-03-15');
@@ -431,7 +434,7 @@ describe('Date Transformer', () => {
 
             // With extra text
             expect(parseDateToISO('Date: 2024-03-15')).toBeUndefined();
-            expect(parseDateToISO('2024-03-15 (Friday)')).toBe('2024-03-15');
+            expect(parseDateToISO('2024-03-15 (Friday)')).toBeUndefined(); // Has extra text, not a valid format
         });
 
         // Concurrent operations

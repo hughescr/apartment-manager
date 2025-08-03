@@ -28,7 +28,7 @@ import {
     transformPhotoUrls,
     categorizeFees
 } from '../transformers/index.js';
-import fieldMappingsV2 from '../field-mappings-v2.json';
+// import fieldMappingsV2 from '../field-mappings-v2.json'; // Reserved for future field mapping features
 
 /**
  * Apartments.com mapper implementation.
@@ -38,10 +38,8 @@ export class ApartmentsComMapper implements SiteMapper {
     readonly siteId = 'apartments_com';
     readonly siteName = 'Apartments.com';
 
-    private readonly fieldMappings: FieldMappingConfig;
-
-    constructor(customFieldMappings?: Partial<FieldMappingConfig>) {
-        this.fieldMappings = _.merge({}, fieldMappingsV2, customFieldMappings);
+    constructor(_customFieldMappings?: Partial<FieldMappingConfig>) {
+        // Field mappings parameter kept for future extensibility
     }
 
     /**

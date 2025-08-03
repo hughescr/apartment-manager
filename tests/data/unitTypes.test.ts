@@ -497,7 +497,7 @@ describe('UnitType Data Layer', () => {
             dynamoDbMock.mockRejectedValueOnce(new Error('DynamoDB error'));
 
             // This will throw since there's no error handling
-            await expect(getUnitsByModelID(testBuildingID, 'model-2br'))
+            expect(getUnitsByModelID(testBuildingID, 'model-2br'))
                 .rejects.toThrow('DynamoDB error');
         });
 
@@ -555,7 +555,7 @@ describe('UnitType Data Layer', () => {
             expect(result1).toEqual(testUnitType);
 
             // Second create with same modelID should throw
-            await expect(createUnitType(testUnitType))
+            expect(createUnitType(testUnitType))
                 .rejects.toThrow('ConditionalCheckFailedException');
         });
 
@@ -600,7 +600,7 @@ describe('UnitType Data Layer', () => {
             };
 
             // DynamoDB Toolbox validates before sending to DynamoDB
-            await expect(createUnitType(invalidNumericData))
+            expect(createUnitType(invalidNumericData))
                 .rejects.toThrow('Attribute \'beds\' should be a number.');
         });
 
@@ -672,7 +672,7 @@ describe('UnitType Data Layer', () => {
             expect(created.modelID).toBe('race-model');
 
             // Second create fails
-            await expect(createUnitType(raceUnitType))
+            expect(createUnitType(raceUnitType))
                 .rejects.toThrow('ConditionalCheckFailedException');
 
             // But we can still get the unit type
