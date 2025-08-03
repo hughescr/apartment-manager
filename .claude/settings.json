@@ -1,24 +1,6 @@
 {
     "enableAllProjectMcpServers": true,
 
-    "hooks": {
-        "PostToolUse": [
-            {
-                "matcher": "Write|Edit|MultiEdit",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "(eslint --fix --cache --max-warnings 0 1>&2||exit 2)"
-                    },
-                    {
-                        "type": "command",
-                        "command": "tsc 1>&2"
-                    }
-                ]
-            }
-        ]
-    },
-
     "permissions": {
         "allow": [
             "mcp__browser",
