@@ -9,305 +9,6 @@ const { unit, unitTypes = [] } = Astro.props as { unit: UnitData; unitTypes: Uni
 
 const apiURL = Resource.API.url;
 
-const xData = {
-    unit: unit,
-    originalUnit: JSON.parse(JSON.stringify(unit)), // Deep copy for original state
-    unitTypes: unitTypes,
-    selectedUnitType: null as UnitTypeData | null,
-    apiURL: apiURL,
-    saving: false, // Stores the name of the field being saved
-    errors: {} as Record<string, string> & { submit?: string },
-    expandedSections: {
-        details: false,
-        amenities: false,
-        photos: false,
-        websites: false
-    },
-    
-    init() {
-        // Initialize unit amenities if not present
-        if (!this.unit.unitAmenities) this.unit.unitAmenities = [];
-        if (!this.unit.photos) this.unit.photos = [];
-        if (!this.unit.websiteStatus) this.unit.websiteStatus = {};
-        if (!this.unit.listingIds) this.unit.listingIds = {};
-        
-        // Find and set the selected unit type
-        if (this.unit.modelID) {
-            this.selectedUnitType = this.unitTypes.find(ut => ut.modelID === this.unit.modelID) || null;
-        }
-    },
-
-    isDirty() {
-        return JSON.stringify(this.unit) !== JSON.stringify(this.originalUnit);
-    },
-    
-    isInherited(fieldName: keyof UnitData) {
-        if (!this.selectedUnitType) return false;
-        
-        // Check if the field value is null/undefined/empty in the unit
-        const unitValue = this.unit[fieldName];
-        const isEmptyValue = unitValue === null || unitValue === undefined || unitValue === '';
-        
-        // Check if the unit type has a value for this field
-        const modelFieldMap = {
-            'beds': 'beds',
-            'baths': 'baths',
-            'sqft': ['minSqft', 'maxSqft'],
-            'rent': ['minRent', 'maxRent'],
-            'maxOccupants': 'maxOccupants',
-            'perPersonRent': 'perPersonRent',
-            'deposit': 'deposit',
-            'minLeaseTerm': 'minLeaseTerm',
-            'maxLeaseTerm': 'maxLeaseTerm'
-        };
-        
-        const modelField = modelFieldMap[fieldName as keyof typeof modelFieldMap];
-        if (!modelField) return false;
-        
-        if (Array.isArray(modelField)) {
-            return isEmptyValue && modelField.some(f => this.selectedUnitType![f as keyof UnitTypeData] !== null && this.selectedUnitType![f as keyof UnitTypeData] !== undefined);
-        }
-        
-        return isEmptyValue && this.selectedUnitType[modelField as keyof UnitTypeData] !== null && this.selectedUnitType[modelField as keyof UnitTypeData] !== undefined;
-    },
-    
-    getInheritedValue(fieldName: keyof UnitData) {
-        if (!this.selectedUnitType) return null;
-        
-        const modelFieldMap = {
-            'beds': 'beds',
-            'baths': 'baths',
-            'sqft': ['minSqft', 'maxSqft'],
-            'rent': ['minRent', 'maxRent'],
-            'maxOccupants': 'maxOccupants',
-            'perPersonRent': 'perPersonRent',
-            'deposit': 'deposit',
-            'minLeaseTerm': 'minLeaseTerm',
-            'maxLeaseTerm': 'maxLeaseTerm'
-        };
-        
-        const modelField = modelFieldMap[fieldName as keyof typeof modelFieldMap];
-        if (!modelField) return null;
-        
-        if (Array.isArray(modelField)) {
-            const [min, max] = modelField.map(f => this.selectedUnitType![f as keyof UnitTypeData]);
-            if (min !== null && max !== null) return `${min}-${max}`;
-            if (min !== null) return `${min}+`;
-            if (max !== null) return `Up to ${max}`;
-            return null;
-        }
-        
-        return this.selectedUnitType[modelField as keyof UnitTypeData];
-    },
-    
-    getEffectiveValue(fieldName: keyof UnitData) {
-        const unitValue = this.unit[fieldName];
-        if (unitValue !== null && unitValue !== undefined && unitValue !== '') {
-            return unitValue;
-        }
-        return this.getInheritedValue(fieldName);
-    },
-    
-    getEffectiveAmenities() {
-        // If unit has amenities defined, use them (override)
-        if (this.unit.unitAmenities && this.unit.unitAmenities.length > 0) {
-            return this.unit.unitAmenities;
-        }
-        // Otherwise, use model amenities if available
-        if (this.selectedUnitType && 'modelAmenities' in this.selectedUnitType && this.selectedUnitType.modelAmenities) {
-            return this.selectedUnitType.modelAmenities;
-        }
-        return [];
-    },
-    
-    onModelChange() {
-        this.unit.modelID = this.selectedUnitType ? this.selectedUnitType.modelID : undefined;
-        // Trigger save when model changes
-        this.saveUnit(this);
-    },
-
-    validateForm() {
-        this.errors = {};
-        
-        // Validate unit number (required)
-        if (!this.unit.unitNumber || this.unit.unitNumber.trim() === '') {
-            this.errors.unitNumber = 'Unit number is required';
-        }
-        
-        // Validate beds (0-10)
-        if (this.unit.beds !== null && this.unit.beds !== undefined) {
-            if (this.unit.beds < 0 || this.unit.beds > 10) {
-                this.errors.beds = 'Beds must be between 0 and 10';
-            }
-        }
-        
-        // Validate baths (0-10)
-        if (this.unit.baths !== null && this.unit.baths !== undefined) {
-            if (this.unit.baths < 0 || this.unit.baths > 10) {
-                this.errors.baths = 'Baths must be between 0 and 10';
-            }
-        }
-        
-        // Validate sqft (> 0)
-        if (this.unit.sqft !== null && this.unit.sqft !== undefined) {
-            if (this.unit.sqft <= 0) {
-                this.errors.sqft = 'Square footage must be greater than 0';
-            }
-            if (this.unit.sqft > 10000) {
-                this.errors.sqft = 'Square footage must be less than 10,000';
-            }
-        }
-        
-        // Validate rent (> 0)
-        if (this.unit.rent !== null && this.unit.rent !== undefined) {
-            if (this.unit.rent <= 0) {
-                this.errors.rent = 'Rent must be greater than 0';
-            }
-            if (this.unit.rent > 25000) {
-                this.errors.rent = 'Rent must be less than $25,000';
-            }
-        }
-        
-        // Validate maxOccupants (1-20)
-        if (this.unit.maxOccupants !== null && this.unit.maxOccupants !== undefined) {
-            if (this.unit.maxOccupants < 1 || this.unit.maxOccupants > 20) {
-                this.errors.maxOccupants = 'Max occupants must be between 1 and 20';
-            }
-        }
-        
-        // Validate perPersonRent (>= 0)
-        if (this.unit.perPersonRent !== null && this.unit.perPersonRent !== undefined) {
-            if (this.unit.perPersonRent < 0) {
-                this.errors.perPersonRent = 'Per person rent must be 0 or greater';
-            }
-        }
-        
-        // Validate deposit (>= 0)
-        if (this.unit.deposit !== null && this.unit.deposit !== undefined) {
-            if (this.unit.deposit < 0) {
-                this.errors.deposit = 'Deposit must be 0 or greater';
-            }
-        }
-        
-        // Validate lease terms
-        if (this.unit.minLeaseTerm !== null && this.unit.minLeaseTerm !== undefined) {
-            if (this.unit.minLeaseTerm < 1 || this.unit.minLeaseTerm > 24) {
-                this.errors.minLeaseTerm = 'Min lease term must be between 1 and 24 months';
-            }
-        }
-        
-        if (this.unit.maxLeaseTerm !== null && this.unit.maxLeaseTerm !== undefined) {
-            if (this.unit.maxLeaseTerm < 1 || this.unit.maxLeaseTerm > 24) {
-                this.errors.maxLeaseTerm = 'Max lease term must be between 1 and 24 months';
-            }
-        }
-        
-        // Validate lease term logic
-        if (this.unit.minLeaseTerm && this.unit.maxLeaseTerm && this.unit.minLeaseTerm > this.unit.maxLeaseTerm) {
-            this.errors.leaseTerm = 'Minimum lease term cannot be greater than maximum';
-        }
-        
-        // Validate available date
-        if (this.unit.availableDate) {
-            const availDate = new Date(this.unit.availableDate);
-            const minDate = new Date('2025-01-01');
-            const maxDate = new Date('2028-01-01');
-            
-            if (availDate < minDate || availDate > maxDate) {
-                this.errors.availableDate = 'Available date must be between 2025 and 2028';
-            }
-        }
-        
-        // Validate rent special dates
-        if (this.unit.unitRentSpecial) {
-            if (this.unit.unitRentSpecial.startDate && this.unit.unitRentSpecial.endDate) {
-                const startDate = new Date(this.unit.unitRentSpecial.startDate);
-                const endDate = new Date(this.unit.unitRentSpecial.endDate);
-                
-                if (startDate > endDate) {
-                    this.errors.rentSpecial = 'Special start date must be before end date';
-                }
-            }
-            
-            // If any rent special field is filled, title is required
-            if ((this.unit.unitRentSpecial.description || this.unit.unitRentSpecial.startDate || this.unit.unitRentSpecial.endDate) 
-                && (!this.unit.unitRentSpecial.title || this.unit.unitRentSpecial.title.trim() === '')) {
-                this.errors.rentSpecialTitle = 'Special title is required when adding a rent special';
-            }
-        }
-        
-        return Object.keys(this.errors).length === 0;
-    },
-
-    clearFieldError(fieldName: string) {
-        delete this.errors[fieldName];
-    },
-
-    async saveUnit(myThis?: any) {
-        myThis = this || myThis; // Allow passing 'this' context
-        if (!myThis.isDirty()) { return; }
-
-        if (!myThis.validateForm()) {
-            console.error('Validation failed:', myThis.errors);
-            return;
-        }
-
-        this.saving = true;
-        try {
-            const response = await fetch(myThis.apiURL + 'buildings/' + myThis.unit.buildingID + '/units/' + myThis.unit.unitID, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(myThis.unit),
-            });
-            if (response.ok) {
-                myThis.originalUnit = { ...myThis.unit };
-                myThis.errors = {}; // Clear all errors on successful save
-            } else {
-                const errorData = await response.json();
-                console.error('Save failed:', errorData);
-                myThis.errors.submit = errorData.error || 'Failed to save unit';
-                // Revert to original value on save failure
-                myThis.unit = { ...myThis.originalUnit };
-            }
-        } catch (error) {
-            console.error('Network error during save:', error);
-            myThis.errors.submit = 'Network error. Please try again.';
-            // Revert to original value on network error
-            myThis.unit = { ...myThis.originalUnit };
-        } finally {
-            myThis.saving = false;
-        }
-    },
-
-    async deleteUnit() {
-        if (!confirm('Are you sure you want to delete this unit?')) return;
-        try {
-            const response = await fetch(this.apiURL + 'buildings/' + this.unit.buildingID + '/units/' + this.unit.unitID, { method: 'DELETE' });
-            if (response.ok) {
-                // Reload the page or remove the row from the DOM
-                window.location.reload(); // Simplest for now
-            } else {
-                console.error('Delete failed:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Network error during delete:', error);
-        }
-    },
-    
-    formatCurrency(value: number | null | undefined) {
-        if (!value) return '';
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value);
-    },
-    
-    toggleSection(section: keyof typeof this.expandedSections) {
-        this.expandedSections[section] = !this.expandedSections[section];
-    }
-};
 
 // Initialize missing properties
 if (!unit.unitAmenities) unit.unitAmenities = [];
@@ -316,7 +17,317 @@ if (!unit.websiteStatus) unit.websiteStatus = {};
 if (!unit.listingIds) unit.listingIds = {};
 ---
 
-<li x-data={JSON.stringify(xData)} x-init="init(); $watch('unit', () => saveUnit(this))" class="card bg-base-100 shadow-xl mb-4" :class="{'opacity-50': saving}">
+<script is:inline>
+function unitCardData() {
+    return {
+        unit: null,
+        originalUnit: null,
+        unitTypes: null,
+        selectedUnitType: null,
+        apiURL: null,
+        saving: false, // Stores the name of the field being saved
+        errors: {},
+        expandedSections: {
+            details: false,
+            amenities: false,
+            photos: false,
+            websites: false
+        },
+        
+        init() {
+            // Parse data from data attributes
+            this.unit = JSON.parse(this.$el.dataset.unit);
+            this.unitTypes = JSON.parse(this.$el.dataset.unitTypes);
+            this.apiURL = this.$el.dataset.apiUrl;
+            this.originalUnit = JSON.parse(JSON.stringify(this.unit));
+            
+            // Initialize unit amenities if not present
+            if (!this.unit.unitAmenities) this.unit.unitAmenities = [];
+            if (!this.unit.photos) this.unit.photos = [];
+            if (!this.unit.websiteStatus) this.unit.websiteStatus = {};
+            if (!this.unit.listingIds) this.unit.listingIds = {};
+            
+            // Find and set the selected unit type
+            if (this.unit.modelID) {
+                this.selectedUnitType = this.unitTypes.find(ut => ut.modelID === this.unit.modelID) || null;
+            }
+        },
+
+        isDirty() {
+            return JSON.stringify(this.unit) !== JSON.stringify(this.originalUnit);
+        },
+        
+        isInherited(fieldName) {
+            if (!this.selectedUnitType) return false;
+            
+            // Check if the field value is null/undefined/empty in the unit
+            const unitValue = this.unit[fieldName];
+            const isEmptyValue = unitValue === null || unitValue === undefined || unitValue === '';
+            
+            // Check if the unit type has a value for this field
+            const modelFieldMap = {
+                'beds': 'beds',
+                'baths': 'baths',
+                'sqft': ['minSqft', 'maxSqft'],
+                'rent': ['minRent', 'maxRent'],
+                'maxOccupants': 'maxOccupants',
+                'perPersonRent': 'perPersonRent',
+                'deposit': 'deposit',
+                'minLeaseTerm': 'minLeaseTerm',
+                'maxLeaseTerm': 'maxLeaseTerm'
+            };
+            
+            const modelField = modelFieldMap[fieldName];
+            if (!modelField) return false;
+            
+            if (Array.isArray(modelField)) {
+                return isEmptyValue && modelField.some(f => this.selectedUnitType[f] !== null && this.selectedUnitType[f] !== undefined);
+            }
+            
+            return isEmptyValue && this.selectedUnitType[modelField] !== null && this.selectedUnitType[modelField] !== undefined;
+        },
+        
+        getInheritedValue(fieldName) {
+            if (!this.selectedUnitType) return null;
+            
+            const modelFieldMap = {
+                'beds': 'beds',
+                'baths': 'baths',
+                'sqft': ['minSqft', 'maxSqft'],
+                'rent': ['minRent', 'maxRent'],
+                'maxOccupants': 'maxOccupants',
+                'perPersonRent': 'perPersonRent',
+                'deposit': 'deposit',
+                'minLeaseTerm': 'minLeaseTerm',
+                'maxLeaseTerm': 'maxLeaseTerm'
+            };
+            
+            const modelField = modelFieldMap[fieldName];
+            if (!modelField) return null;
+            
+            if (Array.isArray(modelField)) {
+                const [min, max] = modelField.map(f => this.selectedUnitType[f]);
+                if (min !== null && max !== null) return `${min}-${max}`;
+                if (min !== null) return `${min}+`;
+                if (max !== null) return `Up to ${max}`;
+                return null;
+            }
+            
+            return this.selectedUnitType[modelField];
+        },
+        
+        getEffectiveValue(fieldName) {
+            const unitValue = this.unit[fieldName];
+            if (unitValue !== null && unitValue !== undefined && unitValue !== '') {
+                return unitValue;
+            }
+            return this.getInheritedValue(fieldName);
+        },
+        
+        getEffectiveAmenities() {
+            // If unit has amenities defined, use them (override)
+            if (this.unit.unitAmenities && this.unit.unitAmenities.length > 0) {
+                return this.unit.unitAmenities;
+            }
+            // Otherwise, use model amenities if available
+            if (this.selectedUnitType && 'modelAmenities' in this.selectedUnitType && this.selectedUnitType.modelAmenities) {
+                return this.selectedUnitType.modelAmenities;
+            }
+            return [];
+        },
+        
+        onModelChange() {
+            this.unit.modelID = this.selectedUnitType ? this.selectedUnitType.modelID : undefined;
+            // Trigger save when model changes
+            this.saveUnit(this);
+        },
+
+        validateForm() {
+            this.errors = {};
+            
+            // Validate unit number (required)
+            if (!this.unit.unitNumber || this.unit.unitNumber.trim() === '') {
+                this.errors.unitNumber = 'Unit number is required';
+            }
+            
+            // Validate beds (0-10)
+            if (this.unit.beds !== null && this.unit.beds !== undefined) {
+                if (this.unit.beds < 0 || this.unit.beds > 10) {
+                    this.errors.beds = 'Beds must be between 0 and 10';
+                }
+            }
+            
+            // Validate baths (0-10)
+            if (this.unit.baths !== null && this.unit.baths !== undefined) {
+                if (this.unit.baths < 0 || this.unit.baths > 10) {
+                    this.errors.baths = 'Baths must be between 0 and 10';
+                }
+            }
+            
+            // Validate sqft (> 0)
+            if (this.unit.sqft !== null && this.unit.sqft !== undefined) {
+                if (this.unit.sqft <= 0) {
+                    this.errors.sqft = 'Square footage must be greater than 0';
+                }
+                if (this.unit.sqft > 10000) {
+                    this.errors.sqft = 'Square footage must be less than 10,000';
+                }
+            }
+            
+            // Validate rent (> 0)
+            if (this.unit.rent !== null && this.unit.rent !== undefined) {
+                if (this.unit.rent <= 0) {
+                    this.errors.rent = 'Rent must be greater than 0';
+                }
+                if (this.unit.rent > 25000) {
+                    this.errors.rent = 'Rent must be less than $25,000';
+                }
+            }
+            
+            // Validate maxOccupants (1-20)
+            if (this.unit.maxOccupants !== null && this.unit.maxOccupants !== undefined) {
+                if (this.unit.maxOccupants < 1 || this.unit.maxOccupants > 20) {
+                    this.errors.maxOccupants = 'Max occupants must be between 1 and 20';
+                }
+            }
+            
+            // Validate perPersonRent (>= 0)
+            if (this.unit.perPersonRent !== null && this.unit.perPersonRent !== undefined) {
+                if (this.unit.perPersonRent < 0) {
+                    this.errors.perPersonRent = 'Per person rent must be 0 or greater';
+                }
+            }
+            
+            // Validate deposit (>= 0)
+            if (this.unit.deposit !== null && this.unit.deposit !== undefined) {
+                if (this.unit.deposit < 0) {
+                    this.errors.deposit = 'Deposit must be 0 or greater';
+                }
+            }
+            
+            // Validate lease terms
+            if (this.unit.minLeaseTerm !== null && this.unit.minLeaseTerm !== undefined) {
+                if (this.unit.minLeaseTerm < 1 || this.unit.minLeaseTerm > 24) {
+                    this.errors.minLeaseTerm = 'Min lease term must be between 1 and 24 months';
+                }
+            }
+            
+            if (this.unit.maxLeaseTerm !== null && this.unit.maxLeaseTerm !== undefined) {
+                if (this.unit.maxLeaseTerm < 1 || this.unit.maxLeaseTerm > 24) {
+                    this.errors.maxLeaseTerm = 'Max lease term must be between 1 and 24 months';
+                }
+            }
+            
+            // Validate lease term logic
+            if (this.unit.minLeaseTerm && this.unit.maxLeaseTerm && this.unit.minLeaseTerm > this.unit.maxLeaseTerm) {
+                this.errors.leaseTerm = 'Minimum lease term cannot be greater than maximum';
+            }
+            
+            // Validate available date
+            if (this.unit.availableDate) {
+                const availDate = new Date(this.unit.availableDate);
+                const minDate = new Date('2025-01-01');
+                const maxDate = new Date('2028-01-01');
+                
+                if (availDate < minDate || availDate > maxDate) {
+                    this.errors.availableDate = 'Available date must be between 2025 and 2028';
+                }
+            }
+            
+            // Validate rent special dates
+            if (this.unit.unitRentSpecial) {
+                if (this.unit.unitRentSpecial.startDate && this.unit.unitRentSpecial.endDate) {
+                    const startDate = new Date(this.unit.unitRentSpecial.startDate);
+                    const endDate = new Date(this.unit.unitRentSpecial.endDate);
+                    
+                    if (startDate > endDate) {
+                        this.errors.rentSpecial = 'Special start date must be before end date';
+                    }
+                }
+                
+                // If any rent special field is filled, title is required
+                if ((this.unit.unitRentSpecial.description || this.unit.unitRentSpecial.startDate || this.unit.unitRentSpecial.endDate) 
+                    && (!this.unit.unitRentSpecial.title || this.unit.unitRentSpecial.title.trim() === '')) {
+                    this.errors.rentSpecialTitle = 'Special title is required when adding a rent special';
+                }
+            }
+            
+            return Object.keys(this.errors).length === 0;
+        },
+
+        clearFieldError(fieldName) {
+            delete this.errors[fieldName];
+        },
+
+        async saveUnit(myThis) {
+            myThis = this || myThis; // Allow passing 'this' context
+            if (!myThis.isDirty()) { return; }
+
+            if (!myThis.validateForm()) {
+                console.error('Validation failed:', myThis.errors);
+                return;
+            }
+
+            this.saving = true;
+            try {
+                const response = await fetch(myThis.apiURL + 'buildings/' + myThis.unit.buildingID + '/units/' + myThis.unit.unitID, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(myThis.unit),
+                });
+                if (response.ok) {
+                    myThis.originalUnit = { ...myThis.unit };
+                    myThis.errors = {}; // Clear all errors on successful save
+                } else {
+                    const errorData = await response.json();
+                    console.error('Save failed:', errorData);
+                    myThis.errors.submit = errorData.error || 'Failed to save unit';
+                    // Revert to original value on save failure
+                    myThis.unit = { ...myThis.originalUnit };
+                }
+            } catch (error) {
+                console.error('Network error during save:', error);
+                myThis.errors.submit = 'Network error. Please try again.';
+                // Revert to original value on network error
+                myThis.unit = { ...myThis.originalUnit };
+            } finally {
+                myThis.saving = false;
+            }
+        },
+
+        async deleteUnit() {
+            if (!confirm('Are you sure you want to delete this unit?')) return;
+            try {
+                const response = await fetch(this.apiURL + 'buildings/' + this.unit.buildingID + '/units/' + this.unit.unitID, { method: 'DELETE' });
+                if (response.ok) {
+                    // Reload the page or remove the row from the DOM
+                    window.location.reload(); // Simplest for now
+                } else {
+                    console.error('Delete failed:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Network error during delete:', error);
+            }
+        },
+        
+        formatCurrency(value) {
+            if (!value) return '';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        },
+        
+        toggleSection(section) {
+            this.expandedSections[section] = !this.expandedSections[section];
+        }
+    };
+}
+</script>
+
+<li x-data="unitCardData()" x-init="init(); $watch('unit', () => saveUnit(this))" class="card bg-base-100 shadow-xl mb-4" :class="{'opacity-50': saving}" data-unit={JSON.stringify(unit)} data-unit-types={JSON.stringify(unitTypes)} data-api-url={apiURL}>
     <div class="card-body">
         <!-- Error Summary -->
         <div x-show="Object.keys(errors).length > 0" class="alert alert-error mb-4">
@@ -363,7 +374,7 @@ if (!unit.listingIds) unit.listingIds = {};
                     </div>
                 </div>
                 <div class="text-sm text-base-content/70 mt-1">
-                    Unit ID: <span x-text="unit.unitID"></span>
+                    Unit ID: <span x-text="unit?.unitID || 'Loading...'"></span>
                     <span x-show="selectedUnitType" class="ml-2">
                         | Model: <span x-text="selectedUnitType?.modelName"></span>
                     </span>
@@ -643,8 +654,8 @@ if (!unit.listingIds) unit.listingIds = {};
                     <div>
                         <input 
                             type="text"
-                            x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.title : ''"
-                            x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.title = $event.target.value"
+                            :value="unit.unitRentSpecial?.title || ''"
+                            x-on:change="if (unit && !unit.unitRentSpecial) unit.unitRentSpecial = {}; if (unit) unit.unitRentSpecial.title = $event.target.value"
                             class="input input-bordered w-full"
                             :class="{'input-error': errors.rentSpecialTitle}"
                             placeholder="Special Title (e.g., 'First Month Free')"
@@ -654,16 +665,16 @@ if (!unit.listingIds) unit.listingIds = {};
                     <div class="flex gap-2">
                         <input 
                             type="date"
-                            x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.startDate : ''"
-                            x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.startDate = $event.target.value"
+                            :value="unit.unitRentSpecial?.startDate || ''"
+                            x-on:change="if (unit && !unit.unitRentSpecial) unit.unitRentSpecial = {}; if (unit) unit.unitRentSpecial.startDate = $event.target.value"
                             class="input input-bordered flex-1"
                             :class="{'input-error': errors.rentSpecial}"
                             placeholder="Start Date"
                         />
                         <input 
                             type="date"
-                            x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.endDate : ''"
-                            x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.endDate = $event.target.value"
+                            :value="unit.unitRentSpecial?.endDate || ''"
+                            x-on:change="if (unit && !unit.unitRentSpecial) unit.unitRentSpecial = {}; if (unit) unit.unitRentSpecial.endDate = $event.target.value"
                             class="input input-bordered flex-1"
                             :class="{'input-error': errors.rentSpecial}"
                             placeholder="End Date"
@@ -671,8 +682,8 @@ if (!unit.listingIds) unit.listingIds = {};
                     </div>
                 </div>
                 <textarea 
-                    x-model.lazy="unit.unitRentSpecial ? unit.unitRentSpecial.description : ''"
-                    x-on:change="if (!unit.unitRentSpecial) unit.unitRentSpecial = {}; unit.unitRentSpecial.description = $event.target.value"
+                    :value="unit.unitRentSpecial?.description || ''"
+                    x-on:change="if (unit && !unit.unitRentSpecial) unit.unitRentSpecial = {}; if (unit) unit.unitRentSpecial.description = $event.target.value"
                     class="textarea textarea-bordered w-full"
                     rows="2"
                     placeholder="Special Description"
@@ -747,7 +758,7 @@ if (!unit.listingIds) unit.listingIds = {};
                                         </label>
                                         <select 
                                             x-model="unit.websiteStatus[site]"
-                                            x-on:change="saveUnit(this)"
+                                            x-on:change="if (!unit.websiteStatus) unit.websiteStatus = {}; saveUnit(this)"
                                             class="select select-bordered select-sm w-full"
                                         >
                                             <option value="">Not Listed</option>
@@ -773,6 +784,7 @@ if (!unit.listingIds) unit.listingIds = {};
                                         <input 
                                             type="text"
                                             x-model.lazy="unit.listingIds[site]"
+                                            x-on:change="if (!unit.listingIds) unit.listingIds = {};"
                                             class="input input-bordered input-sm w-full"
                                             placeholder="External ID or URL"
                                         />

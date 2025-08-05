@@ -56,7 +56,6 @@ const xDataString = `{
     commonBreeds: ${JSON.stringify(commonBreedRestrictions)},
     showBreedRestrictions: false,
     newBreedRestriction: '',
-    ${xModel}: ${JSON.stringify(petPolicy || null)},
     
     init() {
         // Initialize with default structure if not set
@@ -208,7 +207,7 @@ const xDataString = `{
                                 class="checkbox checkbox-primary"
                                 x-on:change="togglePetType(petType.value)"
                                 :checked="isPetTypeSelected(petType.value)"
-                                :disabled="disabled"
+                                disabled={disabled}
                             />
                             <span class="label-text" x-text="petType.label"></span>
                         </label>
@@ -226,7 +225,7 @@ const xDataString = `{
                         name={name + '_maxCount'}
                         label="Maximum Number of Pets"
                         type="number"
-                        xModel={xModel + '.maxCount'}
+                        xModel={`${xModel}.maxCount`}
                         min="1"
                         max="10"
                         placeholder="e.g., 2"
@@ -236,7 +235,7 @@ const xDataString = `{
                         name={name + '_weightLimit'}
                         label="Weight Limit (lbs)"
                         type="number"
-                        xModel={xModel + '.weightLimit'}
+                        xModel={`${xModel}.weightLimit`}
                         min="0"
                         max="200"
                         placeholder="e.g., 50"
@@ -252,17 +251,17 @@ const xDataString = `{
                 <h3 class="card-title text-base">Breed Restrictions</h3>
                 
                 <!-- Current Restrictions -->
-                <div x-show={xModel + '.breedRestrictions && ' + xModel + '.breedRestrictions.length > 0'} class="mb-4">
+                <div x-show={`${xModel}.breedRestrictions && ${xModel}.breedRestrictions.length > 0`} class="mb-4">
                     <div class="text-sm font-medium mb-2">Current Restrictions:</div>
                     <div class="flex flex-wrap gap-2">
-                        <template x-for={'(breed, index) in ' + xModel + '.breedRestrictions'} :key="breed">
+                        <template x-for={`(breed, index) in ${xModel}.breedRestrictions`} :key="breed">
                             <div class="badge badge-warning gap-2">
                                 <span x-text="breed"></span>
                                 <button
                                     type="button"
                                     x-on:click="removeBreedRestriction(index)"
                                     class="btn btn-ghost btn-xs"
-                                    :disabled="disabled"
+                                    disabled={disabled}
                                 >
                                     ×
                                 </button>
@@ -276,7 +275,7 @@ const xDataString = `{
                     type="button"
                     x-on:click="showBreedRestrictions = !showBreedRestrictions"
                     class="btn btn-sm btn-ghost"
-                    :disabled={disabled}
+                    disabled={disabled}
                 >
                     <span x-text="showBreedRestrictions ? 'Hide' : 'Show'"></span> Common Breed Restrictions
                 </button>
@@ -290,7 +289,7 @@ const xDataString = `{
                                     class="checkbox checkbox-sm"
                                     x-on:change="toggleCommonBreed(breed)"
                                     :checked="isBreedRestricted(breed)"
-                                    :disabled="disabled"
+                                    disabled={disabled}
                                 />
                                 <span class="label-text text-sm" x-text="breed"></span>
                             </label>
@@ -309,14 +308,14 @@ const xDataString = `{
                             x-model="newBreedRestriction"
                             placeholder="Enter breed name"
                             class="input input-bordered join-item flex-1"
-                            :disabled="disabled"
+                            disabled={disabled}
                             x-on:keyup.enter="addBreedRestriction(newBreedRestriction)"
                         />
                         <button
                             type="button"
                             x-on:click="addBreedRestriction(newBreedRestriction)"
                             class="btn btn-primary join-item"
-                            :disabled="disabled"
+                            disabled={disabled}
                         >
                             Add
                         </button>
@@ -334,7 +333,7 @@ const xDataString = `{
                         name={name + '_deposit'}
                         label="Pet Deposit (Refundable)"
                         type="number"
-                        xModel={xModel + '.deposit'}
+                        xModel={`${xModel}.deposit`}
                         min="0"
                         max="5000"
                         placeholder="e.g., 500"
@@ -345,7 +344,7 @@ const xDataString = `{
                         name={name + '_oneTimeFee'}
                         label="One-Time Pet Fee"
                         type="number"
-                        xModel={xModel + '.oneTimeFee'}
+                        xModel={`${xModel}.oneTimeFee`}
                         min="0"
                         max="5000"
                         placeholder="e.g., 250"
@@ -356,7 +355,7 @@ const xDataString = `{
                         name={name + '_monthlyFee'}
                         label="Monthly Pet Rent"
                         type="number"
-                        xModel={xModel + '.monthlyFee'}
+                        xModel={`${xModel}.monthlyFee`}
                         min="0"
                         max="500"
                         placeholder="e.g., 50"
@@ -384,7 +383,7 @@ const xDataString = `{
         <BaseTextarea
             name={name + '_notes'}
             label="Additional Pet Policy Notes"
-            xModel={xModel + '.notes'}
+            xModel={`${xModel}.notes`}
             rows={3}
             placeholder="Any additional pet policy information..."
             disabled={disabled}

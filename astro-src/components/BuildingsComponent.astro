@@ -10,7 +10,7 @@ const buildings = await getBuildings();
 const apiURL = Resource.API.url;
 ---
 <div x-data="{ 
-    activeTab: 0, 
+    activeBuildingTab: 0, 
     showToast: false, 
     toastMessage: '', 
     toastType: '',
@@ -30,11 +30,11 @@ const apiURL = Resource.API.url;
         if (hash) {
             const index = this.buildingsData.findIndex(b => b.buildingID === hash);
             if (index !== -1) {
-                this.activeTab = index;
+                this.activeBuildingTab = index;
             } else if(hash === 'add-new-building') {
-                this.activeTab = this.buildingsData.length;
+                this.activeBuildingTab = this.buildingsData.length;
             } else {
-                this.activeTab = 0;
+                this.activeBuildingTab = 0;
             }
         }
     }, 
@@ -47,7 +47,7 @@ const apiURL = Resource.API.url;
         }, 3000);
     },
     setActiveTab(tabIndex, buildingID = null) {
-        this.activeTab = tabIndex;
+        this.activeBuildingTab = tabIndex;
         if (buildingID) {
             window.location.hash = buildingID;
         } else if (tabIndex === this.buildingsData.length) {
@@ -108,13 +108,13 @@ data-api-url={apiURL}>
     <div role="tablist" class="tabs tabs-lift">
         <template x-for="(building, index) in buildingsData" :key="building.buildingID">
             <a role="tab" class="tab" 
-               :class="{ 'tab-active': activeTab === index }"
+               :class="{ 'tab-active': activeBuildingTab === index }"
                @click="setActiveTab(index, building.buildingID)"
                x-text="building.buildingID">
             </a>
         </template>
         <a role="tab" class="tab items-center" 
-           :class="{ 'tab-active': activeTab === buildingsData.length }"
+           :class="{ 'tab-active': activeBuildingTab === buildingsData.length }"
            @click="setActiveTab(buildingsData.length)">
             <svg class="size-4 text-secondary me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line>
@@ -125,13 +125,13 @@ data-api-url={apiURL}>
     
     {/* Building Cards - Show only the active one */}
     {_.map(buildings, (building, i) => (
-        <div x-show={`activeTab === ${i}`} x-cloak>
+        <div x-show={`activeBuildingTab === ${i}`} x-cloak>
             <BuildingCard buildingID={building.buildingID} />
         </div>
     ))}
     
     {/* Add Building Form */}
-    <div class="tab-content bg-base-100 border-base-300 p-4" x-show="activeTab === buildingsData.length" x-cloak>
+    <div class="tab-content bg-base-100 border-base-300 p-4" x-show="activeBuildingTab === buildingsData.length" x-cloak>
             <fieldset class="fieldset w-xl relative">
                 <div class="indicator w-full">
                     <span class="indicator-item badge" style="z-index:2" x-show="buildingID === ''">Required</span>

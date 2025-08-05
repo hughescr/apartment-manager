@@ -56,7 +56,7 @@ const containerClasses = [
     className
 ].filter(Boolean).join(' ');
 
-// Create Alpine.js data string directly (no JSON.stringify needed for complex functions)
+// Create Alpine.js data string with proper xModel reference handling
 const xData = `{
     searchQuery: '',
     selectedCategory: 'all',
@@ -64,6 +64,7 @@ const xData = `{
     newAmenityName: '',
     newAmenityCategory: '${AmenityCategory.UNIT}',
     commonAmenities: ${JSON.stringify(commonAmenities)},
+    xModelRef: '${xModel}',
     
     get filteredCommonAmenities() {
         const query = this.searchQuery.toLowerCase();
@@ -83,8 +84,29 @@ const xData = `{
         return results;
     },
     
+    getModelValue() {
+        const path = this.xModelRef.split('.');
+        let current = this;
+        for (const key of path) {
+            if (current[key] === undefined) return [];
+            current = current[key];
+        }
+        return current || [];
+    },
+    
+    setModelValue(value) {
+        const path = this.xModelRef.split('.');
+        const lastKey = path.pop();
+        let current = this;
+        for (const key of path) {
+            if (!current[key]) current[key] = {};
+            current = current[key];
+        }
+        current[lastKey] = value;
+    },
+    
     getSelectedAmenities() {
-        return ${xModel} || [];
+        return this.getModelValue();
     },
     
     isSelected(amenityName, category) {
@@ -94,22 +116,22 @@ const xData = `{
     },
     
     toggleAmenity(amenityName, category) {
-        if (!${xModel}) {
-            ${xModel} = [];
-        }
+        let amenities = this.getModelValue();
         
-        const index = ${xModel}.findIndex(a => 
+        const index = amenities.findIndex(a => 
             a.name === amenityName && a.category === category
         );
         
         if (index >= 0) {
-            ${xModel}.splice(index, 1);
+            amenities.splice(index, 1);
         } else {
-            ${xModel}.push({
+            amenities.push({
                 name: amenityName,
                 category: category
             });
         }
+        
+        this.setModelValue(amenities);
     },
     
     addCustomAmenity() {
@@ -121,24 +143,24 @@ const xData = `{
     },
     
     selectAll(category) {
-        if (!${xModel}) {
-            ${xModel} = [];
-        }
+        let amenities = this.getModelValue();
         
         this.commonAmenities[category].forEach(amenityName => {
             if (!this.isSelected(amenityName, category)) {
-                ${xModel}.push({
+                amenities.push({
                     name: amenityName,
                     category: category
                 });
             }
         });
+        
+        this.setModelValue(amenities);
     },
     
     clearCategory(category) {
-        if (!${xModel}) return;
-        
-        ${xModel} = ${xModel}.filter(a => a.category !== category);
+        let amenities = this.getModelValue();
+        amenities = amenities.filter(a => a.category !== category);
+        this.setModelValue(amenities);
     }
 }`;
 ---
@@ -217,12 +239,12 @@ const xData = `{
     </div>
     
     <!-- Selected Amenities Summary -->
-    <div x-show={`${xModel} && ${xModel}.length > 0`} class="mb-4">
+    <div x-show="getModelValue().length > 0" class="mb-4">
         <div class="text-sm text-base-content/70 mb-2">
-            Selected: <span x-text={`${xModel}?.length || 0`}></span> amenities
+            Selected: <span x-text="getModelValue().length"></span> amenities
         </div>
         <div class="flex flex-wrap gap-2">
-            <template x-for={`amenity in ${xModel}`} :key="amenity.name + amenity.category">
+            <template x-for="amenity in getModelValue()" :key="amenity.name + amenity.category">
                 <div class="badge badge-primary badge-lg gap-2">
                     <span x-text="amenity.name"></span>
                     <button
@@ -286,7 +308,7 @@ const xData = `{
     </div>
     
     <!-- Hidden input to store the JSON value -->
-    <input type="hidden" name={name} :value={`JSON.stringify(${xModel} || [])`} />
+    <input type="hidden" name={name} :value="JSON.stringify(getModelValue())" />
     
     {(error || helpText) && (
         <div class={`label ${error ? 'text-error' : ''}`}>

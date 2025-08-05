@@ -32,14 +32,22 @@ const containerClasses = [
     className
 ].filter(Boolean).join(' ');
 
-// Create Alpine.js data string directly
+// Create Alpine.js data string with proper xModel reference handling
 const xData = `{
     showAdvanced: false,
+    xModelRef: '${xModel}',
     
     init() {
         // Initialize with default structure if not set
-        if (!${xModel}) {
-            ${xModel} = {
+        const modelPath = this.xModelRef.split('.');
+        let current = this;
+        for (let i = 0; i < modelPath.length - 1; i++) {
+            if (!current[modelPath[i]]) current[modelPath[i]] = {};
+            current = current[modelPath[i]];
+        }
+        
+        if (!this.getModelValue()) {
+            this.setModelValue({
                 incomeRatio: undefined,
                 minCreditScore: undefined,
                 maxOccupantsPerBedroom: undefined,
@@ -50,19 +58,38 @@ const xData = `{
                 employmentVerification: false,
                 rentalHistory: false,
                 notes: ''
-            };
+            });
         }
+    },
+    
+    getModelValue() {
+        const path = this.xModelRef.split('.');
+        let current = this;
+        for (const key of path) {
+            if (current[key] === undefined) return undefined;
+            current = current[key];
+        }
+        return current;
+    },
+    
+    setModelValue(value) {
+        const path = this.xModelRef.split('.');
+        const lastKey = path.pop();
+        let current = this;
+        for (const key of path) {
+            if (!current[key]) current[key] = {};
+            current = current[key];
+        }
+        current[lastKey] = value;
     },
     
     // Quick presets for common screening criteria
     applyPreset(preset) {
-        if (!${xModel}) {
-            ${xModel} = {};
-        }
+        let model = this.getModelValue() || {};
         
         switch(preset) {
             case 'strict':
-                Object.assign(${xModel}, {
+                Object.assign(model, {
                     incomeRatio: 3,
                     minCreditScore: 700,
                     maxOccupantsPerBedroom: 2,
@@ -75,7 +102,7 @@ const xData = `{
                 });
                 break;
             case 'standard':
-                Object.assign(${xModel}, {
+                Object.assign(model, {
                     incomeRatio: 2.5,
                     minCreditScore: 650,
                     maxOccupantsPerBedroom: 2,
@@ -88,7 +115,7 @@ const xData = `{
                 });
                 break;
             case 'flexible':
-                Object.assign(${xModel}, {
+                Object.assign(model, {
                     incomeRatio: 2,
                     minCreditScore: 600,
                     maxOccupantsPerBedroom: 3,
@@ -101,7 +128,7 @@ const xData = `{
                 });
                 break;
             case 'minimal':
-                Object.assign(${xModel}, {
+                Object.assign(model, {
                     incomeRatio: undefined,
                     minCreditScore: undefined,
                     maxOccupantsPerBedroom: undefined,
@@ -114,29 +141,39 @@ const xData = `{
                 });
                 break;
         }
+        
+        this.setModelValue(model);
+        
+        // Force Alpine.js reactivity by triggering a change event on the parent
+        // This ensures the BuildingCard's x-effect detects the change
+        this.$nextTick(() => {
+            this.$dispatch('change', { field: this.xModelRef, value: model });
+        });
     },
     
     get hasRequirements() {
-        return ${xModel} && (
-            ${xModel}.incomeRatio ||
-            ${xModel}.minCreditScore ||
-            ${xModel}.backgroundCheckRequired ||
-            ${xModel}.employmentVerification ||
-            ${xModel}.rentalHistory
+        const model = this.getModelValue();
+        return model && (
+            model.incomeRatio ||
+            model.minCreditScore ||
+            model.backgroundCheckRequired ||
+            model.employmentVerification ||
+            model.rentalHistory
         );
     },
     
     get requirementsSummary() {
-        if (!${xModel} || !this.hasRequirements) return 'No screening requirements set';
+        const model = this.getModelValue();
+        if (!model || !this.hasRequirements) return 'No screening requirements set';
         
         const parts = [];
-        if (${xModel}.incomeRatio) {
-            parts.push(\`\${${xModel}.incomeRatio}x income\`);
+        if (model.incomeRatio) {
+            parts.push(model.incomeRatio + 'x income');
         }
-        if (${xModel}.minCreditScore) {
-            parts.push(\`\${${xModel}.minCreditScore}+ credit\`);
+        if (model.minCreditScore) {
+            parts.push(model.minCreditScore + '+ credit');
         }
-        if (${xModel}.backgroundCheckRequired) {
+        if (model.backgroundCheckRequired) {
             parts.push('background check');
         }
         
@@ -217,7 +254,7 @@ const xData = `{
                         name={name + '_incomeRatio'}
                         label="Income to Rent Ratio"
                         type="number"
-                        xModel={xModel + '.incomeRatio'}
+                        xModel={`${xModel}.incomeRatio`}
                         min="0"
                         max="10"
                         step="0.5"
@@ -231,7 +268,7 @@ const xData = `{
                         name={name + '_minCreditScore'}
                         label="Minimum Credit Score"
                         type="number"
-                        xModel={xModel + '.minCreditScore'}
+                        xModel={`${xModel}.minCreditScore`}
                         min="300"
                         max="850"
                         step="10"
@@ -252,7 +289,7 @@ const xData = `{
                     <input
                         type="checkbox"
                         class="checkbox checkbox-primary"
-                        x-model={xModel + '.backgroundCheckRequired'}
+                        x-model={`${xModel}.backgroundCheckRequired`}
                         disabled={disabled}
                     />
                     <span class="label-text">Background Check Required</span>
@@ -261,7 +298,7 @@ const xData = `{
                     <input
                         type="checkbox"
                         class="checkbox checkbox-primary"
-                        x-model={xModel + '.evictionHistory'}
+                        x-model={`${xModel}.evictionHistory`}
                         disabled={disabled}
                     />
                     <span class="label-text">Check Eviction History</span>
@@ -270,7 +307,7 @@ const xData = `{
                     <input
                         type="checkbox"
                         class="checkbox checkbox-primary"
-                        x-model={xModel + '.criminalHistory'}
+                        x-model={`${xModel}.criminalHistory`}
                         disabled={disabled}
                     />
                     <span class="label-text">Check Criminal History</span>
@@ -279,7 +316,7 @@ const xData = `{
                     <input
                         type="checkbox"
                         class="checkbox checkbox-primary"
-                        x-model={xModel + '.rentalHistory'}
+                        x-model={`${xModel}.rentalHistory`}
                         disabled={disabled}
                     />
                     <span class="label-text">Verify Rental History</span>
@@ -297,7 +334,7 @@ const xData = `{
                     <input
                         type="checkbox"
                         class="checkbox checkbox-primary"
-                        x-model={xModel + '.employmentVerification'}
+                        x-model={`${xModel}.employmentVerification`}
                         disabled={disabled}
                     />
                     <span class="label-text">Employment Verification Required</span>
@@ -307,7 +344,7 @@ const xData = `{
                         name={name + '_references'}
                         label="Number of References Required"
                         type="number"
-                        xModel={xModel + '.references'}
+                        xModel={`${xModel}.references`}
                         min="0"
                         max="5"
                         placeholder="e.g., 2"
@@ -326,7 +363,7 @@ const xData = `{
                 name={name + '_maxOccupantsPerBedroom'}
                 label="Maximum Occupants per Bedroom"
                 type="number"
-                xModel={xModel + '.maxOccupantsPerBedroom'}
+                xModel={`${xModel}.maxOccupantsPerBedroom`}
                 min="1"
                 max="5"
                 placeholder="e.g., 2"
@@ -344,7 +381,7 @@ const xData = `{
             <BaseTextarea
                 name={name + '_notes'}
                 label="Additional Screening Notes"
-                xModel={xModel + '.notes'}
+                xModel={`${xModel}.notes`}
                 placeholder="Any additional screening criteria or requirements..."
                 disabled={disabled}
                 showLabel={false}
@@ -368,7 +405,7 @@ const xData = `{
     </div>
     
     <!-- Hidden input to store the JSON value -->
-    <input type="hidden" name={name} :value={`JSON.stringify(${xModel})`} />
+    <input type="hidden" name={name} :value="JSON.stringify(getModelValue())" />
     
     {(error || helpText) && (
         <div class={`label ${error ? 'text-error' : ''} mt-2`}>

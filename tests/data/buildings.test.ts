@@ -3,9 +3,10 @@ import './test-setup';
 import { dynamoDbMock, jest } from './test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek } from '../../src/types';
+import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek, BuildingData } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 import _ from 'lodash';
+import { getDefaultBuildingData } from '../../src/types';
 
 // Import the functions AFTER mocking
 import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuilding } from '../../data/buildings';
@@ -81,30 +82,33 @@ describe('Building Data Layer', () => {
         acceptsOnlineApplications: true
     };
 
+    // Helper to create expected result with merged defaults
+    const getExpectedBuilding = (building: Partial<BuildingData>): BuildingData => _.merge({}, getDefaultBuildingData(), building) as BuildingData;
+
     it('should create a building', async () => {
         expect.assertions(2);
         dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' }));
         dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(testBuilding);
-        expect(createdBuilding).toEqual({ ...testBuilding });
+        expect(createdBuilding).toEqual(testBuilding);
 
         const fetchedBuilding = await getBuilding(testBuilding.buildingID);
-        expect(fetchedBuilding).toEqual({ ...testBuilding });
+        expect(fetchedBuilding).toEqual(getExpectedBuilding(testBuilding));
     });
 
     it('should get all buildings', async () => {
         expect.assertions(1);
         dynamoDbMock.mockResolvedValueOnce(mockScanResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
         const buildings = await getBuildings();
-        expect(buildings).toEqual([{ ...testBuilding }]);
+        expect(buildings).toEqual([getExpectedBuilding(testBuilding)]);
     });
 
     it('should get a single building', async () => {
         expect.assertions(1);
         dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING' }));
         const fetchedBuilding = await getBuilding(testBuilding.buildingID);
-        expect(fetchedBuilding).toEqual({ ...testBuilding });
+        expect(fetchedBuilding).toEqual(getExpectedBuilding(testBuilding));
     });
 
     it('should update a building', async () => {
@@ -333,9 +337,9 @@ describe('Building Data Layer', () => {
                 getBuilding(testBuilding.buildingID)
             ]);
 
-            expect(result1).toEqual(testBuilding);
-            expect(result2).toEqual(testBuilding);
-            expect(result3).toEqual(testBuilding);
+            expect(result1).toEqual(getExpectedBuilding(testBuilding));
+            expect(result2).toEqual(getExpectedBuilding(testBuilding));
+            expect(result3).toEqual(getExpectedBuilding(testBuilding));
         });
 
         it('should handle concurrent update operations with version conflicts', async () => {

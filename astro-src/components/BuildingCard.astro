@@ -36,208 +36,79 @@ const unitTypes = await getUnitTypes(buildingID);
 
 const apiURL = Resource.API.url;
 
-// Initialize any missing nested objects
-if (!building.utilitiesIncluded) building.utilitiesIncluded = {};
+// Initialize any missing nested objects with proper defaults
+// This prevents null reference errors when Alpine.js accesses nested properties
+
+// Array properties - ensure they exist as empty arrays
 if (!building.oneTimeFees) building.oneTimeFees = [];
 if (!building.monthlyFees) building.monthlyFees = [];
 if (!building.parkingOptions) building.parkingOptions = [];
 if (!building.storageOptions) building.storageOptions = [];
 if (!building.propertyAmenities) building.propertyAmenities = [];
 if (!building.rentSpecials) building.rentSpecials = [];
-if (!building.petPolicies) building.petPolicies = { allowed: false };
-if (!building.screeningCriteria) building.screeningCriteria = {};
-if (!building.contactInfo) building.contactInfo = {};
-if (!building.tourAvailability) building.tourAvailability = {};
 if (!building.photos) building.photos = [];
-if (!building.incomeRestrictions) building.incomeRestrictions = undefined;
 
-const xData = JSON.stringify({
-    original: building,
-    building,
-    units,
-    unitTypes,
-    apiURL,
-    showSave: false,
-    saving: false,
-    activeTab: 'basic',
-    errors: {},
-    showAddUnitDialog: false,
-    newUnit: { unitID: '', modelID: '' },
-    // Validation method
-    validateForm() {
-        this.errors = {};
-        let isValid = true;
-        
-        // Basic Info validation
-        if (!this.building.buildingID || this.building.buildingID.trim() === '') {
-            this.errors.buildingID = 'Building ID is required';
-            isValid = false;
-        }
-        
-        if (!this.building.street || this.building.street.trim() === '') {
-            this.errors.street = 'Street address is required';
-            isValid = false;
-        }
-        
-        if (!this.building.city || this.building.city.trim() === '') {
-            this.errors.city = 'City is required';
-            isValid = false;
-        }
-        
-        if (!this.building.state || this.building.state.trim() === '') {
-            this.errors.state = 'State is required';
-            isValid = false;
-        }
-        
-        if (!this.building.zip || this.building.zip.trim() === '') {
-            this.errors.zip = 'ZIP code is required';
-            isValid = false;
-        } else if (!/^\d{5}(-\d{4})?$/.test(this.building.zip)) {
-            this.errors.zip = 'ZIP code must be in format 12345 or 12345-6789';
-            isValid = false;
-        }
-        
-        if (this.building.yearBuilt && (this.building.yearBuilt < 1800 || this.building.yearBuilt > new Date().getFullYear() + 1)) {
-            this.errors.yearBuilt = `Year built must be between 1800 and ${new Date().getFullYear() + 1}`;
-            isValid = false;
-        }
-        
-        if (this.building.numberStories && (this.building.numberStories < 1 || this.building.numberStories > 100)) {
-            this.errors.numberStories = 'Number of stories must be between 1 and 100';
-            isValid = false;
-        }
-        
-        if (this.building.totalUnits && (this.building.totalUnits < 1 || this.building.totalUnits > 1000)) {
-            this.errors.totalUnits = 'Total units must be between 1 and 1000';
-            isValid = false;
-        }
-        
-        // Lease & Pricing validation
-        if (this.building.leaseLength && (this.building.leaseLength < 1 || this.building.leaseLength > 36)) {
-            this.errors.leaseLength = 'Lease length must be between 1 and 36 months';
-            isValid = false;
-        }
-        
-        if (this.building.applicationFee && this.building.applicationFee < 0) {
-            this.errors.applicationFee = 'Application fee cannot be negative';
-            isValid = false;
-        }
-        
-        // Contact validation
-        if (this.building.contactInfo?.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.building.contactInfo.email)) {
-            this.errors.contactEmail = 'Please enter a valid email address';
-            isValid = false;
-        }
-        
-        if (this.building.contactInfo?.phone && !/^[\d\s\-\(\)\+\.]+$/.test(this.building.contactInfo.phone)) {
-            this.errors.contactPhone = 'Please enter a valid phone number';
-            isValid = false;
-        }
-        
-        if (this.building.contactInfo?.website && !this.building.contactInfo.website.match(/^https?:\/\/.+/)) {
-            this.errors.contactWebsite = 'Website must start with http:// or https://';
-            isValid = false;
-        }
-        
-        if (this.building.tourAvailability?.tourSchedulingUrl && !this.building.tourAvailability.tourSchedulingUrl.match(/^https?:\/\/.+/)) {
-            this.errors.tourSchedulingUrl = 'Tour scheduling URL must start with http:// or https://';
-            isValid = false;
-        }
-        
-        // Rent specials validation
-        if (this.building.rentSpecials && this.building.rentSpecials.length > 0) {
-            this.building.rentSpecials.forEach((special: any, index: number) => {
-                if (!special.title || special.title.trim() === '') {
-                    this.errors[`rentSpecial${index}Title`] = 'Rent special title is required';
-                    isValid = false;
-                }
-                if (special.startDate && special.endDate && new Date(special.startDate) > new Date(special.endDate)) {
-                    this.errors[`rentSpecial${index}Dates`] = 'Start date must be before end date';
-                    isValid = false;
-                }
-            });
-        }
-        
-        // Income restrictions validation
-        if (this.building.incomeRestrictions?.amiLimit && 
-            (this.building.incomeRestrictions.amiLimit < 0 || this.building.incomeRestrictions.amiLimit > 200)) {
-            this.errors.amiLimit = 'AMI limit must be between 0 and 200%';
-            isValid = false;
-        }
-        
-        // Screening criteria validation
-        if (this.building.screeningCriteria?.minCreditScore && 
-            (this.building.screeningCriteria.minCreditScore < 300 || this.building.screeningCriteria.minCreditScore > 850)) {
-            this.errors.minCreditScore = 'Credit score must be between 300 and 850';
-            isValid = false;
-        }
-        
-        if (this.building.screeningCriteria?.incomeRatio && 
-            (this.building.screeningCriteria.incomeRatio < 0 || this.building.screeningCriteria.incomeRatio > 10)) {
-            this.errors.incomeRatio = 'Income ratio must be between 0 and 10';
-            isValid = false;
-        }
-        
-        if (this.building.screeningCriteria?.maxOccupantsPerBedroom && 
-            (this.building.screeningCriteria.maxOccupantsPerBedroom < 1 || this.building.screeningCriteria.maxOccupantsPerBedroom > 5)) {
-            this.errors.maxOccupantsPerBedroom = 'Max occupants per bedroom must be between 1 and 5';
-            isValid = false;
-        }
-        
-        return isValid;
-    },
-    // Methods for handling actions
-    openAddUnitDialog() {
-        this.newUnit = { unitID: '', modelID: '' };
-        this.showAddUnitDialog = true;
-    },
-    async addUnit() {
-        if (!this.newUnit.unitID || this.newUnit.unitID.trim() === '') {
-            this.$dispatch('show-toast', { message: 'Unit number is required', type: 'error' });
-            return;
-        }
-        this.showAddUnitDialog = false;
-        const unitData: any = {
-            unitID: this.newUnit.unitID,
-            buildingID: this.building.buildingID
-        };
-        if (this.newUnit.modelID) {
-            unitData.modelID = this.newUnit.modelID;
-        }
-        await fetch(`${this.apiURL}buildings/${this.building.buildingID}/units`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(unitData),
-        });
-        window.location.reload();
-    },
-    async deleteBuilding() {
-        if (!confirm('Are you sure you want to delete this building and all its units?')) return;
-        await fetch(`${this.apiURL}buildings/${this.building.buildingID}`, { method: 'DELETE' });
-        window.location.reload();
-    },
-    async saveBuilding() {
-        if (!this.validateForm()) {
-            // Show validation errors
-            this.$dispatch('show-toast', { message: 'Please fix the validation errors before saving', type: 'error' });
-            return;
-        }
-        this.saving = true;
-        await fetch(`${this.apiURL}buildings/${this.building.buildingID}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(this.building),
-        });
-        this.original = { ...this.building };
-        this.showSave = false;
-        this.saving = false;
-        this.$dispatch('show-toast', { message: 'Building saved successfully', type: 'success' });
-    },
-    undoChanges() {
-        this.building = { ...this.original };
-        this.errors = {};
+// Utilities included - initialize with all utility types set to false
+if (!building.utilitiesIncluded) {
+    building.utilitiesIncluded = {
+        [UtilityType.WATER]: false,
+        [UtilityType.SEWER]: false,
+        [UtilityType.TRASH]: false,
+        [UtilityType.GAS]: false,
+        [UtilityType.ELECTRICITY]: false,
+        [UtilityType.CABLE]: false,
+        [UtilityType.INTERNET]: false,
+        [UtilityType.HEAT]: false,
+        [UtilityType.AIR_CONDITIONING]: false
+    };
+}
+
+// Pet policies - ensure it has the required structure
+if (!building.petPolicies) {
+    building.petPolicies = { allowed: false };
+}
+
+// Screening criteria - initialize with sensible defaults
+if (!building.screeningCriteria) {
+    building.screeningCriteria = {
+        incomeRatio: 3,
+        minCreditScore: 600,
+        maxOccupantsPerBedroom: 2,
+        backgroundCheckRequired: true,
+        evictionHistory: true,
+        criminalHistory: true,
+        references: 2,
+        employmentVerification: true,
+        rentalHistory: true
+    };
+}
+
+// Contact info - ensure nested objects exist
+if (!building.contactInfo) building.contactInfo = {};
+if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {};
+
+// Tour availability - ensure nested objects exist
+if (!building.tourAvailability) building.tourAvailability = {};
+if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {};
+// Initialize tour availability booleans if they don't exist
+if (building.tourAvailability.selfGuidedTours === undefined) building.tourAvailability.selfGuidedTours = false;
+if (building.tourAvailability.virtualTours === undefined) building.tourAvailability.virtualTours = false;
+if (building.tourAvailability.inPersonTours === undefined) building.tourAvailability.inPersonTours = false;
+
+// Income restrictions - ensure proper structure for Alpine.js binding
+// Even if null, we need an object for the template to bind to
+if (!building.incomeRestrictions) {
+    building.incomeRestrictions = { amiLimit: null, maxIncomeByHouseholdSize: {} };
+} else {
+    // If incomeRestrictions exists, ensure maxIncomeByHouseholdSize is initialized
+    if (!building.incomeRestrictions.maxIncomeByHouseholdSize) {
+        building.incomeRestrictions.maxIncomeByHouseholdSize = {};
     }
-});
+    // Ensure amiLimit has a default value if not set
+    if (building.incomeRestrictions.amiLimit === undefined) {
+        building.incomeRestrictions.amiLimit = null;
+    }
+}
 
 // Property type options
 const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => ({
@@ -252,16 +123,230 @@ const utilityTypes = Object.values(UtilityType);
 const daysOfWeek = Object.values(DayOfWeek);
 ---
 
+<script is:inline>
+function buildingCardData() {
+    return {
+        init() {
+            // Parse data from data attributes
+            this.building = JSON.parse(this.$el.dataset.building);
+            this.units = JSON.parse(this.$el.dataset.units);
+            this.unitTypes = JSON.parse(this.$el.dataset.unitTypes);
+            this.apiURL = this.$el.dataset.apiUrl;
+            this.original = JSON.parse(JSON.stringify(this.building));
+        },
+        original: null,
+        building: null,
+        units: null,
+        unitTypes: null,
+        apiURL: null,
+        showSave: false,
+        saving: false,
+        activeSectionTab: 'basic',
+        errors: {},
+        showAddUnitDialog: false,
+        newUnit: { unitID: '', modelID: '' },
+        
+        // Validation method
+        validateForm() {
+            this.errors = {};
+            let isValid = true;
+            
+            // Basic Info validation
+            if (!this.building.buildingID || this.building.buildingID.trim() === '') {
+                this.errors.buildingID = 'Building ID is required';
+                isValid = false;
+            }
+            
+            if (!this.building.street || this.building.street.trim() === '') {
+                this.errors.street = 'Street address is required';
+                isValid = false;
+            }
+            
+            if (!this.building.city || this.building.city.trim() === '') {
+                this.errors.city = 'City is required';
+                isValid = false;
+            }
+            
+            if (!this.building.state || this.building.state.trim() === '') {
+                this.errors.state = 'State is required';
+                isValid = false;
+            }
+            
+            if (!this.building.zip || this.building.zip.trim() === '') {
+                this.errors.zip = 'ZIP code is required';
+                isValid = false;
+            } else if (!/^\d{5}(-\d{4})?$/.test(this.building.zip)) {
+                this.errors.zip = 'ZIP code must be in format 12345 or 12345-6789';
+                isValid = false;
+            }
+            
+            if (this.building.yearBuilt && (this.building.yearBuilt < 1800 || this.building.yearBuilt > new Date().getFullYear() + 1)) {
+                this.errors.yearBuilt = `Year built must be between 1800 and ${new Date().getFullYear() + 1}`;
+                isValid = false;
+            }
+            
+            if (this.building.numberStories && (this.building.numberStories < 1 || this.building.numberStories > 100)) {
+                this.errors.numberStories = 'Number of stories must be between 1 and 100';
+                isValid = false;
+            }
+            
+            if (this.building.totalUnits && (this.building.totalUnits < 1 || this.building.totalUnits > 1000)) {
+                this.errors.totalUnits = 'Total units must be between 1 and 1000';
+                isValid = false;
+            }
+            
+            // Lease & Pricing validation
+            if (this.building.leaseLength && (this.building.leaseLength < 1 || this.building.leaseLength > 36)) {
+                this.errors.leaseLength = 'Lease length must be between 1 and 36 months';
+                isValid = false;
+            }
+            
+            if (this.building.applicationFee && this.building.applicationFee < 0) {
+                this.errors.applicationFee = 'Application fee cannot be negative';
+                isValid = false;
+            }
+            
+            // Contact validation
+            if (this.building.contactInfo?.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.building.contactInfo.email)) {
+                this.errors.contactEmail = 'Please enter a valid email address';
+                isValid = false;
+            }
+            
+            if (this.building.contactInfo?.phone && !/^[\d\s\-\(\)\+\.]+$/.test(this.building.contactInfo.phone)) {
+                this.errors.contactPhone = 'Please enter a valid phone number';
+                isValid = false;
+            }
+            
+            if (this.building.contactInfo?.website && !this.building.contactInfo.website.match(/^https?:\/\/.+/)) {
+                this.errors.contactWebsite = 'Website must start with http:// or https://';
+                isValid = false;
+            }
+            
+            if (this.building.tourAvailability?.tourSchedulingUrl && 
+                this.building.tourAvailability.tourSchedulingUrl.trim() !== '' && 
+                !this.building.tourAvailability.tourSchedulingUrl.match(/^https?:\/\/.+/)) {
+                this.errors.tourSchedulingUrl = 'Tour scheduling URL must start with http:// or https://';
+                isValid = false;
+            }
+            
+            // Rent specials validation
+            if (this.building.rentSpecials && this.building.rentSpecials.length > 0) {
+                this.building.rentSpecials.forEach((special, index) => {
+                    if (!special.title || special.title.trim() === '') {
+                        this.errors[`rentSpecial${index}Title`] = 'Rent special title is required';
+                        isValid = false;
+                    }
+                    if (special.startDate && special.endDate && new Date(special.startDate) > new Date(special.endDate)) {
+                        this.errors[`rentSpecial${index}Dates`] = 'Start date must be before end date';
+                        isValid = false;
+                    }
+                });
+            }
+            
+            // Income restrictions validation - only validate if value exists and is not empty
+            if (this.building.incomeRestrictions?.amiLimit !== null && 
+                this.building.incomeRestrictions?.amiLimit !== undefined &&
+                this.building.incomeRestrictions?.amiLimit !== '' &&
+                (this.building.incomeRestrictions.amiLimit < 0 || this.building.incomeRestrictions.amiLimit > 200)) {
+                this.errors.amiLimit = 'AMI limit must be between 0 and 200%';
+                isValid = false;
+            }
+            
+            // Screening criteria validation
+            if (this.building.screeningCriteria?.minCreditScore && 
+                (this.building.screeningCriteria.minCreditScore < 300 || this.building.screeningCriteria.minCreditScore > 850)) {
+                this.errors.minCreditScore = 'Credit score must be between 300 and 850';
+                isValid = false;
+            }
+            
+            if (this.building.screeningCriteria?.incomeRatio && 
+                (this.building.screeningCriteria.incomeRatio < 0 || this.building.screeningCriteria.incomeRatio > 10)) {
+                this.errors.incomeRatio = 'Income ratio must be between 0 and 10';
+                isValid = false;
+            }
+            
+            if (this.building.screeningCriteria?.maxOccupantsPerBedroom && 
+                (this.building.screeningCriteria.maxOccupantsPerBedroom < 1 || this.building.screeningCriteria.maxOccupantsPerBedroom > 5)) {
+                this.errors.maxOccupantsPerBedroom = 'Max occupants per bedroom must be between 1 and 5';
+                isValid = false;
+            }
+            
+            return isValid;
+        },
+        
+        // Methods for handling actions
+        openAddUnitDialog() {
+            this.newUnit = { unitID: '', modelID: '' };
+            this.showAddUnitDialog = true;
+        },
+        
+        async addUnit() {
+            if (!this.newUnit.unitID || this.newUnit.unitID.trim() === '') {
+                this.$dispatch('show-toast', { message: 'Unit number is required', type: 'error' });
+                return;
+            }
+            this.showAddUnitDialog = false;
+            const unitData = {
+                unitID: this.newUnit.unitID,
+                buildingID: this.building.buildingID
+            };
+            if (this.newUnit.modelID) {
+                unitData.modelID = this.newUnit.modelID;
+            }
+            await fetch(`${this.apiURL}buildings/${this.building.buildingID}/units`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(unitData),
+            });
+            window.location.reload();
+        },
+        
+        async deleteBuilding() {
+            if (!confirm('Are you sure you want to delete this building and all its units?')) return;
+            await fetch(`${this.apiURL}buildings/${this.building.buildingID}`, { method: 'DELETE' });
+            window.location.reload();
+        },
+        
+        async saveBuilding() {
+            if (!this.validateForm()) {
+                // Show validation errors
+                this.$dispatch('show-toast', { message: 'Please fix the validation errors before saving', type: 'error' });
+                return;
+            }
+            this.saving = true;
+            await fetch(`${this.apiURL}buildings/${this.building.buildingID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.building),
+            });
+            this.original = { ...this.building };
+            this.showSave = false;
+            this.saving = false;
+            this.$dispatch('show-toast', { message: 'Building saved successfully', type: 'success' });
+        },
+        
+        undoChanges() {
+            this.building = { ...this.original };
+            this.errors = {};
+        }
+    };
+}
+</script>
+
 <div
     class="building-card"
-    x-data={xData}
-    x-effect="showSave = JSON.stringify(building) !== JSON.stringify(original)"
-    :class="{'opacity-50': saving}">
+    x-data="buildingCardData()"
+    x-effect="if (building) { showSave = JSON.stringify(building) !== JSON.stringify(original); }"
+    :class="{'opacity-50': saving}"
+    data-building={JSON.stringify(building)}
+    data-units={JSON.stringify(units)}
+    data-unit-types={JSON.stringify(unitTypes)}
+    data-api-url={apiURL}>
     
     <!-- Header with Building Name and Actions -->
     <div class="mb-6">
         <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-bold" x-text="building.buildingID"></h2>
+            <h2 class="text-2xl font-bold" x-text="building?.buildingID || 'Loading...'"></h2>
             <Saving />
         </div>
         
@@ -271,6 +356,10 @@ const daysOfWeek = Object.values(DayOfWeek);
                 class="btn btn-primary btn-sm"
                 x-on:click="openAddUnitDialog()"
                 >Add Unit</button>
+            <a
+                x-bind:href="building ? '/building/' + building.buildingID + '/unit-types' : '#'"
+                class="btn btn-secondary btn-sm"
+                >Manage Unit Types</a>
             <button
                 class="btn btn-error btn-sm"
                 x-on:click="deleteBuilding()"
@@ -291,42 +380,46 @@ const daysOfWeek = Object.values(DayOfWeek);
     <div class="tabs tabs-boxed mb-6">
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'basic'}"
-            @click="activeTab = 'basic'">Basic Info</button>
+            :class="{'tab-active': activeSectionTab === 'basic'}"
+            @click="activeSectionTab = 'basic'">Basic Info</button>
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'lease'}"
-            @click="activeTab = 'lease'">Lease & Pricing</button>
+            :class="{'tab-active': activeSectionTab === 'lease'}"
+            @click="activeSectionTab = 'lease'">Lease & Pricing</button>
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'details'}"
-            @click="activeTab = 'details'">Property Details</button>
+            :class="{'tab-active': activeSectionTab === 'details'}"
+            @click="activeSectionTab = 'details'">Property Details</button>
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'utilities'}"
-            @click="activeTab = 'utilities'">Utilities & Fees</button>
+            :class="{'tab-active': activeSectionTab === 'utilities'}"
+            @click="activeSectionTab = 'utilities'">Utilities & Fees</button>
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'amenities'}"
-            @click="activeTab = 'amenities'">Amenities</button>
+            :class="{'tab-active': activeSectionTab === 'amenities'}"
+            @click="activeSectionTab = 'amenities'">Amenities</button>
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'policies'}"
-            @click="activeTab = 'policies'">Policies</button>
+            :class="{'tab-active': activeSectionTab === 'policies'}"
+            @click="activeSectionTab = 'policies'">Policies</button>
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'contact'}"
-            @click="activeTab = 'contact'">Contact & Tours</button>
+            :class="{'tab-active': activeSectionTab === 'contact'}"
+            @click="activeSectionTab = 'contact'">Contact & Tours</button>
         <button 
             class="tab" 
-            :class="{'tab-active': activeTab === 'media'}"
-            @click="activeTab = 'media'">Media</button>
+            :class="{'tab-active': activeSectionTab === 'media'}"
+            @click="activeSectionTab = 'media'">Media</button>
+        <button 
+            class="tab" 
+            :class="{'tab-active': activeSectionTab === 'units'}"
+            @click="activeSectionTab = 'units'">Units</button>
     </div>
 
     <!-- Tab Content -->
-    <div class="tab-content">
+    <div class="building-tab-content">
         <!-- Basic Info Tab -->
-        <div x-show="activeTab === 'basic'" class="space-y-4">
+        <div x-show="activeSectionTab === 'basic'" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseInput
                     name="buildingID"
@@ -334,8 +427,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.buildingID"
                     disabled={true}
                     required={true}
-                    error="errors.buildingID"
                 />
+                <span x-show="errors.buildingID" class="label-text-alt text-error" x-text="errors.buildingID"></span>
                 <BaseSelect
                     name="propertyType"
                     label="Property Type"
@@ -352,16 +445,16 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.street"
                     placeholder="123 Main St"
                     required={true}
-                    error="errors.street"
                 />
+                <span x-show="errors.street" class="label-text-alt text-error" x-text="errors.street"></span>
                 <BaseInput
                     name="city"
                     label="City"
                     xModel="building.city"
                     placeholder="San Francisco"
                     required={true}
-                    error="errors.city"
                 />
+                <span x-show="errors.city" class="label-text-alt text-error" x-text="errors.city"></span>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,16 +464,16 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.state"
                     placeholder="CA"
                     required={true}
-                    error="errors.state"
                 />
+                <span x-show="errors.state" class="label-text-alt text-error" x-text="errors.state"></span>
                 <BaseInput
                     name="zip"
                     label="ZIP Code"
                     xModel="building.zip"
                     placeholder="94102"
                     required={true}
-                    error="errors.zip"
                 />
+                <span x-show="errors.zip" class="label-text-alt text-error" x-text="errors.zip"></span>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -392,8 +485,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     placeholder="2020"
                     min="1800"
                     max="2030"
-                    error="errors.yearBuilt"
                 />
+                <span x-show="errors.yearBuilt" class="label-text-alt text-error" x-text="errors.yearBuilt"></span>
                 <BaseInput
                     name="numberStories"
                     label="Number of Stories"
@@ -401,8 +494,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.numberStories"
                     placeholder="3"
                     min="1"
-                    error="errors.numberStories"
                 />
+                <span x-show="errors.numberStories" class="label-text-alt text-error" x-text="errors.numberStories"></span>
                 <BaseInput
                     name="totalUnits"
                     label="Total Units"
@@ -410,8 +503,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     xModel="building.totalUnits"
                     placeholder="24"
                     min="1"
-                    error="errors.totalUnits"
                 />
+                <span x-show="errors.totalUnits" class="label-text-alt text-error" x-text="errors.totalUnits"></span>
             </div>
             
             <BaseTextarea
@@ -424,7 +517,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         </div>
 
         <!-- Lease & Pricing Tab -->
-        <div x-show="activeTab === 'lease'" class="space-y-4">
+        <div x-show="activeSectionTab === 'lease'" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseInput
                     name="leaseLength"
@@ -434,8 +527,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     placeholder="12"
                     min="1"
                     max="24"
-                    error="errors.leaseLength"
                 />
+                <span x-show="errors.leaseLength" class="label-text-alt text-error" x-text="errors.leaseLength"></span>
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <span class="label-text">Allow Short-Term Leases</span>
@@ -457,8 +550,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     placeholder="50"
                     min="0"
                     step="1"
-                    error="errors.applicationFee"
                 />
+                <span x-show="errors.applicationFee" class="label-text-alt text-error" x-text="errors.applicationFee"></span>
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <span class="label-text">Accept Online Applications</span>
@@ -480,7 +573,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         </div>
 
         <!-- Property Details Tab -->
-        <div x-show="activeTab === 'details'" class="space-y-4">
+        <div x-show="activeSectionTab === 'details'" class="space-y-4">
             <BaseTextarea
                 name="propertyDescription"
                 label="Detailed Marketing Description"
@@ -520,8 +613,8 @@ const daysOfWeek = Object.values(DayOfWeek);
             <div class="card bg-base-200">
                 <div class="card-body">
                     <h3 class="card-title text-lg">Rent Specials</h3>
-                    <div x-data='{ addSpecial() { if (!building.rentSpecials) building.rentSpecials = []; building.rentSpecials.push({ title: "", description: "", startDate: "", endDate: "" }); }, removeSpecial(index) { building.rentSpecials.splice(index, 1); } }'>
-                        <template x-for="(special, index) in building.rentSpecials" :key="index">
+                    <div x-data='{ addSpecial() { if (!$parent.building.rentSpecials) $parent.building.rentSpecials = []; $parent.building.rentSpecials.push({ id: Date.now() + Math.random(), title: "", description: "", startDate: "", endDate: "" }); }, removeSpecial(index) { $parent.building.rentSpecials.splice(index, 1); } }'>
+                        <template x-for="(special, index) in building.rentSpecials || []" :key="special.id || ('special-' + index)">
                             <div class="border border-base-300 rounded-lg p-4 mb-4">
                                 <div class="flex justify-end mb-2">
                                     <button 
@@ -593,7 +686,7 @@ const daysOfWeek = Object.values(DayOfWeek);
             <div class="card bg-base-200">
                 <div class="card-body">
                     <h3 class="card-title text-lg">Income Restrictions</h3>
-                    <div x-data="{ hasRestrictions: !!building.incomeRestrictions?.amiLimit, initRestrictions() { if (this.hasRestrictions && !building.incomeRestrictions) { building.incomeRestrictions = { amiLimit: null, maxIncomeByHouseholdSize: {} }; } else if (!this.hasRestrictions) { building.incomeRestrictions = null; } } }" x-init="initRestrictions()" x-effect="initRestrictions()">
+                    <div x-data="{ hasRestrictions: !!(building.incomeRestrictions?.amiLimit), initRestrictions() { if (!building.incomeRestrictions) building.incomeRestrictions = { amiLimit: null, maxIncomeByHouseholdSize: {} }; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if (!this.hasRestrictions) { building.incomeRestrictions.amiLimit = null; } } }" x-init="initRestrictions()" x-effect="initRestrictions()">
                         <div class="form-control mb-4">
                             <label class="label cursor-pointer">
                                 <span class="label-text">Has Income Restrictions</span>
@@ -614,19 +707,20 @@ const daysOfWeek = Object.values(DayOfWeek);
                                 min="0"
                                 max="200"
                                 helpText="Area Median Income percentage limit"
-                                error="errors.amiLimit"
                             />
+                            <span x-show="errors.amiLimit" class="label-text-alt text-error" x-text="errors.amiLimit"></span>
                             <!-- Simplified income limits by household size -->
                             <div>
                                 <label class="label">Maximum Income by Household Size</label>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <template x-for="size in [1, 2, 3, 4]" :key="size">
+                                    <template x-for="size in [1, 2, 3, 4]" :key="'income-size-' + size">
                                         <label class="floating-label">
                                             <span x-text="size + ' Person'"></span>
                                             <input
                                                 type="number"
                                                 :name="'income-size-' + size"
-                                                x-model.number="building.incomeRestrictions.maxIncomeByHouseholdSize[size]"
+                                                :value="building.incomeRestrictions && building.incomeRestrictions.maxIncomeByHouseholdSize ? building.incomeRestrictions.maxIncomeByHouseholdSize[size] || '' : ''"
+                                                @input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
                                                 placeholder="50000"
                                                 class="input w-full"
                                                 min="0"
@@ -643,7 +737,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         </div>
 
         <!-- Utilities & Fees Tab -->
-        <div x-show="activeTab === 'utilities'" class="space-y-4">
+        <div x-show="activeSectionTab === 'utilities'" class="space-y-4">
             <!-- Utilities Included -->
             <div class="card bg-base-200">
                 <div class="card-body">
@@ -691,13 +785,13 @@ const daysOfWeek = Object.values(DayOfWeek);
         </div>
 
         <!-- Amenities Tab -->
-        <div x-show="activeTab === 'amenities'" class="space-y-4">
+        <div x-show="activeSectionTab === 'amenities'" class="space-y-4">
             <!-- Parking Options -->
             <div class="card bg-base-200">
                 <div class="card-body">
                     <h3 class="card-title text-lg">Parking Options</h3>
-                    <div x-data='{ addParking() { if (!building.parkingOptions) building.parkingOptions = []; building.parkingOptions.push({ type: "uncovered", included: false, fee: null, spaces: 1, description: "" }); }, removeParking(index) { building.parkingOptions.splice(index, 1); } }'>
-                        <template x-for="(parking, index) in building.parkingOptions" :key="index">
+                    <div x-data='{ addParking() { if (!$parent.building.parkingOptions) $parent.building.parkingOptions = []; $parent.building.parkingOptions.push({ id: Date.now() + Math.random(), type: "uncovered", included: false, fee: null, spaces: 1, description: "" }); }, removeParking(index) { $parent.building.parkingOptions.splice(index, 1); } }'>
+                        <template x-for="(parking, index) in building.parkingOptions || []" :key="parking.id || ('parking-' + index)">
                             <div class="border border-base-300 rounded-lg p-4 mb-4">
                                 <div class="flex justify-end mb-2">
                                     <button 
@@ -784,8 +878,8 @@ const daysOfWeek = Object.values(DayOfWeek);
             <div class="card bg-base-200">
                 <div class="card-body">
                     <h3 class="card-title text-lg">Storage Options</h3>
-                    <div x-data='{ addStorage() { if (!building.storageOptions) building.storageOptions = []; building.storageOptions.push({ type: "closet", included: false, fee: null, dimensions: "", description: "" }); }, removeStorage(index) { building.storageOptions.splice(index, 1); } }'>
-                        <template x-for="(storage, index) in building.storageOptions" :key="index">
+                    <div x-data='{ addStorage() { if (!$parent.building.storageOptions) $parent.building.storageOptions = []; $parent.building.storageOptions.push({ id: Date.now() + Math.random(), type: "closet", included: false, fee: null, dimensions: "", description: "" }); }, removeStorage(index) { $parent.building.storageOptions.splice(index, 1); } }'>
+                        <template x-for="(storage, index) in building.storageOptions || []" :key="storage.id || ('storage-' + index)">
                             <div class="border border-base-300 rounded-lg p-4 mb-4">
                                 <div class="flex justify-end mb-2">
                                     <button 
@@ -880,7 +974,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         </div>
 
         <!-- Policies Tab -->
-        <div x-show="activeTab === 'policies'" class="space-y-4">
+        <div x-show="activeSectionTab === 'policies'" class="space-y-4">
             <!-- Pet Policies -->
             <div class="card bg-base-200">
                 <div class="card-body">
@@ -905,7 +999,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         </div>
 
         <!-- Contact & Tours Tab -->
-        <div x-show="activeTab === 'contact'" class="space-y-4">
+        <div x-show="activeSectionTab === 'contact'" class="space-y-4">
             <!-- Contact Information -->
             <div class="card bg-base-200">
                 <div class="card-body">
@@ -923,24 +1017,24 @@ const daysOfWeek = Object.values(DayOfWeek);
                             type="tel"
                             xModel="building.contactInfo.phone"
                             placeholder="(555) 123-4567"
-                            error="errors.contactPhone"
                         />
+                        <span x-show="errors.contactPhone" class="label-text-alt text-error" x-text="errors.contactPhone"></span>
                         <BaseInput
                             name="contactEmail"
                             label="Email Address"
                             type="email"
                             xModel="building.contactInfo.email"
                             placeholder="contact@property.com"
-                            error="errors.contactEmail"
                         />
+                        <span x-show="errors.contactEmail" class="label-text-alt text-error" x-text="errors.contactEmail"></span>
                         <BaseInput
                             name="contactWebsite"
                             label="Website"
                             type="url"
                             xModel="building.contactInfo.website"
                             placeholder="https://property.com"
-                            error="errors.contactWebsite"
                         />
+                        <span x-show="errors.contactWebsite" class="label-text-alt text-error" x-text="errors.contactWebsite"></span>
                     </div>
                     
                     <!-- Office Hours -->
@@ -948,7 +1042,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                         <h4 class="text-base font-semibold mb-4">Office Hours</h4>
                         <div class="flex flex-col gap-2">
                             {daysOfWeek.map(day => {
-                                const xDataStr = "{ day: '" + day + "', isOpen: !!building.contactInfo.officeHours?.['" + day + "'], toggle() { if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {}; if (this.isOpen) { building.contactInfo.officeHours[this.day] = { open: '09:00', close: '17:00' }; } else { delete building.contactInfo.officeHours[this.day]; } } }";
+                                const xDataStr = `{ day: '${day}', isOpen: !!(building.contactInfo?.officeHours?.['${day}']), toggle() { if (!building.contactInfo) building.contactInfo = {}; if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {}; if (this.isOpen) { building.contactInfo.officeHours[this.day] = { open: '09:00', close: '17:00' }; } else { delete building.contactInfo.officeHours[this.day]; } } }`;
                                 return (
                                 <div class="grid grid-cols-3 gap-4 items-center" x-data={xDataStr}>
                                     <div class="form-control">
@@ -962,19 +1056,21 @@ const daysOfWeek = Object.values(DayOfWeek);
                                             />
                                         </label>
                                     </div>
-                                    <BaseInput
-                                        name={'office-open-' + day}
-                                        label="Open"
+                                    <input
                                         type="time"
-                                        xModel={`building.contactInfo.officeHours?.['${day}']?.open`}
+                                        class="input w-full"
                                         :disabled="!isOpen"
+                                        :value="building.contactInfo?.officeHours?.[day]?.open || ''"
+                                        @input="if (building.contactInfo?.officeHours?.[day]) building.contactInfo.officeHours[day].open = $event.target.value; else if (building.contactInfo?.officeHours) { building.contactInfo.officeHours[day] = { open: $event.target.value, close: '17:00' }; }"
+                                        placeholder="09:00"
                                     />
-                                    <BaseInput
-                                        name={'office-close-' + day}
-                                        label="Close"
+                                    <input
                                         type="time"
-                                        xModel={`building.contactInfo.officeHours?.['${day}']?.close`}
+                                        class="input w-full"
                                         :disabled="!isOpen"
+                                        :value="building.contactInfo?.officeHours?.[day]?.close || ''"
+                                        @input="if (building.contactInfo?.officeHours?.[day]) building.contactInfo.officeHours[day].close = $event.target.value; else if (building.contactInfo?.officeHours) { building.contactInfo.officeHours[day] = { open: '09:00', close: $event.target.value }; }"
+                                        placeholder="17:00"
                                     />
                                 </div>
                             )})}
@@ -1026,15 +1122,15 @@ const daysOfWeek = Object.values(DayOfWeek);
                         type="url"
                         xModel="building.tourAvailability.tourSchedulingUrl"
                         placeholder="https://calendly.com/property-tours"
-                        error="errors.tourSchedulingUrl"
                     />
+                    <span x-show="errors.tourSchedulingUrl" class="label-text-alt text-error" x-text="errors.tourSchedulingUrl"></span>
                     
                     <!-- Tour Hours -->
                     <div class="mt-6">
                         <h4 class="text-base font-semibold mb-4">Tour Hours</h4>
                         <div class="flex flex-col gap-2">
                             {daysOfWeek.map(day => {
-                                const xDataStr = "{ day: '" + day + "', isOpen: !!building.tourAvailability.tourHours?.['" + day + "'], toggle() { if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {}; if (this.isOpen) { building.tourAvailability.tourHours[this.day] = { open: '09:00', close: '17:00' }; } else { delete building.tourAvailability.tourHours[this.day]; } } }";
+                                const xDataStr = `{ day: '${day}', isOpen: !!(building.tourAvailability?.tourHours?.['${day}']), toggle() { if (!building.tourAvailability) building.tourAvailability = {}; if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {}; if (this.isOpen) { building.tourAvailability.tourHours[this.day] = { open: '09:00', close: '17:00' }; } else { delete building.tourAvailability.tourHours[this.day]; } } }`;
                                 return (
                                 <div class="grid grid-cols-3 gap-4 items-center" x-data={xDataStr}>
                                     <div class="form-control">
@@ -1048,19 +1144,21 @@ const daysOfWeek = Object.values(DayOfWeek);
                                             />
                                         </label>
                                     </div>
-                                    <BaseInput
-                                        name={'tour-open-' + day}
-                                        label="Open"
+                                    <input
                                         type="time"
-                                        xModel={`building.tourAvailability.tourHours?.['${day}']?.open`}
+                                        class="input w-full"
                                         :disabled="!isOpen"
+                                        :value="building.tourAvailability?.tourHours?.[day]?.open || ''"
+                                        @input="if (building.tourAvailability?.tourHours?.[day]) building.tourAvailability.tourHours[day].open = $event.target.value"
+                                        placeholder="09:00"
                                     />
-                                    <BaseInput
-                                        name={'tour-close-' + day}
-                                        label="Close"
+                                    <input
                                         type="time"
-                                        xModel={`building.tourAvailability.tourHours?.['${day}']?.close`}
+                                        class="input w-full"
                                         :disabled="!isOpen"
+                                        :value="building.tourAvailability?.tourHours?.[day]?.close || ''"
+                                        @input="if (building.tourAvailability?.tourHours?.[day]) building.tourAvailability.tourHours[day].close = $event.target.value"
+                                        placeholder="17:00"
                                     />
                                 </div>
                             )})}
@@ -1071,7 +1169,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         </div>
 
         <!-- Media Tab -->
-        <div x-show="activeTab === 'media'" class="space-y-4">
+        <div x-show="activeSectionTab === 'media'" class="space-y-4">
             <div class="card bg-base-200">
                 <div class="card-body">
                     <h3 class="card-title text-lg">Property Photos</h3>
@@ -1084,13 +1182,17 @@ const daysOfWeek = Object.values(DayOfWeek);
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Units List -->
-    <div class="mt-8">
-        <h3 class="text-xl font-semibold mb-4">Units in this building</h3>
-        <div class="flex flex-col gap-2">
-            {units?.map((u) => <UnitCard unit={u} unitTypes={unitTypes} />)}
+
+        <!-- Units Tab -->
+        <div x-show="activeSectionTab === 'units'" class="space-y-4">
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Units in this building</h3>
+                    <div class="flex flex-col gap-2">
+                        {units?.map((u) => <UnitCard unit={u} unitTypes={unitTypes} />)}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -1121,8 +1223,8 @@ const daysOfWeek = Object.values(DayOfWeek);
                     x-model="newUnit.modelID"
                 >
                     <option value="">No Model (Standalone Unit)</option>
-                    <template x-for="unitType in unitTypes" :key="unitType.id">
-                        <option :value="unitType.id" x-text="`${unitType.modelName} (${unitType.beds} bed, ${unitType.baths} bath)`"></option>
+                    <template x-for="(unitType, index) in unitTypes || []" :key="unitType.id || ('unittype-' + index)">
+                        <option :value="unitType.id" x-text="(unitType.modelName || 'Unknown') + ' (' + (unitType.beds || 0) + ' bed, ' + (unitType.baths || 0) + ' bath)'"></option>
                     </template>
                 </select>
                 <label class="label">

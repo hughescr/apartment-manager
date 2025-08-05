@@ -50,7 +50,7 @@ const feeTypeLabels = {
     [FeeType.CLEANING]: 'Cleaning Fee',
 };
 
-// Create Alpine.js data string directly
+// Create Alpine.js data string with proper xModel reference handling
 const xData = `{
     showAddForm: false,
     newFee: {
@@ -60,11 +60,31 @@ const xData = `{
         refundable: false
     },
     feeTypeLabels: ${JSON.stringify(feeTypeLabels)},
+    xModelRef: '${xModel}',
+    
+    getModelValue() {
+        const path = this.xModelRef.split('.');
+        let current = this;
+        for (const key of path) {
+            if (current[key] === undefined) return [];
+            current = current[key];
+        }
+        return current || [];
+    },
+    
+    setModelValue(value) {
+        const path = this.xModelRef.split('.');
+        const lastKey = path.pop();
+        let current = this;
+        for (const key of path) {
+            if (!current[key]) current[key] = {};
+            current = current[key];
+        }
+        current[lastKey] = value;
+    },
     
     addFee() {
-        if (!${xModel}) {
-            ${xModel} = [];
-        }
+        let fees = this.getModelValue();
         
         // Validate amount
         if (this.newFee.amount <= 0) {
@@ -73,12 +93,14 @@ const xData = `{
         }
         
         // Add the new fee
-        ${xModel}.push({
+        fees.push({
             type: this.newFee.type,
             amount: Number(this.newFee.amount),
             description: this.newFee.description || undefined,
             refundable: this.newFee.refundable || undefined
         });
+        
+        this.setModelValue(fees);
         
         // Reset form
         this.resetNewFee();
@@ -87,18 +109,23 @@ const xData = `{
     
     removeFee(index) {
         if (confirm('Are you sure you want to remove this fee?')) {
-            ${xModel}.splice(index, 1);
+            let fees = this.getModelValue();
+            fees.splice(index, 1);
+            this.setModelValue(fees);
         }
     },
     
     updateFee(index, field, value) {
-        if (!${xModel} || !${xModel}[index]) return;
+        let fees = this.getModelValue();
+        if (!fees[index]) return;
         
         if (field === 'amount') {
-            ${xModel}[index][field] = Number(value);
+            fees[index][field] = Number(value);
         } else {
-            ${xModel}[index][field] = value;
+            fees[index][field] = value;
         }
+        
+        this.setModelValue(fees);
     },
     
     resetNewFee() {
@@ -115,20 +142,20 @@ const xData = `{
     },
     
     get totalFees() {
-        if (!${xModel}) return 0;
-        return ${xModel}.reduce((sum, fee) => sum + (fee.amount || 0), 0);
+        const fees = this.getModelValue();
+        return fees.reduce((sum, fee) => sum + (fee.amount || 0), 0);
     },
     
     get refundableTotal() {
-        if (!${xModel}) return 0;
-        return ${xModel}
+        const fees = this.getModelValue();
+        return fees
             .filter(fee => fee.refundable)
             .reduce((sum, fee) => sum + (fee.amount || 0), 0);
     },
     
     get nonRefundableTotal() {
-        if (!${xModel}) return 0;
-        return ${xModel}
+        const fees = this.getModelValue();
+        return fees
             .filter(fee => !fee.refundable)
             .reduce((sum, fee) => sum + (fee.amount || 0), 0);
     }
@@ -146,14 +173,14 @@ const xData = `{
     )}
     
     <!-- Fee Summary -->
-    <div x-show="${xModel} && ${xModel}.length > 0" class="stats shadow mb-4">
+    <div x-show="getModelValue().length > 0" class="stats shadow mb-4">
         <div class="stat">
             <div class="stat-title">Total Fees</div>
             <div class="stat-value text-primary">
                 $<span x-text="totalFees.toFixed(2)"></span>
             </div>
             <div class="stat-desc">
-                <span x-text="${xModel}.length"></span> fee(s)
+                <span x-text="getModelValue().length"></span> fee(s)
             </div>
         </div>
         <div class="stat">
@@ -172,7 +199,7 @@ const xData = `{
     
     <!-- Fee List -->
     <div class="flex flex-col gap-2 mb-4">
-        <template x-for="(fee, index) in ${xModel}" :key="index">
+        <template x-for="(fee, index) in getModelValue()" :key="index">
             <div class="card bg-base-200">
                 <div class="card-body p-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -185,7 +212,7 @@ const xData = `{
                                 class="select select-bordered select-sm w-full"
                                 x-model="fee.type"
                                 x-on:change="updateFee(index, 'type', $event.target.value)"
-                                :disabled={`${disabled}`}
+                                disabled={disabled}
                             >
                                 {feeTypes.map(type => (
                                     <option value={type}>
@@ -209,7 +236,7 @@ const xData = `{
                                     x-on:change="updateFee(index, 'amount', $event.target.value)"
                                     min="0"
                                     step="0.01"
-                                    :disabled={`${disabled}`}
+                                    disabled={disabled}
                                 />
                             </label>
                         </div>
@@ -225,7 +252,7 @@ const xData = `{
                                 x-model="fee.description"
                                 x-on:change="updateFee(index, 'description', $event.target.value)"
                                 placeholder="Optional description"
-                                :disabled={`${disabled}`}
+                                disabled={disabled}
                             />
                         </div>
                         
@@ -241,7 +268,7 @@ const xData = `{
                                         class="checkbox checkbox-sm"
                                         x-model="fee.refundable"
                                         x-on:change="updateFee(index, 'refundable', $event.target.checked)"
-                                        :disabled={`${disabled}`}
+                                        disabled={disabled}
                                     />
                                     <span class="label-text ml-2">Refundable</span>
                                 </label>
@@ -249,7 +276,7 @@ const xData = `{
                                     type="button"
                                     class="btn btn-ghost btn-sm btn-square text-error"
                                     x-on:click="removeFee(index)"
-                                    :disabled={`${disabled}`}
+                                    disabled={disabled}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -371,7 +398,7 @@ const xData = `{
     </button>
     
     <!-- Hidden input to store the JSON value -->
-    <input type="hidden" name={name} :value="JSON.stringify(${xModel} || [])" />
+    <input type="hidden" name={name} :value="JSON.stringify(getModelValue())" />
     
     {(error || helpText) && (
         <div class={`label ${error ? 'text-error' : ''}`}>

@@ -54,7 +54,7 @@ function validateContactInfo(data: Partial<BuildingData>, errors: Record<string,
         errors.contactEmail = 'Invalid email address format';
     }
 
-    if(data.contactInfo?.phone && !/^[\d\s\-()+.]+$/.test(data.contactInfo.phone)) {
+    if(data.contactInfo?.phone && !/^[\d\s\-().+]+$/.test(data.contactInfo.phone)) {
         errors.contactPhone = 'Invalid phone number format';
     }
 
@@ -136,25 +136,34 @@ function sanitizeTextFields(data: Partial<BuildingData>, errors: Record<string, 
     return sanitized;
 }
 
+// Helper function to convert string to number safely
+function safeParseNumber(value: unknown): number | unknown {
+    if(_.isString(value)) {
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? value : parsed;
+    }
+    return value;
+}
+
 // Helper function to copy and validate numeric fields
 function copyNumericFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
     if(data.zip !== undefined) {
         sanitized.zip = data.zip;
     }
     if(data.yearBuilt !== undefined) {
-        sanitized.yearBuilt = data.yearBuilt;
+        sanitized.yearBuilt = safeParseNumber(data.yearBuilt) as number;
     }
     if(data.numberStories !== undefined) {
-        sanitized.numberStories = data.numberStories;
+        sanitized.numberStories = safeParseNumber(data.numberStories) as number;
     }
     if(data.totalUnits !== undefined) {
-        sanitized.totalUnits = data.totalUnits;
+        sanitized.totalUnits = safeParseNumber(data.totalUnits) as number;
     }
     if(data.leaseLength !== undefined) {
-        sanitized.leaseLength = data.leaseLength;
+        sanitized.leaseLength = safeParseNumber(data.leaseLength) as number;
     }
     if(data.applicationFee !== undefined) {
-        sanitized.applicationFee = data.applicationFee;
+        sanitized.applicationFee = safeParseNumber(data.applicationFee) as number;
     }
 }
 

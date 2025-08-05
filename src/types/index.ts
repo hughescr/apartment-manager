@@ -344,7 +344,17 @@ export const getDefaultBuildingData = (): Partial<BuildingData> => ({
         references: 2,
         employmentVerification: true,
         rentalHistory: true
-    }
+    },
+    contactInfo: {
+        officeHours: {}
+    },
+    tourAvailability: {
+        selfGuidedTours: false,
+        virtualTours: false,
+        inPersonTours: false,
+        tourHours: {}
+    },
+    incomeRestrictions: undefined
 });
 
 export const getDefaultUnitData = (): Partial<UnitData> => ({

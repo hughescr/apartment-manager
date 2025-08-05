@@ -76,6 +76,11 @@ const xData = JSON.stringify({
     buildingId,
     unitId,
     uploadEndpoint,
+    uploaderId,
+    name,
+    accept,
+    multiple,
+    required,
     
     init() {
         // Sync with parent x-model
@@ -264,18 +269,18 @@ const xData = JSON.stringify({
         >
             <input
                 type="file"
-                x-bind:id={`"${uploaderId}"`}
-                x-bind:name={`"${name}"`}
-                x-bind:accept={`"${accept}"`}
-                x-bind:multiple={`${multiple}`}
+                x-bind:id="uploaderId"
+                x-bind:name="name"
+                x-bind:accept="accept"
+                x-bind:multiple="multiple"
                 x-bind:disabled="uploading || disabled"
-                x-bind:required={`${required} && photos.length === 0`}
+                x-bind:required="required && photos.length === 0"
                 class="hidden"
                 x-on:change="handleFiles($event.target.files)"
             />
             
             <label
-                x-bind:for={`"${uploaderId}"`}
+                x-bind:for="uploaderId"
                 class="cursor-pointer"
                 x-show="!uploading"
             >
@@ -331,7 +336,7 @@ const xData = JSON.stringify({
                                 type="button"
                                 x-on:click="removePhoto(index)"
                                 class="btn btn-sm btn-error"
-                                :disabled="uploading || disabled"
+                                x-bind:disabled="uploading || disabled"
                             >
                                 Remove
                             </button>

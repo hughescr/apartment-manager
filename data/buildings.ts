@@ -1,4 +1,4 @@
-import { BuildingData } from '../src/types';
+import { BuildingData, getDefaultBuildingData } from '../src/types';
 import { ApartmentTable, Building } from './model';
 
 import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
@@ -17,7 +17,11 @@ export async function getBuildings() {
         .options({ consistent: true })
         .send();
 
-    const buildings = _.map(scanResult.Items, item => _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md'])) as BuildingData[];
+    const buildings = _.map(scanResult.Items, (item) => {
+        const rawBuilding = _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+        // Merge with defaults to ensure all nested structures exist
+        return _.merge({}, getDefaultBuildingData(), rawBuilding);
+    });
     return buildings;
 }
 
@@ -25,7 +29,14 @@ export async function getBuilding(buildingID: string) {
     const { Item } = await Building.build(GetItemCommand)
         .key({ buildingID, unitID: 'BUILDING' })
         .send();
-    return Item === undefined ? undefined : _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+
+    if(Item === undefined) {
+        return undefined;
+    }
+
+    const rawBuilding = _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+    // Merge with defaults to ensure all nested structures exist
+    return _.merge({}, getDefaultBuildingData(), rawBuilding);
 }
 
 export async function createBuilding(building: BuildingData) {
