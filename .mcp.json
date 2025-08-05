@@ -10,7 +10,7 @@
         },
         "tmux": {
             "command": "bunx",
-            "args": ["--bun", "github:hughescr/persistent-shell-mcp#main"]
+            "args": ["--bun", "@hughescr/tmux-mcp-server@latest"]
         }
     }
 }
