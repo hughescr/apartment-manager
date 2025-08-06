@@ -13,8 +13,8 @@ const apiURL = Resource.API.url;
 // Initialize missing properties
 if (!unit.unitAmenities) unit.unitAmenities = [];
 if (!unit.photos) unit.photos = [];
-if (!unit.websiteStatus) unit.websiteStatus = {};
-if (!unit.listingIds) unit.listingIds = {};
+if (!unit.feedInclusion) unit.feedInclusion = {};
+if (!unit.manualReferences) unit.manualReferences = {};
 ---
 
 <script is:inline>
@@ -44,8 +44,8 @@ function unitCardData() {
             // Initialize unit amenities if not present
             if (!this.unit.unitAmenities) this.unit.unitAmenities = [];
             if (!this.unit.photos) this.unit.photos = [];
-            if (!this.unit.websiteStatus) this.unit.websiteStatus = {};
-            if (!this.unit.listingIds) this.unit.listingIds = {};
+            if (!this.unit.feedInclusion) this.unit.feedInclusion = {};
+            if (!this.unit.manualReferences) this.unit.manualReferences = {};
             
             // Find and set the selected unit type
             if (this.unit.modelID) {
@@ -741,8 +741,8 @@ function unitCardData() {
         <div class="collapse collapse-arrow bg-base-200">
             <input type="checkbox" x-model="expandedSections.websites" />
             <div class="collapse-title text-lg font-medium">
-                Website Status & Listings
-                <span class="badge badge-primary badge-sm ml-2" x-text="Object.keys(unit.websiteStatus || {}).length"></span>
+                Feed Inclusion & References
+                <span class="badge badge-primary badge-sm ml-2" x-text="Object.keys(unit.feedInclusion || {}).length"></span>
             </div>
             <div class="collapse-content">
                 <div class="pt-4">
@@ -757,8 +757,8 @@ function unitCardData() {
                                             <span class="label-text" x-text="site"></span>
                                         </label>
                                         <select 
-                                            x-model="unit.websiteStatus[site]"
-                                            x-on:change="if (!unit.websiteStatus) unit.websiteStatus = {}; saveUnit(this)"
+                                            x-model="unit.feedInclusion[site]"
+                                            x-on:change="if (!unit.feedInclusion) unit.feedInclusion = {}; saveUnit(this)"
                                             class="select select-bordered select-sm w-full"
                                         >
                                             <option value="">Not Listed</option>
@@ -783,8 +783,8 @@ function unitCardData() {
                                         </label>
                                         <input 
                                             type="text"
-                                            x-model.lazy="unit.listingIds[site]"
-                                            x-on:change="if (!unit.listingIds) unit.listingIds = {};"
+                                            x-model.lazy="unit.manualReferences[site]"
+                                            x-on:change="if (!unit.manualReferences) unit.manualReferences = {};"
                                             class="input input-bordered input-sm w-full"
                                             placeholder="External ID or URL"
                                         />

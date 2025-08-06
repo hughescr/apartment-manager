@@ -86,8 +86,10 @@ Both sites support MITS feeds, so we will implement a single feed generation sys
 - `unitRentSpecial`
 - `unitAmenities` (optional overrides of model amenities)
 - `photos`
-- `websiteStatus` (siteName → status mapping)
-- `listingIds` (siteName → external ID/URL mapping)
+- `feedInclusion` (siteName → boolean for including in feed)
+- `manualReferences` (siteName → external ID/URL mapping for manual tracking)
+- `feedLastPulled` (siteName → timestamp and IP of last feed pull)
+- `feedLastModified` (timestamp of last data change)
 - `publishedVersion` (version ID of published data)
 - `stagedVersion` (version ID of staged changes)
 
@@ -397,7 +399,7 @@ Track the completion status of each implementation step:
 - [ ] Add simple UI controls
   - [ ] "Generate MITS Feed" button in BuildingCard
   - [ ] Basic XML preview modal
-  - [ ] Use existing `websiteStatus` and `listingIds` for tracking
+  - [ ] Use existing `feedInclusion` and `feedLastPulled` for tracking
 - [ ] Implement basic security
   - [ ] XML injection prevention (extend existing validation)
   - [ ] Rate limiting on feed endpoints

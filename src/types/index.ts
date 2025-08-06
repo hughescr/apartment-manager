@@ -256,8 +256,10 @@ export interface UnitData {
     unitRentSpecial?: RentSpecial
     unitAmenities?: Amenity[] // overrides model amenities if specified
     photos?: string[] // S3 URLs
-    websiteStatus?: Partial<Record<string, WebsiteStatus>> // siteName -> status
-    listingIds?: Partial<Record<string, string>> // siteName -> external ID/URL
+    feedInclusion?: Partial<Record<string, boolean>> // siteName -> included in feed
+    manualReferences?: Partial<Record<string, string>> // siteName -> external ID/URL
+    feedLastPulled?: Partial<Record<string, { timestamp: Date, ipAddress?: string }>>
+    feedLastModified?: Date
 }
 
 // Extended interfaces for runtime use
@@ -364,8 +366,8 @@ export const getDefaultUnitData = (): Partial<UnitData> => ({
     minLeaseTerm: 12,
     maxLeaseTerm: 12,
     photos: [],
-    websiteStatus: {},
-    listingIds: {}
+    feedInclusion: {},
+    manualReferences: {}
 });
 
 export const getDefaultUnitTypeData = (): Partial<UnitTypeData> => ({

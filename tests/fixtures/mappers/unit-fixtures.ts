@@ -1,5 +1,5 @@
 import type { UnitData } from '../../../src/types/index.js';
-import { AmenityCategory, WebsiteStatus } from '../../../src/types/index.js';
+import { AmenityCategory } from '../../../src/types/index.js';
 
 /**
  * Complete unit with all fields populated
@@ -54,11 +54,11 @@ export const completeUnit: UnitData = {
         'https://s3.amazonaws.com/bucket/unit-complete-001/bathroom.jpg',
         'https://s3.amazonaws.com/bucket/unit-complete-001/view.jpg'
     ],
-    websiteStatus: {
-        apartments_com: WebsiteStatus.ACTIVE,
-        zillow: WebsiteStatus.ACTIVE
+    feedInclusion: {
+        apartments_com: true,
+        zillow: true
     },
-    listingIds: {
+    manualReferences: {
         apartments_com: 'APT-SF-1201',
         zillow: 'ZIL-123456789'
     }
@@ -75,8 +75,8 @@ export const inheritingUnit: UnitData = {
     occupied: false,
     availableDate: '2024-01-15',
     // Most fields will be inherited from model-1bed-001
-    websiteStatus: {
-        apartments_com: WebsiteStatus.ACTIVE
+    feedInclusion: {
+        apartments_com: true
     }
 };
 
@@ -143,9 +143,9 @@ export const occupiedUnit: UnitData = {
     rent: 2100,
     occupied: true,
     availableDate: '2024-08-01', // Future date when lease ends
-    websiteStatus: {
-        apartments_com: WebsiteStatus.INACTIVE,
-        zillow: WebsiteStatus.INACTIVE
+    feedInclusion: {
+        apartments_com: false,
+        zillow: false
     }
 };
 
@@ -256,9 +256,9 @@ export const affordableUnit: UnitData = {
     minLeaseTerm: 12,
     maxLeaseTerm: 12,
     unitDescription: 'Income-restricted unit. Must qualify at 60% AMI or below.',
-    websiteStatus: {
-        apartments_com: WebsiteStatus.ACTIVE,
-        zillow: WebsiteStatus.PENDING
+    feedInclusion: {
+        apartments_com: true,
+        zillow: true
     }
 };
 
@@ -311,11 +311,11 @@ export const errorStatusUnit: UnitData = {
     rent: 2000,
     occupied: false,
     availableDate: '2024-01-01',
-    websiteStatus: {
-        apartments_com: WebsiteStatus.ERROR,
-        zillow: WebsiteStatus.ERROR
+    feedInclusion: {
+        apartments_com: false,
+        zillow: false
     },
-    listingIds: {
+    manualReferences: {
         apartments_com: 'APT-ERROR-001'
     }
 };
@@ -368,8 +368,8 @@ export const immediateUnit: UnitData = {
     occupied: false,
     availableDate: new Date().toISOString(), // Today
     unitDescription: 'Available for immediate move-in!',
-    websiteStatus: {
-        apartments_com: WebsiteStatus.ACTIVE,
-        zillow: WebsiteStatus.ACTIVE
+    feedInclusion: {
+        apartments_com: true,
+        zillow: true
     }
 };

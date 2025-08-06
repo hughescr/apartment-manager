@@ -531,18 +531,26 @@ describe('Type Definitions', () => {
                         category: AmenityCategory.UNIT
                     }],
                     photos: ['https://s3.example.com/unit456.jpg'],
-                    websiteStatus: {
-                        'apartments.com': WebsiteStatus.ACTIVE,
-                        zillow: WebsiteStatus.PENDING
+                    feedInclusion: {
+                        'apartments.com': true,
+                        zillow: true
                     },
-                    listingIds: {
+                    manualReferences: {
                         'apartments.com': 'APT-123456',
                         zillow: 'ZIL-789012'
-                    }
+                    },
+                    feedLastPulled: {
+                        'apartments.com': { timestamp: new Date('2024-03-15T10:30:00Z'), ipAddress: '192.168.1.100' },
+                        zillow: { timestamp: new Date('2024-03-15T11:00:00Z') }
+                    },
+                    feedLastModified: new Date('2024-03-14T14:22:00Z')
                 };
                 expect(unit.unitID).toBe('unit-456');
-                expect(unit.websiteStatus?.['apartments.com'] as string).toBe(WebsiteStatus.ACTIVE);
-                expect(unit.listingIds?.zillow).toBe('ZIL-789012');
+                expect(unit.feedInclusion?.['apartments.com']).toBe(true);
+                expect(unit.manualReferences?.zillow).toBe('ZIL-789012');
+                expect(unit.feedLastPulled?.['apartments.com']?.timestamp).toEqual(new Date('2024-03-15T10:30:00Z'));
+                expect(unit.feedLastPulled?.['apartments.com']?.ipAddress).toBe('192.168.1.100');
+                expect(unit.feedLastModified).toEqual(new Date('2024-03-14T14:22:00Z'));
             });
 
             it('should accept minimal UnitData with required fields', () => {
@@ -555,15 +563,35 @@ describe('Type Definitions', () => {
                 expect(unit.occupied).toBeUndefined();
             });
 
-            it('should handle partial websiteStatus and listingIds', () => {
+            it('should handle partial feedInclusion, manualReferences, and feed timestamp fields', () => {
                 const unit: UnitData = {
                     buildingID: 'bldg-123',
                     unitID: 'unit-999',
-                    websiteStatus: {},
-                    listingIds: {}
+                    feedInclusion: {},
+                    manualReferences: {},
+                    feedLastPulled: {},
+                    feedLastModified: undefined
                 };
-                expect(unit.websiteStatus).toEqual({});
-                expect(unit.listingIds).toEqual({});
+                expect(unit.feedInclusion).toEqual({});
+                expect(unit.manualReferences).toEqual({});
+                expect(unit.feedLastPulled).toEqual({});
+                expect(unit.feedLastModified).toBeUndefined();
+            });
+
+            it('should accept various timestamp formats in feed tracking fields', () => {
+                const unit: UnitData = {
+                    buildingID: 'bldg-123',
+                    unitID: 'unit-timestamps',
+                    feedLastPulled: {
+                        'apartments.com': { timestamp: new Date('2024-03-15T10:30:00Z') }, // ISO 8601 UTC
+                        zillow: { timestamp: new Date('2024-03-15T10:30:00-08:00'), ipAddress: '10.0.0.1' }, // ISO 8601 with timezone
+                        'test-site': { timestamp: new Date('2024-02-29T12:00:00Z'), ipAddress: '192.168.1.1' } // Leap year date
+                    },
+                    feedLastModified: new Date('2024-03-14T14:22:00.123Z') // With milliseconds
+                };
+                expect(unit.feedLastPulled?.['apartments.com']?.timestamp).toEqual(new Date('2024-03-15T10:30:00Z'));
+                expect(unit.feedLastPulled?.zillow?.ipAddress).toBe('10.0.0.1');
+                expect(unit.feedLastModified).toEqual(new Date('2024-03-14T14:22:00.123Z'));
             });
         });
 
@@ -782,8 +810,10 @@ describe('Type Definitions', () => {
                 expect(defaults.minLeaseTerm).toBe(12);
                 expect(defaults.maxLeaseTerm).toBe(12);
                 expect(defaults.photos).toEqual([]);
-                expect(defaults.websiteStatus).toEqual({});
-                expect(defaults.listingIds).toEqual({});
+                expect(defaults.feedInclusion).toEqual({});
+                expect(defaults.manualReferences).toEqual({});
+                expect(defaults.feedLastPulled).toBeUndefined();
+                expect(defaults.feedLastModified).toBeUndefined();
             });
         });
 
@@ -1493,11 +1523,15 @@ describe('Type Definitions', () => {
             const unit: UnitData = {
                 buildingID: 'bldg-123',
                 unitID: 'unit-123',
-                websiteStatus: undefined,
-                listingIds: undefined
+                feedInclusion: undefined,
+                manualReferences: undefined,
+                feedLastPulled: undefined,
+                feedLastModified: undefined
             };
-            expect(unit.websiteStatus).toBeUndefined();
-            expect(unit.listingIds).toBeUndefined();
+            expect(unit.feedInclusion).toBeUndefined();
+            expect(unit.manualReferences).toBeUndefined();
+            expect(unit.feedLastPulled).toBeUndefined();
+            expect(unit.feedLastModified).toBeUndefined();
         });
 
         it('should handle ISO date strings', () => {

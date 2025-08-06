@@ -3,7 +3,7 @@ import './test-setup';
 import { dynamoDbMock, jest } from './test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { AmenityCategory, WebsiteStatus, Amenity, RentSpecial } from '../../src/types';
+import { AmenityCategory, Amenity, RentSpecial } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 
 // Import the functions AFTER mocking
@@ -41,11 +41,11 @@ describe('Unit Data Layer', () => {
             { name: 'In-unit Washer/Dryer', category: AmenityCategory.UNIT }
         ],
         photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
-        websiteStatus: {
-            zillow: WebsiteStatus.ACTIVE,
-            apartments: WebsiteStatus.INACTIVE
+        feedInclusion: {
+            zillow: true,
+            apartments: false
         },
-        listingIds: {
+        manualReferences: {
             zillow: 'ZIL123',
             apartments: 'APT456'
         }
@@ -157,11 +157,11 @@ describe('Unit Data Layer', () => {
                 { name: 'Granite Countertops', category: AmenityCategory.UNIT }
             ],
             photos: ['https://example.com/unit104-1.jpg', 'https://example.com/unit104-2.jpg'],
-            websiteStatus: {
-                zillow: WebsiteStatus.PENDING,
-                apartments: WebsiteStatus.ACTIVE
+            feedInclusion: {
+                zillow: true,
+                apartments: true
             },
-            listingIds: {
+            manualReferences: {
                 zillow: 'ZIL789',
                 apartments: 'APT012'
             }
@@ -177,8 +177,8 @@ describe('Unit Data Layer', () => {
         // The function strips the UNIT# prefix when returning
         expect(result).toEqual({ ...fullUnit, buildingID: testBuildingID, unitID: 'test-uuid' });
         expect(result.unitID).toBe('test-uuid');
-        expect(result.websiteStatus).toEqual(fullUnit.websiteStatus);
-        expect(result.listingIds).toEqual(fullUnit.listingIds);
+        expect(result.feedInclusion).toEqual(fullUnit.feedInclusion);
+        expect(result.manualReferences).toEqual(fullUnit.manualReferences);
     });
 
     it('should update a unit', async () => {
@@ -236,15 +236,15 @@ describe('Unit Data Layer', () => {
         );
     });
 
-    // Additional test cases for new fields
-    it('should update website status and listing IDs', async () => {
+    // Additional test cases for MITS feed fields
+    it('should update feed inclusion and manual references', async () => {
         expect.assertions(3);
         const updates = {
-            websiteStatus: {
-                zillow: WebsiteStatus.ACTIVE,
-                apartments: WebsiteStatus.INACTIVE
+            feedInclusion: {
+                zillow: true,
+                apartments: false
             },
-            listingIds: {
+            manualReferences: {
                 zillow: 'ZIL999',
                 apartments: 'APT999'
             }
@@ -252,9 +252,9 @@ describe('Unit Data Layer', () => {
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
 
         const updatedUnit = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-        expect(updatedUnit?.websiteStatus?.zillow).toBe(WebsiteStatus.ACTIVE);
-        expect(updatedUnit?.websiteStatus?.apartments).toBe(WebsiteStatus.INACTIVE);
-        expect(updatedUnit?.listingIds?.zillow).toBe('ZIL999');
+        expect(updatedUnit?.feedInclusion?.zillow).toBe(true);
+        expect(updatedUnit?.feedInclusion?.apartments).toBe(false);
+        expect(updatedUnit?.manualReferences?.zillow).toBe('ZIL999');
     });
 
     it('should handle complex unit amenities override', async () => {
@@ -286,15 +286,15 @@ describe('Unit Data Layer', () => {
             unitID: 'UNIT#test-unit-1',
             unitAmenities: [],
             photos: [],
-            websiteStatus: {},
-            listingIds: {}
+            feedInclusion: {},
+            manualReferences: {}
         };
         dynamoDbMock.mockResolvedValueOnce(mockScanResponse([unitWithEmptyCollections]));
 
         const units = await getUnits(testBuildingID);
         expect(units[0].photos).toHaveLength(0);
         expect(units[0].unitAmenities).toHaveLength(0);
-        expect(units[0].websiteStatus).toEqual({});
+        expect(units[0].feedInclusion).toEqual({});
     });
 
     // Edge case tests for UNIT# prefix handling
@@ -392,94 +392,96 @@ describe('Unit Data Layer', () => {
         });
     });
 
-    // WebsiteStatus partial updates edge cases
-    describe('WebsiteStatus partial updates', () => {
-        it('should update only one website status without affecting others', async () => {
+    // Feed inclusion partial updates edge cases
+    describe('Feed inclusion partial updates', () => {
+        it('should update only one feed inclusion status without affecting others', async () => {
             expect.assertions(3);
             const existingUnit = {
                 ...testUnit,
-                websiteStatus: {
-                    zillow: WebsiteStatus.ACTIVE,
-                    apartments: WebsiteStatus.INACTIVE,
-                    realtor: WebsiteStatus.PENDING
+                feedInclusion: {
+                    zillow: true,
+                    apartments: false,
+                    realtor: true
                 }
             };
             const updates = {
-                websiteStatus: {
-                    zillow: WebsiteStatus.ERROR // Only updating zillow
+                feedInclusion: {
+                    zillow: false // Only updating zillow
                 }
             };
             const expectedResult = {
                 ...existingUnit,
-                websiteStatus: {
-                    ...existingUnit.websiteStatus,
-                    zillow: WebsiteStatus.ERROR
+                feedInclusion: {
+                    ...existingUnit.feedInclusion,
+                    zillow: false
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'UNIT#test-unit-1' }));
 
             const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-            expect(result?.websiteStatus?.zillow).toBe(WebsiteStatus.ERROR);
-            expect(result?.websiteStatus?.apartments).toBe(WebsiteStatus.INACTIVE);
-            expect(result?.websiteStatus?.realtor).toBe(WebsiteStatus.PENDING);
+            expect(result?.feedInclusion?.zillow).toBe(false);
+            expect(result?.feedInclusion?.apartments).toBe(false);
+            expect(result?.feedInclusion?.realtor).toBe(true);
         });
 
-        it('should handle invalid website names in websiteStatus', async () => {
-            expect.assertions(2);
+        it('should handle feedInclusion with various site names', async () => {
+            expect.assertions(3);
             const updates = {
-                websiteStatus: {
-                    invalidSite: 'active' as unknown as WebsiteStatus,
-                    zillow: WebsiteStatus.ACTIVE
+                feedInclusion: {
+                    zillow: true,
+                    apartments_com: false,
+                    customSite: true
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnit,
                 unitID: 'UNIT#test-unit-1',
-                websiteStatus: updates.websiteStatus
+                feedInclusion: updates.feedInclusion
             }));
 
             const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-            const invalidSiteValue = result?.websiteStatus?.invalidSite;
-            expect(JSON.stringify(invalidSiteValue)).toEqual(JSON.stringify('active'));
-            expect(result?.websiteStatus?.zillow).toBe(WebsiteStatus.ACTIVE);
+            expect(result?.feedInclusion?.zillow).toBe(true);
+            expect(result?.feedInclusion?.apartments_com).toBe(false);
+            expect(result?.feedInclusion?.customSite).toBe(true);
         });
 
-        it('should handle null vs undefined for clearing websiteStatus values', async () => {
+        it('should handle feedInclusion with undefined values being filtered', async () => {
             expect.assertions(3);
             const updates = {
-                websiteStatus: {
-                    zillow: null as unknown as WebsiteStatus, // null should be converted to undefined
+                feedInclusion: {
+                    zillow: false,
                     apartments: undefined // undefined should be filtered out
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnit,
                 unitID: 'UNIT#test-unit-1',
-                websiteStatus: {} // Empty after filtering
+                feedInclusion: { zillow: false } // apartments filtered out
             }));
 
             const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-            expect(result?.websiteStatus).toEqual({});
-            expect(result?.websiteStatus?.zillow).toBeUndefined();
-            expect(result?.websiteStatus?.apartments).toBeUndefined();
+            expect(result?.feedInclusion).toEqual({ zillow: false });
+            expect(result?.feedInclusion?.zillow).toBe(false);
+            expect(result?.feedInclusion?.apartments).toBeUndefined();
         });
 
-        it('should handle invalid enum string values for WebsiteStatus', async () => {
-            expect.assertions(1);
+        it('should handle feedInclusion boolean values correctly', async () => {
+            expect.assertions(2);
             const updates = {
-                websiteStatus: {
-                    zillow: 'INVALID_STATUS' as unknown as WebsiteStatus
+                feedInclusion: {
+                    zillow: true,
+                    apartments_com: false
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnit,
                 unitID: 'UNIT#test-unit-1',
-                websiteStatus: { zillow: 'INVALID_STATUS' }
+                feedInclusion: updates.feedInclusion
             }));
 
             const result = await updateUnit(testUnit.buildingID, testUnit.unitID, updates);
-            const invalidStatusValue = result?.websiteStatus?.zillow;
-            expect(JSON.stringify(invalidStatusValue)).toEqual(JSON.stringify('INVALID_STATUS'));
+            expect(result?.feedInclusion?.zillow).toBe(true);
+            expect(result?.feedInclusion?.apartments_com).toBe(false);
         });
     });
 

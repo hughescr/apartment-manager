@@ -128,8 +128,8 @@ export const nullUndefinedUnit: UnitData = {
     unitRentSpecial: undefined,
     unitAmenities: undefined,
     photos: undefined,
-    websiteStatus: undefined,
-    listingIds: undefined
+    feedInclusion: undefined,
+    manualReferences: undefined
 };
 
 /**
@@ -367,14 +367,14 @@ export const allStatusesUnit: UnitData = {
     beds: 1,
     baths: 1,
     rent: 1500,
-    websiteStatus: {
-        apartments_com: 'active' as any, // Should be ACTIVE
-        zillow: 'INACTIVE' as any, // Should be lowercase
-        other_site: 'PENDING' as any,
-        another_site: 'ERROR' as any,
-        fake_site: 'unknown' as any // Invalid status
+    feedInclusion: {
+        apartments_com: true,
+        zillow: false,
+        other_site: true,
+        another_site: false,
+        fake_site: false
     },
-    listingIds: {
+    manualReferences: {
         apartments_com: '',
         zillow: ' ', // Whitespace only
         other_site: 'ID-'.repeat(100), // Very long ID

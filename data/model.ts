@@ -92,8 +92,10 @@ export const Unit = new Entity({
         unitRentSpecial: any().optional(),
         unitAmenities: list(any()).optional(),
         photos: list(string()).optional(),
-        websiteStatus: record(string(), string()).optional(),
-        listingIds: record(string(), string()).optional(),
+        feedInclusion: record(string(), boolean()).optional(),
+        manualReferences: record(string(), string()).optional(),
+        feedLastPulled: record(string(), any()).optional(),
+        feedLastModified: string().optional(),
     }),
 });
 

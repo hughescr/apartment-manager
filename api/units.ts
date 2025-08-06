@@ -227,11 +227,17 @@ function copyOtherFields(data: Partial<UnitData>): Partial<UnitData> {
     if(data.unitRentSpecial !== undefined) {
         sanitized.unitRentSpecial = data.unitRentSpecial;
     }
-    if(data.websiteStatus !== undefined) {
-        sanitized.websiteStatus = data.websiteStatus;
+    if(data.feedInclusion !== undefined) {
+        sanitized.feedInclusion = data.feedInclusion;
     }
-    if(data.listingIds !== undefined) {
-        sanitized.listingIds = data.listingIds;
+    if(data.manualReferences !== undefined) {
+        sanitized.manualReferences = data.manualReferences;
+    }
+    if(data.feedLastPulled !== undefined) {
+        sanitized.feedLastPulled = data.feedLastPulled;
+    }
+    if(data.feedLastModified !== undefined) {
+        sanitized.feedLastModified = data.feedLastModified;
     }
 
     return sanitized;
