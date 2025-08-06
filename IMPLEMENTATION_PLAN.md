@@ -12,43 +12,41 @@ The existing project already has a solid foundation:
 
 We want to build on this foundation without breaking the free‑tier AWS budget.
 
-## 2. Site Analysis
+## 2. Site Integration Requirements
 
-### Apartments.com – Three‑Tier Model
+### Apartments.com – MITS Feed Integration
 
-Apartments.com treats a property hierarchically: a **building**, one or more **unit types (models)** and individual **units**.
+MITS XML feed integration capabilities:
+- Accepts industry-standard MITS XML feeds
+- Support contact: feeds@apartments.com
+- Updates property, floorplan, and unit data automatically
+- Manual control options available for specific data points
 
-**Building (property) level** includes:
-- Location, Property, Fees & Policies, Amenities, Media tabs
-- Year built, stories, lease terms, property license
-- Rent specials and income restrictions
-- Utilities, fees, parking, pet policies
-- Property amenities and photos
+**Feed Capabilities**:
+- **Can Update**: Property details, amenities, images, floorplans, unit availability, rent, deposits
+- **Cannot Update**: Email, phone number, website URL (managed separately)
+- **Special Options**: 
+  - "Update Unit Availability Only" mode
+  - "By-Pass Special Offers" for manual offer management
+  - Photo management options (feed-only or manual-only)
+  - Unit display limits per model
 
-**Model (unit‑type) level** includes:
-- Model name, availability, beds/baths
-- Min/max rent and square footage
-- Deposit and lease terms
-- Default amenities (Highlights, Kitchen, Floor plan)
+### Zillow Rental Manager – MITS Feed Integration
 
-**Unit (individual) level** includes:
-- Unit number, associated model
-- Individual pricing and availability
-- Unit-specific amenities (can override model defaults)
-- Unit description and rent specials
+MITS XML feed integration with staging/publishing workflow:
+- Accepts MITS 4.1 XML feeds for bulk syndication
+- Free to participate with no syndication costs
+- 4-6 week approval and testing process required
+- Zillow pulls the feed (no push needed)
+- Optional Lead API for receiving inquiries
 
-### Zillow Rental Manager – Flat Model
+### Implementation Strategy
 
-Zillow treats each unit as a standalone listing without a model concept:
-- Property information (type, beds, baths, sqft)
-- Rent details and security deposit
-- Media (photos, 3D tours)
-- Amenities (interior, property, additional)
-- Screening criteria (income ratio, credit score, pets)
-- Costs and fees
-- Final details (availability, lease terms, contact info)
-
-Our tool will leverage the model/unit hierarchy internally and flatten data for Zillow at sync time.
+Both sites support MITS feeds, so we will implement a single feed generation system that:
+- Generates MITS 4.1 compliant XML from our unified data model
+- Provides site-specific adapters for any format differences
+- Implements staging/publishing workflow for both sites
+- Allows independent or simultaneous publishing to each site
 
 ## 3. Proposed Architecture
 
@@ -90,42 +88,140 @@ Our tool will leverage the model/unit hierarchy internally and flatten data for 
 - `photos`
 - `websiteStatus` (siteName → status mapping)
 - `listingIds` (siteName → external ID/URL mapping)
+- `publishedVersion` (version ID of published data)
+- `stagedVersion` (version ID of staged changes)
 
-**SiteCredentials table** – New DynamoDB table:
+**Missing MITS 4.1 Required Fields** (Add in Phase 4):
+
+*Management & Identification:*
+- Management company structure (ID, name, address, website, logo)
+- ILS_Identification (rental type: Market Rate/Affordable/Student)
+- Geographic coordinates (latitude/longitude)
+- Last update timestamp
+
+*Property Hierarchy:*
+- Phase entity (property subdivisions)
+- Floorplan entity (separate from UnitType)
+- Building square footage (distinct from unit count)
+
+*Enhanced Data Structures:*
+- MITS fee structure (prorate type, late fees, broker fees)
+- Deposit with ValueRange (exact/min/max with currency)
+- Availability dates (vacate date, made ready date)
+- Vacancy class (Occupied/Unoccupied/Notice/Down)
+
+*Media Metadata:*
+- File ID and active status
+- File type (Photo/Video/Floorplan/Document)
+- Caption, description, format (MIME type)
+- Dimensions (width/height) and ranking
+
+**New Tables Required:**
+
+**FeedVersions table** – Track MITS feed versions:
+- `versionId` (UUID primary key)
+- `sites` (array of enabled sites: ["zillow", "apartments"])
+- `createdAt`, `publishedAt` (per-site publish times)
+- `changesSummary` (per-site change counts)
+- `xmlSnapshots` (S3 references per site)
+- `status` (per-site: "staged" | "published" | "archived")
+- `publishedBy` (user who approved publication)
+
+**SiteCredentials table** – Secure credential storage:
 - Keyed by `siteName` ("apartments_com", "zillow")
-- Stores encrypted credentials or Secrets Manager ARNs
-- Backend Lambda access only
+- `secretArn` (AWS Secrets Manager reference)
+- `authMethod` ("api_key", "basic_auth", "oauth")
+- Backend Lambda access only with IAM policies
 
-**SyncStatus table** – New DynamoDB table:
-- Composite key: `unitID` + `siteName`
-- `lastSyncTime`, `status`, `errorMessage`, `externalListingId`
+**FeedSyncLog table** – Audit and monitoring:
+- `timestamp`, `ipAddress`, `userAgent`
+- `feedVersion`, `responseCode`, `itemsReturned`
+- `errorDetails` (for debugging failed crawls)
+- TTL for automatic cleanup after 90 days
 
 ### 3.2 Backend Services
 
-**API Extensions**:
-- `POST /credentials/{siteName}` – Manage encrypted credentials
-- `GET /credentials/{siteName}` – Retrieve credentials (admin only)
-- `POST /units/{buildingID}/{unitID}/sync` – Manual sync trigger
-- `GET /sync-status/{siteName}/{unitID}` – Get sync status
+**New API Endpoints:**
+- `POST /feed/generate-staged` – Generate staged feed for selected sites
+- `GET /feed/preview/{site}/{version}` – Preview site-specific XML
+- `GET /feed/changes/{site}/{version}` – Get site-specific changes
+- `POST /feed/publish/{site}/{version}` – Publish to specific site
+- `GET /feed/{site}/live` – Site-specific live feed endpoint (for crawlers)
+- `PUT /feed/config/{site}` – Configure site-specific options
 
-**Sync Lambdas**:
-1. Read unified data from DynamoDB
-2. Retrieve credentials from Secrets Manager
-3. Use Playwright for browser automation
-4. Update listing IDs and sync status
-5. Handle errors with screenshots and logging
-
-**Scheduler**: EventBridge cron for nightly syncs
+**Feed Generation Lambda:**
+1. Read data from DynamoDB
+2. Generate MITS 4.1 XML structure
+3. Apply site-specific adaptations
+4. Validate against MITS schema
+5. Store in S3 with CloudFront CDN
+6. Track access in FeedSyncLog
 
 ### 3.3 Frontend Components
 
-- Extended building/unit forms with all new fields
-- Unit types (models) management UI
-- Settings page for credential management
-- Sync status display and manual sync buttons
-- Toast notifications for sync results
+**New UI Components Needed:**
 
-## 4. Step‑by‑Step Implementation Plan
+**Feed Management Dashboard** (astro-src/pages/feed-management.astro):
+- Site selection checkboxes (Zillow/Apartments.com)
+- Generate staged feed button
+- XML preview with syntax highlighting
+- Diff viewer (staged vs published)
+- Publish controls per site
+- Feed version history
+
+**Site Configuration Panels:**
+- Apartments.com options: availability-only mode, bypass specials, photo settings
+- Zillow options: Lead API settings
+- Credential management forms
+
+**Status Indicators** (add to existing UI):
+- "Staged Changes" badges
+- "Last Published" timestamps
+- Feed health indicators
+
+## 4. Current System Readiness
+
+### Strengths (What We Have)
+**Architecture & Code Quality:**
+- Three-tier architecture perfectly aligns with MITS (Building→Floorplan→Unit)
+- Clean layer separation with SOLID principles
+- Sophisticated mapper system with 92% test coverage (368 tests)
+- 1,018+ test cases across 24 test files
+
+**Security Foundation:**
+- Comprehensive input validation (996 lines of attack vector tests)
+- XML injection prevention already implemented
+- Proper data isolation with DynamoDB patterns
+
+**MITS Field Coverage (60% Complete):**
+- ✅ Basic property info, amenities, contact details
+- ✅ Unit specifications, pricing, availability
+- ✅ Photos with S3 storage
+- ❌ Management company structure
+- ❌ ILS identification fields (lat/lng, rental type)
+- ❌ Phase/Floorplan hierarchy
+- ❌ Enhanced fee structure and deposits
+
+### Critical Gaps (What We Need)
+
+**MITS Implementation (0% Complete):**
+- No `src/mits/` module exists
+- No XML generation capability
+- No MITS schema validation
+- No site-specific adapters
+
+**Infrastructure Missing:**
+- No FeedVersions table for staging/publishing
+- No credential management (AWS Secrets Manager needed)
+- No feed authentication on endpoints
+- No audit logging for compliance
+
+**UI Components Missing:**
+- No feed management dashboard
+- No XML preview capability
+- No staging/publishing workflow UI
+
+## 5. Implementation Plan
 
 **CRITICAL**: Each step includes a **Gate** requirement that must be satisfied before proceeding to the next step. This ensures proper test-driven development and prevents dependency issues.
 
@@ -289,45 +385,167 @@ Track the completion status of each implementation step:
 - [x] Write unit tests with edge cases (368 tests, 92.18% coverage)
 - [x] **Gate passed**: ✅
 
-### Step 5 – Build Site Automation Modules
-- [ ] Set up Playwright dependency
-- [ ] Create src/automation/apartments.com/ module
-- [ ] Implement Apartments.com building sync
-- [ ] Implement Apartments.com model sync
-- [ ] Implement Apartments.com unit sync
-- [ ] Create src/automation/zillow/ module
-- [ ] Implement Zillow unit sync
-- [ ] Add error handling and screenshots
-- [ ] Create mock tests for automation functions
-- [ ] **Gate passed**: ❌
+### Step 5 – Build MITS Feed Integration
 
-### Step 6 – Add Sync Infrastructure
-- [ ] Create SiteCredentials table definition
-- [ ] Create SyncStatus table definition
-- [ ] Implement data/credentials.ts
-- [ ] Implement data/syncStatus.ts
-- [ ] Create API endpoints for credentials
-- [ ] Create API endpoints for sync status
-- [ ] Update api/index.ts
+#### 5A. Phase 1 - Minimal MITS Support (Quick Win)
+- [ ] Create basic MITS generator using existing schema
+  - [ ] Map current fields to MITS XML structure (60% coverage)
+  - [ ] Use defaults for missing required fields
+  - [ ] Generate valid MITS 4.1 XML without schema changes
+  - [ ] Write tests FIRST (TDD approach)
+- [ ] Add simple UI controls
+  - [ ] "Generate MITS Feed" button in BuildingCard
+  - [ ] Basic XML preview modal
+  - [ ] Use existing `websiteStatus` and `listingIds` for tracking
+- [ ] Implement basic security
+  - [ ] XML injection prevention (extend existing validation)
+  - [ ] Rate limiting on feed endpoints
+  - [ ] Basic authentication for feed access
+
+#### 5B. Phase 2 - Core MITS Infrastructure
+- [ ] Create src/mits/ module structure
+  - [ ] schema.ts - MITS 4.1 TypeScript interfaces
+  - [ ] generator.ts - Core XML generation logic
+  - [ ] validator.ts - Schema validation against MITS XSD
+  - [ ] differ.ts - Compare staged vs published data
+- [ ] Create site-specific adapters
+  - [ ] src/mits/adapters/zillow.ts - Zillow-specific formatting
+  - [ ] src/mits/adapters/apartments.ts - Apartments.com-specific formatting
+  - [ ] src/mits/adapters/common.ts - Shared adapter logic
+- [ ] Implement staging/publishing workflow
+  - [ ] Add site-specific version tracking to schemas
+  - [ ] Create FeedVersions table with multi-site support
+  - [ ] Build per-site comparison and approval system
+
+#### 5C. Phase 3 - Feed Management API
+- [ ] Create feed generation endpoints
+  - [ ] POST /feed/generate-staged - Generate for one or both sites
+  - [ ] GET /feed/preview/{site}/{version} - Preview site-specific XML
+  - [ ] GET /feed/changes/{site}/{version} - Site-specific changes
+- [ ] Create publishing endpoints
+  - [ ] POST /feed/publish/{site}/{version} - Publish to specific site
+  - [ ] POST /feed/publish-all/{version} - Publish to all enabled sites
+  - [ ] GET /feed/{site}/live - Site-specific live feed endpoint
+- [ ] Add feed configuration endpoints
+  - [ ] PUT /feed/config/{site} - Configure site-specific options
+  - [ ] GET /feed/config - Get all feed configurations
+
+#### 5D. Phase 4 - Feed Management UI
+- [ ] Create feed management dashboard (astro-src/pages/feed-management.astro)
+  - [ ] Site selection toggles (enable/disable per site)
+  - [ ] Generate staged feed for selected sites
+  - [ ] Side-by-side XML preview for each site
+  - [ ] Unified change summary with per-site differences
+- [ ] Build publishing workflow
+  - [ ] Individual site publish buttons
+  - [ ] Bulk publish option
+  - [ ] Confirmation dialogs with change summaries
+- [ ] Add configuration UI
+  - [ ] Apartments.com feed options (availability-only, bypass specials, etc.)
+  - [ ] Zillow Lead API configuration
+  - [ ] Per-site authentication settings
+
+#### 5E. Integration Setup & Testing
+- [ ] Contact both sites for integration
+  - [ ] Submit Zillow integration request (4-6 week process)
+  - [ ] Contact feeds@apartments.com for specifications
+  - [ ] Obtain MITS 4.1 XSD for validation
+- [ ] Implement comprehensive testing (TDD approach)
+  - [ ] Create MITS test fixtures and helpers
+  - [ ] MITS XML generation tests (unit)
+  - [ ] Schema validation tests against XSD
+  - [ ] Site-specific adapter tests
+  - [ ] Staging/publishing workflow tests
+  - [ ] Feed endpoint security tests
+  - [ ] Integration tests with mock crawlers
+
+**Gate**: MITS feed generation working for both sites; 95% test coverage; Security validated
+
+### Step 6 – Add Security & Sync Infrastructure
+- [ ] Implement credential management
+  - [ ] AWS Secrets Manager integration
+  - [ ] Create SiteCredentials table with encryption
+  - [ ] IAM policies for Lambda access
+  - [ ] Credential rotation support
+- [ ] Add feed authentication
+  - [ ] API key validation for feed endpoints
+  - [ ] IP whitelisting for site crawlers
+  - [ ] Rate limiting with AWS API Gateway
+- [ ] Create monitoring infrastructure
+  - [ ] FeedSyncLog table with TTL
+  - [ ] CloudWatch alarms for failures
+  - [ ] Audit logging for compliance
+- [ ] Implement data layer
+  - [ ] data/credentials.ts with encryption
+  - [ ] data/feedVersions.ts with versioning
+  - [ ] data/syncLog.ts with monitoring
 - [ ] Write security tests
+  - [ ] Credential encryption tests
+  - [ ] Authentication/authorization tests
+  - [ ] Rate limiting tests
 - [ ] **Gate passed**: ❌
 
-### Step 7 – Build Sync Orchestration
-- [ ] Create syncCoordinator Lambda
-- [ ] Implement building → models → units ordering
-- [ ] Add sync status tracking
-- [ ] Create manual sync endpoint
-- [ ] Add EventBridge scheduling
-- [ ] Implement retry logic
-- [ ] Write integration tests
+### Step 7 – Build Feed Monitoring & Optimization
+
+#### 7A. Feed Performance Optimization
+- [ ] Implement feed cache invalidation on publish
+- [ ] Set up CloudFront CDN for feed endpoints
+- [ ] Configure cache headers for optimal performance
+- [ ] Implement ETag support for efficient crawling
+- [ ] Add compression (gzip) for large feeds
+
+#### 7B. Feed Monitoring Infrastructure
+- [ ] Track feed access in FeedSyncLog table
+- [ ] Monitor crawler patterns for both sites
+- [ ] Add CloudWatch alarms for:
+  - Feed access failures
+  - Unusual crawler patterns
+  - Long periods without access
+- [ ] Create CloudWatch dashboard for feed metrics
+
+#### 7C. Site-Specific Integrations
+- [ ] Implement Zillow Lead API handler (if using)
+- [ ] Set up Apartments.com special feed options handling
+- [ ] Configure authentication for each site's crawler
+- [ ] Implement IP whitelisting if required
+
+#### 7D. Testing & Validation
+- [ ] Create feed validation suite
+- [ ] Test with site-provided validation tools
+- [ ] Implement integration tests for feed access
+- [ ] Load test feed endpoints for scalability
 - [ ] **Gate passed**: ❌
 
-### Step 8 – Complete UI with Sync Management
-- [ ] Create settings page for credentials
-- [ ] Add sync status display to unit pages
-- [ ] Implement manual sync buttons
-- [ ] Add bulk sync operations
-- [ ] Implement real-time notifications
+### Step 8 – Complete Unified Feed Management UI
+
+#### 8A. Main Feed Dashboard
+- [ ] Create feed management page (astro-src/pages/feed-management.astro)
+- [ ] Implement site selection interface (enable/disable per site)
+- [ ] Add "Generate Staged Feed" for selected sites
+- [ ] Build dual XML preview (side-by-side for both sites)
+- [ ] Create unified diff viewer (staged vs published per site)
+- [ ] Display change summary with per-site counts
+- [ ] Add individual site publish buttons
+- [ ] Implement bulk "Publish All" option
+
+#### 8B. Site Configuration Panels
+- [ ] Create Apartments.com options panel:
+  - [ ] "Update Unit Availability Only" toggle
+  - [ ] "By-Pass Special Offers" toggle
+  - [ ] Photo management options
+  - [ ] Unit display limit controls
+- [ ] Create Zillow configuration panel:
+  - [ ] Lead API settings
+  - [ ] Real-time syndication options
+- [ ] Build credential management for both sites
+
+#### 8C. Status & Monitoring UI
+- [ ] Show "Staged Changes" badges throughout the app
+- [ ] Display "Last Published" timestamps per site
+- [ ] Create activity log showing feed access history
+- [ ] Add feed health indicators (last crawled, success rate)
+- [ ] Implement real-time notifications for feed events
+- [ ] Build error details display with site-specific help
 - [ ] **Gate passed**: ❌
 
 ### Step 9 – Add Monitoring and Observability
@@ -350,6 +568,35 @@ Track the completion status of each implementation step:
 - [ ] **Gate passed**: ❌
 
 ### Overall Progress: 4/10 Steps Complete
+
+Next major step is implementing MITS feed generation for both Zillow and Apartments.com.
+
+## Implementation Timeline & Risks
+
+### Timeline Estimate
+- **Week 1**: Phase 1 - Minimal MITS (basic XML generation)
+- **Weeks 2-3**: Phase 2 - Core Infrastructure (full MITS module)
+- **Week 4**: Security & credential management
+- **Weeks 5-6**: Feed management UI & testing
+- **Weeks 7-8**: Site integration testing with partners
+- **Total**: 6-8 weeks to production
+
+### Critical Risks
+**High Risk:**
+- Zillow approval delay (4-6 week lead time) - START IMMEDIATELY
+- MITS compliance validation failures (currently 60% coverage)
+- Missing credential management could block production
+
+**Medium Risk:**
+- No current XML generation capability (need from scratch)
+- Test coverage gaps for MITS-specific code
+- Feed authentication not implemented
+
+**Mitigation Strategy:**
+- Submit site integration requests immediately
+- Implement Phase 1 using existing data (60% coverage)
+- Add security infrastructure before site testing
+- Follow strict TDD approach for all MITS code
 
 ## 6. Security and Compliance Considerations
 
