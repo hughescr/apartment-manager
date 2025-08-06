@@ -3,6 +3,7 @@
 
     "permissions": {
         "allow": [
+            "Bash(bun test:*)",
             "mcp__browser",
             "mcp__eslint",
             "mcp__language-server",
