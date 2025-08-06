@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PhysicalProperty xmlns="http://www.mitsproject.org/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Property_ID>
+        <Identification>
+            <PropertyID>test-property-1</PropertyID>
+            <MarketingName>Sunset Apartments</MarketingName>
+        </Identification>
+        <Address>
+            <Address>123 Main St</Address>
+            <City>Los Angeles</City>
+            <State>CA</State>
+            <PostalCode>90001</PostalCode>
+            <Country>US</Country>
+        </Address>
+        <ILS_Identification>
+            <RentalType>Market Rate</RentalType>
+            <Latitude>34.0522</Latitude>
+            <Longitude>-118.2437</Longitude>
+        </ILS_Identification>
+    </Property_ID>
+    
+    <Information>
+        <StructureType>Apartment</StructureType>
+        <YearBuilt>2020</YearBuilt>
+        <ShortDescription>Modern apartment complex</ShortDescription>
+        <LongDescription>Beautiful apartments with modern amenities in the heart of Los Angeles</LongDescription>
+        <PhoneNumber>(555) 123-4567</PhoneNumber>
+        <Email>contact@sunsetapts.com</Email>
+        <WebSite>https://sunsetapts.com</WebSite>
+    </Information>
+    
+    <Management>
+        <CompanyName>Sunset Property Management</CompanyName>
+        <Name>John Doe</Name>
+        <Email>contact@sunsetapts.com</Email>
+        <Phone>(555) 123-4567</Phone>
+    </Management>
+    
+    <Policy>
+        <Pet>
+            <Allowed>true</Allowed>
+            <Deposit>500</Deposit>
+            <Fee>25</Fee>
+            <Comment>Cats and dogs welcome</Comment>
+        </Pet>
+        <ApplicationFee>50</ApplicationFee>
+    </Policy>
+    
+    <Amenity>
+        <AmenityType>Pool</AmenityType>
+        <AmenityType>Gym</AmenityType>
+        <AmenityType>Parking</AmenityType>
+    </Amenity>
+    
+    <Floorplan>
+        <Identification>
+            <FloorplanID>model-1</FloorplanID>
+            <Name>Studio Deluxe</Name>
+        </Identification>
+        <Room>
+            <RoomType>bedroom</RoomType>
+            <Count>0</Count>
+        </Room>
+        <Room>
+            <RoomType>bathroom</RoomType>
+            <Count>1</Count>
+        </Room>
+        <SquareFeet>
+            <Min>450</Min>
+            <Max>550</Max>
+        </SquareFeet>
+        <MarketRent>
+            <Min>1200</Min>
+            <Max>1400</Max>
+        </MarketRent>
+        <Deposit>
+            <Amount>
+                <Value>1200</Value>
+            </Amount>
+        </Deposit>
+    </Floorplan>
+    
+    <Floorplan>
+        <Identification>
+            <FloorplanID>model-2</FloorplanID>
+            <Name>One Bedroom</Name>
+        </Identification>
+        <Room>
+            <RoomType>bedroom</RoomType>
+            <Count>1</Count>
+        </Room>
+        <Room>
+            <RoomType>bathroom</RoomType>
+            <Count>1</Count>
+        </Room>
+        <SquareFeet>
+            <Min>750</Min>
+            <Max>850</Max>
+        </SquareFeet>
+        <MarketRent>
+            <Min>1600</Min>
+            <Max>1800</Max>
+        </MarketRent>
+        <Deposit>
+            <Amount>
+                <Value>1600</Value>
+            </Amount>
+        </Deposit>
+    </Floorplan>
+    
+    <ILSUnit>
+        <Units>
+            <Unit>
+                <Identification>
+                    <UnitID>unit-101</UnitID>
+                    <UnitNumber>101</UnitNumber>
+                    <FloorplanID>model-1</FloorplanID>
+                </Identification>
+                <UnitBedrooms>0</UnitBedrooms>
+                <UnitBathrooms>1</UnitBathrooms>
+                <MinSquareFeet>500</MinSquareFeet>
+                <MaxSquareFeet>500</MaxSquareFeet>
+                <MarketRent>1300</MarketRent>
+                <Availability>
+                    <VacateDate>2025-02-01</VacateDate>
+                    <VacancyClass>Unoccupied</VacancyClass>
+                    <MadeReadyDate>2025-02-01</MadeReadyDate>
+                </Availability>
+            </Unit>
+            
+            <Unit>
+                <Identification>
+                    <UnitID>unit-201</UnitID>
+                    <UnitNumber>201</UnitNumber>
+                    <FloorplanID>model-2</FloorplanID>
+                </Identification>
+                <UnitBedrooms>1</UnitBedrooms>
+                <UnitBathrooms>1</UnitBathrooms>
+                <MinSquareFeet>800</MinSquareFeet>
+                <MaxSquareFeet>800</MaxSquareFeet>
+                <MarketRent>1700</MarketRent>
+                <Availability>
+                    <VacateDate>2025-02-15</VacateDate>
+                    <VacancyClass>Unoccupied</VacancyClass>
+                    <MadeReadyDate>2025-02-15</MadeReadyDate>
+                </Availability>
+            </Unit>
+        </Units>
+    </ILSUnit>
+    
+    <LastUpdate>2025-01-06T12:00:00Z</LastUpdate>
+</PhysicalProperty>
