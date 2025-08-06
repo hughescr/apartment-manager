@@ -10,5 +10,18 @@
             "mcp__tmux"
         ],
         "deny": []
+    },
+
+    "hooks": {
+        "SubagentStop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "eslint --fix --max-warnings=0 --cache 1>&2 || exit 2"
+                    }
+                ]
+            }
+        ]
     }
 }
