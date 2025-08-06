@@ -21,6 +21,13 @@ import {
     ListObjectsV2Command as S3ListObjectsV2Command
 } from '@aws-sdk/client-s3';
 
+import {
+    PutParameterCommand as SSMPutParameterCommand,
+    GetParameterCommand as SSMGetParameterCommand,
+    DeleteParameterCommand as SSMDeleteParameterCommand,
+    DescribeParametersCommand as SSMDescribeParametersCommand
+} from '@aws-sdk/client-ssm';
+
 // Import lib-dynamodb commands
 import {
     QueryCommand as LibDynamoQueryCommand,
@@ -33,6 +40,7 @@ import {
 
 // Set test environment
 process.env.BUN_ENV = 'test';
+process.env.SST_STAGE = 'test';
 
 // Mock logger
 const mockLogger = {
@@ -113,6 +121,42 @@ const s3Mock = (() => {
     return mockFn;
 })();
 
+// Create SSM mock
+const ssmMock = (() => {
+    const mockFn = jest.fn();
+    // Default implementation that returns success
+    mockFn.mockImplementation((command: unknown) => {
+        const cmd = command as { constructor: { name: string } };
+        if(cmd.constructor.name === 'PutParameterCommand') {
+            return Promise.resolve({
+                Version: 1,
+                Tier: 'Standard'
+            });
+        }
+        if(cmd.constructor.name === 'GetParameterCommand') {
+            return Promise.resolve({
+                Parameter: {
+                    Name: '/apartment-manager/test/credentials/test-site',
+                    Value: '{"apiKey":"test-key"}',
+                    Type: 'SecureString',
+                    Version: 1
+                }
+            });
+        }
+        if(cmd.constructor.name === 'DeleteParameterCommand') {
+            return Promise.resolve({});
+        }
+        if(cmd.constructor.name === 'DescribeParametersCommand') {
+            return Promise.resolve({
+                Parameters: [],
+                NextToken: undefined
+            });
+        }
+        return Promise.reject(new Error(`Unmocked SSM command: ${cmd.constructor.name}`));
+    });
+    return mockFn;
+})();
+
 // Mock the SST module FIRST before any other imports can access it
 mock.module('sst', () => ({
     Resource: {
@@ -189,8 +233,21 @@ mock.module('@aws-sdk/s3-request-presigner', () => ({
     getSignedUrl: mockGetSignedUrl
 }));
 
+// Mock AWS SDK v3 SSM Client
+mock.module('@aws-sdk/client-ssm', () => ({
+    SSMClient: class MockSSMClient {
+        send = ssmMock;
+        destroy = mockDestroy;
+    },
+    // Re-export command classes
+    PutParameterCommand: SSMPutParameterCommand,
+    GetParameterCommand: SSMGetParameterCommand,
+    DeleteParameterCommand: SSMDeleteParameterCommand,
+    DescribeParametersCommand: SSMDescribeParametersCommand,
+}));
+
 // Export mocks for test files to use
-export { dynamoDbMock, s3Mock, mockRandomUUID, mockGetSignedUrl };
+export { dynamoDbMock, s3Mock, ssmMock, mockRandomUUID, mockGetSignedUrl };
 
 // Re-export jest for convenience
 export { jest };

@@ -3,6 +3,7 @@ import * as buildings from './buildings';
 import * as units from './units';
 import * as unitTypes from './unitTypes';
 import * as version from './version';
+import * as credentials from './credentials';
 import { noop, split, every, startsWith, endsWith, forEach, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
@@ -35,6 +36,15 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
         GET: unitTypes.get,
         PUT: unitTypes.update,
         DELETE: unitTypes.del,
+    },
+    '/credentials': {
+        GET: credentials.list,
+    },
+    '/credentials/{site}': {
+        GET: credentials.get,
+        POST: credentials.create,
+        PUT: credentials.update,
+        DELETE: credentials.del,
     },
 };
 
