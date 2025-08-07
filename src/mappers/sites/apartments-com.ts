@@ -30,6 +30,29 @@ import {
 } from '../transformers/index.js';
 // import fieldMappingsV2 from '../field-mappings-v2.json'; // Reserved for future field mapping features
 
+/** Enhanced deposit structure with refundability and partial refund options */
+interface Deposit {
+    amount: number
+    refundable?: boolean
+    partialRefundPercentage?: number
+}
+
+/**
+ * Helper function to extract deposit amount from both legacy number and enhanced object formats
+ */
+function getDepositAmount(deposit: number | Deposit | undefined): number | undefined {
+    if(deposit === undefined || deposit === null) {
+        return undefined;
+    }
+    if(_.isNumber(deposit)) {
+        return deposit;
+    }
+    if(_.isObject(deposit) && 'amount' in deposit) {
+        return (deposit as Deposit).amount;
+    }
+    return undefined;
+}
+
 /**
  * Apartments.com mapper implementation.
  * Supports the three-tier hierarchy: Building → Models → Units
@@ -131,7 +154,7 @@ export class ApartmentsComMapper implements SiteMapper {
                 min: unitType.minRent,
                 max: unitType.maxRent
             },
-            deposit: unitType.deposit,
+            deposit: getDepositAmount(unitType.deposit),
             maxOccupants: unitType.maxOccupants,
             countAvailable: unitType.countAvailable,
             dateAvailable: dateFormatter(unitType.dateAvailable),
@@ -166,7 +189,7 @@ export class ApartmentsComMapper implements SiteMapper {
             baths: resolved.baths || 0,
             sqft: resolved.sqft,
             rent: resolved.rent || 0,
-            deposit: resolved.deposit,
+            deposit: getDepositAmount(resolved.deposit),
             dateAvailable: dateFormatter(resolved.availableDate),
             description: resolved.unitDescription || resolved.description,
             maxOccupants: resolved.maxOccupants,

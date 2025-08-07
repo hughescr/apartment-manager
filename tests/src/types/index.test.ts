@@ -12,10 +12,15 @@ import {
     WebsiteStatus,
     DayOfWeek,
 
+    // MITS compliance types
+    VacancyClass,
+
     // Interfaces
     RentSpecial,
     IncomeRestriction,
     Fee,
+    Deposit,
+    PetTypePolicy,
     PetPolicy,
     ParkingOption,
     StorageOption,
@@ -134,6 +139,18 @@ describe('Type Definitions', () => {
             expect(DayOfWeek.SUNDAY as string).toBe('sunday');
             expect(_.keys(DayOfWeek).length).toBe(7);
         });
+
+        it('VacancyClass should have correct values', () => {
+            const occupied: VacancyClass = 'Occupied';
+            const unoccupied: VacancyClass = 'Unoccupied';
+            const notice: VacancyClass = 'Notice';
+            const down: VacancyClass = 'Down';
+
+            expect(occupied).toBe('Occupied');
+            expect(unoccupied).toBe('Unoccupied');
+            expect(notice).toBe('Notice');
+            expect(down).toBe('Down');
+        });
     });
 
     describe('Complex Nested Structures', () => {
@@ -209,6 +226,64 @@ describe('Type Definitions', () => {
             });
         });
 
+        describe('Deposit', () => {
+            it('should accept comprehensive deposit data', () => {
+                const deposit: Deposit = {
+                    amount: 1500,
+                    refundable: true,
+                    partialRefundPercentage: 80
+                };
+                expect(deposit.amount).toBe(1500);
+                expect(deposit.refundable).toBe(true);
+                expect(deposit.partialRefundPercentage).toBe(80);
+            });
+
+            it('should accept minimal deposit data', () => {
+                const deposit: Deposit = {
+                    amount: 1000
+                };
+                expect(deposit.amount).toBe(1000);
+                expect(deposit.refundable).toBeUndefined();
+                expect(deposit.partialRefundPercentage).toBeUndefined();
+            });
+
+            it('should accept non-refundable deposit with partial refund percentage', () => {
+                const deposit: Deposit = {
+                    amount: 2000,
+                    refundable: false,
+                    partialRefundPercentage: 25
+                };
+                expect(deposit.refundable).toBe(false);
+                expect(deposit.partialRefundPercentage).toBe(25);
+            });
+        });
+
+        describe('PetTypePolicy', () => {
+            it('should accept comprehensive pet type policy', () => {
+                const dogPolicy: PetTypePolicy = {
+                    type: 'dog',
+                    weightLimit: 50,
+                    countLimit: 2,
+                    fee: 75,
+                    deposit: 300,
+                    breedRestrictions: ['Pit Bull', 'Rottweiler', 'Doberman']
+                };
+                expect(dogPolicy.type).toBe('dog');
+                expect(dogPolicy.weightLimit).toBe(50);
+                expect(dogPolicy.countLimit).toBe(2);
+                expect(dogPolicy.breedRestrictions).toHaveLength(3);
+            });
+
+            it('should accept minimal pet type policy', () => {
+                const catPolicy: PetTypePolicy = {
+                    type: 'cat'
+                };
+                expect(catPolicy.type).toBe('cat');
+                expect(catPolicy.weightLimit).toBeUndefined();
+                expect(catPolicy.fee).toBeUndefined();
+            });
+        });
+
         describe('PetPolicy', () => {
             it('should accept comprehensive PetPolicy', () => {
                 const policy: PetPolicy = {
@@ -220,7 +295,23 @@ describe('Type Definitions', () => {
                     deposit: 500,
                     monthlyFee: 50,
                     oneTimeFee: 200,
-                    notes: 'Service animals exempt'
+                    notes: 'Service animals exempt',
+                    petTypes: [
+                        {
+                            type: 'dog',
+                            weightLimit: 80,
+                            countLimit: 1,
+                            fee: 50,
+                            deposit: 400,
+                            breedRestrictions: ['Pit Bull', 'Rottweiler']
+                        },
+                        {
+                            type: 'cat',
+                            countLimit: 2,
+                            fee: 25,
+                            deposit: 200
+                        }
+                    ]
                 };
                 expect(policy.allowed).toBe(true);
                 expect(policy.types).toContain(PetType.DOG);
@@ -228,6 +319,9 @@ describe('Type Definitions', () => {
                 expect(policy.maxCount).toBe(2);
                 expect(policy.weightLimit).toBe(50);
                 expect(policy.breedRestrictions).toHaveLength(2);
+                expect(policy.petTypes).toHaveLength(2);
+                expect(policy.petTypes![0].type).toBe('dog');
+                expect(policy.petTypes![1].type).toBe('cat');
             });
 
             it('should accept minimal PetPolicy for no pets', () => {
@@ -305,20 +399,32 @@ describe('Type Definitions', () => {
         });
 
         describe('ContactInfo', () => {
-            it('should accept valid ContactInfo with office hours', () => {
+            it('should accept valid ContactInfo with office hours and websites', () => {
                 const contact: ContactInfo = {
                     name: 'Leasing Office',
                     phone: '555-1234',
                     email: 'leasing@example.com',
-                    website: 'https://example.com',
+                    propertyWebsite: 'https://property.example.com',
+                    managementWebsite: 'https://management.example.com',
                     officeHours: {
                         [DayOfWeek.MONDAY]: { open: '09:00', close: '18:00' },
                         [DayOfWeek.TUESDAY]: { open: '09:00', close: '18:00' },
                         [DayOfWeek.SATURDAY]: { open: '10:00', close: '16:00' }
                     }
                 };
+                expect(contact.propertyWebsite).toBe('https://property.example.com');
+                expect(contact.managementWebsite).toBe('https://management.example.com');
                 expect(contact.officeHours?.[DayOfWeek.MONDAY]?.open).toBe('09:00');
                 expect(contact.officeHours?.[DayOfWeek.SUNDAY]).toBeUndefined();
+            });
+
+            it('should accept ContactInfo with only one website type', () => {
+                const contact: ContactInfo = {
+                    name: 'Property Manager',
+                    propertyWebsite: 'https://property.com'
+                };
+                expect(contact.propertyWebsite).toBe('https://property.com');
+                expect(contact.managementWebsite).toBeUndefined();
             });
         });
 
@@ -428,11 +534,18 @@ describe('Type Definitions', () => {
                         virtualTours: true
                     },
                     applicationFee: 50,
-                    acceptsOnlineApplications: true
+                    acceptsOnlineApplications: true,
+                    // MITS compliance fields
+                    latitude: 47.6062,
+                    longitude: -122.3321,
+                    coordinatesVerified: true
                 };
                 expect(building.buildingID).toBe('bldg-123');
                 expect(building.propertyType as string).toBe(PropertyType.APARTMENT);
                 expect(building.rentSpecials).toHaveLength(1);
+                expect(building.latitude).toBe(47.6062);
+                expect(building.longitude).toBe(-122.3321);
+                expect(building.coordinatesVerified).toBe(true);
             });
 
             it('should accept minimal BuildingData with only required fields', () => {
@@ -476,7 +589,11 @@ describe('Type Definitions', () => {
                     perPersonRent: 450,
                     minSqft: 900,
                     maxSqft: 1100,
-                    deposit: 1500,
+                    deposit: {
+                        amount: 1500,
+                        refundable: true,
+                        partialRefundPercentage: 90
+                    },
                     minLeaseTerm: 6,
                     maxLeaseTerm: 12,
                     modelAmenities: [{
@@ -500,6 +617,37 @@ describe('Type Definitions', () => {
                 expect(unitType.minRent).toBeUndefined();
                 expect(unitType.modelAmenities).toBeUndefined();
             });
+
+            it('should accept both legacy number deposit and enhanced Deposit object', () => {
+                const unitTypeWithNumberDeposit: UnitTypeData = {
+                    buildingID: 'bldg-123',
+                    modelID: 'model-legacy',
+                    modelName: 'Legacy Deposit',
+                    beds: 2,
+                    baths: 1,
+                    deposit: 1200 // Legacy number format
+                };
+                expect(unitTypeWithNumberDeposit.deposit).toBe(1200);
+
+                const unitTypeWithDepositObject: UnitTypeData = {
+                    buildingID: 'bldg-123',
+                    modelID: 'model-enhanced',
+                    modelName: 'Enhanced Deposit',
+                    beds: 2,
+                    baths: 2,
+                    deposit: {
+                        amount: 1200,
+                        refundable: false,
+                        partialRefundPercentage: 50
+                    }
+                };
+                expect(_.isObject(unitTypeWithDepositObject.deposit)).toBe(true);
+                if(_.isObject(unitTypeWithDepositObject.deposit)) {
+                    expect(unitTypeWithDepositObject.deposit.amount).toBe(1200);
+                    expect(unitTypeWithDepositObject.deposit.refundable).toBe(false);
+                    expect(unitTypeWithDepositObject.deposit.partialRefundPercentage).toBe(50);
+                }
+            });
         });
 
         describe('UnitData', () => {
@@ -518,10 +666,18 @@ describe('Type Definitions', () => {
                     unitNumber: '2A',
                     maxOccupants: 4,
                     perPersonRent: 412.50,
-                    deposit: 1650,
+                    deposit: {
+                        amount: 1650,
+                        refundable: true,
+                        partialRefundPercentage: 85
+                    },
                     minLeaseTerm: 12,
                     maxLeaseTerm: 24,
                     unitDescription: 'Beautiful corner unit',
+                    // MITS compliance fields
+                    vacancyClass: 'Unoccupied',
+                    vacateDate: '2024-03-01',
+                    madeReadyDate: '2024-03-15',
                     unitRentSpecial: {
                         title: 'Unit Special',
                         description: 'Free parking'
@@ -551,6 +707,9 @@ describe('Type Definitions', () => {
                 expect(unit.feedLastPulled?.['apartments.com']?.timestamp).toEqual(new Date('2024-03-15T10:30:00Z'));
                 expect(unit.feedLastPulled?.['apartments.com']?.ipAddress).toBe('192.168.1.100');
                 expect(unit.feedLastModified).toEqual(new Date('2024-03-14T14:22:00Z'));
+                expect(unit.vacancyClass).toBe('Unoccupied');
+                expect(unit.vacateDate).toBe('2024-03-01');
+                expect(unit.madeReadyDate).toBe('2024-03-15');
             });
 
             it('should accept minimal UnitData with required fields', () => {
@@ -592,6 +751,72 @@ describe('Type Definitions', () => {
                 expect(unit.feedLastPulled?.['apartments.com']?.timestamp).toEqual(new Date('2024-03-15T10:30:00Z'));
                 expect(unit.feedLastPulled?.zillow?.ipAddress).toBe('10.0.0.1');
                 expect(unit.feedLastModified).toEqual(new Date('2024-03-14T14:22:00.123Z'));
+            });
+
+            it('should accept both legacy number deposit and enhanced Deposit object', () => {
+                const unitWithNumberDeposit: UnitData = {
+                    buildingID: 'bldg-123',
+                    unitID: 'unit-legacy',
+                    deposit: 1500 // Legacy number format
+                };
+                expect(unitWithNumberDeposit.deposit).toBe(1500);
+
+                const unitWithDepositObject: UnitData = {
+                    buildingID: 'bldg-123',
+                    unitID: 'unit-enhanced',
+                    deposit: {
+                        amount: 1500,
+                        refundable: true,
+                        partialRefundPercentage: 75
+                    }
+                };
+                expect(_.isObject(unitWithDepositObject.deposit)).toBe(true);
+                if(_.isObject(unitWithDepositObject.deposit)) {
+                    expect(unitWithDepositObject.deposit.amount).toBe(1500);
+                    expect(unitWithDepositObject.deposit.refundable).toBe(true);
+                }
+            });
+
+            it('should accept all VacancyClass values', () => {
+                const units: UnitData[] = [
+                    {
+                        buildingID: 'bldg-1',
+                        unitID: 'unit-1',
+                        vacancyClass: 'Occupied'
+                    },
+                    {
+                        buildingID: 'bldg-2',
+                        unitID: 'unit-2',
+                        vacancyClass: 'Unoccupied'
+                    },
+                    {
+                        buildingID: 'bldg-3',
+                        unitID: 'unit-3',
+                        vacancyClass: 'Notice'
+                    },
+                    {
+                        buildingID: 'bldg-4',
+                        unitID: 'unit-4',
+                        vacancyClass: 'Down'
+                    }
+                ];
+
+                expect(units[0].vacancyClass).toBe('Occupied');
+                expect(units[1].vacancyClass).toBe('Unoccupied');
+                expect(units[2].vacancyClass).toBe('Notice');
+                expect(units[3].vacancyClass).toBe('Down');
+            });
+
+            it('should accept MITS date fields', () => {
+                const unit: UnitData = {
+                    buildingID: 'bldg-123',
+                    unitID: 'unit-mits',
+                    vacancyClass: 'Notice',
+                    vacateDate: '2024-04-30',
+                    madeReadyDate: '2024-05-15'
+                };
+                expect(unit.vacateDate).toBe('2024-04-30');
+                expect(unit.madeReadyDate).toBe('2024-05-15');
             });
         });
 

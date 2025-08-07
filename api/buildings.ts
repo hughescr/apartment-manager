@@ -49,6 +49,12 @@ function validateNumericFields(data: Partial<BuildingData>, errors: Record<strin
     }
 }
 
+function validateWebsiteUrl(url: string | undefined, fieldName: string, errors: Record<string, string>, errorKey: string): void {
+    if(url && !url.match(/^https?:\/\/.+/)) {
+        errors[errorKey] = `${fieldName} must start with http:// or https://`;
+    }
+}
+
 function validateContactInfo(data: Partial<BuildingData>, errors: Record<string, string>): void {
     if(data.contactInfo?.email && !/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(data.contactInfo.email)) {
         errors.contactEmail = 'Invalid email address format';
@@ -58,13 +64,9 @@ function validateContactInfo(data: Partial<BuildingData>, errors: Record<string,
         errors.contactPhone = 'Invalid phone number format';
     }
 
-    if(data.contactInfo?.website && !data.contactInfo.website.match(/^https?:\/\/.+/)) {
-        errors.contactWebsite = 'Website must start with http:// or https://';
-    }
-
-    if(data.tourAvailability?.tourSchedulingUrl && !data.tourAvailability.tourSchedulingUrl.match(/^https?:\/\/.+/)) {
-        errors.tourSchedulingUrl = 'Tour scheduling URL must start with http:// or https://';
-    }
+    validateWebsiteUrl(data.contactInfo?.propertyWebsite, 'Website', errors, 'contactWebsite');
+    validateWebsiteUrl(data.contactInfo?.managementWebsite, 'Management website', errors, 'managementWebsite');
+    validateWebsiteUrl(data.tourAvailability?.tourSchedulingUrl, 'Tour scheduling URL', errors, 'tourSchedulingUrl');
 }
 
 function validateRentSpecials(data: Partial<BuildingData>, errors: Record<string, string>): void {

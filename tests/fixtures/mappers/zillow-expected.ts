@@ -132,7 +132,7 @@ export const completeBuildingZillowExpected: MappedBuilding = {
         name: 'Luxury Living Leasing Office',
         phone: '(415) 555-0123',
         email: 'leasing@luxuryliving.com',
-        website: 'https://www.luxuryliving.com',
+        propertyWebsite: 'https://www.luxuryliving.com',
         officeHours: {
             monday: { open: '09:00', close: '18:00' },
             tuesday: { open: '09:00', close: '18:00' },

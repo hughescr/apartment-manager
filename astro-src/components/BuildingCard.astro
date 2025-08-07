@@ -13,7 +13,8 @@ import {
     AmenitySelector,
     FeeListEditor,
     PetPolicyEditor,
-    ScreeningCriteriaForm
+    ScreeningCriteriaForm,
+    LocationMapPicker
 } from "./forms";
 import { 
     PropertyType, 
@@ -63,9 +64,14 @@ if (!building.utilitiesIncluded) {
     };
 }
 
-// Pet policies - ensure it has the required structure
+// Pet policies - ensure it has the required structure with enhanced fields
 if (!building.petPolicies) {
-    building.petPolicies = { allowed: false };
+    building.petPolicies = { allowed: false, petTypes: [] };
+} else {
+    // Ensure petTypes array exists for advanced settings
+    if (!building.petPolicies.petTypes) {
+        building.petPolicies.petTypes = [];
+    }
 }
 
 // Screening criteria - initialize with sensible defaults
@@ -87,6 +93,13 @@ if (!building.screeningCriteria) {
 if (!building.contactInfo) building.contactInfo = {};
 if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {};
 
+// Handle backward compatibility for website fields
+// If old 'website' field exists but propertyWebsite doesn't, migrate it
+if (building.contactInfo.website && !building.contactInfo.propertyWebsite) {
+    building.contactInfo.propertyWebsite = building.contactInfo.website;
+    delete building.contactInfo.website;
+}
+
 // Tour availability - ensure nested objects exist
 if (!building.tourAvailability) building.tourAvailability = {};
 if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {};
@@ -94,6 +107,16 @@ if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = 
 if (building.tourAvailability.selfGuidedTours === undefined) building.tourAvailability.selfGuidedTours = false;
 if (building.tourAvailability.virtualTours === undefined) building.tourAvailability.virtualTours = false;
 if (building.tourAvailability.inPersonTours === undefined) building.tourAvailability.inPersonTours = false;
+
+// Initialize specialty type with default if not set
+if (!building.specialtyType) {
+    building.specialtyType = 'market-rate';
+}
+
+// Initialize coordinate fields
+if (building.latitude === undefined) building.latitude = null;
+if (building.longitude === undefined) building.longitude = null;  
+if (building.coordinatesVerified === undefined) building.coordinatesVerified = false;
 
 // Income restrictions - ensure proper structure for Alpine.js binding
 // Even if null, we need an object for the template to bind to
@@ -217,8 +240,13 @@ function buildingCardData() {
                 isValid = false;
             }
             
-            if (this.building.contactInfo?.website && !this.building.contactInfo.website.match(/^https?:\/\/.+/)) {
-                this.errors.contactWebsite = 'Website must start with http:// or https://';
+            if (this.building.contactInfo?.propertyWebsite && !this.building.contactInfo.propertyWebsite.match(/^https?:\/\/.+/)) {
+                this.errors.contactPropertyWebsite = 'Property website must start with http:// or https://';
+                isValid = false;
+            }
+            
+            if (this.building.contactInfo?.managementWebsite && !this.building.contactInfo.managementWebsite.match(/^https?:\/\/.+/)) {
+                this.errors.contactManagementWebsite = 'Management website must start with http:// or https://';
                 isValid = false;
             }
             
@@ -476,6 +504,20 @@ function buildingCardData() {
                 <span x-show="errors.zip" class="label-text-alt text-error" x-text="errors.zip"></span>
             </div>
             
+            <!-- Location Map -->
+            <div class="mt-6">
+                <LocationMapPicker
+                    latModel="building.latitude"
+                    lngModel="building.longitude"
+                    verifiedModel="building.coordinatesVerified"
+                    addressModel="building.street"
+                    cityModel="building.city"
+                    stateModel="building.state"
+                    apiUrl={apiURL}
+                    height="350px"
+                />
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <BaseInput
                     name="yearBuilt"
@@ -583,19 +625,88 @@ function buildingCardData() {
                 helpText="This description will be used on listing sites"
             />
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BaseInput
-                    name="specialtyType"
-                    label="Specialty Type"
-                    xModel="building.specialtyType"
-                    placeholder="e.g., senior, student, affordable"
-                />
-                <BaseInput
-                    name="specialtySubType"
-                    label="Specialty Sub-Type"
-                    xModel="building.specialtySubType"
-                    placeholder="e.g., 55+, 62+, graduate"
-                />
+            <!-- Rental Type Section -->
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body">
+                    <h4 class="card-title text-base flex items-center gap-2">
+                        <span>Rental Type (Property Specialty)</span>
+                        <div class="tooltip tooltip-right" data-tip="This affects how your property appears on listing sites like Apartments.com and Zillow">
+                            <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <BaseSelect
+                            name="specialtyType"
+                            label="Rental Type"
+                            xModel="building.specialtyType"
+                            options={[
+                                { value: 'market-rate', label: 'Market Rate' },
+                                { value: 'affordable', label: 'Affordable' },
+                                { value: 'student', label: 'Student' },
+                                { value: 'senior', label: 'Senior' }
+                            ]}
+                            placeholder="Select rental type"
+                        />
+                        <BaseInput
+                            name="specialtySubType"
+                            label="Specialty Sub-Type"
+                            xModel="building.specialtySubType"
+                            placeholder="e.g., 55+, 62+, graduate"
+                        />
+                    </div>
+                    
+                    <!-- Rental Type Explanations -->
+                    <div class="mt-4 space-y-2 text-sm">
+                        <div x-show="building.specialtyType === 'market-rate' || !building.specialtyType" class="alert alert-info">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <strong>Market Rate:</strong> Standard market-rate apartments with no income or age restrictions. Most flexible rental type.
+                            </div>
+                        </div>
+                        
+                        <div x-show="building.specialtyType === 'affordable'" class="alert alert-warning">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <div>
+                                <strong>Affordable:</strong> Income-restricted housing with AMI (Area Median Income) requirements. May require additional documentation and screening. Ensure your income restrictions section above is properly configured.
+                            </div>
+                        </div>
+                        
+                        <div x-show="building.specialtyType === 'student'" class="alert alert-info">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <strong>Student:</strong> Housing designed for students, often near universities or colleges. May allow co-signers or have different lease terms.
+                            </div>
+                        </div>
+                        
+                        <div x-show="building.specialtyType === 'senior'" class="alert alert-info">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <strong>Senior:</strong> Age-restricted housing typically for residents 55+ or 62+. Specify the minimum age in the Sub-Type field above.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Important Notice -->
+                    <div class="alert alert-warning mt-4">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <div>
+                            <strong>Important:</strong> Selecting the wrong rental type may result in listing rejection on sites like Apartments.com and Zillow. Choose the type that most accurately represents your property.
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="form-control">
@@ -1027,14 +1138,51 @@ function buildingCardData() {
                             placeholder="contact@property.com"
                         />
                         <span x-show="errors.contactEmail" class="label-text-alt text-error" x-text="errors.contactEmail"></span>
-                        <BaseInput
-                            name="contactWebsite"
-                            label="Website"
-                            type="url"
-                            xModel="building.contactInfo.website"
-                            placeholder="https://property.com"
-                        />
-                        <span x-show="errors.contactWebsite" class="label-text-alt text-error" x-text="errors.contactWebsite"></span>
+                    </div>
+                    
+                    <!-- Website Fields Section -->
+                    <div class="mt-6">
+                        <h4 class="text-base font-semibold mb-4 flex items-center gap-2">
+                            <span>Website Information</span>
+                            <div class="tooltip tooltip-right" data-tip="Property websites are used on listings to show property-specific information. Management websites link to your company's main site for corporate information.">
+                                <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            <BaseInput
+                                name="contactPropertyWebsite"
+                                label="Property Website"
+                                type="url"
+                                xModel="building.contactInfo.propertyWebsite"
+                                placeholder="https://property-specific-site.com"
+                                helpText="Main website for this specific property/building - used in listings"
+                            />
+                            <span x-show="errors.contactPropertyWebsite" class="label-text-alt text-error" x-text="errors.contactPropertyWebsite"></span>
+                            
+                            <BaseInput
+                                name="contactManagementWebsite"
+                                label="Management Company Website (Optional)"
+                                type="url"
+                                xModel="building.contactInfo.managementWebsite"
+                                placeholder="https://your-management-company.com"
+                                helpText="Your property management company's main website - for corporate information"
+                            />
+                            <span x-show="errors.contactManagementWebsite" class="label-text-alt text-error" x-text="errors.contactManagementWebsite"></span>
+                        </div>
+                        
+                        <!-- Explanatory text -->
+                        <div class="alert alert-info mt-4">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-sm">
+                                <p><strong>Property Website:</strong> Specific to this building/property - shown on rental listings for prospective tenants</p>
+                                <p class="mt-1"><strong>Management Website:</strong> Your company's main website - used for corporate information and branding</p>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Office Hours -->

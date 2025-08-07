@@ -15,6 +15,10 @@ if (!unit.unitAmenities) unit.unitAmenities = [];
 if (!unit.photos) unit.photos = [];
 if (!unit.feedInclusion) unit.feedInclusion = {};
 if (!unit.manualReferences) unit.manualReferences = {};
+// Initialize vacancy status fields
+if (!unit.vacancyClass) unit.vacancyClass = '';
+if (!unit.vacateDate) unit.vacateDate = '';
+if (!unit.madeReadyDate) unit.madeReadyDate = '';
 ---
 
 <script is:inline>
@@ -46,6 +50,13 @@ function unitCardData() {
             if (!this.unit.photos) this.unit.photos = [];
             if (!this.unit.feedInclusion) this.unit.feedInclusion = {};
             if (!this.unit.manualReferences) this.unit.manualReferences = {};
+            // Initialize vacancy status fields
+            if (!this.unit.vacancyClass) this.unit.vacancyClass = '';
+            if (!this.unit.vacateDate) this.unit.vacateDate = '';
+            if (!this.unit.madeReadyDate) this.unit.madeReadyDate = '';
+            
+            // Initialize enhanced deposit structure
+            this.initializeDeposit();
             
             // Find and set the selected unit type
             if (this.unit.modelID) {
@@ -113,7 +124,12 @@ function unitCardData() {
                 return null;
             }
             
-            return this.selectedUnitType[modelField];
+            const value = this.selectedUnitType[modelField];
+            if (fieldName === 'deposit' && typeof value === 'object' && value !== null) {
+                return value.amount; // Return just the amount for display
+            }
+            
+            return value;
         },
         
         getEffectiveValue(fieldName) {
@@ -198,10 +214,21 @@ function unitCardData() {
                 }
             }
             
-            // Validate deposit (>= 0)
+            // Validate deposit
             if (this.unit.deposit !== null && this.unit.deposit !== undefined) {
-                if (this.unit.deposit < 0) {
-                    this.errors.deposit = 'Deposit must be 0 or greater';
+                if (typeof this.unit.deposit === 'number') {
+                    if (this.unit.deposit < 0) {
+                        this.errors.deposit = 'Deposit must be 0 or greater';
+                    }
+                } else if (typeof this.unit.deposit === 'object') {
+                    if (!this.unit.deposit.amount || this.unit.deposit.amount < 0) {
+                        this.errors.depositAmount = 'Deposit amount is required and must be 0 or greater';
+                    }
+                    if (this.unit.deposit.partialRefundPercentage !== undefined && this.unit.deposit.partialRefundPercentage !== null) {
+                        if (this.unit.deposit.partialRefundPercentage < 0 || this.unit.deposit.partialRefundPercentage > 100) {
+                            this.errors.depositPartialRefund = 'Partial refund percentage must be between 0 and 100';
+                        }
+                    }
                 }
             }
             
@@ -231,6 +258,47 @@ function unitCardData() {
                 
                 if (availDate < minDate || availDate > maxDate) {
                     this.errors.availableDate = 'Available date must be between 2025 and 2028';
+                }
+            }
+            
+            // Validate vacate date
+            if (this.unit.vacateDate) {
+                const vacateDate = new Date(this.unit.vacateDate);
+                const minDate = new Date('2025-01-01');
+                const maxDate = new Date('2030-01-01');
+                
+                if (vacateDate < minDate || vacateDate > maxDate) {
+                    this.errors.vacateDate = 'Vacate date must be between 2025 and 2030';
+                }
+            }
+            
+            // Validate made ready date
+            if (this.unit.madeReadyDate) {
+                const madeReadyDate = new Date(this.unit.madeReadyDate);
+                const minDate = new Date('2025-01-01');
+                const maxDate = new Date('2030-01-01');
+                
+                if (madeReadyDate < minDate || madeReadyDate > maxDate) {
+                    this.errors.madeReadyDate = 'Made ready date must be between 2025 and 2030';
+                }
+            }
+            
+            // Validate date logic for vacancy workflow
+            if (this.unit.vacateDate && this.unit.madeReadyDate) {
+                const vacateDate = new Date(this.unit.vacateDate);
+                const madeReadyDate = new Date(this.unit.madeReadyDate);
+                
+                if (vacateDate > madeReadyDate) {
+                    this.errors.vacancyDates = 'Vacate date cannot be after made ready date';
+                }
+            }
+            
+            if (this.unit.madeReadyDate && this.unit.availableDate) {
+                const madeReadyDate = new Date(this.unit.madeReadyDate);
+                const availableDate = new Date(this.unit.availableDate);
+                
+                if (madeReadyDate > availableDate) {
+                    this.errors.vacancyDates = 'Made ready date cannot be after available date';
                 }
             }
             
@@ -322,6 +390,81 @@ function unitCardData() {
         
         toggleSection(section) {
             this.expandedSections[section] = !this.expandedSections[section];
+        },
+        
+        // Deposit handling functions
+        initializeDeposit() {
+            // Convert legacy number deposits to enhanced object format
+            if (typeof this.unit.deposit === 'number') {
+                this.unit.deposit = {
+                    amount: this.unit.deposit,
+                    refundable: true
+                };
+            }
+            // Initialize empty deposit object if not present
+            if (!this.unit.deposit) {
+                this.unit.deposit = null;
+            }
+        },
+        
+        getDepositAmount() {
+            if (!this.unit.deposit) return null;
+            if (typeof this.unit.deposit === 'number') return this.unit.deposit;
+            return this.unit.deposit.amount;
+        },
+        
+        setDepositAmount(value) {
+            if (!value || value === '') {
+                this.unit.deposit = null;
+                return;
+            }
+            
+            const amount = parseFloat(value);
+            if (isNaN(amount) || amount < 0) return;
+            
+            if (!this.unit.deposit) {
+                this.unit.deposit = {
+                    amount: amount,
+                    refundable: true
+                };
+            } else if (typeof this.unit.deposit === 'number') {
+                this.unit.deposit = {
+                    amount: amount,
+                    refundable: true
+                };
+            } else {
+                this.unit.deposit.amount = amount;
+            }
+        },
+        
+        getDepositRefundable() {
+            if (!this.unit.deposit) return true;
+            if (typeof this.unit.deposit === 'number') return true;
+            return this.unit.deposit.refundable !== false;
+        },
+        
+        setDepositRefundable(value) {
+            if (!this.unit.deposit || typeof this.unit.deposit === 'number') return;
+            this.unit.deposit.refundable = value;
+            if (value) {
+                // Clear partial refund percentage when fully refundable
+                delete this.unit.deposit.partialRefundPercentage;
+            }
+        },
+        
+        getDepositPartialRefundPercentage() {
+            if (!this.unit.deposit || typeof this.unit.deposit === 'number') return null;
+            return this.unit.deposit.partialRefundPercentage || null;
+        },
+        
+        setDepositPartialRefundPercentage(value) {
+            if (!this.unit.deposit || typeof this.unit.deposit === 'number') return;
+            const percentage = parseFloat(value);
+            if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+                delete this.unit.deposit.partialRefundPercentage;
+                return;
+            }
+            this.unit.deposit.partialRefundPercentage = percentage;
         }
     };
 }
@@ -516,59 +659,188 @@ function unitCardData() {
                 <div x-show="errors.perPersonRent" class="text-error text-sm mt-1" x-text="errors.perPersonRent"></div>
             </div>
             
-            <!-- Financial -->
-            <div class="form-control">
+            <!-- Enhanced Deposit Section -->
+            <div class="form-control col-span-1 md:col-span-2 lg:col-span-3">
                 <label class="label">
-                    <span class="label-text font-semibold">Deposit</span>
+                    <span class="label-text font-semibold">Deposit Details</span>
                     <span x-show="isInherited('deposit')" class="badge badge-info badge-xs">inherited</span>
+                    <div class="tooltip tooltip-left" data-tip="Security deposit amount and refundability terms">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </label>
-                <div class="relative">
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unit.deposit" 
-                        class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('deposit'), 'input-error': errors.deposit}"
-                        min="0"
-                        :placeholder="getInheritedValue('deposit') || 'Not set'"
-                    />
-                    <span x-show="isInherited('deposit')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
-                        <span x-text="getInheritedValue('deposit')"></span>
-                    </span>
+                <div class="border border-base-300 rounded-lg p-4" :class="{'border-error': errors.deposit || errors.depositAmount || errors.depositPartialRefund}">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Deposit Amount -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-sm">Amount ($) <span class="text-error">*</span></span>
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    :value="getDepositAmount()"
+                                    x-on:input="setDepositAmount($event.target.value)"
+                                    class="input input-bordered w-full"
+                                    :class="{'input-ghost': isInherited('deposit'), 'input-error': errors.deposit || errors.depositAmount}"
+                                    min="0"
+                                    :placeholder="getInheritedValue('deposit') || 'Not set'"
+                                />
+                                <span x-show="isInherited('deposit')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
+                                    <span x-text="getInheritedValue('deposit')"></span>
+                                </span>
+                            </div>
+                            <div x-show="errors.deposit" class="text-error text-sm mt-1" x-text="errors.deposit"></div>
+                            <div x-show="errors.depositAmount" class="text-error text-sm mt-1" x-text="errors.depositAmount"></div>
+                        </div>
+                        
+                        <!-- Refundable Toggle -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-sm">Refundable</span>
+                                <div class="tooltip tooltip-top" data-tip="Whether the deposit can be returned to tenants">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </label>
+                            <input 
+                                type="checkbox"
+                                class="toggle toggle-success"
+                                :checked="getDepositRefundable()"
+                                x-on:change="setDepositRefundable($event.target.checked)"
+                                :disabled="!unit.deposit"
+                            />
+                            <div class="text-xs text-base-content/70 mt-1">
+                                <span x-show="getDepositRefundable()">Fully refundable</span>
+                                <span x-show="!getDepositRefundable()">Non-refundable or partial</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Partial Refund Percentage -->
+                        <div class="form-control" x-show="unit.deposit && !getDepositRefundable()">
+                            <label class="label">
+                                <span class="label-text text-sm">Partial Refund %</span>
+                                <div class="tooltip tooltip-top" data-tip="Percentage that may be refunded (e.g., 70% means $700 of a $1000 deposit)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </label>
+                            <input 
+                                type="range"
+                                class="range range-sm range-primary"
+                                min="0"
+                                max="100"
+                                step="5"
+                                :value="getDepositPartialRefundPercentage() || 0"
+                                x-on:input="setDepositPartialRefundPercentage($event.target.value)"
+                            />
+                            <div class="flex justify-between text-xs text-base-content/70 px-2">
+                                <span>0%</span>
+                                <span class="font-medium" x-text="(getDepositPartialRefundPercentage() || 0) + '%'"></span>
+                                <span>100%</span>
+                            </div>
+                            <div x-show="errors.depositPartialRefund" class="text-error text-sm mt-1" x-text="errors.depositPartialRefund"></div>
+                            <div class="text-xs text-base-content/70 mt-1" x-show="getDepositPartialRefundPercentage()">
+                                May refund up to <span x-text="formatCurrency((getDepositAmount() || 0) * (getDepositPartialRefundPercentage() || 0) / 100)"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div x-show="errors.deposit" class="text-error text-sm mt-1" x-text="errors.deposit"></div>
             </div>
             
-            <!-- Availability -->
+            <!-- Vacancy Status Section -->
             <div class="form-control">
                 <label class="label">
-                    <span class="label-text font-semibold">Occupied?</span>
+                    <span class="label-text font-semibold">Vacancy Status</span>
+                    <div class="tooltip tooltip-left" data-tip="Current status for property management and MITS feed compliance">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </label>
-                <label class="toggle">
-                    <input type="checkbox" x-model.boolean.lazy="unit.occupied"/>
-                    <svg aria-label="disabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                    </svg>
-                    <svg aria-label="enabled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
-                        <g stroke-linejoin="round" stroke-linecap="round" stroke-width="4" fill="none" stroke="currentColor">
-                            <path d="M20 6 9 17l-5-5" />
-                        </g>
-                    </svg>
-                </label>
+                <select 
+                    x-model.lazy="unit.vacancyClass"
+                    class="select select-bordered w-full"
+                >
+                    <option value="">Select Status...</option>
+                    <option value="Occupied">Occupied - Currently rented to a tenant</option>
+                    <option value="Unoccupied">Unoccupied - Vacant and available for rent</option>
+                    <option value="Notice">Notice - Tenant gave notice but hasn't vacated yet</option>
+                    <option value="Down">Down - Unavailable due to maintenance/renovation</option>
+                </select>
+                <div class="text-xs text-base-content/70 mt-1">
+                    <span x-show="unit.vacancyClass === 'Occupied'">Unit is currently rented with an active lease</span>
+                    <span x-show="unit.vacancyClass === 'Unoccupied'">Unit is vacant and ready for new tenant</span>
+                    <span x-show="unit.vacancyClass === 'Notice'">Current tenant has given notice to vacate</span>
+                    <span x-show="unit.vacancyClass === 'Down'">Unit is offline for maintenance or repairs</span>
+                </div>
             </div>
             
             <div class="form-control">
                 <label class="label">
-                    <span class="label-text font-semibold">Available From</span>
+                    <span class="label-text font-semibold">Vacate Date</span>
+                    <div class="tooltip tooltip-left" data-tip="When the current tenant will move out">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </label>
+                <input 
+                    type="date" 
+                    x-model.lazy="unit.vacateDate" 
+                    class="input input-bordered w-full"
+                    :class="{'input-error': errors.vacateDate || errors.vacancyDates}"
+                    min="2025-01-01" max="2030-01-01"
+                    placeholder="When tenant vacates"
+                />
+                <div x-show="errors.vacateDate" class="text-error text-sm mt-1" x-text="errors.vacateDate"></div>
+                <div class="text-xs text-base-content/70 mt-1">When current tenant will move out</div>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Made Ready Date</span>
+                    <div class="tooltip tooltip-left" data-tip="When cleaning, repairs, and preparations will be complete">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </label>
+                <input 
+                    type="date" 
+                    x-model.lazy="unit.madeReadyDate" 
+                    class="input input-bordered w-full"
+                    :class="{'input-error': errors.madeReadyDate || errors.vacancyDates}"
+                    min="2025-01-01" max="2030-01-01"
+                    placeholder="When unit will be ready"
+                />
+                <div x-show="errors.madeReadyDate" class="text-error text-sm mt-1" x-text="errors.madeReadyDate"></div>
+                <div class="text-xs text-base-content/70 mt-1">When unit will be ready for new tenant</div>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Available Date</span>
+                    <div class="tooltip tooltip-left" data-tip="First day a new tenant can move in">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </label>
                 <input 
                     type="date" 
                     x-model.lazy="unit.availableDate" 
                     class="input input-bordered w-full"
-                    :class="{'input-error': errors.availableDate}"
+                    :class="{'input-error': errors.availableDate || errors.vacancyDates}"
                     min="2025-01-01" max="2028-01-01"
+                    placeholder="When unit can be leased"
                 />
                 <div x-show="errors.availableDate" class="text-error text-sm mt-1" x-text="errors.availableDate"></div>
+                <div x-show="errors.vacancyDates" class="text-error text-sm mt-1" x-text="errors.vacancyDates"></div>
+                <div class="text-xs text-base-content/70 mt-1">First day a new tenant can move in</div>
             </div>
             
             <!-- Lease Terms -->

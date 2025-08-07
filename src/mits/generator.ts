@@ -1,5 +1,36 @@
 import type { BuildingData, UnitData, UnitTypeData } from '../types/index';
 
+// Type aliases for enhanced data structures (future-proofing)
+type EnhancedBuildingData = BuildingData & {
+    latitude?: number
+    longitude?: number
+    specialtyType?: string
+    contactInfo?: {
+        propertyWebsite?: string
+        managementWebsite?: string
+        website?: string
+        name?: string
+        phone?: string
+        email?: string
+    }
+};
+
+type EnhancedUnitData = UnitData & {
+    vacancyClass?: 'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
+    vacateDate?: string
+    madeReadyDate?: string
+};
+
+interface EnhancedDeposit {
+    amount: number
+    refundable?: boolean
+    partialRefundPercentage?: number
+}
+
+type EnhancedUnitTypeData = UnitTypeData & {
+    deposit?: number | EnhancedDeposit
+};
+
 // Extended types with updatedAt for proper typing
 interface UnitTypeWithUpdate extends UnitTypeData {
     updatedAt: Date
@@ -55,6 +86,75 @@ function formatDate(date: Date | string | undefined): string {
         return newDate.toISOString();
     }
     return date.toISOString();
+}
+
+// Import the geocoding service
+import { geocodeAddress } from '../services/geocoding';
+
+// Get coordinates for a building with fallback strategy
+async function getBuildingCoordinates(building: BuildingData): Promise<{ latitude: number, longitude: number }> {
+    const enhancedBuilding = building as EnhancedBuildingData;
+
+    // Use real coordinates if available
+    if(enhancedBuilding.latitude && enhancedBuilding.longitude) {
+        return { latitude: enhancedBuilding.latitude, longitude: enhancedBuilding.longitude };
+    }
+
+    // Try geocoding if we have address info
+    if(building.street && building.city && building.state) {
+        // Note: fullAddress would be used for geocoding API call
+        const coords = await geocodeAddress(building.street, building.city, building.state);
+        if(coords) {
+            return { latitude: coords.lat, longitude: coords.lng };
+        }
+    }
+
+    // Fall back to LA coordinates as last resort
+    return { latitude: 34.0522, longitude: -118.2437 };
+}
+
+// Map specialtyType to MITS RentalType
+function mapSpecialtyTypeToRentalType(building: BuildingData): string {
+    const enhancedBuilding = building as EnhancedBuildingData;
+    const specialtyType = enhancedBuilding.specialtyType;
+
+    switch(_.toLower(specialtyType)) {
+        case 'senior':
+            return 'Senior';
+        case 'student':
+            return 'Student';
+        case 'affordable':
+            return 'Affordable';
+        default:
+            return 'Market Rate';
+    }
+}
+
+// Extract deposit amount with backward compatibility
+function extractDepositAmount(deposit: number | EnhancedDeposit | undefined): number | undefined {
+    if(deposit === undefined || deposit === null) {
+        return undefined;
+    }
+    if(_.isNumber(deposit)) {
+        return deposit;
+    }
+    return deposit.amount;
+}
+
+// Check if deposit is refundable (enhanced deposits only)
+function isDepositRefundable(deposit: number | EnhancedDeposit | undefined): boolean | undefined {
+    if(deposit === undefined || deposit === null || _.isNumber(deposit)) {
+        return undefined;
+    }
+    return deposit.refundable;
+}
+
+// Get partial refund percentage (enhanced deposits only)
+function getPartialRefundPercentage(deposit: number | EnhancedDeposit | undefined): number | undefined {
+    if(deposit === undefined || deposit === null || _.isNumber(deposit)) {
+        return undefined;
+    }
+    return deposit.partialRefundPercentage;
 }
 
 // Convert bedroom count to room configuration
@@ -126,6 +226,7 @@ function generatePetPolicy(petPolicies: BuildingData['petPolicies']): string {
 
 // Generate floorplan from unit type
 function generateFloorplan(unitType: UnitTypeData): string {
+    const enhancedUnitType = unitType as EnhancedUnitTypeData;
     return `
     <Floorplan>
         <Identification>
@@ -169,25 +270,31 @@ function generateFloorplan(unitType: UnitTypeData): string {
         </MarketRent>`
                 : ''
         }${
-            unitType.deposit
+            extractDepositAmount(enhancedUnitType.deposit)
                 ? `
         <Deposit>
             <Amount>
-                <Value>${unitType.deposit}</Value>
-            </Amount>
+                <Value>${extractDepositAmount(enhancedUnitType.deposit)}</Value>
+            </Amount>${
+                isDepositRefundable(enhancedUnitType.deposit) !== undefined
+                    ? `
+            <Refundable>${isDepositRefundable(enhancedUnitType.deposit)}</Refundable>`
+                    : ''
+            }${
+                getPartialRefundPercentage(enhancedUnitType.deposit)
+                    ? `
+            <PartialRefund>${getPartialRefundPercentage(enhancedUnitType.deposit)}%</PartialRefund>`
+                    : ''
+            }
         </Deposit>`
                 : ''
         }
     </Floorplan>`;
 }
 
-// Generate unit information
-function generateUnit(unit: UnitData): string {
-    const availableDate = unit.availableDate || _.split(new Date().toISOString(), 'T')[0];
-    const vacancyClass = unit.occupied ? 'Occupied' : 'Unoccupied';
-
+// Helper function to generate unit identification XML
+function generateUnitIdentificationXML(unit: UnitData): string {
     return `
-            <Unit>
                 <Identification>
                     <UnitID>${escapeXML(unit.unitID)}</UnitID>${
                         unit.unitNumber
@@ -200,39 +307,80 @@ function generateUnit(unit: UnitData): string {
                     <FloorplanID>${escapeXML(unit.modelID)}</FloorplanID>`
                             : ''
                     }
-                </Identification>${
-                    unit.beds !== undefined
-                        ? `
+                </Identification>`;
+}
+
+// Helper function to generate unit details XML (beds, baths, sqft, rent)
+function generateUnitDetailsXML(unit: UnitData): string {
+    const bedsXML = unit.beds !== undefined
+        ? `
                 <UnitBedrooms>${unit.beds}</UnitBedrooms>`
-                        : ''
-                }${
-                    unit.baths !== undefined
-                        ? `
+        : '';
+
+    const bathsXML = unit.baths !== undefined
+        ? `
                 <UnitBathrooms>${unit.baths}</UnitBathrooms>`
-                        : ''
-                }${
-                    unit.sqft
-                        ? `
+        : '';
+
+    const sqftXML = unit.sqft
+        ? `
                 <MinSquareFeet>${unit.sqft}</MinSquareFeet>
                 <MaxSquareFeet>${unit.sqft}</MaxSquareFeet>`
-                        : ''
-                }${
-                    unit.rent
-                        ? `
+        : '';
+
+    const rentXML = unit.rent
+        ? `
                 <MarketRent>${unit.rent}</MarketRent>`
+        : '';
+
+    return bedsXML + bathsXML + sqftXML + rentXML;
+}
+
+// Helper function to generate unit availability XML
+function generateUnitAvailabilityXML(unit: UnitData): string {
+    const enhancedUnit = unit as EnhancedUnitData;
+
+    // Use new vacancy date fields with fallbacks
+    const vacateDate = enhancedUnit.vacateDate || unit.availableDate || _.split(new Date().toISOString(), 'T')[0];
+    const madeReadyDate = enhancedUnit.madeReadyDate || unit.availableDate || vacateDate;
+    const availableDate = unit.availableDate || madeReadyDate;
+
+    // Use new vacancyClass field with backward compatibility
+    const vacancyClass = enhancedUnit.vacancyClass || (unit.occupied ? 'Occupied' : 'Unoccupied');
+
+    return `
+                <Availability>${
+                    enhancedUnit.vacateDate
+                        ? `
+                    <VacateDate>${vacateDate}</VacateDate>`
                         : ''
                 }
-                <Availability>
-                    <VacateDate>${availableDate}</VacateDate>
-                    <VacancyClass>${vacancyClass}</VacancyClass>
-                    <MadeReadyDate>${availableDate}</MadeReadyDate>
-                </Availability>
+                    <VacancyClass>${vacancyClass}</VacancyClass>${
+                        enhancedUnit.madeReadyDate
+                            ? `
+                    <MadeReadyDate>${madeReadyDate}</MadeReadyDate>`
+                            : ''
+                    }${
+                        unit.availableDate
+                            ? `
+                    <AvailableDate>${availableDate}</AvailableDate>`
+                            : ''
+                    }
+                </Availability>`;
+}
+
+// Generate unit information
+function generateUnit(unit: UnitData): string {
+    return `
+            <Unit>${generateUnitIdentificationXML(unit)}${generateUnitDetailsXML(unit)}${generateUnitAvailabilityXML(unit)}
             </Unit>`;
 }
 
 // Generate MITS feed for a single building
 // Helper function to generate property identification XML
 function generatePropertyIdentification(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
+    const enhancedBuilding = building as EnhancedBuildingData;
+
     return `
         <Identification>
             <PropertyID>${escapeXML(building.buildingID)}</PropertyID>${
@@ -241,9 +389,9 @@ function generatePropertyIdentification(building: BuildingData, escapeXML: (str:
             <MarketingName>${escapeXML(building.buildingName)}</MarketingName>`
                     : ''
             }${
-                building.contactInfo?.website
+                (enhancedBuilding.contactInfo?.propertyWebsite || enhancedBuilding.contactInfo?.website)
                     ? `
-            <WebSite>${escapeXML(building.contactInfo.website)}</WebSite>`
+            <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite || enhancedBuilding.contactInfo.website)}</WebSite>`
                     : ''
             }
         </Identification>`;
@@ -266,6 +414,42 @@ function generateAddressXML(building: BuildingData, escapeXML: (str: string | un
         </Address>`;
 }
 
+// Helper function to generate information fields XML
+function generateInformationFieldsXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
+    const enhancedBuilding = building as EnhancedBuildingData;
+    const yearBuiltXML = building.yearBuilt
+        ? `
+        <YearBuilt>${building.yearBuilt}</YearBuilt>`
+        : '';
+
+    const shortDescriptionXML = building.description
+        ? `
+        <ShortDescription>${escapeXML(building.description)}</ShortDescription>`
+        : '';
+
+    const longDescriptionXML = building.propertyDescription
+        ? `
+        <LongDescription>${escapeXML(building.propertyDescription)}</LongDescription>`
+        : '';
+
+    const phoneXML = building.contactInfo?.phone
+        ? `
+        <PhoneNumber>${escapeXML(building.contactInfo.phone)}</PhoneNumber>`
+        : '';
+
+    const emailXML = building.contactInfo?.email
+        ? `
+        <Email>${escapeXML(building.contactInfo.email)}</Email>`
+        : '';
+
+    const websiteXML = (enhancedBuilding.contactInfo?.propertyWebsite || enhancedBuilding.contactInfo?.website)
+        ? `
+        <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite || enhancedBuilding.contactInfo.website)}</WebSite>`
+        : '';
+
+    return yearBuiltXML + shortDescriptionXML + longDescriptionXML + phoneXML + emailXML + websiteXML;
+}
+
 // Helper function to generate information section XML
 function generateInformationXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
     if(!building.buildingName && !building.yearBuilt && !building.description) {
@@ -275,45 +459,18 @@ function generateInformationXML(building: BuildingData, escapeXML: (str: string 
     return `
     
     <Information>
-        <StructureType>Apartment</StructureType>${
-            building.yearBuilt
-                ? `
-        <YearBuilt>${building.yearBuilt}</YearBuilt>`
-                : ''
-        }${
-            building.description
-                ? `
-        <ShortDescription>${escapeXML(building.description)}</ShortDescription>`
-                : ''
-        }${
-            building.propertyDescription
-                ? `
-        <LongDescription>${escapeXML(building.propertyDescription)}</LongDescription>`
-                : ''
-        }${
-            building.contactInfo?.phone
-                ? `
-        <PhoneNumber>${escapeXML(building.contactInfo.phone)}</PhoneNumber>`
-                : ''
-        }${
-            building.contactInfo?.email
-                ? `
-        <Email>${escapeXML(building.contactInfo.email)}</Email>`
-                : ''
-        }${
-            building.contactInfo?.website
-                ? `
-        <WebSite>${escapeXML(building.contactInfo.website)}</WebSite>`
-                : ''
-        }
+        <StructureType>Apartment</StructureType>${generateInformationFieldsXML(building, escapeXML)}
     </Information>`;
 }
 
 // Helper function to generate management section XML
 function generateManagementXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
-    const managementName = building.contactInfo?.name || building.buildingName || 'Property Management';
-    const managementEmail = building.contactInfo?.email || '';
-    const managementPhone = building.contactInfo?.phone || '';
+    const enhancedBuilding = building as EnhancedBuildingData;
+
+    const managementName = enhancedBuilding.contactInfo?.name || building.buildingName || 'Property Management';
+    const managementEmail = enhancedBuilding.contactInfo?.email || '';
+    const managementPhone = enhancedBuilding.contactInfo?.phone || '';
+    const managementWebsite = enhancedBuilding.contactInfo?.managementWebsite;
 
     return `
     
@@ -332,6 +489,11 @@ function generateManagementXML(building: BuildingData, escapeXML: (str: string |
             managementPhone
                 ? `
         <Phone>${escapeXML(managementPhone)}</Phone>`
+                : ''
+        }${
+            managementWebsite
+                ? `
+        <WebSite>${escapeXML(managementWebsite)}</WebSite>`
                 : ''
         }
     </Management>`;
@@ -385,9 +547,24 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
         throw new Error('Building ID is required');
     }
 
-    // Filter units for the specified site
+    // Filter units for the specified site and vacancy class
     const siteUnits = _.filter(units, (unit) => {
-        return unit.feedInclusion && unit.feedInclusion[siteName] === true;
+        // Check if unit is included in feed for this site
+        const includedInFeed = unit.feedInclusion && unit.feedInclusion[siteName] === true;
+        if(!includedInFeed) {
+            return false;
+        }
+
+        // Filter out units with 'Down' vacancy class
+        const enhancedUnit = unit as EnhancedUnitData;
+        if(enhancedUnit.vacancyClass === 'Down') {
+            return false;
+        }
+
+        // Note: 'Notice' units are included in feeds by default
+        // Future enhancement: make this configurable per site
+
+        return true;
     }) as UnitData[];
 
     // Find the most recent updatedAt timestamp from all data
@@ -426,12 +603,16 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     // Add address
     xml += generateAddressXML(building, escapeXML);
 
+    // Get coordinates and rental type
+    const coords = await getBuildingCoordinates(building);
+    const rentalType = mapSpecialtyTypeToRentalType(building);
+
     // Add ILS identification
     xml += `
         <ILS_Identification>
-            <RentalType>Market Rate</RentalType>
-            <Latitude>34.0522</Latitude>
-            <Longitude>-118.2437</Longitude>
+            <RentalType>${rentalType}</RentalType>
+            <Latitude>${coords.latitude}</Latitude>
+            <Longitude>${coords.longitude}</Longitude>
         </ILS_Identification>
     </Property_ID>`;
 

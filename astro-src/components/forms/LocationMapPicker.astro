@@ -1,0 +1,377 @@
+---
+export interface Props {
+    /** Alpine.js x-model for latitude binding */
+    latModel: string;
+    /** Alpine.js x-model for longitude binding */
+    lngModel: string;
+    /** Alpine.js x-model for coordinatesVerified binding */
+    verifiedModel?: string;
+    /** Address fields for geocoding - Alpine.js expressions */
+    addressModel?: string;
+    cityModel?: string;
+    stateModel?: string;
+    /** Initial center coordinates if not provided by models */
+    defaultLat?: number;
+    defaultLng?: number;
+    /** Height of the map container */
+    height?: string;
+    /** API URL for geocoding endpoint */
+    apiUrl: string;
+    /** CSS classes for the container */
+    class?: string;
+    /** Help text to display */
+    helpText?: string;
+    /** Show coordinates display */
+    showCoordinates?: boolean;
+}
+
+const {
+    latModel,
+    lngModel,
+    verifiedModel,
+    addressModel,
+    cityModel,
+    stateModel,
+    defaultLat = 39.8283, // US geographic center
+    defaultLng = -98.5795,
+    height = '300px',
+    apiUrl,
+    class: className = '',
+    helpText = 'Drag the pin to set the exact building location. Click "Use Address Location" to geocode the address.',
+    showCoordinates = true,
+} = Astro.props;
+
+// Container classes
+const containerClasses = [
+    'location-map-picker',
+    className
+].filter(Boolean).join(' ');
+---
+
+<div class={containerClasses}>
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text font-medium">Building Location</span>
+        </label>
+        
+        <!-- Map Controls -->
+        <div class="flex flex-wrap gap-2 mb-3">
+            <button
+                type="button"
+                class="btn btn-sm btn-outline btn-primary"
+                x-show={addressModel ? `${addressModel} && ${addressModel}.trim()` : 'false'}
+                @click="geocodeAddress()"
+                :disabled="geocoding"
+                id="geocode-address-btn"
+            >
+                <span x-show="!geocoding">📍 Use Address Location</span>
+                <span x-show="geocoding" class="loading loading-spinner loading-xs"></span>
+                <span x-show="geocoding">Geocoding...</span>
+            </button>
+            
+            <button
+                type="button"
+                class="btn btn-sm btn-outline"
+                @click="centerOnMarker()"
+                x-show={`${latModel} && ${lngModel}`}
+                id="center-on-marker-btn"
+            >
+                🎯 Center on Pin
+            </button>
+        </div>
+        
+        <!-- Coordinates Display -->
+        {showCoordinates && (
+            <div class="bg-base-200 rounded-lg p-3 mb-3 text-sm">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="font-medium">Latitude:</span>
+                        <span x-text={`${latModel} ? ${latModel}.toFixed(6) : 'Not set'`} class="font-mono"></span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Longitude:</span>
+                        <span x-text={`${lngModel} ? ${lngModel}.toFixed(6) : 'Not set'`} class="font-mono"></span>
+                    </div>
+                </div>
+                {verifiedModel && (
+                    <div class="mt-2 flex items-center gap-2">
+                        <div class="badge badge-sm" :class={`${verifiedModel} ? 'badge-success' : 'badge-warning'`}>
+                            <span x-show={verifiedModel}>✓ Coordinates Verified</span>
+                            <span x-show={`!${verifiedModel}`}>⚠ Coordinates Not Verified</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        )}
+        
+        <!-- Map Container -->
+        <div
+            class="map-container border border-base-300 rounded-lg overflow-hidden bg-base-100"
+            style={`height: ${height}`}
+            x-data={`locationMapData('${latModel}', '${lngModel}', '${verifiedModel}', ${defaultLat}, ${defaultLng}, '${apiUrl}', ${JSON.stringify({addressModel, cityModel, stateModel})})`}
+            x-init="initMap()"
+            id="location-map-container"
+        >
+            <!-- Map will be initialized here -->
+            <div class="flex items-center justify-center h-full text-base-content/60">
+                <div class="text-center">
+                    <div class="loading loading-spinner loading-lg mb-2"></div>
+                    <div>Loading map...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Help Text -->
+        {helpText && (
+            <div class="label">
+                <span class="label-text-alt">{helpText}</span>
+            </div>
+        )}
+    </div>
+</div>
+
+<script>
+// Leaflet Map Component for Alpine.js
+function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultLng, apiUrl, addressModels) {
+    return {
+        map: null,
+        marker: null,
+        geocoding: false,
+        
+        async initMap() {
+            // Import Leaflet dynamically
+            if (typeof window !== 'undefined') {
+                // Import Leaflet CSS
+                if (!document.querySelector('link[href*="leaflet.css"]')) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                    document.head.appendChild(link);
+                }
+                
+                // Import Leaflet JS
+                const L = await import('leaflet');
+                
+                // Initialize map
+                const lat = this[latModel] || defaultLat;
+                const lng = this[lngModel] || defaultLng;
+                
+                this.map = L.map(this.$el.querySelector('.map-container'), {
+                    center: [lat, lng],
+                    zoom: this[latModel] && this[lngModel] ? 16 : 4,
+                    zoomControl: true,
+                });
+                
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 18,
+                }).addTo(this.map);
+                
+                // Add marker if coordinates exist
+                if (this[latModel] && this[lngModel]) {
+                    this.addMarker(this[latModel], this[lngModel]);
+                }
+                
+                // Add click handler to add/move marker
+                this.map.on('click', (e) => {
+                    this.setMarker(e.latlng.lat, e.latlng.lng);
+                });
+            }
+        },
+        
+        addMarker(lat, lng) {
+            if (typeof window !== 'undefined' && window.L) {
+                const L = window.L;
+                
+                // Remove existing marker
+                if (this.marker) {
+                    this.map.removeLayer(this.marker);
+                }
+                
+                // Add new draggable marker
+                this.marker = L.marker([lat, lng], { draggable: true })
+                    .addTo(this.map);
+                
+                // Handle marker drag
+                this.marker.on('dragend', (e) => {
+                    const position = e.target.getLatLng();
+                    this.setMarker(position.lat, position.lng);
+                });
+                
+                // Add popup
+                this.marker.bindPopup(`
+                    <div class="text-center">
+                        <div class="font-medium">Building Location</div>
+                        <div class="text-xs text-base-content/70 mt-1">
+                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                        </div>
+                        <div class="text-xs mt-2">
+                            <em>Drag pin to adjust location</em>
+                        </div>
+                    </div>
+                `);
+            }
+        },
+        
+        setMarker(lat, lng) {
+            // Update the Alpine.js models
+            this[latModel] = lat;
+            this[lngModel] = lng;
+            if (verifiedModel) {
+                this[verifiedModel] = true; // Mark as verified when manually set
+            }
+            
+            // Add or update marker
+            this.addMarker(lat, lng);
+            
+            // Update popup content
+            if (this.marker) {
+                this.marker.setPopupContent(`
+                    <div class="text-center">
+                        <div class="font-medium">Building Location</div>
+                        <div class="text-xs text-base-content/70 mt-1">
+                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                        </div>
+                        <div class="text-xs mt-2">
+                            <em>Drag pin to adjust location</em>
+                        </div>
+                    </div>
+                `);
+            }
+        },
+        
+        centerOnMarker() {
+            if (this.map && this[latModel] && this[lngModel]) {
+                this.map.setView([this[latModel], this[lngModel]], 16);
+                if (this.marker) {
+                    this.marker.openPopup();
+                }
+            }
+        },
+        
+        async geocodeAddress() {
+            if (!addressModels.addressModel) return;
+            
+            this.geocoding = true;
+            
+            try {
+                const address = this[addressModels.addressModel];
+                const city = addressModels.cityModel ? this[addressModels.cityModel] : undefined;
+                const state = addressModels.stateModel ? this[addressModels.stateModel] : undefined;
+                
+                if (!address || !address.trim()) {
+                    this.$dispatch('show-toast', { 
+                        message: 'Please enter an address first', 
+                        type: 'error' 
+                    });
+                    return;
+                }
+                
+                const requestBody = {
+                    address: address.trim(),
+                    ...(city && { city: city.trim() }),
+                    ...(state && { state: state.trim() })
+                };
+                
+                const response = await fetch(`${apiUrl}geocoding`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.result) {
+                    // Set coordinates
+                    this.setMarker(data.result.lat, data.result.lng);
+                    
+                    // Center map on new location
+                    this.map.setView([data.result.lat, data.result.lng], 16);
+                    
+                    // Mark as geocoded (not manually verified)
+                    if (verifiedModel) {
+                        this[verifiedModel] = false;
+                    }
+                    
+                    this.$dispatch('show-toast', { 
+                        message: `Address geocoded: ${data.result.displayName || 'Location found'}`, 
+                        type: 'success' 
+                    });
+                } else {
+                    this.$dispatch('show-toast', { 
+                        message: data.error || 'Could not find coordinates for this address', 
+                        type: 'error' 
+                    });
+                }
+            } catch (error) {
+                console.error('Geocoding error:', error);
+                this.$dispatch('show-toast', { 
+                    message: 'Failed to geocode address. Please try again.', 
+                    type: 'error' 
+                });
+            } finally {
+                this.geocoding = false;
+            }
+        },
+        
+        // Clean up when component is destroyed
+        destroy() {
+            if (this.map) {
+                this.map.remove();
+                this.map = null;
+            }
+        }
+    };
+}
+
+// Make the function globally available
+window.locationMapData = locationMapData;
+</script>
+
+<style>
+.location-map-picker {
+    /* Custom styles for the map picker */
+}
+
+.map-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Override Leaflet's z-index to work with DaisyUI modals */
+.leaflet-control-container {
+    z-index: 1000 !important;
+}
+
+.leaflet-popup {
+    z-index: 1001 !important;
+}
+
+/* Custom marker popup styles */
+.leaflet-popup-content-wrapper {
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .location-map-picker .map-container {
+        height: 250px !important;
+    }
+    
+    .location-map-picker .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .location-map-picker .flex {
+        flex-direction: column;
+    }
+    
+    .location-map-picker .btn {
+        width: 100%;
+    }
+}
+</style>

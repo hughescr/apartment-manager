@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getUnitTypes, getUnitType, createUnitType, updateUnitType, deleteUnitType } from '../data/unitTypes';
-import { UnitTypeData } from '../src/types/index';
+import { UnitTypeData, Deposit } from '../src/types/index';
 import _ from 'lodash';
 
 // Helper validation functions to reduce complexity
@@ -95,11 +95,26 @@ function validateSizeRanges(data: Partial<UnitTypeData>, errors: Record<string, 
     }
 }
 
-function validateLeaseTermsAndDeposit(data: Partial<UnitTypeData>, errors: Record<string, string>): void {
-    if(data.deposit !== undefined && data.deposit < 0) {
-        errors.deposit = 'Deposit cannot be negative';
+function validateDepositField(data: Partial<UnitTypeData>, errors: Record<string, string>): void {
+    if(data.deposit !== undefined) {
+        if(_.isNumber(data.deposit)) {
+            if(data.deposit < 0) {
+                errors.deposit = 'Deposit cannot be negative';
+            }
+        } else if(_.isObject(data.deposit)) {
+            const depositObj = data.deposit as Deposit;
+            if(!depositObj.amount || depositObj.amount < 0) {
+                errors.deposit = 'Deposit amount is required and cannot be negative';
+            }
+            if(depositObj.partialRefundPercentage !== undefined &&
+              (depositObj.partialRefundPercentage < 0 || depositObj.partialRefundPercentage > 100)) {
+                errors.deposit = 'Partial refund percentage must be between 0 and 100';
+            }
+        }
     }
+}
 
+function validateLeaseTerms(data: Partial<UnitTypeData>, errors: Record<string, string>): void {
     if(data.minLeaseTerm !== undefined && (data.minLeaseTerm < 1 || data.minLeaseTerm > 36)) {
         errors.minLeaseTerm = 'Min lease term must be between 1 and 36 months';
     }
@@ -125,7 +140,8 @@ function validateUnitTypeData(data: Partial<UnitTypeData>, isCreate = false): { 
     validateAvailability(data, errors);
     validateRentRanges(data, errors);
     validateSizeRanges(data, errors);
-    validateLeaseTermsAndDeposit(data, errors);
+    validateDepositField(data, errors);
+    validateLeaseTerms(data, errors);
 
     return {
         isValid: _.keys(errors).length === 0,

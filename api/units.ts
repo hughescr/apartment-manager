@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../data/units';
-import { UnitData } from '../src/types/index';
+import { UnitData, Deposit } from '../src/types/index';
 import _ from 'lodash';
 import { validateId, validateTextField, sanitizeObject, validateArraySize } from './security-validation';
 
@@ -45,8 +45,21 @@ function validateFinancialFields(data: Partial<UnitData>, errors: Record<string,
         errors.perPersonRent = 'Per person rent cannot be negative';
     }
 
-    if(data.deposit !== undefined && data.deposit < 0) {
-        errors.deposit = 'Deposit cannot be negative';
+    if(data.deposit !== undefined) {
+        if(_.isNumber(data.deposit)) {
+            if(data.deposit < 0) {
+                errors.deposit = 'Deposit cannot be negative';
+            }
+        } else if(_.isObject(data.deposit)) {
+            const depositObj = data.deposit as Deposit;
+            if(!depositObj.amount || depositObj.amount < 0) {
+                errors.deposit = 'Deposit amount is required and cannot be negative';
+            }
+            if(depositObj.partialRefundPercentage !== undefined &&
+              (depositObj.partialRefundPercentage < 0 || depositObj.partialRefundPercentage > 100)) {
+                errors.deposit = 'Partial refund percentage must be between 0 and 100';
+            }
+        }
     }
 }
 

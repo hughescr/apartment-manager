@@ -5,6 +5,7 @@ import * as unitTypes from './unitTypes';
 import * as version from './version';
 import * as credentials from './credentials';
 import * as feed from './feed';
+import * as geocoding from './geocoding';
 import { noop, split, every, startsWith, endsWith, forEach, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
@@ -49,6 +50,15 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
     },
     '/feed/{site}/live': {
         GET: feed.live,
+    },
+    '/geocoding': {
+        POST: geocoding.geocode,
+    },
+    '/geocoding/status': {
+        GET: geocoding.status,
+    },
+    '/geocoding/cache': {
+        DELETE: geocoding.clearCache,
     },
 };
 

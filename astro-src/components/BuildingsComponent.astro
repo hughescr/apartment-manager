@@ -21,6 +21,9 @@ const apiURL = Resource.API.url;
     state: '',
     zip: '',
     description: '',
+    specialtyType: 'market-rate',
+    propertyWebsite: '',
+    managementWebsite: '',
     apiURL: '',
     saving: false,
     init() {
@@ -71,6 +74,11 @@ const apiURL = Resource.API.url;
                     state: this.state,
                     zip: this.zip,
                     description: this.description,
+                    specialtyType: this.specialtyType,
+                    contactInfo: {
+                        propertyWebsite: this.propertyWebsite || undefined,
+                        managementWebsite: this.managementWebsite || undefined
+                    }
                 }),
             });
             this.saving = false;
@@ -95,6 +103,9 @@ const apiURL = Resource.API.url;
         this.state = '';
         this.zip = '';
         this.description = '';
+        this.specialtyType = 'market-rate';
+        this.propertyWebsite = '';
+        this.managementWebsite = '';
     }
 }" 
 @show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
@@ -160,6 +171,85 @@ data-api-url={apiURL}>
                     <span>Description</span>
                     <textarea name="description" class="textarea w-full" placeholder="Description" x-model="description" />
                 </label>
+                
+                <!-- Website Fields Section -->
+                <div class="mt-6">
+                    <h4 class="text-base font-semibold mb-4 flex items-center gap-2">
+                        <span>Website Information (Optional)</span>
+                        <div class="tooltip tooltip-right" data-tip="Property websites are used on listings to show property-specific information. Management websites link to your company's main site for corporate information.">
+                            <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </h4>
+                    
+                    <label class="floating-label mb-2">
+                        <span>Property Website</span>
+                        <input type="url" name="propertyWebsite" x-model="propertyWebsite" placeholder="https://property-specific-site.com" class="input w-full"/>
+                    </label>
+                    
+                    <label class="floating-label mb-2">
+                        <span>Management Company Website</span>
+                        <input type="url" name="managementWebsite" x-model="managementWebsite" placeholder="https://your-management-company.com" class="input w-full"/>
+                    </label>
+                    
+                    <!-- Explanatory text for add form -->
+                    <div class="text-sm text-base-content/70 mt-2 space-y-1">
+                        <p><strong>Property Website:</strong> Specific to this building - shown on rental listings</p>
+                        <p><strong>Management Website:</strong> Your company's main site - for corporate information</p>
+                    </div>
+                </div>
+                
+                <!-- Rental Type Section -->
+                <div class="mt-6">
+                    <label class="floating-label select-label">
+                        <span>Rental Type</span>
+                        <select name="specialtyType" x-model="specialtyType" class="select w-full">
+                            <option value="market-rate">Market Rate</option>
+                            <option value="affordable">Affordable</option>
+                            <option value="student">Student</option>
+                            <option value="senior">Senior</option>
+                        </select>
+                    </label>
+                    
+                    <!-- Rental Type Explanations -->
+                    <div class="mt-3 text-sm space-y-2">
+                        <div x-show="specialtyType === 'market-rate'" class="alert alert-info text-xs py-2">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span><strong>Market Rate:</strong> Standard apartments with no restrictions</span>
+                        </div>
+                        
+                        <div x-show="specialtyType === 'affordable'" class="alert alert-warning text-xs py-2">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <span><strong>Affordable:</strong> Income-restricted housing (AMI requirements)</span>
+                        </div>
+                        
+                        <div x-show="specialtyType === 'student'" class="alert alert-info text-xs py-2">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span><strong>Student:</strong> Campus or university-affiliated housing</span>
+                        </div>
+                        
+                        <div x-show="specialtyType === 'senior'" class="alert alert-info text-xs py-2">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span><strong>Senior:</strong> Age-restricted housing (55+ or 62+ communities)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3 text-xs py-2">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <span>Selecting the wrong type may result in listing rejection</span>
+                    </div>
+                </div>
                 <Saving />
             </fieldset>
             <div class="mt-2 space-x-2">

@@ -56,6 +56,7 @@ const xDataString = `{
     commonBreeds: ${JSON.stringify(commonBreedRestrictions)},
     showBreedRestrictions: false,
     newBreedRestriction: '',
+    showAdvancedSettings: false,
     
     init() {
         // Initialize with default structure if not set
@@ -69,8 +70,14 @@ const xDataString = `{
                 deposit: undefined,
                 monthlyFee: undefined,
                 oneTimeFee: undefined,
-                notes: ''
+                notes: '',
+                petTypes: []
             };
+        }
+        
+        // Ensure petTypes array exists for advanced settings
+        if (!this[this.modelName].petTypes) {
+            this[this.modelName].petTypes = [];
         }
     },
     
@@ -166,6 +173,64 @@ const xDataString = `{
             monthly: monthly,
             annual: monthly * 12
         };
+    },
+    
+    // Advanced per-pet-type policy methods
+    addPetTypePolicy() {
+        if (!this[this.modelName]) {
+            this[this.modelName] = { allowed: true, petTypes: [] };
+        }
+        if (!this[this.modelName].petTypes) {
+            this[this.modelName].petTypes = [];
+        }
+        
+        this[this.modelName].petTypes.push({
+            type: 'dog',
+            weightLimit: undefined,
+            countLimit: undefined,
+            fee: undefined,
+            deposit: undefined,
+            breedRestrictions: []
+        });
+    },
+    
+    removePetTypePolicy(index) {
+        if (this[this.modelName]?.petTypes) {
+            this[this.modelName].petTypes.splice(index, 1);
+        }
+    },
+    
+    addBreedRestrictionToPetType(petTypeIndex, breed) {
+        const petTypePolicy = this[this.modelName]?.petTypes?.[petTypeIndex];
+        if (!petTypePolicy) return;
+        
+        if (!petTypePolicy.breedRestrictions) {
+            petTypePolicy.breedRestrictions = [];
+        }
+        
+        const trimmedBreed = breed.trim();
+        if (trimmedBreed && !petTypePolicy.breedRestrictions.includes(trimmedBreed)) {
+            petTypePolicy.breedRestrictions.push(trimmedBreed);
+        }
+    },
+    
+    removeBreedRestrictionFromPetType(petTypeIndex, breedIndex) {
+        const petTypePolicy = this[this.modelName]?.petTypes?.[petTypeIndex];
+        if (petTypePolicy?.breedRestrictions) {
+            petTypePolicy.breedRestrictions.splice(breedIndex, 1);
+        }
+    },
+    
+    get hasAdvancedPetTypes() {
+        return this[this.modelName]?.petTypes?.length > 0;
+    },
+    
+    get advancedPetTypesSummary() {
+        const petTypes = this[this.modelName]?.petTypes || [];
+        if (petTypes.length === 0) return 'No advanced pet types configured';
+        
+        const typeNames = petTypes.map(p => p.type.charAt(0).toUpperCase() + p.type.slice(1));
+        return typeNames.join(', ') + ' (' + petTypes.length + ' type' + (petTypes.length > 1 ? 's' : '') + ')';
     }
 }`;
 ---
@@ -379,6 +444,221 @@ const xDataString = `{
             </div>
         </div>
         
+        <!-- Advanced Pet Settings -->
+        <div class="card bg-base-300">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <h3 class="card-title text-base">Advanced Pet Settings</h3>
+                    <button
+                        type="button"
+                        x-on:click="showAdvancedSettings = !showAdvancedSettings"
+                        class="btn btn-sm btn-ghost"
+                        disabled={disabled}
+                    >
+                        <span x-text="showAdvancedSettings ? 'Hide' : 'Show'"></span>
+                        <svg class="w-4 h-4 ml-1 transition-transform" :class="{'rotate-180': showAdvancedSettings}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Summary when collapsed -->
+                <div x-show="!showAdvancedSettings && hasAdvancedPetTypes" class="text-sm text-base-content/70 mt-2">
+                    <strong>Current Settings:</strong> <span x-text="advancedPetTypesSummary"></span>
+                </div>
+                
+                <!-- Advanced settings content -->
+                <div x-show="showAdvancedSettings" x-transition class="mt-4 space-y-4">
+                    <div class="alert alert-info text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p><strong>Advanced Settings:</strong> Configure specific rules for each pet type. These override the basic settings above.</p>
+                            <p class="mt-1"><strong>Basic Settings:</strong> Apply to all pets unless overridden by advanced settings.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Pet Type Policies -->
+                    <template x-for="(petTypePolicy, index) in ${xModel}.petTypes || []" :key="'pet-type-' + index">
+                        <div class="card bg-base-200 border border-base-300">
+                            <div class="card-body">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-base font-semibold">Pet Type Configuration</h4>
+                                    <button
+                                        type="button"
+                                        x-on:click="removePetTypePolicy(index)"
+                                        class="btn btn-ghost btn-sm text-error"
+                                        disabled={disabled}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Pet Type Selection -->
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text">Pet Type <span class="text-error">*</span></span>
+                                        </label>
+                                        <select
+                                            x-model="petTypePolicy.type"
+                                            class="select select-bordered"
+                                            disabled={disabled}
+                                        >
+                                            <option value="dog">Dog</option>
+                                            <option value="cat">Cat</option>
+                                            <option value="bird">Bird</option>
+                                            <option value="fish">Fish</option>
+                                            <option value="small-animal">Small Animal</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Weight Limit -->
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text">Weight Limit (lbs)</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            x-model.number="petTypePolicy.weightLimit"
+                                            class="input input-bordered"
+                                            placeholder="e.g., 50"
+                                            min="0"
+                                            max="200"
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                    
+                                    <!-- Count Limit -->
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text">Count Limit</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            x-model.number="petTypePolicy.countLimit"
+                                            class="input input-bordered"
+                                            placeholder="e.g., 2"
+                                            min="1"
+                                            max="10"
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                    
+                                    <!-- Monthly Fee -->
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text">Monthly Fee</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            x-model.number="petTypePolicy.fee"
+                                            class="input input-bordered"
+                                            placeholder="e.g., 50"
+                                            min="0"
+                                            max="500"
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                    
+                                    <!-- Deposit -->
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text">Deposit</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            x-model.number="petTypePolicy.deposit"
+                                            class="input input-bordered"
+                                            placeholder="e.g., 500"
+                                            min="0"
+                                            max="5000"
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <!-- Breed Restrictions for this pet type -->
+                                <div class="mt-4">
+                                    <label class="label">
+                                        <span class="label-text">Breed Restrictions (for this pet type)</span>
+                                    </label>
+                                    
+                                    <!-- Current breed restrictions -->
+                                    <div x-show="petTypePolicy.breedRestrictions && petTypePolicy.breedRestrictions.length > 0" class="mb-2">
+                                        <div class="flex flex-wrap gap-2">
+                                            <template x-for="(breed, breedIndex) in petTypePolicy.breedRestrictions || []" :key="'breed-' + index + '-' + breedIndex">
+                                                <div class="badge badge-warning gap-2">
+                                                    <span x-text="breed"></span>
+                                                    <button
+                                                        type="button"
+                                                        x-on:click="removeBreedRestrictionFromPetType(index, breedIndex)"
+                                                        class="btn btn-ghost btn-xs"
+                                                        disabled={disabled}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Add breed restriction input -->
+                                    <div class="join" x-data="{ newBreed: '' }">
+                                        <input
+                                            type="text"
+                                            x-model="newBreed"
+                                            placeholder="Enter breed name (e.g., Pit Bull, German Shepherd)"
+                                            class="input input-bordered join-item flex-1"
+                                            disabled={disabled}
+                                            @keyup.enter="addBreedRestrictionToPetType(index, newBreed); newBreed = ''"
+                                        />
+                                        <button
+                                            type="button"
+                                            x-on:click="addBreedRestrictionToPetType(index, newBreed); newBreed = ''"
+                                            class="btn btn-primary join-item"
+                                            disabled={disabled}
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-xs text-base-content/70 mt-1">
+                                        Enter breed names separated by commas, or add them one at a time
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <!-- Add Pet Type Button -->
+                    <button
+                        type="button"
+                        x-on:click="addPetTypePolicy()"
+                        class="btn btn-primary btn-sm"
+                        disabled={disabled}
+                    >
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Pet Type
+                    </button>
+                    
+                    <!-- Usage Examples -->
+                    <div class="alert alert-warning text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p><strong>Example:</strong> Allow dogs up to 50lbs with $75/month fee, and cats with no weight limit and $25/month fee.</p>
+                            <p class="mt-1"><strong>Breed Restrictions:</strong> Enter specific breeds to restrict (e.g., "Pit Bull", "Rottweiler")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Additional Notes -->
         <BaseTextarea
             name={name + '_notes'}

@@ -3,7 +3,7 @@ import './test-setup';
 import { dynamoDbMock, jest } from './test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek, BuildingData } from '../../src/types';
+import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek, BuildingData, ContactInfo } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 import _ from 'lodash';
 import { getDefaultBuildingData } from '../../src/types';
@@ -647,6 +647,65 @@ describe('Building Data Layer', () => {
             expect(tourAvail.tourSchedulingUrl).toBe('https://example.com/schedule');
             expect(tourAvail.tourHours![DayOfWeek.WEDNESDAY]).toEqual({ open: '09:00', close: '20:00' });
             expect(tourAvail.tourHours![DayOfWeek.SATURDAY]).toEqual({ open: '10:00', close: '16:00' });
+        });
+    });
+
+    // Website Field Migration Test
+    describe('Website Field Migration', () => {
+        it('should migrate old website field to propertyWebsite', async () => {
+            expect.assertions(2);
+            const buildingWithOldWebsite = {
+                ...testBuilding,
+                contactInfo: {
+                    name: 'Test Contact',
+                    phone: '555-1234',
+                    email: 'test@example.com',
+                    propertyWebsite: 'https://property-website.com'
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithOldWebsite, unitID: 'BUILDING' }));
+
+            const result = await createBuilding(buildingWithOldWebsite);
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-website.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.managementWebsite).toBeUndefined();
+        });
+        it('should handle both propertyWebsite and managementWebsite fields', async () => {
+            expect.assertions(4);
+            const buildingWithBothWebsites = {
+                ...testBuilding,
+                contactInfo: {
+                    name: 'Test Contact',
+                    phone: '555-1234',
+                    email: 'test@example.com',
+                    propertyWebsite: 'https://property-specific.com',
+                    managementWebsite: 'https://management-company.com'
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithBothWebsites, unitID: 'BUILDING' }));
+
+            const result = await createBuilding(buildingWithBothWebsites);
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-specific.com');
+            expect((result.contactInfo as ContactInfo & { managementWebsite?: string })!.managementWebsite).toBe('https://management-company.com');
+            expect(result.contactInfo!.email).toBe('test@example.com');
+            expect(result.contactInfo!.name).toBe('Test Contact');
+        });
+        it('should handle propertyWebsite only (managementWebsite is optional)', async () => {
+            expect.assertions(3);
+            const buildingWithPropertyWebsiteOnly = {
+                ...testBuilding,
+                contactInfo: {
+                    name: 'Test Contact',
+                    phone: '555-1234',
+                    email: 'test@example.com',
+                    propertyWebsite: 'https://property-only.com'
+                }
+            };
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithPropertyWebsiteOnly, unitID: 'BUILDING' }));
+
+            const result = await createBuilding(buildingWithPropertyWebsiteOnly);
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-only.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.managementWebsite).toBeUndefined();
+            expect(result.contactInfo!.email).toBe('test@example.com');
         });
     });
 

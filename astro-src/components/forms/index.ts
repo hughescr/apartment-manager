@@ -8,6 +8,7 @@ export { default as AmenitySelector } from './AmenitySelector.astro';
 export { default as FeeListEditor } from './FeeListEditor.astro';
 export { default as PetPolicyEditor } from './PetPolicyEditor.astro';
 export { default as ScreeningCriteriaForm } from './ScreeningCriteriaForm.astro';
+export { default as LocationMapPicker } from './LocationMapPicker.astro';
 
 // Type exports are disabled due to TypeScript limitations with .astro files
 // These exports would normally provide Props types from each component

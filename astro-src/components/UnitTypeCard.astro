@@ -23,6 +23,11 @@ function unitTypeCardData(unitTypeData, apiUrlData) {
         saving: false,
         expandedAmenities: false,
 
+        init() {
+            // Initialize enhanced deposit structure
+            this.initializeDeposit();
+        },
+
         isDirty() {
             return JSON.stringify(this.unitType) !== JSON.stringify(this.originalUnitType);
         },
@@ -87,12 +92,87 @@ function unitTypeCardData(unitTypeData, apiUrlData) {
                 month: 'short', 
                 day: 'numeric' 
             });
+        },
+        
+        // Deposit handling functions
+        initializeDeposit() {
+            // Convert legacy number deposits to enhanced object format
+            if (typeof this.unitType.deposit === 'number') {
+                this.unitType.deposit = {
+                    amount: this.unitType.deposit,
+                    refundable: true
+                };
+            }
+            // Initialize empty deposit object if not present
+            if (!this.unitType.deposit) {
+                this.unitType.deposit = null;
+            }
+        },
+        
+        getDepositAmount() {
+            if (!this.unitType.deposit) return null;
+            if (typeof this.unitType.deposit === 'number') return this.unitType.deposit;
+            return this.unitType.deposit.amount;
+        },
+        
+        setDepositAmount(value) {
+            if (!value || value === '') {
+                this.unitType.deposit = null;
+                return;
+            }
+            
+            const amount = parseFloat(value);
+            if (isNaN(amount) || amount < 0) return;
+            
+            if (!this.unitType.deposit) {
+                this.unitType.deposit = {
+                    amount: amount,
+                    refundable: true
+                };
+            } else if (typeof this.unitType.deposit === 'number') {
+                this.unitType.deposit = {
+                    amount: amount,
+                    refundable: true
+                };
+            } else {
+                this.unitType.deposit.amount = amount;
+            }
+        },
+        
+        getDepositRefundable() {
+            if (!this.unitType.deposit) return true;
+            if (typeof this.unitType.deposit === 'number') return true;
+            return this.unitType.deposit.refundable !== false;
+        },
+        
+        setDepositRefundable(value) {
+            if (!this.unitType.deposit || typeof this.unitType.deposit === 'number') return;
+            this.unitType.deposit.refundable = value;
+            if (value) {
+                // Clear partial refund percentage when fully refundable
+                delete this.unitType.deposit.partialRefundPercentage;
+            }
+        },
+        
+        getDepositPartialRefundPercentage() {
+            if (!this.unitType.deposit || typeof this.unitType.deposit === 'number') return null;
+            return this.unitType.deposit.partialRefundPercentage || null;
+        },
+        
+        setDepositPartialRefundPercentage(value) {
+            if (!this.unitType.deposit || typeof this.unitType.deposit === 'number') return;
+            const percentage = parseFloat(value);
+            if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+                delete this.unitType.deposit.partialRefundPercentage;
+                return;
+            }
+            this.unitType.deposit.partialRefundPercentage = percentage;
         }
     };
 }
 </script>
 
-<div x-data="unitTypeCardData(unitType, apiURL)" x-init="$watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">
+<div x-data="unitTypeCardData(unitType, apiURL)" x-init="init(); $watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">
     <div class="card-body">
         <!-- Header -->
         <div class="flex justify-between items-start mb-4">
@@ -221,17 +301,86 @@ function unitTypeCardData(unitTypeData, apiUrlData) {
                 />
             </div>
 
-            <div class="form-control">
+            <!-- Enhanced Deposit Section -->
+            <div class="form-control col-span-1 md:col-span-2 lg:col-span-3">
                 <label class="label">
-                    <span class="label-text font-semibold">Deposit</span>
+                    <span class="label-text font-semibold">Deposit Details</span>
+                    <div class="tooltip tooltip-left" data-tip="Security deposit amount and refundability terms">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </label>
-                <input 
-                    type="number" 
-                    x-model.number.lazy="unitType.deposit" 
-                    class="input input-bordered"
-                    min="0"
-                    placeholder="Not specified"
-                />
+                <div class="border border-base-300 rounded-lg p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Deposit Amount -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-sm">Amount ($)</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                :value="getDepositAmount()"
+                                x-on:input="setDepositAmount($event.target.value)"
+                                class="input input-bordered w-full"
+                                min="0"
+                                placeholder="Not specified"
+                            />
+                        </div>
+                        
+                        <!-- Refundable Toggle -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-sm">Refundable</span>
+                                <div class="tooltip tooltip-top" data-tip="Whether the deposit can be returned to tenants">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </label>
+                            <input 
+                                type="checkbox"
+                                class="toggle toggle-success"
+                                :checked="getDepositRefundable()"
+                                x-on:change="setDepositRefundable($event.target.checked)"
+                                :disabled="!unitType.deposit"
+                            />
+                            <div class="text-xs text-base-content/70 mt-1">
+                                <span x-show="getDepositRefundable()">Fully refundable</span>
+                                <span x-show="!getDepositRefundable()">Non-refundable or partial</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Partial Refund Percentage -->
+                        <div class="form-control" x-show="unitType.deposit && !getDepositRefundable()">
+                            <label class="label">
+                                <span class="label-text text-sm">Partial Refund %</span>
+                                <div class="tooltip tooltip-top" data-tip="Percentage that may be refunded (e.g., 70% means $700 of a $1000 deposit)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-info">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </label>
+                            <input 
+                                type="range"
+                                class="range range-sm range-primary"
+                                min="0"
+                                max="100"
+                                step="5"
+                                :value="getDepositPartialRefundPercentage() || 0"
+                                x-on:input="setDepositPartialRefundPercentage($event.target.value)"
+                            />
+                            <div class="flex justify-between text-xs text-base-content/70 px-2">
+                                <span>0%</span>
+                                <span class="font-medium" x-text="(getDepositPartialRefundPercentage() || 0) + '%'"></span>
+                                <span>100%</span>
+                            </div>
+                            <div class="text-xs text-base-content/70 mt-1" x-show="getDepositPartialRefundPercentage()">
+                                May refund up to <span x-text="formatCurrency((getDepositAmount() || 0) * (getDepositPartialRefundPercentage() || 0) / 100)"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Square Footage -->
@@ -303,9 +452,12 @@ function unitTypeCardData(unitTypeData, apiUrlData) {
                     <span class="font-semibold">Size:</span>
                     <span x-text="unitType.minSqft && unitType.maxSqft ? unitType.minSqft + ' - ' + unitType.maxSqft + ' sq ft' : (unitType.minSqft ? 'From ' + unitType.minSqft + ' sq ft' : 'Up to ' + unitType.maxSqft + ' sq ft')"></span>
                 </div>
-                <div x-show="unitType.deposit">
+                <div x-show="getDepositAmount()">
                     <span class="font-semibold">Deposit:</span>
-                    <span x-text="formatCurrency(unitType.deposit)"></span>
+                    <span x-text="formatCurrency(getDepositAmount())"></span>
+                    <span x-show="unitType.deposit && typeof unitType.deposit === 'object'" class="text-xs ml-1">
+                        (<span x-show="getDepositRefundable()">refundable</span><span x-show="!getDepositRefundable() && getDepositPartialRefundPercentage()">partial: <span x-text="getDepositPartialRefundPercentage()"></span>%</span><span x-show="!getDepositRefundable() && !getDepositPartialRefundPercentage()">non-refundable</span>)
+                    </span>
                 </div>
                 <div x-show="unitType.minLeaseTerm || unitType.maxLeaseTerm">
                     <span class="font-semibold">Lease Terms:</span>

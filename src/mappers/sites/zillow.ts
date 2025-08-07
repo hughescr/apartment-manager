@@ -30,6 +30,29 @@ import {
 } from '../transformers/index.js';
 // import fieldMappingsV2 from '../field-mappings-v2.json'; // Reserved for future field mapping features
 
+/** Enhanced deposit structure with refundability and partial refund options */
+interface Deposit {
+    amount: number
+    refundable?: boolean
+    partialRefundPercentage?: number
+}
+
+/**
+ * Helper function to extract deposit amount from both legacy number and enhanced object formats
+ */
+function getDepositAmount(deposit: number | Deposit | undefined): number | undefined {
+    if(deposit === undefined || deposit === null) {
+        return undefined;
+    }
+    if(_.isNumber(deposit)) {
+        return deposit;
+    }
+    if(_.isObject(deposit) && 'amount' in deposit) {
+        return (deposit as Deposit).amount;
+    }
+    return undefined;
+}
+
 /**
  * Zillow Rental Manager mapper implementation.
  * Flattens the three-tier hierarchy into individual unit listings.
@@ -138,7 +161,7 @@ export class ZillowMapper implements SiteMapper {
                 min: unitType.minRent,
                 max: unitType.maxRent
             },
-            deposit: unitType.deposit,
+            deposit: getDepositAmount(unitType.deposit),
             maxOccupants: unitType.maxOccupants,
             countAvailable: unitType.countAvailable,
             dateAvailable: dateFormatter(unitType.dateAvailable),
@@ -172,7 +195,7 @@ export class ZillowMapper implements SiteMapper {
             baths: flattened.baths || 0,
             sqft: flattened.sqft,
             rent: flattened.rent || 0,
-            deposit: flattened.deposit,
+            deposit: getDepositAmount(flattened.deposit),
             dateAvailable: dateFormatter(flattened.availableDate),
             description: fullDescription || `${flattened.beds} bed, ${flattened.baths} bath unit`,
             maxOccupants: flattened.maxOccupants,

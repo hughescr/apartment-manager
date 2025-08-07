@@ -64,6 +64,10 @@ export const Building = new Entity({
         tourAvailability: any().optional(),
         applicationFee: number().optional(),
         acceptsOnlineApplications: boolean().optional(),
+        // MITS compliance fields
+        latitude: number().optional(),
+        longitude: number().optional(),
+        coordinatesVerified: boolean().optional(),
         updatedAt: string().optional(),
     }),
 });
@@ -86,7 +90,7 @@ export const Unit = new Entity({
         unitNumber: string().optional(),
         maxOccupants: number().optional(),
         perPersonRent: number().optional(),
-        deposit: number().optional(),
+        deposit: any().optional(), // Supports both number (legacy) and Deposit object (enhanced)
         minLeaseTerm: number().optional(),
         maxLeaseTerm: number().optional(),
         unitDescription: string().optional(),
@@ -97,6 +101,10 @@ export const Unit = new Entity({
         manualReferences: record(string(), string()).optional(),
         feedLastPulled: record(string(), any()).optional(),
         feedLastModified: string().optional(),
+        // MITS compliance fields
+        vacancyClass: string().optional(),
+        vacateDate: string().optional(),
+        madeReadyDate: string().optional(),
         updatedAt: string().optional(),
     }),
 });
@@ -119,7 +127,7 @@ export const UnitType = new Entity({
         perPersonRent: number().optional(),
         minSqft: number().optional(),
         maxSqft: number().optional(),
-        deposit: number().optional(),
+        deposit: any().optional(), // Supports both number (legacy) and Deposit object (enhanced)
         minLeaseTerm: number().optional(),
         maxLeaseTerm: number().optional(),
         modelAmenities: list(any()).optional(),

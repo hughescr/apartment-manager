@@ -80,6 +80,9 @@ export enum DayOfWeek {
     SUNDAY = 'sunday'
 }
 
+/** MITS-compliant vacancy classification for unit status tracking */
+export type VacancyClass = 'Occupied' | 'Unoccupied' | 'Notice' | 'Down';
+
 // Complex nested structures
 export interface RentSpecial {
     title: string
@@ -100,6 +103,32 @@ export interface Fee {
     refundable?: boolean
 }
 
+/** Enhanced deposit structure with refundability and partial refund options */
+export interface Deposit {
+    /** Deposit amount in dollars */
+    amount: number
+    /** Whether the deposit is fully refundable */
+    refundable?: boolean
+    /** Percentage that may be refunded (0-100), used when not fully refundable */
+    partialRefundPercentage?: number
+}
+
+/** Per-pet-type policy for detailed pet management */
+export interface PetTypePolicy {
+    /** Type of pet (e.g., 'dog', 'cat', 'bird') */
+    type: string
+    /** Maximum weight allowed in pounds */
+    weightLimit?: number
+    /** Maximum count allowed */
+    countLimit?: number
+    /** Monthly pet fee */
+    fee?: number
+    /** One-time pet deposit */
+    deposit?: number
+    /** List of restricted breeds */
+    breedRestrictions?: string[]
+}
+
 export interface PetPolicy {
     allowed: boolean
     types?: PetType[]
@@ -110,6 +139,8 @@ export interface PetPolicy {
     monthlyFee?: number
     oneTimeFee?: number
     notes?: string
+    /** Per-pet-type policies for detailed pet management */
+    petTypes?: PetTypePolicy[]
 }
 
 export interface ParkingOption {
@@ -145,7 +176,10 @@ export interface ContactInfo {
     name?: string
     phone?: string
     email?: string
-    website?: string
+    /** Property-specific website URL */
+    propertyWebsite?: string
+    /** Management company website URL */
+    managementWebsite?: string
     officeHours?: Partial<Record<DayOfWeek, {
         open: string // HH:MM format
         close: string // HH:MM format
@@ -208,6 +242,12 @@ export interface BuildingData {
     tourAvailability?: TourAvailability
     applicationFee?: number
     acceptsOnlineApplications?: boolean
+    /** Building's latitude coordinate for mapping */
+    latitude?: number
+    /** Building's longitude coordinate for mapping */
+    longitude?: number
+    /** Whether user has verified/adjusted the pin location */
+    coordinatesVerified?: boolean
     updatedAt?: Date // Timestamp for last modification
 }
 
@@ -225,7 +265,8 @@ export interface UnitTypeData {
     perPersonRent?: number
     minSqft?: number
     maxSqft?: number
-    deposit?: number
+    /** Enhanced deposit structure */
+    deposit?: number | Deposit
     minLeaseTerm?: number // months
     maxLeaseTerm?: number // months
     modelAmenities?: Amenity[] // default amenities for units of this type
@@ -251,13 +292,20 @@ export interface UnitData {
     unitNumber?: string // display identifier (e.g., "2A", "101")
     maxOccupants?: number
     perPersonRent?: number
-    deposit?: number
+    /** Enhanced deposit structure */
+    deposit?: number | Deposit
     minLeaseTerm?: number // months
     maxLeaseTerm?: number // months
     unitDescription?: string // unit-specific marketing description
     unitRentSpecial?: RentSpecial
     unitAmenities?: Amenity[] // overrides model amenities if specified
     photos?: string[] // S3 URLs
+    /** MITS-compliant vacancy classification */
+    vacancyClass?: VacancyClass
+    /** When current tenant vacates (ISO 8601 date string) */
+    vacateDate?: string
+    /** When unit is ready for new tenant (ISO 8601 date string) */
+    madeReadyDate?: string
     feedInclusion?: Partial<Record<string, boolean>> // siteName -> included in feed
     manualReferences?: Partial<Record<string, string>> // siteName -> external ID/URL
     feedLastPulled?: Partial<Record<string, { timestamp: Date, ipAddress?: string }>>
