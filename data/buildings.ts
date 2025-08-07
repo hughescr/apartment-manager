@@ -19,6 +19,10 @@ export async function getBuildings() {
 
     const buildings = _.map(scanResult.Items, (item) => {
         const rawBuilding = _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+        // Convert updatedAt from string to Date if present
+        if(item?.updatedAt) {
+            rawBuilding.updatedAt = new Date(item.updatedAt as string);
+        }
         // Merge with defaults to ensure all nested structures exist
         return _.merge({}, getDefaultBuildingData(), rawBuilding);
     });
@@ -35,13 +39,18 @@ export async function getBuilding(buildingID: string) {
     }
 
     const rawBuilding = _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+    // Convert updatedAt from string to Date if present
+    if(Item?.updatedAt) {
+        rawBuilding.updatedAt = new Date(Item.updatedAt as string);
+    }
     // Merge with defaults to ensure all nested structures exist
     return _.merge({}, getDefaultBuildingData(), rawBuilding);
 }
 
 export async function createBuilding(building: BuildingData) {
+    const now = new Date();
     const { Attributes } = await Building.build(PutItemCommand)
-        .item({ ...building, unitID: 'BUILDING' })
+        .item({ ...building, unitID: 'BUILDING', updatedAt: now.toISOString() })
         .options({
             condition: { // Fail if unit already exists
                 attr: 'buildingID', exists: false,
@@ -49,15 +58,30 @@ export async function createBuilding(building: BuildingData) {
             returnValuesOnConditionFalse: 'ALL_OLD',
         })
         .send();
-    return (_.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData) || building;
+    if(!Attributes) {
+        return building;
+    }
+    const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
+    if((Attributes as Record<string, unknown>).updatedAt) {
+        result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
+    }
+    return result;
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
+    const now = new Date();
     const { Attributes } = await Building.build(UpdateItemCommand)
-        .item({ ...updates, buildingID, unitID: 'BUILDING' })
+        .item({ ...updates, buildingID, unitID: 'BUILDING', updatedAt: now.toISOString() })
         .options({ returnValues: 'ALL_NEW' })
         .send();
-    return _.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+    if(!Attributes) {
+        throw new Error('Failed to update building');
+    }
+    const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
+    if((Attributes as Record<string, unknown>).updatedAt) {
+        result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
+    }
+    return result;
 }
 
 export async function deleteBuilding(buildingID: string): Promise<boolean> {

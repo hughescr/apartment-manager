@@ -20,7 +20,12 @@ export async function getUnitTypes(buildingID: string) {
         .options({ consistent: true })
         .send();
     return _.map(Items, (item) => {
-        return _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']);
+        const result = _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
+        // Convert updatedAt from string to Date if present
+        if(item?.updatedAt) {
+            result.updatedAt = new Date(item.updatedAt as string);
+        }
+        return result;
     }) as UnitTypeData[];
 }
 
@@ -31,12 +36,18 @@ export async function getUnitType(buildingID: string, modelID: string) {
     if(!Item) {
         return undefined;
     }
-    return _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
+    const result = _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
+    // Convert updatedAt from string to Date if present
+    if(Item?.updatedAt) {
+        result.updatedAt = new Date(Item.updatedAt as string);
+    }
+    return result;
 }
 
 export async function createUnitType(unitType: UnitTypeData) {
+    const now = new Date();
     const { Attributes } = await UnitType.build(PutItemCommand)
-        .item({ ...unitType, unitID: `MODEL#${unitType.modelID}` })
+        .item({ ...unitType, unitID: `MODEL#${unitType.modelID}`, updatedAt: now.toISOString() })
         .options({
             condition: { // Fail if unit type already exists
                 and: [
@@ -50,15 +61,27 @@ export async function createUnitType(unitType: UnitTypeData) {
     if(!Attributes) {
         return unitType;
     }
-    return _.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
+    const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
+    if((Attributes as Record<string, unknown>).updatedAt) {
+        result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
+    }
+    return result;
 }
 
 export async function updateUnitType(buildingID: string, modelID: string, updates: Partial<UnitTypeData>) {
+    const now = new Date();
     const { Attributes } = await UnitType.build(UpdateItemCommand)
-        .item({ ...updates, buildingID, modelID, unitID: `MODEL#${modelID}` })
+        .item({ ...updates, buildingID, modelID, unitID: `MODEL#${modelID}`, updatedAt: now.toISOString() })
         .options({ returnValues: 'ALL_NEW' })
         .send();
-    return _.omit(Attributes, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
+    if(!Attributes) {
+        throw new Error('Failed to update unit type');
+    }
+    const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
+    if((Attributes as Record<string, unknown>).updatedAt) {
+        result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
+    }
+    return result;
 }
 
 export async function deleteUnitType(buildingID: string, modelID: string): Promise<boolean> {

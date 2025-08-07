@@ -1,4 +1,13 @@
-import type { BuildingData, UnitData, UnitTypeData } from '../types';
+import type { BuildingData, UnitData, UnitTypeData } from '../types/index';
+
+// Extended types with updatedAt for proper typing
+interface UnitTypeWithUpdate extends UnitTypeData {
+    updatedAt: Date
+}
+
+interface UnitWithUpdate extends UnitData {
+    updatedAt: Date
+}
 import _ from 'lodash';
 import type {
     MITSPhysicalProperty as _MITSPhysicalProperty,
@@ -381,8 +390,30 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
         return unit.feedInclusion && unit.feedInclusion[siteName] === true;
     }) as UnitData[];
 
-    // Get current timestamp
-    const lastUpdate = formatDate(new Date());
+    // Find the most recent updatedAt timestamp from all data
+    let mostRecentUpdate: Date | undefined;
+
+    // Check building updatedAt
+    if(building.updatedAt) {
+        mostRecentUpdate = building.updatedAt;
+    }
+
+    // Check unitTypes updatedAt
+    const unitTypesWithUpdates = _.filter(unitTypes, (ut): ut is UnitTypeWithUpdate => 'updatedAt' in ut && ut.updatedAt != null);
+    const mostRecentUnitType = _.maxBy(unitTypesWithUpdates, 'updatedAt');
+    if(mostRecentUnitType && (!mostRecentUpdate || mostRecentUnitType.updatedAt > mostRecentUpdate)) {
+        mostRecentUpdate = mostRecentUnitType.updatedAt;
+    }
+
+    // Check units updatedAt
+    const unitsWithUpdates = _.filter(siteUnits, (unit): unit is UnitWithUpdate => 'updatedAt' in unit && unit.updatedAt != null);
+    const mostRecentUnit = _.maxBy(unitsWithUpdates, 'updatedAt');
+    if(mostRecentUnit && (!mostRecentUpdate || mostRecentUnit.updatedAt > mostRecentUpdate)) {
+        mostRecentUpdate = mostRecentUnit.updatedAt;
+    }
+
+    // Use most recent update if found, otherwise use current timestamp
+    const lastUpdate = formatDate(mostRecentUpdate || new Date());
 
     // Build the XML document
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -438,12 +469,34 @@ export async function generateMITSFeed(options: MITSFeedOptions): Promise<string
     return generateMITSFeedForBuilding(options);
 }
 
+// Helper function to find the most recent updatedAt timestamp
+function findMostRecentUpdate(buildings: BuildingData[], unitTypesByBuilding: Record<string, UnitTypeData[]>, unitsByBuilding: Record<string, UnitData[]>): Date | undefined {
+    const allDatesWithUpdates: Date[] = [];
+
+    // Collect all updatedAt dates from buildings
+    const buildingsWithUpdates = _.filter(buildings, 'updatedAt');
+    allDatesWithUpdates.push(..._.map(buildingsWithUpdates, 'updatedAt') as Date[]);
+
+    // Collect all updatedAt dates from unit types
+    const allUnitTypes = _(unitTypesByBuilding).values().flatten().value();
+    const allUnitTypesWithUpdates = _.filter(allUnitTypes, (ut): ut is UnitTypeWithUpdate => 'updatedAt' in ut && ut.updatedAt != null);
+    allDatesWithUpdates.push(..._.map(allUnitTypesWithUpdates, 'updatedAt'));
+
+    // Collect all updatedAt dates from units
+    const allUnits = _(unitsByBuilding).values().flatten().value();
+    const allUnitsWithUpdates = _.filter(allUnits, (unit): unit is UnitWithUpdate => 'updatedAt' in unit && unit.updatedAt != null);
+    allDatesWithUpdates.push(..._.map(allUnitsWithUpdates, 'updatedAt'));
+
+    return allDatesWithUpdates.length > 0 ? _.max(allDatesWithUpdates) : undefined;
+}
+
 // Generate MITS feed for multiple buildings
 export async function generateMultiBuildingMITSFeed(options: MultiBuildingFeedOptions): Promise<string> {
     const { buildings, unitTypesByBuilding, unitsByBuilding, siteName } = options;
 
-    // Generate current timestamp
-    const lastUpdate = formatDate(new Date());
+    // Find the most recent updatedAt timestamp from all data across all buildings
+    const mostRecentUpdate = findMostRecentUpdate(buildings, unitTypesByBuilding, unitsByBuilding);
+    const lastUpdate = formatDate(mostRecentUpdate || new Date());
 
     // Start the aggregated XML document
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -464,7 +517,7 @@ export async function generateMultiBuildingMITSFeed(options: MultiBuildingFeedOp
 
         // Extract just the PhysicalProperty content (remove XML declaration and wrapper)
         const match = buildingXML.match(/<PhysicalProperty[^>]*>([\s\S]*)<\/PhysicalProperty>/);
-        if(match && match[1]) {
+        if(match?.[1]) {
             xml += `
     <PhysicalProperty>${match[1]}</PhysicalProperty>`;
         }

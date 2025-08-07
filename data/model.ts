@@ -64,6 +64,7 @@ export const Building = new Entity({
         tourAvailability: any().optional(),
         applicationFee: number().optional(),
         acceptsOnlineApplications: boolean().optional(),
+        updatedAt: string().optional(),
     }),
 });
 
@@ -96,6 +97,7 @@ export const Unit = new Entity({
         manualReferences: record(string(), string()).optional(),
         feedLastPulled: record(string(), any()).optional(),
         feedLastModified: string().optional(),
+        updatedAt: string().optional(),
     }),
 });
 
@@ -121,5 +123,6 @@ export const UnitType = new Entity({
         minLeaseTerm: number().optional(),
         maxLeaseTerm: number().optional(),
         modelAmenities: list(any()).optional(),
+        updatedAt: string().optional(),
     }),
 });

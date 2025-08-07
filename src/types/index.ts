@@ -208,6 +208,7 @@ export interface BuildingData {
     tourAvailability?: TourAvailability
     applicationFee?: number
     acceptsOnlineApplications?: boolean
+    updatedAt?: Date // Timestamp for last modification
 }
 
 export interface UnitTypeData {
@@ -228,6 +229,7 @@ export interface UnitTypeData {
     minLeaseTerm?: number // months
     maxLeaseTerm?: number // months
     modelAmenities?: Amenity[] // default amenities for units of this type
+    updatedAt?: Date // Timestamp for last modification
 }
 
 export interface UnitData {
@@ -260,6 +262,7 @@ export interface UnitData {
     manualReferences?: Partial<Record<string, string>> // siteName -> external ID/URL
     feedLastPulled?: Partial<Record<string, { timestamp: Date, ipAddress?: string }>>
     feedLastModified?: Date
+    updatedAt?: Date // Timestamp for last modification
 }
 
 // Extended interfaces for runtime use

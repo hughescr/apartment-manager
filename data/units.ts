@@ -79,6 +79,11 @@ function convertRawItemToUnitData(rawItem: Record<string, unknown>): UnitData {
         result.feedLastModified = new Date(rawItem.feedLastModified);
     }
 
+    // Convert updatedAt from string to Date object
+    if(rawItem.updatedAt && _.isString(rawItem.updatedAt)) {
+        result.updatedAt = new Date(rawItem.updatedAt);
+    }
+
     return result as UnitData;
 }
 
@@ -121,9 +126,11 @@ export async function createUnit(unit: UnitData) {
     // Convert Date objects to strings for DynamoDB and filter undefined values
     const { feedLastPulled, feedLastModified, feedInclusion, manualReferences, ...restUnit } = unit;
 
+    const now = new Date();
     const unitForDB: Record<string, unknown> = {
         ...restUnit,
-        unitID: `UNIT#${unit.unitID}`
+        unitID: `UNIT#${unit.unitID}`,
+        updatedAt: now.toISOString()
     };
 
     // Only add fields that have values to avoid partial record issues
@@ -174,10 +181,12 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
     // Convert Date objects to strings for DynamoDB and filter undefined values
     const { feedLastPulled, feedLastModified, feedInclusion, manualReferences, ...restUpdates } = updates;
 
+    const now = new Date();
     const updatesForDB: Record<string, unknown> = {
         ...restUpdates,
         buildingID,
-        unitID: `UNIT#${unitID}`
+        unitID: `UNIT#${unitID}`,
+        updatedAt: now.toISOString()
     };
 
     // Only add fields that have values to avoid partial record issues
