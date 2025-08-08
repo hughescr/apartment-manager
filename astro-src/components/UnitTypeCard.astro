@@ -15,7 +15,8 @@ if (!unitType.modelAmenities) unitType.modelAmenities = [];
 ---
 
 <script define:vars={{ unitType, apiURL }} is:inline>
-function unitTypeCardData(unitTypeData, apiUrlData) {
+// Used by Alpine.js x-data attribute
+window.unitTypeCardData = function unitTypeCardData(unitTypeData, apiUrlData) {
     return {
         unitType: unitTypeData,
         originalUnitType: JSON.parse(JSON.stringify(unitTypeData)), // Deep copy for original state

@@ -16,13 +16,14 @@ if (!unit.photos) unit.photos = [];
 if (!unit.feedInclusion) unit.feedInclusion = {};
 if (!unit.manualReferences) unit.manualReferences = {};
 // Initialize vacancy status fields
-if (!unit.vacancyClass) unit.vacancyClass = '';
+if (!unit.vacancyClass) unit.vacancyClass = undefined;
 if (!unit.vacateDate) unit.vacateDate = '';
 if (!unit.madeReadyDate) unit.madeReadyDate = '';
 ---
 
 <script is:inline>
-function unitCardData() {
+// Used by Alpine.js x-data attribute
+window.unitCardData = function unitCardData() {
     return {
         unit: null,
         originalUnit: null,
@@ -51,7 +52,7 @@ function unitCardData() {
             if (!this.unit.feedInclusion) this.unit.feedInclusion = {};
             if (!this.unit.manualReferences) this.unit.manualReferences = {};
             // Initialize vacancy status fields
-            if (!this.unit.vacancyClass) this.unit.vacancyClass = '';
+            if (!this.unit.vacancyClass) this.unit.vacancyClass = undefined;
             if (!this.unit.vacateDate) this.unit.vacateDate = '';
             if (!this.unit.madeReadyDate) this.unit.madeReadyDate = '';
             

@@ -14,7 +14,8 @@ const apiURL = Resource.API.url;
 ---
 
 <script define:vars={{ apiURL, buildingID }} is:inline>
-function unitTypeFormData(apiUrlData, buildingIdData) {
+// Used by Alpine.js x-data attribute
+window.unitTypeFormData = function unitTypeFormData(apiUrlData, buildingIdData) {
     return {
         apiURL: apiUrlData,
         buildingID: buildingIdData,

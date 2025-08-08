@@ -149,24 +149,18 @@ function isDepositRefundable(deposit: number | EnhancedDeposit | undefined): boo
     return deposit.refundable;
 }
 
-// Get partial refund percentage (enhanced deposits only)
-function getPartialRefundPercentage(deposit: number | EnhancedDeposit | undefined): number | undefined {
-    if(deposit === undefined || deposit === null || _.isNumber(deposit)) {
-        return undefined;
-    }
-    return deposit.partialRefundPercentage;
-}
-
 // Convert bedroom count to room configuration
 function generateRoomInfo(beds: number, baths: number): string {
     let rooms = '';
 
-    // Bedrooms (0 beds = studio)
-    rooms += `
+    // Bedrooms (0 beds = studio, don't include bedroom entry)
+    if(beds > 0) {
+        rooms += `
         <Room>
             <RoomType>bedroom</RoomType>
             <Count>${beds}</Count>
         </Room>`;
+    }
 
     // Bathrooms
     if(baths > 0) {
@@ -189,12 +183,12 @@ function generateAmenities(building: BuildingData): string {
     let amenities = '';
     for(const amenity of building.propertyAmenities) {
         amenities += `
-        <AmenityType>${escapeXML(amenity.name)}</AmenityType>`;
+    <Amenity>
+        <AmenityType>${escapeXML(amenity.name)}</AmenityType>
+    </Amenity>`;
     }
 
-    return `
-    <Amenity>${amenities}
-    </Amenity>`;
+    return amenities;
 }
 
 // Generate pet policy
@@ -279,11 +273,6 @@ function generateFloorplan(unitType: UnitTypeData): string {
                 isDepositRefundable(enhancedUnitType.deposit) !== undefined
                     ? `
             <Refundable>${isDepositRefundable(enhancedUnitType.deposit)}</Refundable>`
-                    : ''
-            }${
-                getPartialRefundPercentage(enhancedUnitType.deposit)
-                    ? `
-            <PartialRefund>${getPartialRefundPercentage(enhancedUnitType.deposit)}%</PartialRefund>`
                     : ''
             }
         </Deposit>`
@@ -399,8 +388,9 @@ function generatePropertyIdentification(building: BuildingData, escapeXML: (str:
 
 // Helper function to generate address XML
 function generateAddressXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
-    const address = building.street || 'TBD';
-    const city = building.city || 'TBD';
+    // Address is required by MITS spec, always provide it
+    const address = building.street || 'Address Not Provided';
+    const city = building.city || 'City Not Provided';
     const state = building.state || 'CA';
     const zip = building.zip || '00000';
 
@@ -415,7 +405,7 @@ function generateAddressXML(building: BuildingData, escapeXML: (str: string | un
 }
 
 // Helper function to generate information fields XML
-function generateInformationFieldsXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
+function generateInformationFieldsXML(building: BuildingData, unitCount: number, escapeXML: (str: string | undefined | null) => string): string {
     const enhancedBuilding = building as EnhancedBuildingData;
     const yearBuiltXML = building.yearBuilt
         ? `
@@ -447,19 +437,24 @@ function generateInformationFieldsXML(building: BuildingData, escapeXML: (str: s
         <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite || enhancedBuilding.contactInfo.website)}</WebSite>`
         : '';
 
-    return yearBuiltXML + shortDescriptionXML + longDescriptionXML + phoneXML + emailXML + websiteXML;
+    const unitCountXML = unitCount > 0
+        ? `
+        <UnitCount>${unitCount}</UnitCount>`
+        : '';
+
+    return yearBuiltXML + shortDescriptionXML + longDescriptionXML + phoneXML + emailXML + websiteXML + unitCountXML;
 }
 
 // Helper function to generate information section XML
-function generateInformationXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
-    if(!building.buildingName && !building.yearBuilt && !building.description) {
+function generateInformationXML(building: BuildingData, unitCount: number, escapeXML: (str: string | undefined | null) => string): string {
+    if(!building.buildingName && !building.yearBuilt && !building.description && unitCount === 0) {
         return '';
     }
 
     return `
     
     <Information>
-        <StructureType>Apartment</StructureType>${generateInformationFieldsXML(building, escapeXML)}
+        <StructureType>Apartment</StructureType>${generateInformationFieldsXML(building, unitCount, escapeXML)}
     </Information>`;
 }
 
@@ -617,7 +612,7 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     </Property_ID>`;
 
     // Add property information
-    xml += generateInformationXML(building, escapeXML);
+    xml += generateInformationXML(building, siteUnits.length, escapeXML);
 
     // Add management section
     xml += generateManagementXML(building, escapeXML);

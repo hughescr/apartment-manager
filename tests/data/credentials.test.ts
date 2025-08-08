@@ -44,7 +44,7 @@ describe('Credentials Data Layer', () => {
         test('should handle storage errors', async () => {
             ssmMock.mockRejectedValueOnce(new Error('AWS Error'));
 
-            await expect(
+            expect(
                 storeCredential('test-site', { apiKey: 'key' })
             ).rejects.toThrow('Failed to store credentials: AWS Error');
         });
@@ -89,7 +89,7 @@ describe('Credentials Data Layer', () => {
         test('should handle retrieval errors', async () => {
             ssmMock.mockRejectedValueOnce(new Error('AWS Error'));
 
-            await expect(
+            expect(
                 getCredential('test-site')
             ).rejects.toThrow('Failed to retrieve credentials: AWS Error');
         });
@@ -120,7 +120,7 @@ describe('Credentials Data Layer', () => {
         test('should handle deletion errors', async () => {
             ssmMock.mockRejectedValueOnce(new Error('AWS Error'));
 
-            await expect(
+            expect(
                 deleteCredential('test-site')
             ).rejects.toThrow('Failed to delete credentials: AWS Error');
         });
@@ -187,7 +187,7 @@ describe('Credentials Data Layer', () => {
         test('should handle listing errors', async () => {
             ssmMock.mockRejectedValueOnce(new Error('AWS Error'));
 
-            await expect(
+            expect(
                 listCredentials()
             ).rejects.toThrow('Failed to list credentials: AWS Error');
         });

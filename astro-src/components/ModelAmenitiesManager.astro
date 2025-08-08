@@ -21,7 +21,8 @@ const unitTypesMap = Object.fromEntries(
 ---
 
 <script define:vars={{ apiURL, buildingID, unitTypesMap }} is:inline>
-function modelAmenitiesManagerData(apiUrlData, buildingIdData, unitTypesMapData) {
+// Used by Alpine.js x-data attribute
+window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData, buildingIdData, unitTypesMapData) {
     return {
         apiURL: apiUrlData,
         buildingID: buildingIdData,

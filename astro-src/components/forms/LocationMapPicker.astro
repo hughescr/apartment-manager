@@ -131,12 +131,44 @@ const containerClasses = [
 </div>
 
 <script>
+// Type declarations for Alpine.js magic properties and global variables
+declare global {
+    interface Window {
+        locationMapData: typeof locationMapData;
+        L: any;
+    }
+}
+
+// Alpine.js context with magic properties
+interface AlpineContext {
+    $el: HTMLElement;
+    $dispatch: (event: string, data?: any) => void;
+    [key: string]: any; // Allow dynamic property access for x-model bindings
+}
+
+// Address models configuration
+interface AddressModels {
+    addressModel?: string;
+    cityModel?: string;
+    stateModel?: string;
+}
+
 // Leaflet Map Component for Alpine.js
-function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultLng, apiUrl, addressModels) {
+function locationMapData(
+    latModel: string,
+    lngModel: string,
+    verifiedModel: string | null | undefined,
+    defaultLat: number,
+    defaultLng: number,
+    apiUrl: string,
+    addressModels: AddressModels
+): AlpineContext {
     return {
-        map: null,
-        marker: null,
+        map: null as any, // Leaflet map instance
+        marker: null as any, // Leaflet marker instance
         geocoding: false,
+        $el: null as any as HTMLElement, // Alpine.js magic property
+        $dispatch: null as any as (event: string, data?: any) => void, // Alpine.js magic property
         
         async initMap() {
             // Import Leaflet dynamically
@@ -150,39 +182,39 @@ function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultL
                 }
                 
                 // Import Leaflet JS
-                const L = await import('leaflet');
+                const LeafletModule = await import('leaflet');
                 
                 // Initialize map
-                const lat = this[latModel] || defaultLat;
-                const lng = this[lngModel] || defaultLng;
+                const lat = (this as any)[latModel] || defaultLat;
+                const lng = (this as any)[lngModel] || defaultLng;
                 
-                this.map = L.map(this.$el.querySelector('.map-container'), {
+                this.map = LeafletModule.map(this.$el, {
                     center: [lat, lng],
-                    zoom: this[latModel] && this[lngModel] ? 16 : 4,
+                    zoom: (this as any)[latModel] && (this as any)[lngModel] ? 16 : 4,
                     zoomControl: true,
                 });
                 
                 // Add OpenStreetMap tiles
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                LeafletModule.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                     maxZoom: 18,
                 }).addTo(this.map);
                 
                 // Add marker if coordinates exist
-                if (this[latModel] && this[lngModel]) {
-                    this.addMarker(this[latModel], this[lngModel]);
+                if ((this as any)[latModel] && (this as any)[lngModel]) {
+                    this.addMarker((this as any)[latModel], (this as any)[lngModel]);
                 }
                 
                 // Add click handler to add/move marker
-                this.map.on('click', (e) => {
+                this.map.on('click', (e: any) => {
                     this.setMarker(e.latlng.lat, e.latlng.lng);
                 });
             }
         },
         
-        addMarker(lat, lng) {
-            if (typeof window !== 'undefined' && window.L) {
-                const L = window.L;
+        addMarker(lat: number, lng: number) {
+            if (typeof window !== 'undefined' && (window as any).L) {
+                const L = (window as any).L;
                 
                 // Remove existing marker
                 if (this.marker) {
@@ -194,7 +226,7 @@ function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultL
                     .addTo(this.map);
                 
                 // Handle marker drag
-                this.marker.on('dragend', (e) => {
+                this.marker.on('dragend', (e: any) => {
                     const position = e.target.getLatLng();
                     this.setMarker(position.lat, position.lng);
                 });
@@ -214,12 +246,12 @@ function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultL
             }
         },
         
-        setMarker(lat, lng) {
+        setMarker(lat: number, lng: number) {
             // Update the Alpine.js models
-            this[latModel] = lat;
-            this[lngModel] = lng;
+            (this as any)[latModel] = lat;
+            (this as any)[lngModel] = lng;
             if (verifiedModel) {
-                this[verifiedModel] = true; // Mark as verified when manually set
+                (this as any)[verifiedModel] = true; // Mark as verified when manually set
             }
             
             // Add or update marker
@@ -242,8 +274,8 @@ function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultL
         },
         
         centerOnMarker() {
-            if (this.map && this[latModel] && this[lngModel]) {
-                this.map.setView([this[latModel], this[lngModel]], 16);
+            if (this.map && (this as any)[latModel] && (this as any)[lngModel]) {
+                this.map.setView([(this as any)[latModel], (this as any)[lngModel]], 16);
                 if (this.marker) {
                     this.marker.openPopup();
                 }
@@ -256,12 +288,12 @@ function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultL
             this.geocoding = true;
             
             try {
-                const address = this[addressModels.addressModel];
-                const city = addressModels.cityModel ? this[addressModels.cityModel] : undefined;
-                const state = addressModels.stateModel ? this[addressModels.stateModel] : undefined;
+                const address = (this as any)[addressModels.addressModel!];
+                const city = addressModels.cityModel ? (this as any)[addressModels.cityModel] : undefined;
+                const state = addressModels.stateModel ? (this as any)[addressModels.stateModel] : undefined;
                 
                 if (!address || !address.trim()) {
-                    this.$dispatch('show-toast', { 
+                    (this as AlpineContext).$dispatch('show-toast', {
                         message: 'Please enter an address first', 
                         type: 'error' 
                     });
@@ -289,26 +321,26 @@ function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultL
                     this.setMarker(data.result.lat, data.result.lng);
                     
                     // Center map on new location
-                    this.map.setView([data.result.lat, data.result.lng], 16);
+                    this.map?.setView([data.result.lat, data.result.lng], 16);
                     
                     // Mark as geocoded (not manually verified)
                     if (verifiedModel) {
-                        this[verifiedModel] = false;
+                        (this as any)[verifiedModel!] = false;
                     }
                     
-                    this.$dispatch('show-toast', { 
+                    (this as AlpineContext).$dispatch('show-toast', {
                         message: `Address geocoded: ${data.result.displayName || 'Location found'}`, 
                         type: 'success' 
                     });
                 } else {
-                    this.$dispatch('show-toast', { 
+                    (this as AlpineContext).$dispatch('show-toast', {
                         message: data.error || 'Could not find coordinates for this address', 
                         type: 'error' 
                     });
                 }
             } catch (error) {
                 console.error('Geocoding error:', error);
-                this.$dispatch('show-toast', { 
+                (this as AlpineContext).$dispatch('show-toast', {
                     message: 'Failed to geocode address. Please try again.', 
                     type: 'error' 
                 });
@@ -320,7 +352,7 @@ function locationMapData(latModel, lngModel, verifiedModel, defaultLat, defaultL
         // Clean up when component is destroyed
         destroy() {
             if (this.map) {
-                this.map.remove();
+                this.map?.remove();
                 this.map = null;
             }
         }

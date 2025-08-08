@@ -169,6 +169,42 @@ describe('MITS Feed Generator', () => {
             expect(xml).toContain(`<PhoneNumber>${mockBuilding.contactInfo?.phone}</PhoneNumber>`);
             expect(xml).toContain(`<Email>${mockBuilding.contactInfo?.email}</Email>`);
         });
+
+        it('should include UnitCount in Information section', async () => {
+            const xml = await generateMITSFeed({
+                building: mockBuilding,
+                unitTypes: mockUnitTypes,
+                units: mockUnits,
+                siteName: 'apartments_com'
+            });
+
+            // Should include count of units included in the feed
+            expect(xml).toContain('<UnitCount>2</UnitCount>');
+        });
+
+        it('should always include Address even when missing', async () => {
+            const buildingWithoutAddress = {
+                ...mockBuilding,
+                street: undefined,
+                city: undefined,
+                state: undefined,
+                zip: undefined
+            };
+
+            const xml = await generateMITSFeed({
+                building: buildingWithoutAddress,
+                unitTypes: mockUnitTypes,
+                units: mockUnits,
+                siteName: 'apartments_com'
+            });
+
+            // Address is required by MITS spec, should have fallback values
+            expect(xml).toContain('<Address>');
+            expect(xml).toContain('<Address>Address Not Provided</Address>');
+            expect(xml).toContain('<City>City Not Provided</City>');
+            expect(xml).toContain('<State>CA</State>');
+            expect(xml).toContain('<PostalCode>00000</PostalCode>');
+        });
     });
 
     describe('Floorplan (Model) Generation', () => {
@@ -194,9 +230,11 @@ describe('MITS Feed Generator', () => {
             });
 
             expect(xml).toContain('<Room>');
+            // Studio (0 beds) should not have bedroom entry per MITS spec
+            // One bedroom unit should have bedroom entry
             expect(xml).toContain('<RoomType>bedroom</RoomType>');
             expect(xml).toContain('<RoomType>bathroom</RoomType>');
-            expect(xml).toContain(`<Count>${mockUnitTypes[0].beds}</Count>`);
+            expect(xml).toContain(`<Count>${mockUnitTypes[1].beds}</Count>`); // Check 1-bedroom count instead
         });
 
         it('should include square footage range', async () => {
@@ -1094,7 +1132,7 @@ describe('MITS Feed Generator', () => {
 
                 expect(xml).toContain('<Value>2500</Value>');
                 expect(xml).toContain('<Refundable>false</Refundable>');
-                expect(xml).toContain('<PartialRefund>75%</PartialRefund>');
+                // PartialRefund is not part of MITS spec - removed
             });
 
             it('should extract amount from enhanced deposit object', async () => {
@@ -1120,7 +1158,7 @@ describe('MITS Feed Generator', () => {
 
                 expect(xml).toContain('<Value>3200</Value>');
                 expect(xml).toContain('<Refundable>true</Refundable>');
-                expect(xml).toContain('<PartialRefund>90%</PartialRefund>');
+                // PartialRefund is not part of MITS spec - removed
             });
 
             it('should handle missing deposit gracefully', async () => {
