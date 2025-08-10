@@ -1,8 +1,15 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../data/units';
-import { UnitData, Deposit } from '../src/types/index';
+import { UnitData, Deposit, VacancyClass } from '../src/types/index';
 import _ from 'lodash';
 import { validateId, validateTextField, sanitizeObject, validateArraySize } from './security-validation';
+import {
+    performBulkStatusUpdate,
+    performBulkRentUpdate,
+    validateBulkOperationParams,
+    validateBulkStatusParams,
+    validateBulkRentParams
+} from '../data/services/bulk-operations';
 
 // Helper validation functions to reduce complexity
 function validateRequiredFields(data: Partial<UnitData>, isCreate: boolean, errors: Record<string, string>): void {
@@ -432,36 +439,9 @@ interface BulkRequestData {
     [key: string]: unknown
 }
 
-// Helper function to validate bulk operation request data
-function validateBulkRequest(data: BulkRequestData, errors: Record<string, string>): void {
-    // Validate unitIDs array
-    if(!data.unitIDs || !_.isArray(data.unitIDs) || data.unitIDs.length === 0) {
-        errors.unitIDs = 'Unit IDs array is required and must not be empty';
-    } else if(data.unitIDs.length > 100) {
-        errors.unitIDs = 'Cannot update more than 100 units at once';
-    } else {
-        // Validate each unit ID
-        for(const unitID of data.unitIDs) {
-            const idError = validateId(unitID, 'unitID');
-            if(idError) {
-                errors.unitIDs = 'Invalid unit ID format';
-                break;
-            }
-        }
-    }
-}
-
 // Interface for status update request data
 interface StatusUpdateData extends BulkRequestData {
     vacancyClass?: string
-}
-
-// Helper function to validate status update data
-function validateStatusUpdateData(data: StatusUpdateData, errors: Record<string, string>): void {
-    const validStatuses = ['Occupied', 'Unoccupied', 'Notice', 'Down'];
-    if(!data.vacancyClass || !validStatuses.includes(data.vacancyClass)) {
-        errors.vacancyClass = 'Valid vacancy class is required (Occupied, Unoccupied, Notice, Down)';
-    }
 }
 
 export const bulkStatusUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
@@ -473,53 +453,98 @@ export const bulkStatusUpdate = async (evt: APIGatewayProxyEventV2): Promise<API
         return { statusCode: 404, body: 'Not Found' };
     }
 
-    let rawData;
+    // Parse and validate request body
+    const parseResult = parseBulkRequestBody(evt.body ?? null);
+    if('statusCode' in parseResult) {
+        return parseResult as APIGatewayProxyStructuredResultV2;
+    }
+
+    const data = parseResult as StatusUpdateData;
+
+    // Validate bulk operation parameters
+    const validationResult = validateBulkStatusOperation(buildingID, data);
+    if(validationResult) {
+        return validationResult;
+    }
+
+    // Perform the bulk operation
+    return executeBulkStatusUpdate(buildingID, data);
+};
+
+// Helper function to parse request body
+function parseBulkRequestBody(body: string | null): StatusUpdateData | APIGatewayProxyStructuredResultV2 {
     try {
-        rawData = JSON.parse(evt.body || '{}');
+        const rawData = JSON.parse(body || '{}');
+        return sanitizeObject(rawData) as StatusUpdateData;
     } catch{
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Invalid request body' }),
         };
     }
+}
 
-    const data = sanitizeObject(rawData) as StatusUpdateData;
+// Helper function to validate bulk status operation
+function validateBulkStatusOperation(buildingID: string, data: StatusUpdateData): APIGatewayProxyStructuredResultV2 | undefined {
+    const bulkValidation = validateBulkOperationParams(buildingID, data.unitIDs || []);
+    const statusValidation = validateBulkStatusParams(data.vacancyClass as VacancyClass);
+
     const errors: Record<string, string> = {};
 
-    validateBulkRequest(data, errors);
-    validateStatusUpdateData(data, errors);
+    // Map bulk validation errors to field names
+    for(const error of bulkValidation.errors) {
+        if(error.includes('unit ID') || error.includes('100 units')) {
+            errors.unitIDs = error;
+        } else if(error.includes('Building ID')) {
+            errors.buildingID = error;
+        }
+    }
+
+    // Map status validation errors to field names
+    for(const error of statusValidation.errors) {
+        if(error.includes('Vacancy class') || error.includes('vacancy class')) {
+            errors.vacancyClass = error;
+        }
+    }
 
     if(_.keys(errors).length > 0) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
-        };
-    }
-
-    try {
-        // Update each unit individually
-        const updatePromises = _.map(data.unitIDs, async (unitID: string) => {
-            const existingUnit = await getUnit(buildingID, unitID);
-            if(!existingUnit) {
-                throw new Error(`Unit ${unitID} not found`);
-            }
-
-            return updateUnit(buildingID, unitID, {
-                vacancyClass: data.vacancyClass as 'Occupied' | 'Unoccupied' | 'Notice' | 'Down', // Cast validated string to VacancyClass type
-                updatedAt: new Date()
-            });
-        });
-
-        const results = await Promise.all(updatePromises);
-        const successCount = _.filter(results, result => result !== null).length;
-
-        return {
-            statusCode: 200,
             body: JSON.stringify({
-                message: `Successfully updated ${successCount} units`,
-                updatedUnits: successCount
+                error: 'Validation failed',
+                errors
             }),
         };
+    }
+}
+
+// Helper function to execute bulk status update
+async function executeBulkStatusUpdate(buildingID: string, data: StatusUpdateData): Promise<APIGatewayProxyStructuredResultV2> {
+    try {
+        const result = await performBulkStatusUpdate({
+            buildingID,
+            unitIDs: data.unitIDs!,
+            vacancyClass: data.vacancyClass as VacancyClass
+        });
+
+        if(result.success) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify({
+                    message: `Successfully updated ${result.processedUnits} units`,
+                    updatedUnits: result.processedUnits
+                }),
+            };
+        } else {
+            return {
+                statusCode: 207, // Multi-status - some succeeded, some failed
+                body: JSON.stringify({
+                    message: `Updated ${result.processedUnits} out of ${data.unitIDs!.length} units`,
+                    updatedUnits: result.processedUnits,
+                    errors: result.errors
+                }),
+            };
+        }
     } catch(error) {
         // eslint-disable-next-line no-console -- Logging errors to CloudWatch for debugging bulk operations
         console.error('Bulk status update error:', error);
@@ -528,49 +553,12 @@ export const bulkStatusUpdate = async (evt: APIGatewayProxyEventV2): Promise<API
             body: JSON.stringify({ error: 'Failed to update units' }),
         };
     }
-};
+}
 
 // Interface for rent update request data
 interface RentUpdateData extends BulkRequestData {
     updateType?: string
     value?: unknown
-}
-
-// Helper function to validate rent update data
-function validateRentUpdateData(data: RentUpdateData, errors: Record<string, string>): void {
-    // Validate update type
-    const validUpdateTypes = ['absolute', 'percentage'];
-    if(!data.updateType || !validUpdateTypes.includes(data.updateType)) {
-        errors.updateType = 'Update type must be either "absolute" or "percentage"';
-    }
-
-    // Validate value
-    if(data.value === undefined || data.value === null || isNaN(Number(data.value))) {
-        errors.value = 'Valid numeric value is required';
-    } else {
-        const value = Number(data.value);
-        if(data.updateType === 'absolute') {
-            if(value < 0 || value > 25000) {
-                errors.value = 'Absolute rent value must be between 0 and 25000';
-            }
-        } else if(data.updateType === 'percentage') {
-            if(value < -100 || value > 1000) {
-                errors.value = 'Percentage value must be between -100 and 1000';
-            }
-        }
-    }
-}
-
-// Helper function to calculate new rent value
-function calculateNewRent(updateType: string, value: number, currentRent: number): number {
-    if(updateType === 'absolute') {
-        return Number(value);
-    } else {
-        // Percentage update
-        const newRent = Math.round(currentRent * (1 + Number(value) / 100));
-        // Ensure rent doesn't go below 0 or above 25000
-        return Math.max(0, Math.min(25000, newRent));
-    }
 }
 
 export const bulkRentUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
@@ -582,56 +570,104 @@ export const bulkRentUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGa
         return { statusCode: 404, body: 'Not Found' };
     }
 
-    let rawData;
+    // Parse and validate request body
+    const parseResult = parseRentRequestBody(evt.body ?? null);
+    if('statusCode' in parseResult) {
+        return parseResult as APIGatewayProxyStructuredResultV2;
+    }
+
+    const data = parseResult as RentUpdateData;
+
+    // Validate bulk operation parameters
+    const validationResult = validateBulkRentOperation(buildingID, data);
+    if(validationResult) {
+        return validationResult;
+    }
+
+    // Perform the bulk operation
+    return executeBulkRentUpdate(buildingID, data);
+};
+
+// Helper function to parse rent request body
+function parseRentRequestBody(body: string | null): RentUpdateData | APIGatewayProxyStructuredResultV2 {
     try {
-        rawData = JSON.parse(evt.body || '{}');
+        const rawData = JSON.parse(body || '{}');
+        return sanitizeObject(rawData) as RentUpdateData;
     } catch{
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Invalid request body' }),
         };
     }
+}
 
-    const data = sanitizeObject(rawData) as RentUpdateData;
+// Helper function to validate bulk rent operation
+function validateBulkRentOperation(buildingID: string, data: RentUpdateData): APIGatewayProxyStructuredResultV2 | undefined {
+    const bulkValidation = validateBulkOperationParams(buildingID, data.unitIDs || []);
+    const rentValidation = validateBulkRentParams(
+        data.updateType as 'absolute' | 'percentage',
+        Number(data.value)
+    );
+
     const errors: Record<string, string> = {};
 
-    validateBulkRequest(data, errors);
-    validateRentUpdateData(data, errors);
+    // Map bulk validation errors to field names
+    for(const error of bulkValidation.errors) {
+        if(error.includes('unit ID') || error.includes('100 units')) {
+            errors.unitIDs = error;
+        } else if(error.includes('Building ID')) {
+            errors.buildingID = error;
+        }
+    }
+
+    // Map rent validation errors to field names
+    for(const error of rentValidation.errors) {
+        if(error.includes('Update type') || error.includes('update type')) {
+            errors.updateType = error;
+        } else if(error.includes('Value') || error.includes('value')) {
+            errors.value = error;
+        }
+    }
 
     if(_.keys(errors).length > 0) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
-        };
-    }
-
-    try {
-        // Update each unit individually
-        const updatePromises = _.map(data.unitIDs, async (unitID: string) => {
-            const existingUnit = await getUnit(buildingID, unitID);
-            if(!existingUnit) {
-                throw new Error(`Unit ${unitID} not found`);
-            }
-
-            const currentRent = existingUnit.rent || 0;
-            const newRent = calculateNewRent(data.updateType!, Number(data.value), currentRent);
-
-            return updateUnit(buildingID, unitID, {
-                rent: newRent,
-                updatedAt: new Date()
-            });
-        });
-
-        const results = await Promise.all(updatePromises);
-        const successCount = _.filter(results, result => result !== null).length;
-
-        return {
-            statusCode: 200,
             body: JSON.stringify({
-                message: `Successfully updated rent for ${successCount} units`,
-                updatedUnits: successCount
+                error: 'Validation failed',
+                errors
             }),
         };
+    }
+}
+
+// Helper function to execute bulk rent update
+async function executeBulkRentUpdate(buildingID: string, data: RentUpdateData): Promise<APIGatewayProxyStructuredResultV2> {
+    try {
+        const result = await performBulkRentUpdate({
+            buildingID,
+            unitIDs: data.unitIDs!,
+            updateType: data.updateType as 'absolute' | 'percentage',
+            value: Number(data.value)
+        });
+
+        if(result.success) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify({
+                    message: `Successfully updated rent for ${result.processedUnits} units`,
+                    updatedUnits: result.processedUnits
+                }),
+            };
+        } else {
+            return {
+                statusCode: 207, // Multi-status - some succeeded, some failed
+                body: JSON.stringify({
+                    message: `Updated rent for ${result.processedUnits} out of ${data.unitIDs!.length} units`,
+                    updatedUnits: result.processedUnits,
+                    errors: result.errors
+                }),
+            };
+        }
     } catch(error) {
         // eslint-disable-next-line no-console -- Logging errors to CloudWatch for debugging bulk operations
         console.error('Bulk rent update error:', error);

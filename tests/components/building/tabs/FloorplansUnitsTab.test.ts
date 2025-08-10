@@ -2,7 +2,6 @@
 import '../test-setup';
 
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { buildingEventBus } from '../../../../astro-src/lib/building/eventBus';
 import _ from 'lodash';
 import {
     createTestBuildingData,
@@ -19,7 +18,6 @@ describe('FloorplansUnitsTab Component Logic', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        buildingEventBus.clear();
 
         mockBuildingData = createTestBuildingData();
         mockUnitsData = [
@@ -38,9 +36,7 @@ describe('FloorplansUnitsTab Component Logic', () => {
         ];
     });
 
-    afterEach(() => {
-        buildingEventBus.clear();
-    });
+    afterEach(_.noop);
 
     describe('Data Structure Validation', () => {
         it('should have valid building data structure', () => {
@@ -172,54 +168,6 @@ describe('FloorplansUnitsTab Component Logic', () => {
             expect(typeof occupiedUnits).toBe('number');
             expect(typeof availableUnits).toBe('number');
             expect(occupiedUnits + availableUnits).toBeLessThanOrEqual(totalUnits);
-        });
-    });
-
-    describe('Event Bus Integration', () => {
-        it('should handle building updated events', () => {
-            const eventSpy = jest.fn();
-            buildingEventBus.on('building:updated', eventSpy);
-
-            buildingEventBus.emit('building:updated', {
-                building: mockBuildingData
-            });
-
-            expect(eventSpy).toHaveBeenCalledWith({
-                building: mockBuildingData
-            });
-        });
-
-        it('should handle units filter events', () => {
-            const eventSpy = jest.fn();
-            buildingEventBus.on('units:filter', eventSpy);
-
-            buildingEventBus.emit('units:filter', {
-                filter: 'Occupied',
-                query: '101'
-            });
-
-            expect(eventSpy).toHaveBeenCalledWith({
-                filter: 'Occupied',
-                query: '101'
-            });
-        });
-
-        it('should clean up event listeners', () => {
-            const eventSpy = jest.fn();
-            const unsubscribe = buildingEventBus.on('toast:show', eventSpy);
-
-            buildingEventBus.emit('toast:show', {
-                message: 'Test message',
-                toastType: 'success'
-            });
-            expect(eventSpy).toHaveBeenCalledTimes(1);
-
-            unsubscribe();
-            buildingEventBus.emit('toast:show', {
-                message: 'Test message 2',
-                toastType: 'success'
-            });
-            expect(eventSpy).toHaveBeenCalledTimes(1);
         });
     });
 

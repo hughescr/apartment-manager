@@ -57,22 +57,19 @@ const safeUnits = units || [];
 const safeUnitTypes = unitTypes || [];
 ---
 
-<script is:inline>
-// Import the state management function
-if (!window.createBuildingCardState) {
-    console.error('Building state management not loaded. Make sure to include buildingState.ts');
-}
+<script>
+// Import the state management function directly
+import { createBuildingCardState } from '../../lib/building/buildingState';
 
 // Make the state creation function available globally for Alpine.js
-window.buildingProviderData = function() {
-    return window.createBuildingCardState();
-};
+if(typeof window !== 'undefined') {
+    window.createBuildingCardState = createBuildingCardState;
+}
 </script>
 
 <div
     class="building-provider"
-    x-data="buildingProviderData()"
-    x-effect="showSave = building && original && JSON.stringify(building) !== JSON.stringify(original)"
+    x-data="createBuildingCardState()"
     :class="{'opacity-50': saving}"
     data-building={JSON.stringify(building)}
     data-units={JSON.stringify(safeUnits)}

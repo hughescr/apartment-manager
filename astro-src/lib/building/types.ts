@@ -3,6 +3,8 @@ import type { BuildingData, UnitData, UnitTypeData } from '../../types';
 // Extended UnitData with runtime properties
 export interface ExtendedUnitData extends UnitData {
     lastUpdated?: string
+    status?: string  // For runtime status display
+    currentRent?: number  // For runtime rent value
 }
 
 // Building-specific UI state interfaces

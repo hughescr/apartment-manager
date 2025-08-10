@@ -5,7 +5,6 @@ import { describe, it, expect, beforeEach } from 'bun:test';
 // Component logic testing - no render needed
 // import TabPanels from '../../../astro-src/components/building/TabPanels.astro';
 import _ from 'lodash';
-import { buildingEventBus } from '../../../astro-src/lib/building/eventBus';
 import {
     jest
 } from './test-setup';
@@ -13,7 +12,6 @@ import {
 describe('TabPanels Component Logic', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        buildingEventBus.clear();
     });
 
     describe('Tab Panel Configuration', () => {

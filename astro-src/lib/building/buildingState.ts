@@ -1,287 +1,589 @@
-import { BuildingCardOrchestrator } from './orchestrator/BuildingCardOrchestrator';
-import { createStateManager } from './services/StateManager';
-import { ValidationServiceImpl } from './services/ValidationService';
-import { ApiService } from './services/ApiService';
-import { FormatServiceImpl } from './services/FormatService';
-import { BulkOperationService } from './services/BulkOperationService';
-import { DefaultFilterService } from './services/FilterService';
-import { DefaultDialogService } from './services/DialogService';
-
-// Alpine.js magic properties interface
-interface AlpineComponent {
-    $dispatch: (event: string, detail?: unknown) => void
-    $el: HTMLElement & { dataset: Record<string, string> }
-    $watch: (expression: string, callback: () => void, options?: { deep?: boolean }) => void
-    $reactive: <T>(obj: T) => T
-}
+import type { BuildingData, UnitTypeData } from '../../types';
+import type { AlpineMagicProperties } from '../alpine';
+import { hasUnsavedChanges } from './validation';
+import { trim, forEach, filter, toLower, isError } from 'lodash';
+import type { ExtendedUnitData } from './types';
 
 /**
- * Creates the Alpine.js state object for BuildingCard using the new service architecture
- * This factory function wires up all services through the orchestrator
+ * Creates the Alpine.js state object for BuildingCard using native Alpine.js features
+ * This replaces the complex orchestrator pattern with simple, direct state management
  */
 export function createBuildingCardState() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Building complex object with dynamic methods
-    const state: any = {
-        // Alpine.js magic properties (will be injected at runtime)
-        $dispatch: null as unknown as (event: string, detail?: unknown) => void,
-        $el: { dataset: {} } as HTMLElement & { dataset: Record<string, string> },
-        $watch: null as unknown as (expression: string, callback: () => void, options?: { deep?: boolean }) => void,
-        $reactive: null as unknown as <T>(obj: T) => T,
+    const state = buildingCardStateObject();
+    return state as typeof state & AlpineMagicProperties;
+}
 
-        // Internal orchestrator reference
-        _orchestrator: null as BuildingCardOrchestrator | null,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Alpine.js requires dynamic typing for proper state management
+function buildingCardStateObject(): any {
+    return {
+        building: null as BuildingData | null,
+        original: null as BuildingData | null,
+        units: [] as ExtendedUnitData[],
+        unitTypes: [] as UnitTypeData[],
+        apiURL: '',
+
+        // UI state
+        activeSectionTab: 'building-info',
+        showSave: false,
+        saving: false,
+        geocoding: false,
+        errors: {} as Record<string, string>,
+
+        // Units tab state
+        filteredUnits: [] as ExtendedUnitData[],
+        selectedUnits: new Set<string>(),
+        statusFilter: '',
+        searchQuery: '',
+        showAddUnitDialog: false,
+        showAddUnitTypeDialog: false,
+        showBulkStatusDialog: false,
+        showBulkRentDialog: false,
+        newUnit: { unitID: '', modelID: '' },
+        bulkOperation: {
+            loading: false,
+            statusValue: '',
+            rentUpdateType: 'absolute' as 'absolute' | 'percentage',
+            rentValue: 0
+        },
 
         /**
-         * Initialize the component with the service architecture
+         * Initialize the component state from HTML dataset
          */
-        init(this: typeof state & AlpineComponent) {
-            // Create all services
-            const stateManager = createStateManager(this.$reactive);
-            const validationService = new ValidationServiceImpl();
-            const apiService = new ApiService();
-            const formatService = new FormatServiceImpl();
-            const bulkOperationService = new BulkOperationService();
-            const filterService = new DefaultFilterService();
-            const dialogService = new DefaultDialogService();
+        init(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            this.parseBuildingData();
+            this.parseLocationData();
+            this.parseUnitsData();
+            this.apiURL = this.$el?.dataset?.apiUrl || '';
 
-            // Create orchestrator with all services
-            this._orchestrator = new BuildingCardOrchestrator(
-                stateManager,
-                validationService,
-                apiService,
-                formatService,
-                bulkOperationService,
-                filterService,
-                dialogService
-            );
+            // Store original state for change detection
+            this.original = this.building ? JSON.parse(JSON.stringify(this.building)) : null;
 
-            // Initialize orchestrator with Alpine context
-            this._orchestrator.initialize({
-                $dispatch: this.$dispatch,
-                $el: this.$el,
-                $watch: this.$watch
+            // Initialize units with timestamps
+            this.initializeUnitsTimestamps();
+            // Setup watchers for reactive behavior
+            this.setupWatchers();
+
+            // Update filtered units initially
+            this.updateFilteredUnits();
+        },
+
+        parseBuildingData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            try {
+                const buildingDataStr = this.$el?.dataset?.buildingData;
+                if(!buildingDataStr || trim(buildingDataStr) === '') {
+                    this.building = null;
+                } else {
+                    this.building = JSON.parse(buildingDataStr);
+                }
+            } catch{
+                this.building = null;
+            }
+        },
+
+        parseLocationData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            try {
+                const locationDataset = this.$el?.closest('[data-location-config]')?.dataset?.locationConfig;
+                if(locationDataset) {
+                    // Handle location data if needed
+                }
+            } catch{
+                // Ignore location errors
+            }
+        },
+
+        parseUnitsData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            try {
+                const unitsData = this.$el?.closest('[data-initial-units]')?.dataset?.initialUnits;
+                if(unitsData) {
+                    this.units = JSON.parse(unitsData);
+                }
+            } catch{
+                this.units = [];
+            }
+        },
+
+        parseUnitTypesData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            try {
+                const unitTypesDataset = this.$el?.closest('[data-initial-unit-types]')?.dataset?.initialUnitTypes;
+                if(unitTypesDataset) {
+                    this.unitTypes = JSON.parse(unitTypesDataset);
+                }
+            } catch{
+                this.unitTypes = [];
+            }
+        },
+
+        /**
+         * Initialize units with default timestamps if missing
+         */
+        initializeUnitsTimestamps() {
+            const now = new Date().toISOString();
+            const unitsNeedingTimestamps = filter(this.units, unit => !unit.updatedAt);
+            forEach(unitsNeedingTimestamps, (unit) => {
+                unit.updatedAt = now as unknown as Date;
+                unit.lastUpdated = now;
             });
         },
 
-        // Proxy all methods to the orchestrator
-        validateForm() {
-            return this._orchestrator?.validateForm() || false;
+        /**
+         * Setup Alpine.js watchers for reactive behavior
+         */
+        setupWatchers(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            // Watch for building changes to update showSave
+            this.$watch('building', (value: BuildingData | null) => {
+                this.showSave = hasUnsavedChanges(this.building, this.original);
+                if(value) {
+                    this.$dispatch('building:updated', { building: value });
+                }
+            }, { deep: true });
+
+            // Watch filter changes
+            this.$watch('units', () => this.updateFilteredUnits());
+            this.$watch('statusFilter', () => this.updateFilteredUnits());
+
+            // Watch for search query changes
+            this.$watch('searchQuery', () => {
+                if(this.searchQuery !== undefined) {
+                    this.$dispatch('units:filter', { filter: this.statusFilter, query: this.searchQuery });
+                }
+            });
+
+            // Watch for selection changes
+            this.$watch('selectedUnits', () => {
+                this.$dispatch('units:selection-changed', { selected: Array.from(this.selectedUnits) });
+            });
+
+            // Watch for geocoding state changes
+            this.$watch('geocoding', (value: boolean) => {
+                this.$dispatch('location:geocoding', { geocoding: value });
+            });
         },
 
-        async saveBuilding() {
-            return this._orchestrator?.saveBuilding();
+        /**
+         * Update filtered units based on current filter criteria
+         */
+        updateFilteredUnits(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            let filtered = [...this.units];
+
+            // Apply status filter
+            if(this.statusFilter) {
+                filtered = filter(filtered, (unit) => {
+                    const status = unit.vacancyClass || 'Unknown';
+                    return status === this.statusFilter;
+                });
+            }
+
+            // Apply search query
+            if(this.searchQuery) {
+                const query = toLower(this.searchQuery);
+                filtered = filter(filtered, (unit): unit is ExtendedUnitData =>
+                    toLower(unit.unitID).includes(query) ||
+                    (unit.modelID !== undefined && toLower(unit.modelID).includes(query))
+                ) as ExtendedUnitData[];
+            }
+
+            this.filteredUnits = filtered;
+            this.$dispatch('units:updated', {
+                filter: this.statusFilter,
+                query: this.searchQuery
+            });
         },
 
-        async deleteBuilding() {
-            return this._orchestrator?.deleteBuilding();
+        /**
+         * Validate the current form state
+         */
+        validateForm(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            const errors: Record<string, string> = {};
+            let isValid = true;
+
+            if(!this.building) {
+                errors.general = 'Building data is required';
+                isValid = false;
+            } else {
+                if(!this.building.buildingName || trim(this.building.buildingName) === '') {
+                    errors.name = 'Building name is required';
+                    isValid = false;
+                }
+                const address = trim(`${this.building?.street || ''} ${this.building?.city || ''}, ${this.building?.state || ''} ${this.building?.zip || ''}`);
+                if(!address || address === '') {
+                    errors.address = 'Building address is required';
+                    isValid = false;
+                }
+            }
+
+            this.errors = errors;
+            this.$dispatch('building:validate', { isValid, errors });
+            return isValid;
         },
 
-        undoChanges() {
-            return this._orchestrator?.undoChanges();
+        /**
+         * Save building changes
+         */
+        async saveBuilding(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            if(!this.validateForm() || !this.building) {
+                return;
+            }
+            this.saving = true;
+            try {
+                const response = await fetch(`${this.apiURL}/building/${this.building.buildingID}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.building)
+                });
+
+                if(!response.ok) {
+                    throw new Error('Failed to save building');
+                }
+
+                // Update original state
+                this.original = JSON.parse(JSON.stringify(this.building));
+                this.showSave = false;
+
+                this.$dispatch('toast:show', {
+                    message: 'Building saved successfully',
+                    type: 'success'
+                });
+
+                this.$dispatch('photos:updated', { photos: this.building.photos || [] });
+                this.$dispatch('building:reset', { building: this.building });
+            } catch(error) {
+                this.$dispatch('toast:show', {
+                    message: 'Failed to save building: ' + (isError(error) ? error.message : 'Unknown error'),
+                    type: 'error'
+                });
+            } finally {
+                this.saving = false;
+            }
+        },
+        /**
+         * Delete building
+         */
+        async deleteBuilding(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            if(!this.building || !confirm('Are you sure you want to delete this building?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${this.apiURL}/building/${this.building.buildingID}`, {
+                    method: 'DELETE'
+                });
+
+                if(!response.ok) {
+                    throw new Error('Failed to delete building');
+                }
+
+                this.$dispatch('toast:show', {
+                    message: 'Building deleted successfully',
+                    type: 'success'
+                });
+
+                // Redirect to buildings list
+                window.location.href = '/';
+            } catch(error) {
+                this.$dispatch('toast:show', {
+                    message: 'Failed to delete building: ' + (isError(error) ? error.message : 'Unknown error'),
+                    type: 'error'
+                });
+            }
+        },
+
+        undoChanges(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            if(this.original) {
+                this.building = JSON.parse(JSON.stringify(this.original));
+                this.showSave = false;
+                this.$dispatch('building:reset', { building: this.building });
+            }
         },
 
         openAddUnitDialog() {
-            return this._orchestrator?.openAddUnitDialog();
+            this.showAddUnitDialog = true;
+            this.newUnit = { unitID: '', modelID: '' };
         },
 
         openAddUnitTypeDialog() {
-            return this._orchestrator?.openAddUnitTypeDialog();
+            this.showAddUnitTypeDialog = true;
         },
 
         closeAddUnitTypeDialog() {
-            return this._orchestrator?.closeAddUnitTypeDialog();
+            this.showAddUnitTypeDialog = false;
         },
 
-        async addUnit() {
-            return this._orchestrator?.addUnit();
+        /**
+         * Add new unit
+         */
+        async addUnit(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            if(!trim(this.newUnit.unitID) || !this.newUnit.modelID) {
+                this.errors = { unitID: 'Unit ID and Model are required' };
+                return;
+            }
+
+            try {
+                const response = await fetch(`${this.apiURL}/units`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        buildingID: this.building?.buildingID,
+                        ...this.newUnit,
+                        status: 'available'
+                    })
+                });
+
+                if(!response.ok) {
+                    throw new Error('Failed to add unit');
+                }
+
+                const newUnit = await response.json();
+                this.units.push(newUnit);
+                this.updateFilteredUnits();
+                this.showAddUnitDialog = false;
+                this.newUnit = { unitID: '', modelID: '' };
+
+                this.$dispatch('toast:show', {
+                    message: 'Unit added successfully',
+                    type: 'success'
+                });
+            } catch(error) {
+                this.$dispatch('toast:show', {
+                    message: 'Failed to add unit: ' + (isError(error) ? error.message : 'Unknown error'),
+                    type: 'error'
+                });
+            }
         },
 
-        updateFilteredUnits() {
-            return this._orchestrator?.updateFilteredUnits();
-        },
-
+        // Unit selection methods
         toggleSelectAll() {
-            return this._orchestrator?.toggleSelectAll();
+            if(this.selectedUnits.size === this.filteredUnits.length) {
+                this.selectedUnits.clear();
+            } else {
+                forEach(this.filteredUnits, unit => this.selectedUnits.add(unit.unitID));
+            }
         },
 
         isUnitSelected(unitID: string) {
-            return this._orchestrator?.isUnitSelected(unitID) || false;
+            return this.selectedUnits.has(unitID);
         },
 
         toggleUnitSelection(unitID: string) {
-            return this._orchestrator?.toggleUnitSelection(unitID);
+            if(this.selectedUnits.has(unitID)) {
+                this.selectedUnits.delete(unitID);
+            } else {
+                this.selectedUnits.add(unitID);
+            }
         },
 
         getSelectedCount() {
-            return this._orchestrator?.getSelectedCount() || 0;
+            return this.selectedUnits.size;
         },
 
-        async performBulkStatusUpdate() {
-            return this._orchestrator?.performBulkStatusUpdate();
+        /**
+         * Perform bulk status update
+         */
+        async performBulkStatusUpdate(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            if(this.selectedUnits.size === 0 || !this.bulkOperation.statusValue) {
+                return;
+            }
+
+            this.bulkOperation.loading = true;
+            try {
+                const unitIDs = Array.from(this.selectedUnits);
+                const response = await fetch(`${this.apiURL}/units/bulk-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        unitIDs,
+                        updates: { status: this.bulkOperation.statusValue }
+                    })
+                });
+
+                if(!response.ok) {
+                    throw new Error('Failed to update units');
+                }
+
+                // Update local state
+                forEach(this.units, (unit) => {
+                    if(unitIDs.includes(unit.unitID)) {
+                        unit.vacancyClass = this.bulkOperation.statusValue;
+                        unit.lastUpdated = new Date().toISOString();
+                    }
+                });
+
+                this.updateFilteredUnits();
+                this.selectedUnits.clear();
+                this.showBulkStatusDialog = false;
+
+                this.$dispatch('toast:show', {
+                    message: `Updated ${unitIDs.length} units successfully`,
+                    type: 'success'
+                });
+
+                this.$dispatch('units:bulk-update', {
+                    operationType: 'status',
+                    unitIDs
+                });
+            } catch(error) {
+                this.$dispatch('toast:show', {
+                    message: 'Failed to update units: ' + (isError(error) ? error.message : 'Unknown error'),
+                    type: 'error'
+                });
+            } finally {
+                this.bulkOperation.loading = false;
+            }
         },
 
-        async performBulkRentUpdate() {
-            return this._orchestrator?.performBulkRentUpdate();
+        /**
+         * Perform bulk rent update
+         */
+        async performBulkRentUpdate(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+            if(this.selectedUnits.size === 0 || !this.bulkOperation.rentValue) {
+                return;
+            }
+
+            this.bulkOperation.loading = true;
+            try {
+                const unitIDs = Array.from(this.selectedUnits);
+                const response = await fetch(`${this.apiURL}/units/bulk-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        unitIDs,
+                        updates: {
+                            rentType: this.bulkOperation.rentUpdateType,
+                            rentValue: this.bulkOperation.rentValue
+                        }
+                    })
+                });
+
+                if(!response.ok) {
+                    throw new Error('Failed to update rents');
+                }
+
+                // Update local state based on operation type
+                forEach(this.units, (unit) => {
+                    if(unitIDs.includes(unit.unitID)) {
+                        if(this.bulkOperation.rentUpdateType === 'absolute') {
+                            unit.rent = this.bulkOperation.rentValue;
+                        } else if(this.bulkOperation.rentUpdateType === 'percentage') {
+                            const currentRent = unit.rent || 0;
+                            const changeAmount = currentRent * (this.bulkOperation.rentValue / 100);
+                            unit.rent = currentRent + changeAmount;
+                        }
+                        unit.lastUpdated = new Date().toISOString();
+                    }
+                });
+
+                this.updateFilteredUnits();
+                this.selectedUnits.clear();
+                this.showBulkRentDialog = false;
+
+                this.$dispatch('toast:show', {
+                    message: `Updated rent for ${unitIDs.length} units successfully`,
+                    type: 'success'
+                });
+
+                this.$dispatch('units:bulk-update', {
+                    operationType: 'rent',
+                    unitIDs
+                });
+            } catch(error) {
+                this.$dispatch('toast:show', {
+                    message: 'Failed to update rents: ' + (isError(error) ? error.message : 'Unknown error'),
+                    type: 'error'
+                });
+            } finally {
+                this.bulkOperation.loading = false;
+            }
         },
 
-        async toggleUnitAvailability(unit: unknown) {
-            return this._orchestrator?.toggleUnitAvailability(unit);
+        /**
+         * Toggle unit availability (quick action)
+         */
+        async toggleUnitAvailability(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
+            const newStatus = unit.status === 'available' ? 'occupied' : 'available';
+            try {
+                const response = await fetch(`${this.apiURL}/units/${unit.unitID}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if(!response.ok) {
+                    throw new Error('Failed to update unit');
+                }
+
+                // Update local state
+                unit.status = newStatus;
+                unit.lastUpdated = new Date().toISOString();
+                this.updateFilteredUnits();
+
+                this.$dispatch('toast:show', {
+                    message: `Unit ${unit.unitID} is now ${newStatus}`,
+                    type: 'success'
+                });
+            } catch(error) {
+                this.$dispatch('toast:show', {
+                    message: 'Failed to update unit: ' + (isError(error) ? error.message : 'Unknown error'),
+                    type: 'error'
+                });
+            }
         },
 
+        // Formatting helper methods
         formatCurrency(amount: number | null | undefined) {
-            return this._orchestrator?.formatCurrency(amount) || '$0';
+            if(amount == null) {
+                return '$0';
+            }
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0
+            }).format(amount);
         },
 
         formatRelativeTime(dateString: string | undefined) {
-            return this._orchestrator?.formatRelativeTime(dateString) || 'Never';
+            if(!dateString) {
+                return 'Never';
+            }
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now.getTime() - date.getTime();
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if(diffDays === 0) {
+                return 'Today';
+            }
+            if(diffDays === 1) {
+                return 'Yesterday';
+            }
+            if(diffDays < 7) {
+                return `${diffDays} days ago`;
+            }
+            if(diffDays < 30) {
+                return `${Math.floor(diffDays / 7)} weeks ago`;
+            }
+            return `${Math.floor(diffDays / 30)} months ago`;
         },
 
         getStatusBadgeClass(status: string | undefined) {
-            return this._orchestrator?.getStatusBadgeClass(status) || 'badge-ghost';
+            switch(status) {
+                case 'available': return 'badge-success';
+                case 'occupied': return 'badge-info';
+                case 'maintenance': return 'badge-warning';
+                case 'unavailable': return 'badge-error';
+                default: return 'badge-ghost';
+            }
         },
 
         getTabDisplayName(tabKey: string) {
-            return this._orchestrator?.getTabDisplayName(tabKey) || 'Building Info';
-        },
-
-        // Proxy all getters/setters to the orchestrator
-        get building() {
-            return this._orchestrator?.building || null;
-        },
-
-        set building(value) {
-            if(this._orchestrator) {
-                this._orchestrator.building = value;
-            }
-        },
-
-        get original() {
-            return this._orchestrator?.original || null;
-        },
-
-        get units() {
-            return this._orchestrator?.units || [];
-        },
-
-        set units(value) {
-            if(this._orchestrator) {
-                this._orchestrator.units = value;
-            }
-        },
-
-        get unitTypes() {
-            return this._orchestrator?.unitTypes || [];
-        },
-
-        set unitTypes(value) {
-            if(this._orchestrator) {
-                this._orchestrator.unitTypes = value;
-            }
-        },
-
-        get showSave() {
-            return this._orchestrator?.showSave || false;
-        },
-
-        get saving() {
-            return this._orchestrator?.saving || false;
-        },
-
-        get activeSectionTab() {
-            return this._orchestrator?.activeSectionTab || 'building-info';
-        },
-
-        set activeSectionTab(value) {
-            if(this._orchestrator) {
-                this._orchestrator.activeSectionTab = value;
-            }
-        },
-
-        get geocoding() {
-            return this._orchestrator?.geocoding || false;
-        },
-
-        set geocoding(value) {
-            if(this._orchestrator) {
-                this._orchestrator.geocoding = value;
-            }
-        },
-
-        get filteredUnits() {
-            return this._orchestrator?.filteredUnitsGetter || [];
-        },
-
-        get selectedUnits() {
-            return this._orchestrator?.selectedUnitsGetter || new Set();
-        },
-
-        get statusFilter() {
-            return this._orchestrator?.statusFilter || '';
-        },
-
-        set statusFilter(value) {
-            if(this._orchestrator) {
-                this._orchestrator.statusFilter = value;
-            }
-        },
-
-        get searchQuery() {
-            return this._orchestrator?.searchQuery || '';
-        },
-
-        set searchQuery(value) {
-            if(this._orchestrator) {
-                this._orchestrator.searchQuery = value;
-            }
-        },
-
-        get showAddUnitDialog() {
-            return this._orchestrator?.showAddUnitDialog || false;
-        },
-
-        get showAddUnitTypeDialog() {
-            return this._orchestrator?.showAddUnitTypeDialog || false;
-        },
-
-        get showBulkStatusDialog() {
-            return this._orchestrator?.showBulkStatusDialog || false;
-        },
-
-        get showBulkRentDialog() {
-            return this._orchestrator?.showBulkRentDialog || false;
-        },
-
-        get newUnit() {
-            return this._orchestrator?.newUnit || { unitID: '', modelID: '' };
-        },
-
-        set newUnit(value) {
-            if(this._orchestrator) {
-                this._orchestrator.newUnit = value;
-            }
-        },
-
-        get bulkOperation() {
-            return this._orchestrator?.bulkOperation || {
-                loading: false,
-                statusValue: '',
-                rentUpdateType: 'absolute',
-                rentValue: 0
+            const tabMap: Record<string, string> = {
+                'building-info': 'Building Info',
+                'floorplans-units': 'Floorplans',
+                'pricing-policies': 'Pricing',
+                marketing: 'Marketing',
+                units: 'Units'
             };
-        },
-
-        get errors() {
-            return this._orchestrator?.errors || {};
-        },
-
-        set errors(value) {
-            if(this._orchestrator) {
-                this._orchestrator.errors = value;
-            }
+            return tabMap[tabKey] || 'Building Info';
         }
     };
-
-    return state;
 }
 
 /**

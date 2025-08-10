@@ -6,7 +6,6 @@ import { describe, it, expect, beforeEach } from 'bun:test';
 // import TabNavigator from '../../../astro-src/components/building/TabNavigator.astro';
 import _ from 'lodash';
 import { TAB_CONFIGS, type TabConfig } from '../../../astro-src/lib/building/types';
-import { buildingEventBus } from '../../../astro-src/lib/building/eventBus';
 import {
     jest
 } from './test-setup';
@@ -14,7 +13,6 @@ import {
 describe('TabNavigator Component Logic', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        buildingEventBus.clear();
     });
 
     describe('Tab Configuration', () => {

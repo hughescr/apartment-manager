@@ -4,7 +4,6 @@ import './test-setup';
 import { describe, it, expect, beforeEach } from 'bun:test';
 // Component logic testing - no render needed
 // import SaveIndicator from '../../../astro-src/components/building/SaveIndicator.astro';
-import { buildingEventBus } from '../../../astro-src/lib/building/eventBus';
 import {
     jest
 } from './test-setup';
@@ -12,7 +11,6 @@ import {
 describe('SaveIndicator Component Logic', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        buildingEventBus.clear();
     });
 
     describe('Component State Logic', () => {
