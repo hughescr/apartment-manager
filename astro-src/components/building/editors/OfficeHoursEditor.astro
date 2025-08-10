@@ -1,0 +1,57 @@
+---
+import { DayOfWeek } from "../../../types";
+
+export interface Props {
+    xModel: string; // The Alpine.js model path for the office hours object
+    title?: string;
+}
+
+const { xModel, title = "Office Hours" } = Astro.props;
+
+// Days of week for office hours
+const daysOfWeek = Object.values(DayOfWeek);
+---
+
+<div class="office-hours-editor">
+    <h4 class="text-base font-semibold mb-4">{title}</h4>
+    <div class="flex flex-col gap-2">
+        {daysOfWeek.map(day => {
+            // Create the exact pattern as in BuildingCard.astro
+            const parentPath = xModel.split('.').slice(0, -1).join('.');
+            
+            const xDataStr = `{ day: '${day}', isOpen: !!(${xModel}?.['${day}']), toggle() { if (!${parentPath}) ${parentPath} = {}; if (!${xModel}) ${xModel} = {}; if (this.isOpen) { ${xModel}[this.day] = { open: "09:00", close: "17:00" }; } else { delete ${xModel}[this.day]; } } }`;
+            
+            return (
+                <div class="grid grid-cols-3 gap-4 items-center" x-data={xDataStr}>
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text capitalize">{day}</span>
+                            <input 
+                                type="checkbox" 
+                                class="checkbox checkbox-primary" 
+                                x-model="isOpen"
+                                @change="toggle()"
+                            />
+                        </label>
+                    </div>
+                    <input
+                        type="time"
+                        class="input w-full"
+                        :disabled="!isOpen"
+                        :value={`${xModel}?.['${day}']?.open || ""`}
+                        @input={`if (${xModel}?.['${day}']) ${xModel}['${day}'].open = $event.target.value; else if (${xModel}) { ${xModel}['${day}'] = { open: $event.target.value, close: '17:00' }; }`}
+                        placeholder="09:00"
+                    />
+                    <input
+                        type="time"
+                        class="input w-full"
+                        :disabled="!isOpen"
+                        :value={`${xModel}?.['${day}']?.close || ""`}
+                        @input={`if (${xModel}?.['${day}']) ${xModel}['${day}'].close = $event.target.value; else if (${xModel}) { ${xModel}['${day}'] = { open: '09:00', close: $event.target.value }; }`}
+                        placeholder="17:00"
+                    />
+                </div>
+            );
+        })}
+    </div>
+</div>

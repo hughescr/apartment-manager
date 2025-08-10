@@ -1,0 +1,308 @@
+---
+import { BaseInput, BaseSelect } from "../../forms";
+import ValidationError from "../../common/ValidationError.astro";
+
+export interface Props {
+    building: {
+        buildingID: string;
+        street: string;
+        city: string;
+        state: string;
+    };
+    unitTypes: Array<{
+        modelID: string;
+        modelName: string;
+        beds: number;
+        baths: number;
+        sqft?: number;
+    }>;
+    apiUrl: string;
+    isOpen?: boolean;
+    dialogId?: string;
+}
+
+const { 
+    building, 
+    unitTypes = [], 
+    apiUrl,
+    isOpen: _isOpen = false,
+    dialogId = 'add-unit-dialog'
+} = Astro.props;
+
+// Prepare unit type options for select
+const unitTypeOptions = unitTypes.map(ut => ({
+    value: ut.modelID,
+    label: `${ut.modelName} (${ut.beds} bed/${ut.baths} bath${ut.sqft ? `, ${ut.sqft} sq ft` : ''})`
+}));
+
+// Status options
+const statusOptions = [
+    { value: 'Unoccupied', label: 'Unoccupied - Available for rent' },
+    { value: 'Occupied', label: 'Occupied - Currently rented' },
+    { value: 'Notice', label: 'Notice - Tenant gave notice' },
+    { value: 'Down', label: 'Down - Maintenance/renovation' }
+];
+---
+
+<dialog class="modal" :class="{'modal-open': showAddUnitDialog}" data-testid={dialogId}>
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Add New Unit</h3>
+        <p class="mb-6 text-base-content/70">
+            Add a new unit to <strong>{building.street}, {building.city}, {building.state}</strong>. 
+            Units can inherit properties from a unit type or be configured independently.
+        </p>
+        
+        <form 
+            @submit.prevent="submitAddUnit()"
+            class="space-y-6"
+            x-data="{
+                newUnit: {
+                    unitNumber: '',
+                    modelID: '',
+                    beds: 0,
+                    baths: 1,
+                    sqft: null,
+                    rent: 0,
+                    vacancyClass: 'Unoccupied',
+                    description: ''
+                },
+                errors: {},
+                loading: false,
+                
+                // Watch for unit type changes to populate inherited values
+                onUnitTypeChange() {
+                    const selectedType = unitTypes.find(ut => ut.modelID === this.newUnit.modelID);
+                    if (selectedType) {
+                        this.newUnit.beds = selectedType.beds;
+                        this.newUnit.baths = selectedType.baths;
+                        if (selectedType.sqft) {
+                            this.newUnit.sqft = selectedType.sqft;
+                        }
+                    }
+                },
+                
+                async submitAddUnit() {
+                    this.loading = true;
+                    this.errors = {};
+                    
+                    try {
+                        // Client-side validation
+                        if (!this.newUnit.unitNumber.trim()) {
+                            this.errors.unitNumber = 'Unit number is required';
+                        }
+                        if (this.newUnit.beds < 0) {
+                            this.errors.beds = 'Bedrooms must be 0 or greater';
+                        }
+                        if (this.newUnit.baths < 0.5) {
+                            this.errors.baths = 'Bathrooms must be 0.5 or greater';
+                        }
+                        if (this.newUnit.rent < 0) {
+                            this.errors.rent = 'Rent must be 0 or greater';
+                        }
+                        if (this.newUnit.rent > 25000) {
+                            this.errors.rent = 'Rent must be less than $25,000';
+                        }
+                        
+                        if (Object.keys(this.errors).length > 0) {
+                            this.loading = false;
+                            return;
+                        }
+                        
+                        const apiUrl = $el.dataset.apiUrl;
+                        const buildingId = $el.dataset.buildingId;
+                        const response = await fetch(`${apiUrl}buildings/${buildingId}/units`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                ...this.newUnit,
+                                buildingID: buildingId,
+                                lastUpdated: new Date().toISOString()
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const addedUnit = await response.json();
+                            
+                            // Emit event for parent to handle
+                            $dispatch('unit-added', addedUnit);
+                            $dispatch('show-toast', { 
+                                message: `Unit ${this.newUnit.unitNumber} added successfully`, 
+                                type: 'success' 
+                            });
+                            
+                            // Reset form and close dialog
+                            this.newUnit = {
+                                unitNumber: '',
+                                modelID: '',
+                                beds: 0,
+                                baths: 1,
+                                sqft: null,
+                                rent: 0,
+                                vacancyClass: 'Unoccupied',
+                                description: ''
+                            };
+                            showAddUnitDialog = false;
+                        } else {
+                            const errorData = await response.json();
+                            if (errorData.errors) {
+                                this.errors = errorData.errors;
+                            } else {
+                                this.errors.general = errorData.error || 'Failed to add unit';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Add unit error:', error);
+                        this.errors.general = 'Failed to add unit. Please try again.';
+                        $dispatch('show-toast', { 
+                            message: 'Failed to add unit. Please try again.', 
+                            type: 'error' 
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                unitTypes: JSON.parse($el.dataset.unitTypes || '[]')
+            }"
+            :data-unit-types={JSON.stringify(unitTypes)}
+            :data-api-url={apiUrl}
+            :data-building-id={building.buildingID}
+        >
+            <!-- General Error Display -->
+            <div x-show="errors.general" class="alert alert-error" data-testid="add-unit-general-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-text="errors.general"></span>
+            </div>
+            
+            <!-- Basic Unit Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="unitNumber"
+                    label="Unit Number"
+                    xModel="newUnit.unitNumber"
+                    placeholder="101"
+                    required={true}
+                    helpText="Unique identifier for this unit"
+                />
+                <ValidationError fieldName="unitNumber" errors={{}} />
+                
+                <BaseSelect
+                    name="modelID"
+                    label="Unit Type (Optional)"
+                    xModel="newUnit.modelID"
+                    options={unitTypeOptions}
+                    placeholder="Select a unit type..."
+                    helpText="Choose to inherit properties from a unit type"
+                    "@change"="onUnitTypeChange()"
+                />
+                <ValidationError fieldName="modelID" errors={{}} />
+            </div>
+            
+            <!-- Unit Specifications -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <BaseInput
+                    name="beds"
+                    label="Bedrooms"
+                    type="number"
+                    xModel="newUnit.beds"
+                    min="0"
+                    max="10"
+                    required={true}
+                    helpText="Number of bedrooms (0 for studio)"
+                />
+                <ValidationError fieldName="beds" errors={{}} />
+                
+                <BaseInput
+                    name="baths"
+                    label="Bathrooms"
+                    type="number"
+                    xModel="newUnit.baths"
+                    min="0.5"
+                    max="10"
+                    step="0.5"
+                    required={true}
+                />
+                <ValidationError fieldName="baths" errors={{}} />
+                
+                <BaseInput
+                    name="sqft"
+                    label="Square Feet"
+                    type="number"
+                    xModel="newUnit.sqft"
+                    min="100"
+                    max="10000"
+                    placeholder="750"
+                    helpText="Optional - unit size"
+                />
+                <ValidationError fieldName="sqft" errors={{}} />
+            </div>
+            
+            <!-- Rent and Status -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="rent"
+                    label="Monthly Rent"
+                    type="number"
+                    xModel="newUnit.rent"
+                    min="0"
+                    max="25000"
+                    placeholder="2500"
+                    required={true}
+                    helpText="Monthly rental amount in USD"
+                />
+                <ValidationError fieldName="rent" errors={{}} />
+                
+                <BaseSelect
+                    name="vacancyClass"
+                    label="Initial Status"
+                    xModel="newUnit.vacancyClass"
+                    options={statusOptions}
+                    required={true}
+                />
+                <ValidationError fieldName="vacancyClass" errors={{}} />
+            </div>
+            
+            <!-- Unit Description -->
+            <div>
+                <label class="label">
+                    <span class="label-text">Unit Description (Optional)</span>
+                </label>
+                <textarea 
+                    name="description"
+                    x-model="newUnit.description"
+                    class="textarea textarea-bordered w-full"
+                    rows="3"
+                    placeholder="Unit-specific details, features, or notes..."
+                    data-testid="unit-description-input"
+                ></textarea>
+                <ValidationError fieldName="description" errors={{}} />
+            </div>
+            
+            <!-- Dialog Actions -->
+            <div class="modal-action">
+                <button 
+                    type="button"
+                    class="btn" 
+                    @click="showAddUnitDialog = false"
+                    :disabled="loading"
+                    data-testid="cancel-add-unit"
+                >
+                    Cancel
+                </button>
+                <button 
+                    type="submit"
+                    class="btn btn-primary" 
+                    :disabled="loading"
+                    data-testid="confirm-add-unit"
+                >
+                    <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+                    <span x-show="!loading">Add Unit</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>

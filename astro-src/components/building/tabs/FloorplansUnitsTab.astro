@@ -1,0 +1,103 @@
+---
+// astro-src/components/building/tabs/FloorplansUnitsTab.astro
+import UnitTypeCard from "../../UnitTypeCard.astro";
+import UnitCard from "../../UnitCard.astro";
+import type { BuildingData, UnitData, UnitTypeData, Amenity } from "../../../types";
+
+interface Props {
+    building: BuildingData;
+    units: UnitData[];
+    unitTypes: UnitTypeData[];
+    buildingAmenities: Amenity[];
+}
+
+const { building: _building, units, unitTypes, buildingAmenities } = Astro.props;
+---
+
+<!-- Floorplans & Units Tab (integrates unit types with units list) -->
+<div x-show="activeSectionTab === 'floorplans-units'" class="space-y-6">
+    <!-- Floorplans Section -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="card-title text-xl">Floorplans (Unit Types)</h3>
+                <div class="badge badge-primary badge-lg" x-text="(unitTypes?.length || 0) + ' types'"></div>
+            </div>
+            <div class="text-base-content/70 mb-4">
+                Define unit types that serve as templates for individual units. Units can inherit settings from their floorplan and override them as needed.
+            </div>
+            
+            <!-- Unit Types List -->
+            <div class="grid grid-cols-1 gap-4" data-testid="unit-types-list">
+                {unitTypes.map((unitType) => (
+                    <UnitTypeCard 
+                        unitType={unitType} 
+                        buildingAmenities={buildingAmenities}
+                    />
+                ))}
+                
+                <!-- Empty State -->
+                {unitTypes.length === 0 && (
+                    <div class="text-center py-8 text-base-content/60">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <p class="text-lg mb-2 font-semibold">No floorplans defined yet</p>
+                        <p class="mb-4">Create unit types to serve as templates for your units. This helps maintain consistency and makes unit management easier.</p>
+                        <button @click="$dispatch('open-add-unit-type-dialog')" class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Your First Floorplan
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Visual Divider -->
+    <div class="divider divider-primary">
+        <span class="text-lg font-medium">Individual Units</span>
+    </div>
+    
+    <!-- Units Section -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="card-title text-xl">Units in this Building</h3>
+                <div class="badge badge-primary badge-lg" x-text="(units?.length || 0) + ' units'"></div>
+            </div>
+            <div class="text-base-content/70 mb-4">
+                Individual units can inherit settings from their assigned floorplan and override them as needed.
+            </div>
+            
+            <!-- Units List -->
+            <div class="space-y-4">
+                {units.map((unit) => (
+                    <UnitCard 
+                        unit={unit} 
+                        unitTypes={unitTypes}
+                    />
+                ))}
+                
+                <!-- Empty State -->
+                {units.length === 0 && (
+                    <div class="text-center py-8 text-base-content/60">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                        </svg>
+                        <p class="text-lg mb-2 font-semibold">No units added yet</p>
+                        <p class="mb-4">Add individual units to this building. Units can inherit settings from floorplans or be configured independently.</p>
+                        <button @click="$dispatch('open-add-unit-dialog')" class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Your First Unit
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    </div>
+</div>

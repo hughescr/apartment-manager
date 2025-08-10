@@ -1,0 +1,177 @@
+---
+import BuildingProvider from './BuildingProvider.astro';
+import TabNavigator from './TabNavigator.astro';
+import SaveIndicator from './SaveIndicator.astro';
+import TabPanels from './TabPanels.astro';
+import type { BuildingData, UnitData, UnitTypeData } from '../../types';
+
+export interface Props {
+    building: BuildingData;
+    units: UnitData[];
+    unitTypes: UnitTypeData[];
+    apiURL: string;
+}
+
+const { building, units, unitTypes, apiURL } = Astro.props;
+---
+
+<!-- 
+    This demonstrates how to use the foundation components together.
+    This replaces the monolithic BuildingCard.astro with a composable structure.
+-->
+
+<script src="/astro-src/lib/building/buildingState.ts" is:inline></script>
+
+<BuildingProvider building={building} units={units} unitTypes={unitTypes} apiURL={apiURL}>
+    <!-- Header with Building Name and Actions -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold" x-text="building?.buildingID || 'Loading...'"></h2>
+            <!-- Saving status could be a separate component -->
+            <div x-show="saving" class="flex items-center space-x-2">
+                <div class="loading loading-spinner loading-sm"></div>
+                <span class="text-sm">Saving...</span>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="mt-4">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-2 sm:items-center sm:justify-between">
+                <!-- Primary Actions -->
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-2">
+                    <button
+                        class="btn btn-primary min-h-[44px]"
+                        x-on:click="openAddUnitDialog()">
+                        Add Unit
+                    </button>
+                    <button
+                        class="btn btn-secondary min-h-[44px]"
+                        x-on:click="openAddUnitTypeDialog()">
+                        Add Unit Type
+                    </button>
+                    <button
+                        class="btn btn-error min-h-[44px]"
+                        x-on:click="deleteBuilding()">
+                        Delete Building
+                    </button>
+                </div>
+                
+                <!-- Save/Undo Indicator Component -->
+                <SaveIndicator />
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation Component -->
+    <TabNavigator />
+
+    <!-- Tab Content Panels Component -->
+    <TabPanels>
+        <!-- Building Info Tab Content -->
+        <div slot="building-info">
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body p-4 sm:p-6">
+                    <h3 class="card-title text-lg mb-4">Basic Information</h3>
+                    <!-- Building form content would go here -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Building ID</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                class="input input-bordered" 
+                                x-model="building.buildingID"
+                                disabled
+                            />
+                        </div>
+                        <!-- More form fields would be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other tabs would have similar content structures -->
+        <div slot="floorplans-units">
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Unit Types & Floorplans</h3>
+                    <p>Unit types management interface would go here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div slot="pricing-policies">
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Pricing & Policies</h3>
+                    <p>Rent specials, fees, and policies would go here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div slot="marketing">
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Marketing</h3>
+                    <p>Photos, amenities, and marketing content would go here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div slot="units">
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Units Management</h3>
+                    <p>Units list with bulk operations would go here.</p>
+                </div>
+            </div>
+        </div>
+    </TabPanels>
+
+    <!-- Dialogs (these could also be separate components) -->
+    <div x-show="showAddUnitDialog" class="modal modal-open" x-cloak>
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Add New Unit</h3>
+            <div class="py-4">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Unit Number/ID</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        class="input input-bordered" 
+                        x-model="newUnit.unitID"
+                        placeholder="e.g., 101, 2A"
+                    />
+                </div>
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Unit Type (Optional)</span>
+                    </label>
+                    <select class="select select-bordered" x-model="newUnit.modelID">
+                        <option value="">Select unit type...</option>
+                        <template x-for="unitType in unitTypes" :key="unitType.modelID">
+                            <option :value="unitType.modelID" x-text="unitType.modelName"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-action">
+                <button class="btn btn-ghost" x-on:click="showAddUnitDialog = false">Cancel</button>
+                <button class="btn btn-primary" x-on:click="addUnit()">Add Unit</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="showAddUnitTypeDialog" class="modal modal-open" x-cloak>
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Add Unit Type</h3>
+            <p class="py-4">Unit type creation form would go here.</p>
+            <div class="modal-action">
+                <button class="btn btn-ghost" x-on:click="closeAddUnitTypeDialog()">Cancel</button>
+                <button class="btn btn-primary">Create Unit Type</button>
+            </div>
+        </div>
+    </div>
+</BuildingProvider>

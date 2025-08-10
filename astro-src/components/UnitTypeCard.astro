@@ -2,10 +2,13 @@
 // astro-src/components/UnitTypeCard.astro
 import Saving from "./Saving.astro";
 import { Resource } from "sst";
-import type { UnitTypeData } from "../../src/types";
+import type { UnitTypeData, Amenity } from "../../src/types";
 import { AmenitySelector } from "./forms";
 
-const { unitType } = Astro.props as { unitType: UnitTypeData };
+const { unitType, buildingAmenities = [] } = Astro.props as { 
+    unitType: UnitTypeData;
+    buildingAmenities?: Amenity[];
+};
 
 const apiURL = Resource.API.url;
 
@@ -14,19 +17,38 @@ const apiURL = Resource.API.url;
 if (!unitType.modelAmenities) unitType.modelAmenities = [];
 ---
 
-<script define:vars={{ unitType, apiURL }} is:inline>
+<script define:vars={{ unitType, buildingAmenities, apiURL }} is:inline>
 // Used by Alpine.js x-data attribute
-window.unitTypeCardData = function unitTypeCardData(unitTypeData, apiUrlData) {
+window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenitiesData, apiUrlData) {
     return {
         unitType: unitTypeData,
         originalUnitType: JSON.parse(JSON.stringify(unitTypeData)), // Deep copy for original state
         apiURL: apiUrlData,
         saving: false,
         expandedAmenities: false,
+        buildingAmenities: buildingAmenitiesData || [], // Use passed building amenities
 
         init() {
             // Initialize enhanced deposit structure
             this.initializeDeposit();
+        },
+        
+        getEffectiveAmenities() {
+            // If floorplan has amenities defined, use them (override)
+            if (this.unitType.modelAmenities && this.unitType.modelAmenities.length > 0) {
+                return this.unitType.modelAmenities;
+            }
+            // Otherwise, use building amenities if available
+            if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+                return this.buildingAmenities;
+            }
+            return [];
+        },
+        
+        resetToInheritedAmenities() {
+            if (confirm('This will reset floorplan amenities to match the building amenities. Continue?')) {
+                this.unitType.modelAmenities = [];
+            }
         },
 
         isDirty() {
@@ -173,7 +195,7 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, apiUrlData) {
 }
 </script>
 
-<div x-data="unitTypeCardData(unitType, apiURL)" x-init="init(); $watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">
+<div x-data="unitTypeCardData(unitType, buildingAmenities, apiURL)" x-init="init(); $watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">
     <div class="card-body">
         <!-- Header -->
         <div class="flex justify-between items-start mb-4">
@@ -476,13 +498,53 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, apiUrlData) {
             <input type="checkbox" x-model="expandedAmenities" />
             <div class="collapse-title text-lg font-medium">
                 Model Amenities 
-                <span class="badge badge-primary badge-sm ml-2" x-text="unitType.modelAmenities?.length || 0"></span>
+                <span class="badge badge-primary badge-sm ml-2" x-text="getEffectiveAmenities().length"></span>
+                <span x-show="unitType.modelAmenities && unitType.modelAmenities.length > 0" class="badge badge-warning badge-sm ml-1">custom</span>
+                <span x-show="!unitType.modelAmenities || unitType.modelAmenities.length === 0" class="badge badge-info badge-sm ml-1">inherited from building</span>
             </div>
             <div class="collapse-content">
                 <div class="pt-4">
+                    <!-- Inheritance Status Info -->
+                    <div class="alert alert-info mb-4" x-show="buildingAmenities && buildingAmenities.length > 0">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <span x-show="!unitType.modelAmenities || unitType.modelAmenities.length === 0">
+                                This floorplan inherits <span x-text="buildingAmenities.length"></span> amenities from the building. Add amenities here to customize this floorplan.
+                            </span>
+                            <span x-show="unitType.modelAmenities && unitType.modelAmenities.length > 0">
+                                This floorplan has custom amenities that override the <span x-text="buildingAmenities.length"></span> building-level amenities.
+                                <button type="button" class="btn btn-ghost btn-xs ml-2" x-on:click="resetToInheritedAmenities()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Reset to Building Amenities
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Inherited Amenities Display -->
+                    <div x-show="(!unitType.modelAmenities || unitType.modelAmenities.length === 0) && buildingAmenities && buildingAmenities.length > 0" class="mb-4">
+                        <div class="text-sm text-base-content/70 mb-2">
+                            <span class="font-semibold">Inherited from Building:</span> <span x-text="buildingAmenities.length"></span> amenities
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="amenity in buildingAmenities" :key="amenity.name + amenity.category">
+                                <div class="badge badge-ghost badge-lg gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5M6 12h12" />
+                                    </svg>
+                                    <span x-text="amenity.name"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
                     <AmenitySelector
                         name="modelAmenities"
-                        label="Default amenities for all units of this type"
+                        label="Floorplan-specific amenities (overrides building amenities)"
                         xModel="unitType.modelAmenities"
                         showLabel={false}
                     />
@@ -498,6 +560,23 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, apiUrlData) {
         transition: all 0.3s ease;
     }
     
+    /* Badge styling for inheritance indicators */
+    .badge-ghost {
+        background-color: transparent;
+        border: 1px dashed currentColor;
+        opacity: 0.7;
+    }
+    
+    /* Inheritance display styling */
+    .inheritance-display {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background: linear-gradient(90deg, 
+            hsl(var(--b2)) 0%, 
+            hsl(var(--b3)) 50%, 
+            hsl(var(--b2)) 100%);
+    }
+    
     /* Style number inputs to hide spinners on hover */
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
@@ -507,5 +586,10 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, apiUrlData) {
     
     input[type="number"] {
         -moz-appearance: textfield;
+    }
+    
+    /* Smooth transitions for inheritance indicators */
+    [x-transition] {
+        transition: all 0.2s ease;
     }
 </style>

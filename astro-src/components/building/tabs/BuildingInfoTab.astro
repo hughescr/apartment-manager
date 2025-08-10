@@ -1,0 +1,241 @@
+---
+import { PropertyType } from "../../../types";
+import {
+    BaseInput,
+    BaseSelect,
+    BaseTextarea,
+    AmenitySelector,
+    LocationMapPicker
+} from "../../forms";
+import OfficeHoursEditor from "../editors/OfficeHoursEditor.astro";
+
+export interface Props {
+    building: any; // Building object from the data layer
+    apiUrl: string;
+    errors?: Record<string, string>;
+    onBuildingUpdate?: string; // Alpine.js expression to emit building updates
+}
+
+const { 
+    apiUrl, 
+    onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)" 
+} = Astro.props;
+
+// Property type options
+const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => ({
+    value: value as string,
+    label: key.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
+}));
+---
+
+<div class="building-info-tab space-y-6">
+    <!-- Basic Information Section -->
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body p-4 sm:p-6">
+            <h3 class="card-title text-lg mb-4">Basic Information</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <BaseInput
+                    name="buildingID"
+                    label="Building ID"
+                    xModel="building.buildingID"
+                    disabled={true}
+                    required={true}
+                />
+                <span x-show="errors.buildingID" class="label-text-alt text-error" x-text="errors.buildingID"></span>
+                <BaseSelect
+                    name="propertyType"
+                    label="Property Type"
+                    xModel="building.propertyType"
+                    options={propertyTypeOptions}
+                    placeholder="Select property type"
+                />
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4">
+                <BaseInput
+                    name="street"
+                    label="Street Address"
+                    xModel="building.street"
+                    placeholder="123 Main St"
+                    required={true}
+                />
+                <span x-show="errors.street" class="label-text-alt text-error" x-text="errors.street"></span>
+                <BaseInput
+                    name="city"
+                    label="City"
+                    xModel="building.city"
+                    placeholder="San Francisco"
+                    required={true}
+                />
+                <span x-show="errors.city" class="label-text-alt text-error" x-text="errors.city"></span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="state"
+                    label="State"
+                    xModel="building.state"
+                    placeholder="CA"
+                    required={true}
+                />
+                <span x-show="errors.state" class="label-text-alt text-error" x-text="errors.state"></span>
+                <BaseInput
+                    name="zip"
+                    label="ZIP Code"
+                    xModel="building.zip"
+                    placeholder="94102"
+                    required={true}
+                />
+                <span x-show="errors.zip" class="label-text-alt text-error" x-text="errors.zip"></span>
+            </div>
+            
+            <!-- Location Map -->
+            <div class="mt-6">
+                <LocationMapPicker
+                    latModel="building.latitude"
+                    lngModel="building.longitude"
+                    verifiedModel="building.coordinatesVerified"
+                    addressModel="building.street"
+                    cityModel="building.city"
+                    stateModel="building.state"
+                    apiUrl={apiUrl}
+                    height="350px"
+                />
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <BaseInput
+                    name="yearBuilt"
+                    label="Year Built"
+                    type="number"
+                    xModel="building.yearBuilt"
+                    placeholder="2020"
+                    min="1800"
+                    max="2030"
+                />
+                <span x-show="errors.yearBuilt" class="label-text-alt text-error" x-text="errors.yearBuilt"></span>
+                <BaseInput
+                    name="numberStories"
+                    label="Number of Stories"
+                    type="number"
+                    xModel="building.numberStories"
+                    placeholder="3"
+                    min="1"
+                />
+                <span x-show="errors.numberStories" class="label-text-alt text-error" x-text="errors.numberStories"></span>
+                <BaseInput
+                    name="totalUnits"
+                    label="Total Units"
+                    type="number"
+                    xModel="building.totalUnits"
+                    placeholder="24"
+                    min="1"
+                />
+                <span x-show="errors.totalUnits" class="label-text-alt text-error" x-text="errors.totalUnits"></span>
+            </div>
+            
+            <BaseTextarea
+                name="description"
+                label="Basic Description"
+                xModel="building.description"
+                placeholder="Brief description of the property"
+                rows={3}
+            />
+        </div>
+    </div>
+    
+    <!-- Management Contact Information -->
+    <div class="card bg-base-200 mt-6">
+        <div class="card-body">
+            <h3 class="card-title text-lg">Management Contact</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                    name="contactName"
+                    label="Contact Name"
+                    xModel="building.contactInfo.name"
+                    placeholder="John Doe"
+                />
+                <BaseInput
+                    name="contactPhone"
+                    label="Phone Number"
+                    type="tel"
+                    xModel="building.contactInfo.phone"
+                    placeholder="(555) 123-4567"
+                />
+                <span x-show="errors.contactPhone" class="label-text-alt text-error" x-text="errors.contactPhone"></span>
+                <BaseInput
+                    name="contactEmail"
+                    label="Email Address"
+                    type="email"
+                    xModel="building.contactInfo.email"
+                    placeholder="contact@property.com"
+                />
+                <span x-show="errors.contactEmail" class="label-text-alt text-error" x-text="errors.contactEmail"></span>
+            </div>
+            
+            <!-- Website Fields Section -->
+            <div class="mt-6">
+                <h4 class="text-base font-semibold mb-4 flex items-center gap-2">
+                    <span>Website Information</span>
+                    <div class="tooltip tooltip-right" data-tip="Property websites are used on listings to show property-specific information. Management websites link to your company's main site for corporate information.">
+                        <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </h4>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    <BaseInput
+                        name="contactPropertyWebsite"
+                        label="Property Website"
+                        type="url"
+                        xModel="building.contactInfo.propertyWebsite"
+                        placeholder="https://property-specific-site.com"
+                        helpText="Main website for this specific property/building - used in listings"
+                    />
+                    <span x-show="errors.contactPropertyWebsite" class="label-text-alt text-error" x-text="errors.contactPropertyWebsite"></span>
+                    
+                    <BaseInput
+                        name="contactManagementWebsite"
+                        label="Management Company Website (Optional)"
+                        type="url"
+                        xModel="building.contactInfo.managementWebsite"
+                        placeholder="https://your-management-company.com"
+                        helpText="Your property management company's main website - for corporate information"
+                    />
+                    <span x-show="errors.contactManagementWebsite" class="label-text-alt text-error" x-text="errors.contactManagementWebsite"></span>
+                </div>
+                
+                <!-- Explanatory text -->
+                <div class="alert alert-info mt-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-sm">
+                        <p><strong>Property Website:</strong> Specific to this building/property - shown on rental listings for prospective tenants</p>
+                        <p class="mt-1"><strong>Management Website:</strong> Your company's main website - used for corporate information and branding</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Office Hours -->
+            <div class="mt-6">
+                <OfficeHoursEditor 
+                    xModel="building.contactInfo.officeHours"
+                    title="Office Hours"
+                />
+            </div>
+        </div>
+    </div>
+    
+    <!-- Building Amenities -->
+    <div class="card bg-base-200 mt-6">
+        <div class="card-body">
+            <h3 class="card-title text-lg">Building Amenities</h3>
+            <AmenitySelector
+                name="propertyAmenities"
+                xModel="building.propertyAmenities"
+            />
+        </div>
+    </div>
+</div>

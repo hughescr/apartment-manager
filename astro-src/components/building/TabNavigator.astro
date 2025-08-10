@@ -1,0 +1,49 @@
+---
+import { TAB_CONFIGS } from '../../lib/building/types';
+
+// Component doesn't need props as it reads state from Alpine.js context
+---
+
+<!-- Tabs Navigation -->
+<!-- Mobile: Dropdown Navigation -->
+<div class="block sm:hidden mb-6">
+    <div class="dropdown dropdown-end w-full">
+        <label tabindex="0" class="btn btn-outline w-full justify-between min-h-[44px]">
+            <span x-text="getTabDisplayName(activeSectionTab)">Building Info</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </label>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full border border-base-200">
+            {TAB_CONFIGS.map(tab => (
+                <li>
+                    <button 
+                        @click={`activeSectionTab = '${tab.key}'`}
+                        :class={`{'active': activeSectionTab === '${tab.key}'}`}
+                        class="min-h-[44px]">
+                        {tab.label}
+                    </button>
+                </li>
+            ))}
+        </ul>
+    </div>
+</div>
+
+<!-- Desktop: Horizontal Tabs -->
+<div class="hidden sm:flex tabs tabs-boxed mb-6 flex-wrap">
+    {TAB_CONFIGS.map(tab => (
+        <button 
+            class="tab min-h-[44px]" 
+            :class={`{'tab-active': activeSectionTab === '${tab.key}'}`}
+            @click={`activeSectionTab = '${tab.key}'`}>
+            {tab.mobileLabel ? (
+                <>
+                    <span class="hidden md:inline">{tab.label}</span>
+                    <span class="md:hidden">{tab.mobileLabel}</span>
+                </>
+            ) : (
+                <span>{tab.label}</span>
+            )}
+        </button>
+    ))}
+</div>

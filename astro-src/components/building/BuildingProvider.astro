@@ -1,0 +1,84 @@
+---
+import type { BuildingData, UnitData, UnitTypeData } from '../../types';
+
+export interface Props {
+    building: BuildingData;
+    units: UnitData[];
+    unitTypes: UnitTypeData[];
+    apiURL: string;
+}
+
+const { building, units, unitTypes, apiURL } = Astro.props;
+
+// Initialize any missing nested objects with proper defaults to prevent null reference errors
+if (!building.oneTimeFees) building.oneTimeFees = [];
+if (!building.monthlyFees) building.monthlyFees = [];
+if (!building.parkingOptions) building.parkingOptions = [];
+if (!building.storageOptions) building.storageOptions = [];
+if (!building.propertyAmenities) building.propertyAmenities = [];
+if (!building.rentSpecials) building.rentSpecials = [];
+if (!building.photos) building.photos = [];
+
+// Utilities included - initialize with all utility types set to false
+if (!building.utilitiesIncluded) {
+    building.utilitiesIncluded = {};
+}
+
+// Pet policies - ensure it has the required structure
+if (!building.petPolicies) {
+    building.petPolicies = { allowed: false, petTypes: [] };
+} else {
+    if (!building.petPolicies.petTypes) {
+        building.petPolicies.petTypes = [];
+    }
+}
+
+// Screening criteria - initialize with sensible defaults
+if (!building.screeningCriteria) {
+    building.screeningCriteria = {
+        incomeRatio: 3,
+        minCreditScore: 600,
+        maxOccupantsPerBedroom: 2,
+        backgroundCheckRequired: true,
+        evictionHistory: true,
+        criminalHistory: true,
+        references: 2,
+        employmentVerification: true,
+        rentalHistory: true
+    };
+}
+
+// Contact info - ensure nested objects exist
+if (!building.contactInfo) building.contactInfo = {};
+if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {};
+
+// Ensure units and unitTypes are arrays
+const safeUnits = units || [];
+const safeUnitTypes = unitTypes || [];
+---
+
+<script is:inline>
+// Import the state management function
+if (!window.createBuildingCardState) {
+    console.error('Building state management not loaded. Make sure to include buildingState.ts');
+}
+
+// Make the state creation function available globally for Alpine.js
+window.buildingProviderData = function() {
+    return window.createBuildingCardState();
+};
+</script>
+
+<div
+    class="building-provider"
+    x-data="buildingProviderData()"
+    x-effect="showSave = building && original && JSON.stringify(building) !== JSON.stringify(original)"
+    :class="{'opacity-50': saving}"
+    data-building={JSON.stringify(building)}
+    data-units={JSON.stringify(safeUnits)}
+    data-unit-types={JSON.stringify(safeUnitTypes)}
+    data-api-url={apiURL}
+>
+    <!-- Provider passes state down to child components through Alpine.js context -->
+    <slot />
+</div>

@@ -1,0 +1,283 @@
+---
+import ValidationError from './ValidationError.astro';
+
+export interface FieldDefinition {
+    name: string;
+    type: 'text' | 'textarea' | 'date' | 'select' | 'toggle' | 'number';
+    label: string;
+    required?: boolean;
+    placeholder?: string;
+    helpText?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    rows?: number; // for textarea
+    options?: Array<{ value: string; label: string }>; // for select
+    disabled?: string; // Alpine.js expression for conditional disable
+}
+
+export interface Props {
+    name: string;
+    label: string;
+    fields: FieldDefinition[];
+    xModel: string; // Alpine.js model path
+    addButtonText?: string;
+    removeButtonText?: string;
+    addButtonClass?: string;
+    removeButtonClass?: string;
+    itemClass?: string;
+    errors?: Record<string, string>;
+    helpText?: string;
+    required?: boolean;
+    emptyStateText?: string;
+    showAddButton?: boolean;
+}
+
+const {
+    name,
+    label,
+    fields,
+    xModel,
+    addButtonText = `Add ${label}`,
+    removeButtonText = 'Remove',
+    addButtonClass = 'btn btn-primary btn-sm',
+    removeButtonClass = 'btn btn-ghost btn-sm text-error',
+    itemClass = 'border border-base-300 rounded-lg p-4 mb-4',
+    errors = {},
+    helpText,
+    required = false,
+    emptyStateText,
+    showAddButton = true
+} = Astro.props;
+
+// Generate Alpine.js data methods
+const alpineDataKey = name.replace(/[^a-zA-Z0-9]/g, '');
+const addMethodName = `add${alpineDataKey.charAt(0).toUpperCase() + alpineDataKey.slice(1)}`;
+const removeMethodName = `remove${alpineDataKey.charAt(0).toUpperCase() + alpineDataKey.slice(1)}`;
+
+// Create default item structure based on fields
+const defaultItem = fields.reduce((acc, field) => {
+    switch (field.type) {
+        case 'toggle':
+            acc[field.name] = false;
+            break;
+        case 'number':
+            acc[field.name] = field.min || 0;
+            break;
+        case 'select':
+            acc[field.name] = field.options?.[0]?.value || '';
+            break;
+        default:
+            acc[field.name] = '';
+    }
+    return acc;
+}, {} as Record<string, any>);
+---
+
+<div class="dynamic-list-manager" data-name={name}>
+    <!-- List Header -->
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h4 class="font-semibold mb-2 flex items-center gap-2">
+                <span>{label}</span>
+                {required && <span class="text-error">*</span>}
+            </h4>
+            {helpText && (
+                <p class="text-sm text-base-content/60 mb-2">{helpText}</p>
+            )}
+        </div>
+    </div>
+
+    <!-- Alpine.js Data Setup -->
+    <div x-data={`{
+        ${addMethodName}() {
+            if (!${xModel}) ${xModel} = [];
+            ${xModel}.push({
+                id: Date.now() + Math.random(),
+                ${Object.entries(defaultItem).map(([key, value]) => 
+                    typeof value === 'string' ? `${key}: "${value}"` : `${key}: ${value}`
+                ).join(', ')}
+            });
+        },
+        ${removeMethodName}(index) {
+            ${xModel}.splice(index, 1);
+        }
+    }`}>
+        
+        <!-- Items List -->
+        <template x-for={`(item, index) in ${xModel} || []`} :key="item.id || ('item-' + index)">
+            <div class={itemClass}>
+                <!-- Remove Button -->
+                <div class="flex justify-end mb-2">
+                    <button 
+                        :data-testid="`remove-${name}-item-` + index"
+                        @click={`${removeMethodName}(index)`}
+                        class={removeButtonClass}
+                        type="button"
+                    >
+                        {removeButtonText}
+                    </button>
+                </div>
+                
+                <!-- Dynamic Fields -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {fields.map((field) => {
+                        const fieldId = `${name}-${field.name}`;
+                        const xModelPath = `item.${field.name}`;
+                        const testId = `${fieldId}-input`;
+                        
+                        // Common field attributes
+                        const commonAttrs = {
+                            ':name': `'${fieldId}-' + index`,
+                            'x-model': xModelPath,
+                            'class': field.type === 'textarea' ? 'textarea w-full' : 'input w-full',
+                            ':data-testid': `'${testId}-' + index`,
+                            ...(field.disabled && { ':disabled': field.disabled }),
+                            ...(field.placeholder && { 'placeholder': field.placeholder })
+                        };
+
+                        if (field.type === 'text' || field.type === 'number' || field.type === 'date') {
+                            return (
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text">
+                                            {field.label}
+                                            {field.required && <span class="text-error">*</span>}
+                                        </span>
+                                    </label>
+                                    <input
+                                        type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                                        {...commonAttrs}
+                                        {...(field.min && { min: field.min })}
+                                        {...(field.max && { max: field.max })}
+                                        {...(field.step && { step: field.step })}
+                                        {...(field.required && { required: true })}
+                                    />
+                                    <ValidationError 
+                                        fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`} 
+                                        errors={errors} 
+                                    />
+                                    {field.helpText && (
+                                        <div class="label">
+                                            <span class="label-text-alt">{field.helpText}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        } else if (field.type === 'textarea') {
+                            return (
+                                <div class="form-control md:col-span-2">
+                                    <label class="label">
+                                        <span class="label-text">
+                                            {field.label}
+                                            {field.required && <span class="text-error">*</span>}
+                                        </span>
+                                    </label>
+                                    <textarea
+                                        {...commonAttrs}
+                                        rows={field.rows || 3}
+                                        {...(field.required && { required: true })}
+                                        class="textarea w-full resize-vertical"
+                                    ></textarea>
+                                    <ValidationError 
+                                        fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`} 
+                                        errors={errors} 
+                                    />
+                                    {field.helpText && (
+                                        <div class="label">
+                                            <span class="label-text-alt">{field.helpText}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        } else if (field.type === 'select') {
+                            return (
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text">
+                                            {field.label}
+                                            {field.required && <span class="text-error">*</span>}
+                                        </span>
+                                    </label>
+                                    <select
+                                        {...commonAttrs}
+                                        class="select w-full"
+                                        {...(field.required && { required: true })}
+                                    >
+                                        {field.options?.map(option => (
+                                            <option value={option.value}>{option.label}</option>
+                                        ))}
+                                    </select>
+                                    <ValidationError 
+                                        fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`} 
+                                        errors={errors} 
+                                    />
+                                    {field.helpText && (
+                                        <div class="label">
+                                            <span class="label-text-alt">{field.helpText}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        } else if (field.type === 'toggle') {
+                            return (
+                                <div class="form-control">
+                                    <label class="label cursor-pointer">
+                                        <span class="label-text">
+                                            {field.label}
+                                            {field.required && <span class="text-error">*</span>}
+                                        </span>
+                                        <input 
+                                            type="checkbox" 
+                                            class="toggle toggle-primary" 
+                                            x-model={xModelPath}
+                                            :name={`'${fieldId}-' + index`}
+                                            :data-testid={`'${testId}-' + index`}
+                                            {...(field.disabled && { ':disabled': field.disabled })}
+                                        />
+                                    </label>
+                                    <ValidationError 
+                                        fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`} 
+                                        errors={errors} 
+                                    />
+                                    {field.helpText && (
+                                        <div class="label">
+                                            <span class="label-text-alt">{field.helpText}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+                    })}
+                </div>
+            </div>
+        </template>
+        
+        <!-- Empty State -->
+        <div x-show={`!(${xModel}?.length)`} class="text-center py-8 text-base-content/60">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            {emptyStateText ? (
+                <p>{emptyStateText}</p>
+            ) : (
+                <p>No {label.toLowerCase()} added yet. Click the button below to add your first entry.</p>
+            )}
+        </div>
+        
+        <!-- Add Button -->
+        {showAddButton && (
+            <button 
+                @click={addMethodName + '()'}
+                class={addButtonClass}
+                type="button"
+                data-testid={`add-${name}-button`}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                {addButtonText}
+            </button>
+        )}
+    </div>
+</div>

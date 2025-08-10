@@ -38,6 +38,7 @@ window.unitCardData = function unitCardData() {
             photos: false,
             websites: false
         },
+        buildingAmenities: null, // Will be populated with building amenities
         
         init() {
             // Parse data from data attributes
@@ -63,6 +64,9 @@ window.unitCardData = function unitCardData() {
             if (this.unit.modelID) {
                 this.selectedUnitType = this.unitTypes.find(ut => ut.modelID === this.unit.modelID) || null;
             }
+            
+            // Load building amenities for inheritance display
+            this.loadBuildingAmenities();
         },
 
         isDirty() {
@@ -147,10 +151,63 @@ window.unitCardData = function unitCardData() {
                 return this.unit.unitAmenities;
             }
             // Otherwise, use model amenities if available
-            if (this.selectedUnitType && 'modelAmenities' in this.selectedUnitType && this.selectedUnitType.modelAmenities) {
+            if (this.selectedUnitType && this.selectedUnitType.modelAmenities && this.selectedUnitType.modelAmenities.length > 0) {
                 return this.selectedUnitType.modelAmenities;
             }
+            // Finally, fallback to building amenities
+            if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+                return this.buildingAmenities;
+            }
             return [];
+        },
+        
+        getAmenityInheritanceSource() {
+            if (this.unit.unitAmenities && this.unit.unitAmenities.length > 0) {
+                return 'unit';
+            }
+            if (this.selectedUnitType && this.selectedUnitType.modelAmenities && this.selectedUnitType.modelAmenities.length > 0) {
+                return 'floorplan';
+            }
+            if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+                return 'building';
+            }
+            return 'none';
+        },
+        
+        resetToInheritedAmenities() {
+            const source = this.getAmenityInheritanceSource();
+            let message = 'This will remove unit-specific amenities. ';
+            
+            if (source === 'floorplan' || (this.selectedUnitType && this.selectedUnitType.modelAmenities && this.selectedUnitType.modelAmenities.length > 0)) {
+                message += 'The unit will inherit amenities from its floorplan.';
+            } else if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+                message += 'The unit will inherit amenities from the building.';
+            } else {
+                message += 'The unit will have no amenities.';
+            }
+            
+            if (confirm(message + ' Continue?')) {
+                this.unit.unitAmenities = [];
+            }
+        },
+        
+        resetFieldToInherited(fieldName) {
+            const inheritedValue = this.getInheritedValue(fieldName);
+            const fieldDisplayName = {
+                'beds': 'Beds',
+                'baths': 'Baths', 
+                'sqft': 'Square Footage',
+                'rent': 'Rent',
+                'maxOccupants': 'Max Occupants',
+                'perPersonRent': 'Per Person Rent',
+                'deposit': 'Deposit',
+                'minLeaseTerm': 'Min Lease Term',
+                'maxLeaseTerm': 'Max Lease Term'
+            }[fieldName] || fieldName;
+            
+            if (inheritedValue !== null && confirm(`Reset ${fieldDisplayName} to inherited value (${inheritedValue})? This will clear the unit-specific value.`)) {
+                this.unit[fieldName] = null;
+            }
         },
         
         onModelChange() {
@@ -466,6 +523,19 @@ window.unitCardData = function unitCardData() {
                 return;
             }
             this.unit.deposit.partialRefundPercentage = percentage;
+        },
+        
+        async loadBuildingAmenities() {
+            try {
+                const response = await fetch(this.apiURL + 'buildings/' + this.unit.buildingID);
+                if (response.ok) {
+                    const building = await response.json();
+                    this.buildingAmenities = building.propertyAmenities || [];
+                }
+            } catch (error) {
+                console.error('Failed to load building amenities:', error);
+                this.buildingAmenities = [];
+            }
         }
     };
 }
@@ -543,13 +613,21 @@ window.unitCardData = function unitCardData() {
                         type="number" 
                         x-model.number.lazy="unit.beds" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('beds'), 'input-error': errors.beds}"
+                        :class="{'input-ghost': isInherited('beds'), 'input-error': errors.beds, 'pr-16': !isInherited('beds') && getInheritedValue('beds')}"
                         min="0" max="10"
                         :placeholder="getInheritedValue('beds') || 'Not set'"
                     />
                     <span x-show="isInherited('beds')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
                         <span x-text="getInheritedValue('beds')"></span>
                     </span>
+                    <button x-show="!isInherited('beds') && getInheritedValue('beds')" type="button" 
+                        class="btn btn-ghost btn-xs absolute right-1 top-1/2 -translate-y-1/2"
+                        x-on:click="resetFieldToInherited('beds')"
+                        title="Reset to inherited value">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
                 </div>
                 <div x-show="errors.beds" class="text-error text-sm mt-1" x-text="errors.beds"></div>
             </div>
@@ -564,13 +642,21 @@ window.unitCardData = function unitCardData() {
                         type="number" 
                         x-model.number.lazy="unit.baths" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('baths'), 'input-error': errors.baths}"
+                        :class="{'input-ghost': isInherited('baths'), 'input-error': errors.baths, 'pr-16': !isInherited('baths') && getInheritedValue('baths')}"
                         min="0" max="10" step="0.5"
                         :placeholder="getInheritedValue('baths') || 'Not set'"
                     />
                     <span x-show="isInherited('baths')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
                         <span x-text="getInheritedValue('baths')"></span>
                     </span>
+                    <button x-show="!isInherited('baths') && getInheritedValue('baths')" type="button" 
+                        class="btn btn-ghost btn-xs absolute right-1 top-1/2 -translate-y-1/2"
+                        x-on:click="resetFieldToInherited('baths')"
+                        title="Reset to inherited value">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
                 </div>
                 <div x-show="errors.baths" class="text-error text-sm mt-1" x-text="errors.baths"></div>
             </div>
@@ -606,13 +692,21 @@ window.unitCardData = function unitCardData() {
                         type="number" 
                         x-model.number.lazy="unit.rent" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('rent'), 'input-error': errors.rent}"
+                        :class="{'input-ghost': isInherited('rent'), 'input-error': errors.rent, 'pr-16': !isInherited('rent') && getInheritedValue('rent')}"
                         min="10" max="25000"
                         :placeholder="getInheritedValue('rent') || 'Not set'"
                     />
                     <span x-show="isInherited('rent')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
                         <span x-text="getInheritedValue('rent')"></span>
                     </span>
+                    <button x-show="!isInherited('rent') && getInheritedValue('rent')" type="button" 
+                        class="btn btn-ghost btn-xs absolute right-1 top-1/2 -translate-y-1/2"
+                        x-on:click="resetFieldToInherited('rent')"
+                        title="Reset to inherited value">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
                 </div>
                 <div x-show="errors.rent" class="text-error text-sm mt-1" x-text="errors.rent"></div>
             </div>
@@ -628,13 +722,21 @@ window.unitCardData = function unitCardData() {
                         type="number" 
                         x-model.number.lazy="unit.maxOccupants" 
                         class="input input-bordered w-full"
-                        :class="{'input-ghost': isInherited('maxOccupants'), 'input-error': errors.maxOccupants}"
+                        :class="{'input-ghost': isInherited('maxOccupants'), 'input-error': errors.maxOccupants, 'pr-16': !isInherited('maxOccupants') && getInheritedValue('maxOccupants')}"
                         min="1" max="20"
                         :placeholder="getInheritedValue('maxOccupants') || 'Not set'"
                     />
                     <span x-show="isInherited('maxOccupants')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
                         <span x-text="getInheritedValue('maxOccupants')"></span>
                     </span>
+                    <button x-show="!isInherited('maxOccupants') && getInheritedValue('maxOccupants')" type="button" 
+                        class="btn btn-ghost btn-xs absolute right-1 top-1/2 -translate-y-1/2"
+                        x-on:click="resetFieldToInherited('maxOccupants')"
+                        title="Reset to inherited value">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
                 </div>
                 <div x-show="errors.maxOccupants" class="text-error text-sm mt-1" x-text="errors.maxOccupants"></div>
             </div>
@@ -684,13 +786,21 @@ window.unitCardData = function unitCardData() {
                                     :value="getDepositAmount()"
                                     x-on:input="setDepositAmount($event.target.value)"
                                     class="input input-bordered w-full"
-                                    :class="{'input-ghost': isInherited('deposit'), 'input-error': errors.deposit || errors.depositAmount}"
+                                    :class="{'input-ghost': isInherited('deposit'), 'input-error': errors.deposit || errors.depositAmount, 'pr-16': !isInherited('deposit') && getInheritedValue('deposit')}"
                                     min="0"
                                     :placeholder="getInheritedValue('deposit') || 'Not set'"
                                 />
                                 <span x-show="isInherited('deposit')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-base-content/50">
                                     <span x-text="getInheritedValue('deposit')"></span>
                                 </span>
+                                <button x-show="!isInherited('deposit') && getInheritedValue('deposit')" type="button" 
+                                    class="btn btn-ghost btn-xs absolute right-1 top-1/2 -translate-y-1/2"
+                                    x-on:click="resetFieldToInherited('deposit')"
+                                    title="Reset to inherited value">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
                             </div>
                             <div x-show="errors.deposit" class="text-error text-sm mt-1" x-text="errors.deposit"></div>
                             <div x-show="errors.depositAmount" class="text-error text-sm mt-1" x-text="errors.depositAmount"></div>
@@ -971,18 +1081,129 @@ window.unitCardData = function unitCardData() {
             <div class="collapse-title text-lg font-medium">
                 Unit Amenities
                 <span class="badge badge-primary badge-sm ml-2" x-text="getEffectiveAmenities().length"></span>
-                <span x-show="unit.unitAmenities && unit.unitAmenities.length > 0" class="badge badge-warning badge-sm ml-1">overridden</span>
-                <span x-show="(!unit.unitAmenities || unit.unitAmenities.length === 0) && selectedUnitType?.modelAmenities?.length > 0" class="badge badge-info badge-sm ml-1">inherited</span>
+                <template x-if="getAmenityInheritanceSource() === 'unit'">
+                    <span class="badge badge-warning badge-sm ml-1">custom</span>
+                </template>
+                <template x-if="getAmenityInheritanceSource() === 'floorplan'">
+                    <span class="badge badge-info badge-sm ml-1">from floorplan</span>
+                </template>
+                <template x-if="getAmenityInheritanceSource() === 'building'">
+                    <span class="badge badge-ghost badge-sm ml-1">from building</span>
+                </template>
             </div>
             <div class="collapse-content">
                 <div class="pt-4">
-                    <div x-show="selectedUnitType && selectedUnitType.modelAmenities && selectedUnitType.modelAmenities.length > 0" class="alert alert-info mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span>This unit inherits amenities from its model. Add amenities here to override the model defaults.</span>
+                    <!-- Inheritance Status Info -->
+                    <div class="alert mb-4" :class="{'alert-warning': getAmenityInheritanceSource() === 'unit', 'alert-info': getAmenityInheritanceSource() === 'floorplan', 'alert-ghost': getAmenityInheritanceSource() === 'building'}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <!-- Unit has custom amenities -->
+                            <template x-if="getAmenityInheritanceSource() === 'unit'">
+                                <span>
+                                    This unit has custom amenities that override inherited values.
+                                    <button type="button" class="btn btn-ghost btn-xs ml-2" x-on:click="resetToInheritedAmenities()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Reset to Inherited
+                                    </button>
+                                </span>
+                            </template>
+                            
+                            <!-- Unit inherits from floorplan -->
+                            <template x-if="getAmenityInheritanceSource() === 'floorplan'">
+                                <span>
+                                    This unit inherits <span x-text="selectedUnitType?.modelAmenities?.length || 0"></span> amenities from its floorplan. Add amenities here to customize this unit.
+                                </span>
+                            </template>
+                            
+                            <!-- Unit inherits from building -->
+                            <template x-if="getAmenityInheritanceSource() === 'building'">
+                                <span>
+                                    This unit inherits <span x-text="buildingAmenities?.length || 0"></span> amenities from the building (no floorplan amenities). Add amenities here to customize this unit.
+                                </span>
+                            </template>
+                            
+                            <!-- No amenities at any level -->
+                            <template x-if="getAmenityInheritanceSource() === 'none'">
+                                <span>
+                                    No amenities are defined at the building or floorplan level. Add amenities here to customize this unit.
+                                </span>
+                            </template>
+                        </div>
                     </div>
+                    
+                    <!-- Inheritance Chain Display -->
+                    <div class="mb-4">
+                        <div class="text-sm font-semibold mb-2">Inheritance Chain:</div>
+                        <div class="flex items-center gap-2 text-sm">
+                            <!-- Building Level -->
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h2M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                <span class="font-medium">Building</span>
+                                <span class="badge badge-xs" :class="buildingAmenities?.length > 0 ? 'badge-success' : 'badge-ghost'" x-text="buildingAmenities?.length || 0"></span>
+                            </div>
+                            
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                            
+                            <!-- Floorplan Level -->
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <span class="font-medium">Floorplan</span>
+                                <span class="badge badge-xs" :class="selectedUnitType?.modelAmenities?.length > 0 ? 'badge-success' : 'badge-ghost'" x-text="selectedUnitType?.modelAmenities?.length || 0"></span>
+                                <span x-show="!selectedUnitType" class="text-xs text-base-content/50">(none selected)</span>
+                            </div>
+                            
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                            
+                            <!-- Unit Level -->
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                                </svg>
+                                <span class="font-medium">Unit</span>
+                                <span class="badge badge-xs" :class="unit.unitAmenities?.length > 0 ? 'badge-warning' : 'badge-ghost'" x-text="unit.unitAmenities?.length || 0"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Inherited Amenities Display -->
+                    <div x-show="(!unit.unitAmenities || unit.unitAmenities.length === 0) && getEffectiveAmenities().length > 0" class="mb-4">
+                        <div class="text-sm text-base-content/70 mb-2">
+                            <span class="font-semibold">Currently Active Amenities</span>
+                            <template x-if="getAmenityInheritanceSource() === 'floorplan'">
+                                <span> (inherited from floorplan):</span>
+                            </template>
+                            <template x-if="getAmenityInheritanceSource() === 'building'">
+                                <span> (inherited from building):</span>
+                            </template>
+                            <span x-text="getEffectiveAmenities().length"></span> amenities
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="amenity in getEffectiveAmenities()" :key="amenity.name + amenity.category">
+                                <div class="badge badge-lg gap-2" :class="{'badge-info': getAmenityInheritanceSource() === 'floorplan', 'badge-ghost': getAmenityInheritanceSource() === 'building'}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5M6 12h12" />
+                                    </svg>
+                                    <span x-text="amenity.name"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
                     <AmenitySelector
                         name="unitAmenities"
-                        label="Unit-specific amenities (overrides model amenities)"
+                        label="Unit-specific amenities (overrides inherited amenities)"
                         xModel="unit.unitAmenities"
                         showLabel={false}
                     />
@@ -1081,6 +1302,30 @@ window.unitCardData = function unitCardData() {
     /* Style for inherited value indicator */
     .input-ghost {
         background-color: transparent;
+        border-style: dashed;
+        opacity: 0.7;
+    }
+    
+    .input-ghost:focus {
+        opacity: 1;
+        border-style: solid;
+    }
+    
+    /* Badge styling for inheritance indicators */
+    .badge-ghost {
+        background-color: transparent;
+        border: 1px dashed currentColor;
+        opacity: 0.7;
+    }
+    
+    /* Inheritance chain styling */
+    .inheritance-chain {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background: linear-gradient(90deg, 
+            hsl(var(--b2)) 0%, 
+            hsl(var(--b3)) 50%, 
+            hsl(var(--b2)) 100%);
     }
     
     /* Hide number input spinners */
@@ -1092,5 +1337,10 @@ window.unitCardData = function unitCardData() {
     
     input[type="number"] {
         -moz-appearance: textfield;
+    }
+    
+    /* Smooth transitions for inheritance indicators */
+    [x-transition] {
+        transition: all 0.2s ease;
     }
 </style>

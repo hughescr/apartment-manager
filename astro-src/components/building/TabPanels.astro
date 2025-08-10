@@ -1,0 +1,86 @@
+---
+// This component acts as a router for tab content
+// It uses slots to allow flexible content composition
+export interface Props {
+    buildingInfoSlot?: any;
+    floorplansUnitsSlot?: any;
+    pricingPoliciesSlot?: any;
+    marketingSlot?: any;
+    unitsSlot?: any;
+}
+---
+
+<!-- Tab Content Router -->
+<div class="building-tab-content">
+    <!-- Building Info Tab -->
+    <div x-show="activeSectionTab === 'building-info'" class="space-y-6" x-cloak>
+        <slot name="building-info">
+            <!-- Default content if no slot provided -->
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Building Info</h3>
+                    <p>Building information content will be displayed here.</p>
+                </div>
+            </div>
+        </slot>
+    </div>
+
+    <!-- Floorplans & Units Tab -->
+    <div x-show="activeSectionTab === 'floorplans-units'" class="space-y-6" x-cloak>
+        <slot name="floorplans-units">
+            <!-- Default content if no slot provided -->
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Floorplans & Units</h3>
+                    <p>Floorplans and unit types content will be displayed here.</p>
+                </div>
+            </div>
+        </slot>
+    </div>
+
+    <!-- Pricing & Policies Tab -->
+    <div x-show="activeSectionTab === 'pricing-policies'" class="space-y-6" x-cloak>
+        <slot name="pricing-policies">
+            <!-- Default content if no slot provided -->
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Pricing & Policies</h3>
+                    <p>Pricing and policies content will be displayed here.</p>
+                </div>
+            </div>
+        </slot>
+    </div>
+
+    <!-- Marketing Tab -->
+    <div x-show="activeSectionTab === 'marketing'" class="space-y-6" x-cloak>
+        <slot name="marketing">
+            <!-- Default content if no slot provided -->
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Marketing</h3>
+                    <p>Marketing content will be displayed here.</p>
+                </div>
+            </div>
+        </slot>
+    </div>
+
+    <!-- Units Tab -->
+    <div x-show="activeSectionTab === 'units'" class="space-y-6" x-cloak>
+        <slot name="units">
+            <!-- Default content if no slot provided -->
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title">Units</h3>
+                    <p>Units management content will be displayed here.</p>
+                </div>
+            </div>
+        </slot>
+    </div>
+</div>
+
+<style>
+/* Hide elements initially to prevent flash of content */
+[x-cloak] { 
+    display: none !important; 
+}
+</style>

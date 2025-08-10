@@ -425,3 +425,219 @@ export const del = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyS
     const success = await deleteUnit(buildingID, unitID);
     return success ? { statusCode: 204, body: '' } : { statusCode: 404, body: 'Not Found' };
 };
+
+// Interface for bulk request data
+interface BulkRequestData {
+    unitIDs?: string[]
+    [key: string]: unknown
+}
+
+// Helper function to validate bulk operation request data
+function validateBulkRequest(data: BulkRequestData, errors: Record<string, string>): void {
+    // Validate unitIDs array
+    if(!data.unitIDs || !_.isArray(data.unitIDs) || data.unitIDs.length === 0) {
+        errors.unitIDs = 'Unit IDs array is required and must not be empty';
+    } else if(data.unitIDs.length > 100) {
+        errors.unitIDs = 'Cannot update more than 100 units at once';
+    } else {
+        // Validate each unit ID
+        for(const unitID of data.unitIDs) {
+            const idError = validateId(unitID, 'unitID');
+            if(idError) {
+                errors.unitIDs = 'Invalid unit ID format';
+                break;
+            }
+        }
+    }
+}
+
+// Interface for status update request data
+interface StatusUpdateData extends BulkRequestData {
+    vacancyClass?: string
+}
+
+// Helper function to validate status update data
+function validateStatusUpdateData(data: StatusUpdateData, errors: Record<string, string>): void {
+    const validStatuses = ['Occupied', 'Unoccupied', 'Notice', 'Down'];
+    if(!data.vacancyClass || !validStatuses.includes(data.vacancyClass)) {
+        errors.vacancyClass = 'Valid vacancy class is required (Occupied, Unoccupied, Notice, Down)';
+    }
+}
+
+export const bulkStatusUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
+    const buildingID = evt.pathParameters?.buildingID ?? '';
+
+    // Validate buildingID
+    const buildingError = validateId(buildingID, 'buildingID');
+    if(buildingError) {
+        return { statusCode: 404, body: 'Not Found' };
+    }
+
+    let rawData;
+    try {
+        rawData = JSON.parse(evt.body || '{}');
+    } catch{
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Invalid request body' }),
+        };
+    }
+
+    const data = sanitizeObject(rawData) as StatusUpdateData;
+    const errors: Record<string, string> = {};
+
+    validateBulkRequest(data, errors);
+    validateStatusUpdateData(data, errors);
+
+    if(_.keys(errors).length > 0) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Validation failed', errors }),
+        };
+    }
+
+    try {
+        // Update each unit individually
+        const updatePromises = _.map(data.unitIDs, async (unitID: string) => {
+            const existingUnit = await getUnit(buildingID, unitID);
+            if(!existingUnit) {
+                throw new Error(`Unit ${unitID} not found`);
+            }
+
+            return updateUnit(buildingID, unitID, {
+                vacancyClass: data.vacancyClass as 'Occupied' | 'Unoccupied' | 'Notice' | 'Down', // Cast validated string to VacancyClass type
+                updatedAt: new Date()
+            });
+        });
+
+        const results = await Promise.all(updatePromises);
+        const successCount = _.filter(results, result => result !== null).length;
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                message: `Successfully updated ${successCount} units`,
+                updatedUnits: successCount
+            }),
+        };
+    } catch(error) {
+        // eslint-disable-next-line no-console -- Logging errors to CloudWatch for debugging bulk operations
+        console.error('Bulk status update error:', error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Failed to update units' }),
+        };
+    }
+};
+
+// Interface for rent update request data
+interface RentUpdateData extends BulkRequestData {
+    updateType?: string
+    value?: unknown
+}
+
+// Helper function to validate rent update data
+function validateRentUpdateData(data: RentUpdateData, errors: Record<string, string>): void {
+    // Validate update type
+    const validUpdateTypes = ['absolute', 'percentage'];
+    if(!data.updateType || !validUpdateTypes.includes(data.updateType)) {
+        errors.updateType = 'Update type must be either "absolute" or "percentage"';
+    }
+
+    // Validate value
+    if(data.value === undefined || data.value === null || isNaN(Number(data.value))) {
+        errors.value = 'Valid numeric value is required';
+    } else {
+        const value = Number(data.value);
+        if(data.updateType === 'absolute') {
+            if(value < 0 || value > 25000) {
+                errors.value = 'Absolute rent value must be between 0 and 25000';
+            }
+        } else if(data.updateType === 'percentage') {
+            if(value < -100 || value > 1000) {
+                errors.value = 'Percentage value must be between -100 and 1000';
+            }
+        }
+    }
+}
+
+// Helper function to calculate new rent value
+function calculateNewRent(updateType: string, value: number, currentRent: number): number {
+    if(updateType === 'absolute') {
+        return Number(value);
+    } else {
+        // Percentage update
+        const newRent = Math.round(currentRent * (1 + Number(value) / 100));
+        // Ensure rent doesn't go below 0 or above 25000
+        return Math.max(0, Math.min(25000, newRent));
+    }
+}
+
+export const bulkRentUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
+    const buildingID = evt.pathParameters?.buildingID ?? '';
+
+    // Validate buildingID
+    const buildingError = validateId(buildingID, 'buildingID');
+    if(buildingError) {
+        return { statusCode: 404, body: 'Not Found' };
+    }
+
+    let rawData;
+    try {
+        rawData = JSON.parse(evt.body || '{}');
+    } catch{
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Invalid request body' }),
+        };
+    }
+
+    const data = sanitizeObject(rawData) as RentUpdateData;
+    const errors: Record<string, string> = {};
+
+    validateBulkRequest(data, errors);
+    validateRentUpdateData(data, errors);
+
+    if(_.keys(errors).length > 0) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Validation failed', errors }),
+        };
+    }
+
+    try {
+        // Update each unit individually
+        const updatePromises = _.map(data.unitIDs, async (unitID: string) => {
+            const existingUnit = await getUnit(buildingID, unitID);
+            if(!existingUnit) {
+                throw new Error(`Unit ${unitID} not found`);
+            }
+
+            const currentRent = existingUnit.rent || 0;
+            const newRent = calculateNewRent(data.updateType!, Number(data.value), currentRent);
+
+            return updateUnit(buildingID, unitID, {
+                rent: newRent,
+                updatedAt: new Date()
+            });
+        });
+
+        const results = await Promise.all(updatePromises);
+        const successCount = _.filter(results, result => result !== null).length;
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                message: `Successfully updated rent for ${successCount} units`,
+                updatedUnits: successCount
+            }),
+        };
+    } catch(error) {
+        // eslint-disable-next-line no-console -- Logging errors to CloudWatch for debugging bulk operations
+        console.error('Bulk rent update error:', error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Failed to update unit rents' }),
+        };
+    }
+};

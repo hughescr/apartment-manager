@@ -68,7 +68,7 @@ if (!building) {
                 </div>
             ) : (
                 unitTypes.map((unitType) => (
-                    <UnitTypeCard unitType={unitType} />
+                    <UnitTypeCard unitType={unitType} buildingAmenities={building.propertyAmenities || []} />
                 ))
             )}
         </div>

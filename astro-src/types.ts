@@ -2,5 +2,15 @@
 export type {
     BuildingData,
     UnitData,
-    Unit
+    UnitTypeData,
+    Unit,
+    Building,
+    Amenity
+} from '../src/types';
+
+export {
+    PropertyType,
+    UtilityType,
+    FeeType,
+    DayOfWeek
 } from '../src/types';

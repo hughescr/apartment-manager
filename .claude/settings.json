@@ -1,27 +1,26 @@
 {
-    "enableAllProjectMcpServers": true,
-
-    "permissions": {
-        "allow": [
-            "Bash(bun test:*)",
-            "mcp__browser",
-            "mcp__eslint",
-            "mcp__language-server",
-            "mcp__tmux"
-        ],
-        "deny": []
-    },
-
-    "hooks": {
-        "SubagentStop": [
-            {
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "eslint --fix --max-warnings=0 --cache 1>&2 || exit 2"
-                    }
-                ]
-            }
+  "permissions": {
+    "allow": [
+      "Bash(bun test:*)",
+      "mcp__browser",
+      "mcp__eslint",
+      "mcp__language-server",
+      "mcp__tmux",
+      "Bash(tsc --pretty false)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "eslint --fix --max-warnings=0 --cache 1>&2 || exit 2"
+          }
         ]
-    }
+      }
+    ]
+  }
 }

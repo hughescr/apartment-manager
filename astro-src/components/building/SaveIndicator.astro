@@ -1,0 +1,30 @@
+---
+// This component reads state from the Alpine.js context provided by BuildingProvider
+// No props needed as it's part of the building state management
+---
+
+<!-- Save/Undo Actions - shown when there are unsaved changes -->
+<div class="flex flex-col sm:flex-row gap-3 sm:gap-2" x-show="showSave" x-cloak>
+    <button
+        class="btn btn-outline btn-secondary min-h-[44px] order-2 sm:order-1"
+        x-on:click="undoChanges()"
+        :disabled="saving">
+        Undo
+    </button>
+    <button
+        class="btn btn-primary min-h-[44px] order-1 sm:order-2"
+        x-on:click="saveBuilding()"
+        :disabled="saving">
+        <span x-show="!saving">Save Changes</span>
+        <span x-show="saving" class="loading loading-spinner loading-sm"></span>
+        <span x-show="saving">Saving...</span>
+    </button>
+</div>
+
+<!-- Optional: Unsaved changes indicator -->
+<div x-show="showSave && !saving" class="text-warning text-sm mt-2" x-cloak>
+    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+    </svg>
+    You have unsaved changes
+</div>

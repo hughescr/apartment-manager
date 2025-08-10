@@ -30,6 +30,12 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
         PUT: units.update,
         DELETE: units.del,
     },
+    '/buildings/{buildingID}/units/bulk-status': {
+        PUT: units.bulkStatusUpdate,
+    },
+    '/buildings/{buildingID}/units/bulk-rent': {
+        PUT: units.bulkRentUpdate,
+    },
     '/buildings/{buildingID}/unit-types': {
         GET: unitTypes.list,
         POST: unitTypes.create,
