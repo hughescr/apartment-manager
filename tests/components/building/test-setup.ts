@@ -64,10 +64,14 @@ export const createMockResponse = (options: {
 export const mockWindow = {
     createBuildingCardState: jest.fn(),
     buildingProviderData: jest.fn(),
-    confirm: jest.fn().mockReturnValue(true)
+    confirm: jest.fn().mockReturnValue(true),
+    location: {
+        reload: jest.fn()
+    }
 };
 
-// Ensure global confirm is mocked
+// Setup global window and confirm mocks
+(global as unknown as { window: typeof mockWindow }).window = mockWindow;
 (global as unknown as { confirm: typeof mockWindow.confirm }).confirm = mockWindow.confirm;
 
 // Mock Alpine.js context for tests

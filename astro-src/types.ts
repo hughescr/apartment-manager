@@ -5,7 +5,8 @@ export type {
     UnitTypeData,
     Unit,
     Building,
-    Amenity
+    Amenity,
+    VacancyClass
 } from '../src/types';
 
 export {

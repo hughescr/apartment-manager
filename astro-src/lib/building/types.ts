@@ -50,6 +50,7 @@ export interface BuildingCardState extends BuildingUIState, UnitsTabState, Locat
 export interface BuildingEvents {
     'building:updated': { building: BuildingData }
     'building:save': { building: BuildingData }
+    'building:saving': { saving: boolean }
     'building:reset': { building: BuildingData }
     'building:validate': { isValid: boolean, errors: Record<string, string> }
     'tab:change': { activeTab: string }
@@ -58,6 +59,7 @@ export interface BuildingEvents {
     'toast:show': { message: string, toastType: 'success' | 'error' | 'warning' }
     'photos:updated': { photos: string[] }
     'tours:updated': { selfGuidedTours?: boolean, virtualTours?: boolean, inPersonTours?: boolean }
+    'location:geocoding': { geocoding: boolean }
 }
 
 // Tab configuration
