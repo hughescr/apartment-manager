@@ -1,0 +1,35 @@
+---
+import BaseTextarea from '../forms/BaseTextarea.astro';
+
+export interface Props {
+    xModelPrefix?: string;
+}
+
+const { xModelPrefix = 'unit' } = Astro.props;
+---
+
+<div class="space-y-4">
+    <h3 class="text-lg font-semibold">Descriptions</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Internal Description -->
+        <BaseTextarea
+            name="description"
+            label="Internal Description"
+            xModel={`${xModelPrefix}.description`}
+            placeholder="Internal notes about this unit"
+            rows={3}
+            error="errors.description"
+        />
+
+        <!-- Marketing Description -->
+        <BaseTextarea
+            name="marketingDescription"
+            label="Marketing Description"
+            xModel={`${xModelPrefix}.marketingDescription`}
+            placeholder="Public-facing description for listings"
+            rows={3}
+            error="errors.marketingDescription"
+        />
+    </div>
+</div>

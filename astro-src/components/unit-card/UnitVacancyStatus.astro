@@ -1,0 +1,83 @@
+---
+import BaseInput from '../forms/BaseInput.astro';
+import BaseSelect from '../forms/BaseSelect.astro';
+
+export interface Props {
+    xModelPrefix?: string;
+}
+
+const { xModelPrefix = 'unit' } = Astro.props;
+
+const vacancyOptions = [
+    { value: '', label: 'Not Set' },
+    { value: 'Occupied', label: 'Occupied' },
+    { value: 'Notice', label: 'Notice' },
+    { value: 'Vacant', label: 'Vacant' },
+    { value: 'Model', label: 'Model' }
+];
+---
+
+<div class="space-y-4">
+    <h3 class="text-lg font-semibold">Vacancy Status</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Vacancy Classification -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text font-semibold">Vacancy Classification</span>
+            </label>
+            <BaseSelect
+                name="vacancyClass"
+                xModel={`${xModelPrefix}.vacancyClass`}
+                error="errors.vacancyClass"
+                options={vacancyOptions}
+            >
+                {vacancyOptions.map(option => (
+                    <option value={option.value}>{option.label}</option>
+                ))}
+            </BaseSelect>
+        </div>
+
+        <!-- Vacate Date -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text font-semibold">Vacate Date</span>
+            </label>
+            <BaseInput
+                name="vacateDate"
+                xModel={`${xModelPrefix}.vacateDate`}
+                type="date"
+                error="errors.vacateDate"
+                showLabel={false}
+            />
+        </div>
+
+        <!-- Made Ready Date -->
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text font-semibold">Made Ready Date</span>
+            </label>
+            <BaseInput
+                name="madeReadyDate"
+                xModel={`${xModelPrefix}.madeReadyDate`}
+                type="date"
+                error="errors.madeReadyDate"
+                showLabel={false}
+            />
+        </div>
+    </div>
+
+    <!-- Availability Date -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text font-semibold">Availability Date</span>
+        </label>
+        <BaseInput
+            name="availableDate"
+            xModel={`${xModelPrefix}.availableDate`}
+            type="date"
+            error="errors.availableDate"
+            showLabel={false}
+        />
+    </div>
+</div>

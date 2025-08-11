@@ -1,0 +1,99 @@
+---
+import BaseInput from './BaseInput.astro';
+import BaseSelect from './BaseSelect.astro';
+
+export interface Props {
+    fieldName: string;
+    label: string;
+    type?: 'text' | 'number' | 'date' | 'email' | 'tel' | 'url' | 'time' | 'datetime-local' | 'select';
+    xModel: string;
+    inheritanceCheck?: string;
+    inheritedValue?: string;
+    error?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    options?: Array<{value: string, label: string}>;
+    required?: boolean;
+    placeholder?: string;
+    class?: string;
+    onReset?: string;
+}
+
+const {
+    fieldName,
+    label,
+    type = 'text',
+    xModel,
+    inheritanceCheck,
+    inheritedValue,
+    error,
+    min,
+    max,
+    step,
+    options,
+    required = false,
+    placeholder,
+    class: className = '',
+    onReset
+} = Astro.props;
+---
+
+<div class={`form-control ${className}`}>
+    <label class="label">
+        <span class="label-text font-semibold">
+            {label}
+            {required && <span class="text-error">*</span>}
+        </span>
+        {inheritanceCheck && (
+            <span x-show={inheritanceCheck} class="badge badge-info badge-xs">inherited</span>
+        )}
+    </label>
+    
+    <div class="flex gap-2">
+        {type === 'select' && options ? (
+            <BaseSelect
+                name={fieldName}
+                xModel={xModel}
+                class="flex-1"
+                error={error}
+                options={options || []}
+            >
+                <option value="">Select {label.toLowerCase()}</option>
+                {options.map(option => (
+                    <option value={option.value}>{option.label}</option>
+                ))}
+            </BaseSelect>
+        ) : (
+            <BaseInput
+                name={fieldName}
+                xModel={xModel}
+                type={type === 'select' ? 'text' : type}
+                placeholder={placeholder || (inheritedValue ? `Inherited: ${inheritedValue}` : '')}
+                min={min}
+                max={max}
+                step={step}
+                class="flex-1"
+                error={error}
+            />
+        )}
+        
+        {inheritanceCheck && onReset && (
+            <button
+                type="button"
+                x-show={`!${inheritanceCheck}`}
+                @click={onReset}
+                class="btn btn-ghost btn-sm"
+                title="Reset to inherited value"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+        )}
+    </div>
+    
+    {error && (
+        <div class="text-error text-sm mt-1" x-text={error}></div>
+    )}
+</div>

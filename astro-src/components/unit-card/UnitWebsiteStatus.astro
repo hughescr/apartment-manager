@@ -1,0 +1,53 @@
+---
+export interface Props {
+    xModelPrefix?: string;
+}
+
+const { xModelPrefix = 'unit' } = Astro.props;
+
+const websites = [
+    { key: 'apartmentsCom', label: 'Apartments.com' },
+    { key: 'zillowRental', label: 'Zillow Rental Manager' }
+];
+---
+
+<div class="space-y-4">
+    <h3 class="text-lg font-semibold">Website Status</h3>
+    
+    <!-- Feed Inclusion -->
+    <div class="border border-base-300 rounded-lg p-4">
+        <h4 class="font-medium mb-3">Include in Feeds</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {websites.map(site => (
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        class="checkbox checkbox-primary"
+                        x-model={`${xModelPrefix}.feedInclusion.${site.key}`}
+                    />
+                    <span class="label-text">{site.label}</span>
+                </label>
+            ))}
+        </div>
+    </div>
+
+    <!-- Manual References -->
+    <div class="border border-base-300 rounded-lg p-4">
+        <h4 class="font-medium mb-3">Manual References</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {websites.map(site => (
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">{site.label} ID</span>
+                    </label>
+                    <input
+                        type="text"
+                        class="input input-bordered w-full"
+                        x-model={`${xModelPrefix}.manualReferences.${site.key}`}
+                        placeholder={`${site.label} reference ID`}
+                    />
+                </div>
+            ))}
+        </div>
+    </div>
+</div>

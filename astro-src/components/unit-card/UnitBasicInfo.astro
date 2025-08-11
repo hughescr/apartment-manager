@@ -1,0 +1,54 @@
+---
+import BaseInput from '../forms/BaseInput.astro';
+
+export interface Props {
+    xModelPrefix?: string;
+}
+
+const { xModelPrefix = 'unit' } = Astro.props;
+---
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Unit Number -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text font-semibold">Unit Number <span class="text-error">*</span></span>
+        </label>
+        <BaseInput
+            name="unitID"
+            xModel={`${xModelPrefix}.unitID`}
+            type="text"
+            placeholder="Unit number"
+            required={true}
+            error="errors.unitID"
+            showLabel={false}
+        />
+    </div>
+
+    <!-- Unit Model/Type -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text font-semibold">Unit Model</span>
+        </label>
+        <select
+            name="modelID"
+            x-model={`${xModelPrefix}.modelID`}
+            @change="selectedUnitType = unitTypes.find(ut => ut.modelID === $event.target.value) || null"
+            class="select select-bordered w-full"
+            :class="errors.modelID ? 'select-error' : ''"
+        >
+            <option value="">No model selected</option>
+            <template x-for="unitType in unitTypes" :key="unitType.modelID">
+                <option :value="unitType.modelID" x-text="unitType.modelName || unitType.modelID"></option>
+            </template>
+        </select>
+    </div>
+
+    <!-- Unit ID Display -->
+    <div class="form-control">
+        <label class="label">
+            <span class="label-text font-semibold">Unit ID</span>
+        </label>
+        <div class="input input-bordered bg-base-200" x-text={`${xModelPrefix}.unitID`}></div>
+    </div>
+</div>
