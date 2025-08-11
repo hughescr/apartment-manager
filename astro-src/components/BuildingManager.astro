@@ -36,9 +36,9 @@ const emptyUnitTypes: any[] = [];
 ---
 
 <div class="building-manager" 
-     x-cloak
      x-data="buildingManagerData()"
-     x-init="init()">
+     x-init="init()"
+     {...Astro.props}>
      
     <!-- Loading state -->
     <div x-show="loading" class="flex justify-center items-center py-8">
@@ -53,6 +53,9 @@ const emptyUnitTypes: any[] = [];
             units={emptyUnits} 
             unitTypes={emptyUnitTypes} 
             apiURL={apiURL}
+            x-bind:data-building-data="JSON.stringify(building)"
+            x-bind:data-initial-units="JSON.stringify(units)"
+            x-bind:data-initial-unit-types="JSON.stringify(unitTypes)"
         >
             <!-- Save indicator at the top -->
             <div class="mb-4">
@@ -139,6 +142,7 @@ type BuildingManagerData = AlpineComponent<{
     errorMessage: string;
     buildingID: string;
     apiURL: string;
+    building: any;
     units: any[];
     unitTypes: any[];
     init(): void;
@@ -154,6 +158,7 @@ function buildingManagerData(): BuildingManagerData {
         errorMessage: '',
         buildingID: '',
         apiURL: '',
+        building: null,
         units: [],
         unitTypes: [],
         
@@ -161,17 +166,21 @@ function buildingManagerData(): BuildingManagerData {
             this.buildingID = this.$root.dataset.buildingId || '';
             this.apiURL = this.$root.dataset.apiUrl || '';
             
-            // Listen for lazy loading triggers
-            this.$watch('$root.dataset.shouldLoad', (shouldLoad: string) => {
-                if (shouldLoad === 'true' && !this.dataLoaded && !this.loading) {
+            // Listen for Alpine events to trigger loading
+            this.$root.addEventListener('trigger-load', () => {
+                if (!this.dataLoaded && !this.loading) {
                     this.loadBuildingData();
                 }
             });
             
-            // Check if we should load immediately
-            if (this.$root.dataset.shouldLoad === 'true') {
-                this.loadBuildingData();
-            }
+            // Check if we should load immediately (for initially visible tab)
+            // Use a small delay to ensure Alpine is fully initialized
+            setTimeout(() => {
+                const isVisible = this.$root.style.display !== 'none';
+                if (isVisible && !this.dataLoaded && !this.loading) {
+                    this.loadBuildingData();
+                }
+            }, 100);
         },
         
         async loadBuildingData() {
@@ -181,21 +190,24 @@ function buildingManagerData(): BuildingManagerData {
             this.error = false;
             
             try {
-                // Load units and unit types in parallel
-                const [unitsResponse, unitTypesResponse] = await Promise.all([
+                // Load full building data, units and unit types in parallel
+                const [buildingResponse, unitsResponse, unitTypesResponse] = await Promise.all([
+                    fetch(`${this.apiURL}buildings/${this.buildingID}`),
                     fetch(`${this.apiURL}buildings/${this.buildingID}/units`),
                     fetch(`${this.apiURL}buildings/${this.buildingID}/unit-types`)
                 ]);
                 
-                if (!unitsResponse.ok || !unitTypesResponse.ok) {
+                if (!buildingResponse.ok || !unitsResponse.ok || !unitTypesResponse.ok) {
                     throw new Error('Failed to fetch building data');
                 }
                 
-                const [units, unitTypes] = await Promise.all([
+                const [building, units, unitTypes] = await Promise.all([
+                    buildingResponse.json(),
                     unitsResponse.json(),
                     unitTypesResponse.json()
                 ]);
                 
+                this.building = building;
                 this.units = units;
                 this.unitTypes = unitTypes;
                 this.dataLoaded = true;
@@ -204,6 +216,7 @@ function buildingManagerData(): BuildingManagerData {
                 // Update the BuildingProvider component with new data
                 this.$dispatch('building-data-loaded', {
                     buildingID: this.buildingID,
+                    building: building,
                     units: units,
                     unitTypes: unitTypes
                 });
@@ -239,11 +252,10 @@ declare global {
 
 window.buildingManagerData = buildingManagerData;
 </script>
-</script>
 
 <style>
 .building-manager {
-    @apply min-h-[200px];
+    min-height: 200px;
 }
 
 /* Smooth loading transitions */

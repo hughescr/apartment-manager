@@ -24,10 +24,8 @@ export class FormValidation {
      * Setup validation watchers
      */
     setupValidationWatchers(): void {
-        // Watch for changes to update showSave state
-        this.state.$watch('building', () => {
-            this.state.showSave = this.hasUnsavedChanges();
-        });
+        // Note: Building watching is handled by BuildingCore.setupBuildingWatchers()
+        // to avoid duplicate watchers that can conflict
     }
 
     /**

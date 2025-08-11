@@ -16,7 +16,10 @@ export interface ApiResponse<T> {
 }
 
 export class BuildingApiService {
-    constructor(private apiURL: string) {}
+    constructor(private apiURL: string) {
+        // Remove trailing slash if present to avoid double slashes in URLs
+        this.apiURL = apiURL.replace(/\/$/, '');
+    }
 
     async saveBuilding(building: BuildingData): Promise<ApiResponse<BuildingData>> {
         try {
@@ -29,7 +32,22 @@ export class BuildingApiService {
             });
 
             if(response.ok) {
-                const data = await response.json();
+                // Handle empty response body gracefully
+                const responseText = await response.text();
+                let data;
+
+                if(_.trim(responseText)) {
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch{
+                        // If JSON parsing fails, return the raw text
+                        data = { message: responseText };
+                    }
+                } else {
+                    // Empty response body - assume success with building data
+                    data = building;
+                }
+
                 return { success: true, data };
             } else {
                 const error = await response.text();

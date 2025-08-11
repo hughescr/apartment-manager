@@ -101,8 +101,8 @@ function validateScreeningCriteria(data: Partial<BuildingData>, errors: Record<s
     }
 
     if(data.screeningCriteria?.maxOccupantsPerBedroom !== undefined &&
-      (data.screeningCriteria.maxOccupantsPerBedroom < 1 || data.screeningCriteria.maxOccupantsPerBedroom > 5)) {
-        errors.maxOccupantsPerBedroom = 'Max occupants per bedroom must be between 1 and 5';
+      (data.screeningCriteria.maxOccupantsPerBedroom < 0 || data.screeningCriteria.maxOccupantsPerBedroom > 5)) {
+        errors.maxOccupantsPerBedroom = 'Max occupants per bedroom must be between 0 and 5';
     }
 }
 
@@ -185,59 +185,100 @@ function copyComplexFields(data: Partial<BuildingData>, sanitized: Partial<Build
     }
 }
 
-// Main validation function for building data
-function validateBuildingData(data: Partial<BuildingData>, isCreate = false): { isValid: boolean, errors: Record<string, string>, sanitizedData: Partial<BuildingData> } {
+// Validation response types
+interface ValidationResponse {
+    canSave: boolean        // Can user save data?
+    canPublish: boolean     // Is data ready for listing sites?
+    errors: Record<string, string>    // Blocking errors (prevent save)
+    warnings: Record<string, string>  // Non-blocking warnings (allow save)
+    sanitizedData: Partial<BuildingData>
+}
+
+// Main validation function for building data with tier support
+function validateBuildingData(
+    data: Partial<BuildingData>,
+    tier: 'save' | 'publish' = 'save',
+    isCreate = false
+): ValidationResponse {
     const errors: Record<string, string> = {};
+    const warnings: Record<string, string> = {};
     let sanitized: Partial<BuildingData> = {};
 
-    // Validate and sanitize buildingID
+    // ALWAYS validate and sanitize buildingID for security
     if(isCreate || data.buildingID !== undefined) {
         const idError = validateId(data.buildingID || '', 'buildingID');
         if(idError) {
-            errors.buildingID = idError;
+            errors.buildingID = idError; // Always an error - required for save
         } else {
             sanitized.buildingID = data.buildingID;
         }
     }
 
-    // Sanitize text fields
-    const textFieldData = sanitizeTextFields(data, errors);
+    // Sanitize text fields (for security, but don't validate content)
+    const textFieldData = sanitizeTextFields(data, tier === 'publish' ? errors : warnings);
     sanitized = { ...sanitized, ...textFieldData };
 
     // Copy other fields after validation
     copyNumericFields(data, sanitized);
     copyComplexFields(data, sanitized);
 
-    // Run all validation checks
-    validateAddress(sanitized, errors);
-    validateNumericFields(sanitized, errors);
-    validateContactInfo(sanitized, errors);
-    validateRentSpecials(sanitized, errors);
-    validateIncomeRestrictions(sanitized, errors);
-    validateScreeningCriteria(sanitized, errors);
+    // For SAVE tier: Only security validation, rest are warnings
+    // For PUBLISH tier: All validations are errors
+    const validationTarget = tier === 'publish' ? errors : warnings;
+
+    // Run all validation checks (as warnings for save, errors for publish)
+    validateAddress(sanitized, validationTarget);
+    validateNumericFields(sanitized, validationTarget);
+    validateContactInfo(sanitized, validationTarget);
+    validateRentSpecials(sanitized, validationTarget);
+    validateIncomeRestrictions(sanitized, validationTarget);
+    validateScreeningCriteria(sanitized, validationTarget);
 
     // Additional numeric validations
     const yearError = validateNumericValue(sanitized.yearBuilt, 'yearBuilt', 1800, new Date().getFullYear() + 1);
     if(yearError) {
-        errors.yearBuilt = yearError;
+        validationTarget.yearBuilt = yearError;
     }
 
     const applicationFeeError = validateNumericValue(sanitized.applicationFee, 'applicationFee', 0, Number.MAX_SAFE_INTEGER);
     if(applicationFeeError) {
-        errors.applicationFee = applicationFeeError;
+        validationTarget.applicationFee = applicationFeeError;
     }
 
     // Validate arrays
     if(sanitized.rentSpecials) {
         const arrayError = validateArraySize(sanitized.rentSpecials, 'rentSpecials', 50);
         if(arrayError) {
-            errors.rentSpecials = arrayError;
+            validationTarget.rentSpecials = arrayError;
+        }
+    }
+
+    // For save tier: Required fields check only for buildingID
+    // For publish tier: Check all required fields
+    if(tier === 'publish') {
+        // Additional required field checks for publishing
+        if(!sanitized.buildingName || _.trim(sanitized.buildingName) === '') {
+            errors.buildingName = 'Building name is required for publishing';
+        }
+        if(!sanitized.street || _.trim(sanitized.street) === '') {
+            errors.street = 'Street address is required for publishing';
+        }
+        if(!sanitized.city || _.trim(sanitized.city) === '') {
+            errors.city = 'City is required for publishing';
+        }
+        if(!sanitized.state || _.trim(sanitized.state) === '') {
+            errors.state = 'State is required for publishing';
+        }
+        if(!sanitized.zip || _.trim(sanitized.zip) === '') {
+            errors.zip = 'ZIP code is required for publishing';
         }
     }
 
     return {
-        isValid: _.keys(errors).length === 0,
+        canSave: _.keys(errors).length === 0, // Can save if no blocking errors
+        canPublish: _.keys(errors).length === 0 && _.keys(warnings).length === 0, // Can publish if no errors or warnings
         errors,
+        warnings,
         sanitizedData: sanitized
     };
 }
@@ -277,9 +318,11 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     // Sanitize object to prevent prototype pollution
     const data = sanitizeObject(rawData);
 
-    const validation = validateBuildingData(data, true);
+    // Use 'save' tier for permissive validation
+    const validation = validateBuildingData(data, 'save', true);
 
-    if(!validation.isValid) {
+    // Only block on critical errors (canSave = false)
+    if(!validation.canSave) {
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
@@ -290,7 +333,8 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     // Ensure we return the sanitized data, not the raw response
     const responseData = {
         ...validation.sanitizedData,
-        ..._.pick(newBuilding, ['created', 'modified'])
+        ..._.pick(newBuilding, ['created', 'modified']),
+        _validationWarnings: validation.warnings // Include warnings in response
     };
     return { statusCode: 201, body: JSON.stringify(responseData) };
 };
@@ -317,17 +361,39 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     // Sanitize object to prevent prototype pollution
     const data = sanitizeObject(rawData);
 
-    const validation = validateBuildingData(data, false);
+    // Use 'save' tier for permissive validation
+    const validation = validateBuildingData(data, 'save', false);
 
-    if(!validation.isValid) {
+    // Only block on critical errors (canSave = false)
+    if(!validation.canSave) {
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
         };
     }
 
-    const updatedBuilding = await updateBuilding(buildingID, validation.sanitizedData);
-    return updatedBuilding ? { statusCode: 200, body: JSON.stringify(updatedBuilding) } : { statusCode: 404, body: 'Not Found' };
+    try {
+        const updatedBuilding = await updateBuilding(buildingID, validation.sanitizedData);
+        if(!updatedBuilding) {
+            return { statusCode: 404, body: 'Not Found' };
+        }
+
+        // Include validation warnings in response
+        const responseData = {
+            ...updatedBuilding,
+            _validationWarnings: validation.warnings
+        };
+        return { statusCode: 200, body: JSON.stringify(responseData) };
+    } catch(error) {
+        console.error('Error updating building:', error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: 'Internal server error during update',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            })
+        };
+    }
 };
 
 export const del = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {

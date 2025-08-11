@@ -9,7 +9,7 @@ import { UnitTypeManagement, type UnitTypeManagementState } from './unitTypeMana
 import { FormValidation, type FormValidationState } from './formValidation';
 import { ApiHelpers, type ApiHelpersState } from './apiHelpers';
 import { StateHelpers, type StateHelpersState } from './stateHelpers';
-import { noop } from 'lodash';
+import { noop, map } from 'lodash';
 
 /**
  * Combined state interface that includes all module states
@@ -108,6 +108,62 @@ function buildingStateObject(): any {
 
             // Update filtered units initially
             this._unitManagement.updateFilteredUnits();
+
+            // Listen for dynamic data updates from parent component
+            this.setupDataUpdateListener();
+        },
+
+        /**
+         * Listen for dynamic data updates from parent BuildingManager
+         */
+        setupDataUpdateListener(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            // Watch for changes to data attributes
+            this.$watch('$el.dataset.buildingData', (value: string) => {
+                if(value) {
+                    try {
+                        const buildingData = JSON.parse(value);
+                        this.building = buildingData;
+                        // Set original state if it hasn't been set yet
+                        // This handles the case where buildingCore initialization failed
+                        // but data was loaded later via dynamic updates
+                        if(!this.original) {
+                            this.original = JSON.parse(JSON.stringify(buildingData));
+                        }
+                    } catch{
+                        // Failed to parse building data - silently ignore
+                    }
+                }
+            });
+
+            this.$watch('$el.dataset.initialUnits', (value: string) => {
+                if(value) {
+                    try {
+                        const units = JSON.parse(value);
+                        this.units = map(units, (unit: ExtendedUnitData) => ({
+                            ...unit,
+                            lastUpdated: unit.lastUpdated || new Date().toISOString(),
+                            status: unit.status || this._unitManagement?.getUnitStatus(unit) || 'unknown',
+                            currentRent: unit.rent || 0,
+                            editingRent: false,
+                            savingField: null
+                        }));
+                        this._unitManagement?.updateFilteredUnits();
+                    } catch{
+                        // Failed to parse units data - silently ignore
+                    }
+                }
+            });
+
+            this.$watch('$el.dataset.initialUnitTypes', (value: string) => {
+                if(value) {
+                    try {
+                        const unitTypes = JSON.parse(value);
+                        this.unitTypes = unitTypes;
+                    } catch{
+                        // Failed to parse unit types data - silently ignore
+                    }
+                }
+            });
         },
 
         // Building Core Methods - maintain exact same interface

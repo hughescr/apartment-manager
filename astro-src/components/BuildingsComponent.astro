@@ -29,23 +29,22 @@ const apiURL = Resource.API.url;
     </div>
     
     <!-- Building navigation tabs -->
-    <div data-buildings={JSON.stringify(buildings)}>
-        <BuildingsList buildings={buildings} />
-    </div>
+    <BuildingsList buildings={buildings} />
     
     <!-- Individual building managers with lazy loading -->
-    {buildings.map((building, i) => (
-        <div x-show={`activeBuildingTab === ${i}`} 
-             x-cloak 
-             data-building-id={building.buildingID}
-             data-api-url={apiURL}
-             data-should-load="false">
+    <div class="building-managers-container">
+        {buildings.map((building, i) => (
             <BuildingManager 
                 building={building}
                 apiURL={apiURL}
+                data-building-id={building.buildingID}
+                data-api-url={apiURL}
+                data-tab-index={i}
+                class="building-tab-content"
+                style={i === 0 ? '' : 'display: none;'}
             />
-        </div>
-    ))}
+        ))}
+    </div>
     
     <!-- Add building form -->
     <div x-show="activeBuildingTab === buildings.length" x-cloak data-api-url={apiURL}>
@@ -108,24 +107,61 @@ function buildingsComponentData(): BuildingsComponentData {
                     this.activeBuildingTab = 0;
                 }
             }
+            
+            // Show the initially active tab based on data-tab-index
+            const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
+            allManagers.forEach((manager) => {
+                const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
+                manager.style.display = managerTabIndex === this.activeBuildingTab ? '' : 'none';
+            });
+            
+            // Trigger lazy loading for the initially active building tab
+            if (this.activeBuildingTab < this.buildings.length) {
+                const buildingID = this.buildings[this.activeBuildingTab].buildingID;
+                // Use setTimeout to ensure DOM and Alpine are ready
+                setTimeout(() => {
+                    const buildingElement = document.querySelector(`.building-manager[data-building-id="${buildingID}"]`) as HTMLElement;
+                    if (buildingElement) {
+                        buildingElement.dispatchEvent(new CustomEvent('trigger-load'));
+                    }
+                }, 200);  // Slightly longer delay to ensure Alpine components are initialized
+            }
         },
         
         handleTabChange(event: CustomEvent<{ tabIndex: number; buildingID?: string }>) {
             const { tabIndex, buildingID } = event.detail;
             this.activeBuildingTab = tabIndex;
             
+            // Show/hide building managers based on their data-tab-index
+            const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
+            allManagers.forEach((manager) => {
+                const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
+                manager.style.display = managerTabIndex === tabIndex ? '' : 'none';
+            });
+            
             // Trigger lazy loading for the selected building
             if (buildingID && tabIndex < this.buildings.length) {
-                const buildingElement = document.querySelector(`[data-building-id="${buildingID}"]`) as HTMLElement;
+                const buildingElement = document.querySelector(`.building-manager[data-building-id="${buildingID}"]`) as HTMLElement;
                 if (buildingElement) {
-                    buildingElement.dataset.shouldLoad = 'true';
+                    // Dispatch event to trigger loading
+                    buildingElement.dispatchEvent(new CustomEvent('trigger-load'));
                 }
             }
         },
         
-        handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string; units: any[]; unitTypes: any[] }>) {
-            const { buildingID, units, unitTypes } = event.detail;
-            console.log(`Loaded data for building ${buildingID}:`, { units: units.length, unitTypes: unitTypes.length });
+        handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string; building: any; units: any[]; unitTypes: any[] }>) {
+            const { buildingID, building, units, unitTypes } = event.detail;
+            console.log(`Loaded data for building ${buildingID}:`, { 
+                building: building,
+                units: units.length, 
+                unitTypes: unitTypes.length 
+            });
+            
+            // Update the building in our local state
+            const index = this.buildings.findIndex((b: Building) => b.buildingID === buildingID);
+            if (index !== -1 && building) {
+                this.buildings[index] = building;
+            }
         },
         
         showAndHideToast(message: string, type: string) {
@@ -153,5 +189,10 @@ window.buildingsComponentData = buildingsComponentData;
 /* Smooth loading transitions */
 [x-cloak] { 
     display: none !important; 
+}
+
+/* Hide inactive tabs */
+.hidden {
+    display: none !important;
 }
 </style>

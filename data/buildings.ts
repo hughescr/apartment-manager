@@ -69,17 +69,31 @@ export async function createBuilding(building: BuildingData) {
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
-    const now = new Date();
-    const { Attributes } = await Building.build(UpdateItemCommand)
-        .item({ ...updates, buildingID, unitID: 'BUILDING', updatedAt: now.toISOString() })
-        .options({ returnValues: 'ALL_NEW' })
-        .send();
-    if(!Attributes) {
-        throw new Error('Failed to update building');
+    // First, get the existing building to merge with updates
+    const existingBuilding = await getBuilding(buildingID);
+    if(!existingBuilding) {
+        throw new Error('Building not found');
     }
-    const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
-    if((Attributes as Record<string, unknown>).updatedAt) {
-        result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
+
+    // Merge the updates with existing data
+    const now = new Date();
+    const mergedData = {
+        ...existingBuilding,
+        ...updates,
+        buildingID,
+        unitID: 'BUILDING',
+        updatedAt: now.toISOString()
+    };
+
+    // Use PutItemCommand to replace the entire item - more reliable than UpdateItemCommand for complex objects
+    await Building.build(PutItemCommand)
+        .item(mergedData)
+        .send();
+
+    // Return the merged data since PutItemCommand doesn't return the item
+    const result = _.omit(mergedData, ['unitID']) as unknown as BuildingData;
+    if(mergedData.updatedAt) {
+        result.updatedAt = new Date(mergedData.updatedAt as string);
     }
     return result;
 }

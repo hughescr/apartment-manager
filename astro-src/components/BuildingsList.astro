@@ -12,7 +12,7 @@ export interface Props {
 // Buildings passed as prop for static data
 ---
 
-<div class="buildings-list" x-data="buildingsListData()" x-init="init()">
+<div class="buildings-list" x-data="buildingsListData()" x-init="init()" data-buildings={JSON.stringify(Astro.props.buildings)}>
     <div role="tablist" class="tabs tabs-lift">
         <!-- Building tabs -->
         <template x-for="(building, index) in buildings" :key="building.buildingID">
@@ -122,6 +122,6 @@ window.buildingsListData = buildingsListData;
 
 <style>
 .buildings-list {
-    @apply mb-4;
+    margin-bottom: 1rem;
 }
 </style>

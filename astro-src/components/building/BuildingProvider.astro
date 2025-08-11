@@ -52,6 +52,14 @@ if (!building.screeningCriteria) {
 if (!building.contactInfo) building.contactInfo = {};
 if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {};
 
+// Income restrictions - initialize with sensible defaults
+if (!building.incomeRestrictions) {
+    building.incomeRestrictions = {
+        amiLimit: null,
+        maxIncomeByHouseholdSize: {}
+    };
+}
+
 // Ensure units and unitTypes are arrays
 const safeUnits = units || [];
 const safeUnitTypes = unitTypes || [];

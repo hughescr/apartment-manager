@@ -355,11 +355,14 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
     
     /* Table styling */
     .table th {
-        @apply font-semibold text-base-content/80;
+        font-weight: 600;
+        color: oklch(var(--bc) / 0.8);
     }
     
     /* Hover effects */
     .label:hover {
-        @apply transition-colors;
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
     }
 </style>

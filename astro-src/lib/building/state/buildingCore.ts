@@ -54,7 +54,7 @@ export class BuildingCore {
             if(value) {
                 this.state.$dispatch('building:updated', { building: value });
             }
-        });
+        }, { deep: true });
     }
 
     /**
@@ -76,7 +76,8 @@ export class BuildingCore {
      * Save building changes
      */
     async saveBuildingData(): Promise<void> {
-        if(!this.validateBuildingForm() || !this.state.building || !this.apiService) {
+        // Remove validation check - we now allow saving with warnings
+        if(!this.state.building || !this.apiService) {
             return;
         }
 
@@ -88,14 +89,35 @@ export class BuildingCore {
                 throw new Error(result.error || 'Failed to save building');
             }
 
-            // Update original state
-            this.state.original = JSON.parse(JSON.stringify(this.state.building));
+            // Check if response has validation warnings
+            const responseData = result.data as Record<string, unknown>;
+            const warnings = responseData?._validationWarnings as Record<string, string>;
+
+            // Update original state with the saved data (minus warnings)
+            const savedBuilding = { ...this.state.building };
+            if(responseData) {
+                // Remove the _validationWarnings from the saved data
+                delete (responseData as { _validationWarnings?: unknown })._validationWarnings;
+                Object.assign(savedBuilding, responseData);
+            }
+
+            this.state.original = JSON.parse(JSON.stringify(savedBuilding));
+            this.state.building = savedBuilding;
             this.state.showSave = false;
 
-            this.state.$dispatch('toast:show', {
-                message: 'Building saved successfully',
-                type: 'success'
-            });
+            // Show appropriate success message based on warnings
+            if(warnings && Object.keys(warnings).length > 0) {
+                const warningCount = Object.keys(warnings).length;
+                this.state.$dispatch('toast:show', {
+                    message: `Building saved with ${warningCount} warning${warningCount > 1 ? 's' : ''}. Complete all fields to publish.`,
+                    type: 'warning'
+                });
+            } else {
+                this.state.$dispatch('toast:show', {
+                    message: 'Building saved successfully',
+                    type: 'success'
+                });
+            }
 
             this.state.$dispatch('photos:updated', {
                 photos: this.state.building.photos || []

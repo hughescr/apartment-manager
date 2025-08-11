@@ -10,13 +10,21 @@ export interface LocationConfig {
 
 export class BuildingDataParser {
     static parseBuildingData(element: HTMLElement): BuildingData | null {
-        const buildingEl = element.querySelector('[data-building]');
+        // Check if the element itself has the data attribute first
+        let buildingEl: HTMLElement | null = null;
+        if(element.hasAttribute('data-building-data')) {
+            buildingEl = element;
+        } else {
+            // If not, look for a child element with the data attribute
+            buildingEl = element.querySelector('[data-building-data]');
+        }
+
         if(!buildingEl) {
             return null;
         }
 
         try {
-            const buildingData = (buildingEl as HTMLElement).dataset.building;
+            const buildingData = buildingEl.dataset.buildingData;
             if(!buildingData) {
                 return null;
             }
@@ -27,13 +35,21 @@ export class BuildingDataParser {
     }
 
     static parseUnitsData(element: HTMLElement): ExtendedUnitData[] {
-        const unitsEl = element.querySelector('[data-units]');
+        // Check if the element itself has the data attribute first
+        let unitsEl: HTMLElement | null = null;
+        if(element.hasAttribute('data-initial-units')) {
+            unitsEl = element;
+        } else {
+            // If not, look for a child element with the data attribute
+            unitsEl = element.querySelector('[data-initial-units]');
+        }
+
         if(!unitsEl) {
             return [];
         }
 
         try {
-            const unitsData = (unitsEl as HTMLElement).dataset.units;
+            const unitsData = unitsEl.dataset.initialUnits;
             if(!unitsData) {
                 return [];
             }
@@ -55,13 +71,21 @@ export class BuildingDataParser {
     }
 
     static parseUnitTypesData(element: HTMLElement): UnitTypeData[] {
-        const unitTypesEl = element.querySelector('[data-unit-types]');
+        // Check if the element itself has the data attribute first
+        let unitTypesEl: HTMLElement | null = null;
+        if(element.hasAttribute('data-initial-unit-types')) {
+            unitTypesEl = element;
+        } else {
+            // If not, look for a child element with the data attribute
+            unitTypesEl = element.querySelector('[data-initial-unit-types]');
+        }
+
         if(!unitTypesEl) {
             return [];
         }
 
         try {
-            const unitTypesData = (unitTypesEl as HTMLElement).dataset.unitTypes;
+            const unitTypesData = unitTypesEl.dataset.initialUnitTypes;
             if(!unitTypesData) {
                 return [];
             }
@@ -72,13 +96,21 @@ export class BuildingDataParser {
     }
 
     static parseLocationData(element: HTMLElement): LocationConfig | null {
-        const locationEl = element.querySelector('[data-location-config]');
+        // Check if the element itself has the data attribute first
+        let locationEl: HTMLElement | null = null;
+        if(element.hasAttribute('data-location-config')) {
+            locationEl = element;
+        } else {
+            // If not, look for a child element with the data attribute
+            locationEl = element.querySelector('[data-location-config]');
+        }
+
         if(!locationEl) {
             return null;
         }
 
         try {
-            const locationData = (locationEl as HTMLElement).dataset.locationConfig;
+            const locationData = locationEl.dataset.locationConfig;
             if(!locationData) {
                 return null;
             }
@@ -89,12 +121,20 @@ export class BuildingDataParser {
     }
 
     static parseApiUrl(element: HTMLElement): string {
-        const apiUrlEl = element.querySelector('[data-api-url]');
+        // Check if the element itself has the data attribute first
+        let apiUrlEl: HTMLElement | null = null;
+        if(element.hasAttribute('data-api-url')) {
+            apiUrlEl = element;
+        } else {
+            // If not, look for a child element with the data attribute
+            apiUrlEl = element.querySelector('[data-api-url]');
+        }
+
         if(!apiUrlEl) {
             return '';
         }
 
-        return (apiUrlEl as HTMLElement).dataset.apiUrl || '';
+        return apiUrlEl.dataset.apiUrl || '';
     }
 
     private static getUnitStatus(unit: ExtendedUnitData): string {
