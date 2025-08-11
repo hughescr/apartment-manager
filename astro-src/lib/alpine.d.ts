@@ -1,7 +1,7 @@
 // Alpine.js magic property types
 export interface AlpineMagicProperties {
     $el: HTMLElement
-    $watch<T>(property: string, callback: (value: T, oldValue: T) => void): void
+    $watch<T>(property: string, callback: (value: T, oldValue: T) => void, options?: { deep?: boolean }): void
     $dispatch(event: string, detail?: unknown): void
 }
 

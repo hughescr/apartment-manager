@@ -1,0 +1,710 @@
+---
+// astro-src/components/unit-card/UnitCardProvider.astro
+import Saving from "../Saving.astro";
+import { Resource } from "sst";
+import type { UnitData, UnitTypeData } from "../../../src/types";
+import { PhotoUploader } from "../forms";
+
+// Import all sub-components
+import UnitBasicInfo from "./UnitBasicInfo.astro";
+import UnitDetailsGrid from "./UnitDetailsGrid.astro";
+import UnitDepositSection from "./UnitDepositSection.astro";
+import UnitVacancyStatus from "./UnitVacancyStatus.astro";
+import UnitDescriptions from "./UnitDescriptions.astro";
+import UnitRentSpecial from "./UnitRentSpecial.astro";
+import UnitAmenitiesSection from "./UnitAmenitiesSection.astro";
+import UnitWebsiteStatus from "./UnitWebsiteStatus.astro";
+
+const { unit, unitTypes = [] } = Astro.props as { unit: UnitData; unitTypes: UnitTypeData[] };
+
+const apiURL = Resource.API.url;
+
+// Initialize missing properties
+if (!unit.unitAmenities) unit.unitAmenities = [];
+if (!unit.photos) unit.photos = [];
+if (!unit.feedInclusion) unit.feedInclusion = {};
+if (!unit.manualReferences) unit.manualReferences = {};
+// Initialize vacancy status fields
+if (!unit.vacancyClass) unit.vacancyClass = undefined;
+if (!unit.vacateDate) unit.vacateDate = '';
+if (!unit.madeReadyDate) unit.madeReadyDate = '';
+---
+
+<script is:inline>
+// Used by Alpine.js x-data attribute
+window.unitCardData = function unitCardData() {
+    return {
+        unit: null,
+        originalUnit: null,
+        unitTypes: null,
+        selectedUnitType: null,
+        apiURL: null,
+        saving: false, // Stores the name of the field being saved
+        errors: {},
+        expandedSections: {
+            details: false,
+            amenities: false,
+            photos: false,
+            websites: false
+        },
+        buildingAmenities: null, // Will be populated with building amenities
+        
+        init() {
+            // Parse data from data attributes
+            this.unit = JSON.parse(this.$el.dataset.unit);
+            this.unitTypes = JSON.parse(this.$el.dataset.unitTypes);
+            this.apiURL = this.$el.dataset.apiUrl;
+            this.originalUnit = JSON.parse(JSON.stringify(this.unit));
+            
+            // Initialize unit amenities if not present
+            if (!this.unit.unitAmenities) this.unit.unitAmenities = [];
+            if (!this.unit.photos) this.unit.photos = [];
+            if (!this.unit.feedInclusion) this.unit.feedInclusion = {};
+            if (!this.unit.manualReferences) this.unit.manualReferences = {};
+            // Initialize vacancy status fields
+            if (!this.unit.vacancyClass) this.unit.vacancyClass = undefined;
+            if (!this.unit.vacateDate) this.unit.vacateDate = '';
+            if (!this.unit.madeReadyDate) this.unit.madeReadyDate = '';
+            
+            // Initialize enhanced deposit structure
+            this.initializeDeposit();
+            
+            // Find and set the selected unit type
+            if (this.unit.modelID) {
+                this.selectedUnitType = this.unitTypes.find(ut => ut.modelID === this.unit.modelID) || null;
+            }
+            
+            // Load building amenities for inheritance display
+            this.loadBuildingAmenities();
+        },
+
+        isDirty() {
+            return JSON.stringify(this.unit) !== JSON.stringify(this.originalUnit);
+        },
+        
+        isInherited(fieldName) {
+            if (!this.selectedUnitType) return false;
+            
+            // Check if the field value is null/undefined/empty in the unit
+            const unitValue = this.unit[fieldName];
+            const isEmptyValue = unitValue === null || unitValue === undefined || unitValue === '';
+            
+            // Check if the unit type has a value for this field
+            const modelFieldMap = {
+                'beds': 'beds',
+                'baths': 'baths',
+                'sqft': ['minSqft', 'maxSqft'],
+                'rent': ['minRent', 'maxRent'],
+                'maxOccupants': 'maxOccupants',
+                'perPersonRent': 'perPersonRent',
+                'deposit': 'deposit',
+                'minLeaseTerm': 'minLeaseTerm',
+                'maxLeaseTerm': 'maxLeaseTerm'
+            };
+            
+            const modelField = modelFieldMap[fieldName];
+            if (!modelField) return false;
+            
+            if (Array.isArray(modelField)) {
+                return isEmptyValue && modelField.some(f => this.selectedUnitType[f] !== null && this.selectedUnitType[f] !== undefined);
+            }
+            
+            return isEmptyValue && this.selectedUnitType[modelField] !== null && this.selectedUnitType[modelField] !== undefined;
+        },
+        
+        getInheritedValue(fieldName) {
+            if (!this.selectedUnitType) return null;
+            
+            const modelFieldMap = {
+                'beds': 'beds',
+                'baths': 'baths',
+                'sqft': ['minSqft', 'maxSqft'],
+                'rent': ['minRent', 'maxRent'],
+                'maxOccupants': 'maxOccupants',
+                'perPersonRent': 'perPersonRent',
+                'deposit': 'deposit',
+                'minLeaseTerm': 'minLeaseTerm',
+                'maxLeaseTerm': 'maxLeaseTerm'
+            };
+            
+            const modelField = modelFieldMap[fieldName];
+            if (!modelField) return null;
+            
+            if (Array.isArray(modelField)) {
+                const [min, max] = modelField.map(f => this.selectedUnitType[f]);
+                if (min !== null && max !== null) return `${min}-${max}`;
+                if (min !== null) return `${min}+`;
+                if (max !== null) return `Up to ${max}`;
+                return null;
+            }
+            
+            const value = this.selectedUnitType[modelField];
+            if (fieldName === 'deposit' && typeof value === 'object' && value !== null) {
+                return value.amount; // Return just the amount for display
+            }
+            
+            return value;
+        },
+        
+        getEffectiveValue(fieldName) {
+            const unitValue = this.unit[fieldName];
+            if (unitValue !== null && unitValue !== undefined && unitValue !== '') {
+                return unitValue;
+            }
+            return this.getInheritedValue(fieldName);
+        },
+        
+        getEffectiveAmenities() {
+            // If unit has amenities defined, use them (override)
+            if (this.unit.unitAmenities && this.unit.unitAmenities.length > 0) {
+                return this.unit.unitAmenities;
+            }
+            // Otherwise, use model amenities if available
+            if (this.selectedUnitType && this.selectedUnitType.modelAmenities && this.selectedUnitType.modelAmenities.length > 0) {
+                return this.selectedUnitType.modelAmenities;
+            }
+            // Finally, fallback to building amenities
+            if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+                return this.buildingAmenities;
+            }
+            return [];
+        },
+        
+        getAmenityInheritanceSource() {
+            if (this.unit.unitAmenities && this.unit.unitAmenities.length > 0) {
+                return 'unit';
+            }
+            if (this.selectedUnitType && this.selectedUnitType.modelAmenities && this.selectedUnitType.modelAmenities.length > 0) {
+                return 'floorplan';
+            }
+            if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+                return 'building';
+            }
+            return 'none';
+        },
+        
+        resetToInheritedAmenities() {
+            const source = this.getAmenityInheritanceSource();
+            let message = 'This will remove unit-specific amenities. ';
+            
+            if (source === 'floorplan' || (this.selectedUnitType && this.selectedUnitType.modelAmenities && this.selectedUnitType.modelAmenities.length > 0)) {
+                message += 'The unit will inherit amenities from its floorplan.';
+            } else if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+                message += 'The unit will inherit amenities from the building.';
+            } else {
+                message += 'The unit will have no amenities.';
+            }
+            
+            if (confirm(message + ' Continue?')) {
+                this.unit.unitAmenities = [];
+            }
+        },
+        
+        resetFieldToInherited(fieldName) {
+            const inheritedValue = this.getInheritedValue(fieldName);
+            const fieldDisplayName = {
+                'beds': 'Beds',
+                'baths': 'Baths', 
+                'sqft': 'Square Footage',
+                'rent': 'Rent',
+                'maxOccupants': 'Max Occupants',
+                'perPersonRent': 'Per Person Rent',
+                'deposit': 'Deposit',
+                'minLeaseTerm': 'Min Lease Term',
+                'maxLeaseTerm': 'Max Lease Term'
+            }[fieldName] || fieldName;
+            
+            if (inheritedValue !== null && confirm(`Reset ${fieldDisplayName} to inherited value (${inheritedValue})? This will clear the unit-specific value.`)) {
+                this.unit[fieldName] = null;
+            }
+        },
+        
+        onModelChange() {
+            this.unit.modelID = this.selectedUnitType ? this.selectedUnitType.modelID : undefined;
+            // Trigger save when model changes
+            this.saveUnit(this);
+        },
+
+        validateForm() {
+            this.errors = {};
+            
+            // Validate unit number (required)
+            if (!this.unit.unitNumber || this.unit.unitNumber.trim() === '') {
+                this.errors.unitNumber = 'Unit number is required';
+            }
+            
+            // Validate beds (0-10)
+            if (this.unit.beds !== null && this.unit.beds !== undefined) {
+                if (this.unit.beds < 0 || this.unit.beds > 10) {
+                    this.errors.beds = 'Beds must be between 0 and 10';
+                }
+            }
+            
+            // Validate baths (0-10)
+            if (this.unit.baths !== null && this.unit.baths !== undefined) {
+                if (this.unit.baths < 0 || this.unit.baths > 10) {
+                    this.errors.baths = 'Baths must be between 0 and 10';
+                }
+            }
+            
+            // Validate sqft (> 0)
+            if (this.unit.sqft !== null && this.unit.sqft !== undefined) {
+                if (this.unit.sqft <= 0) {
+                    this.errors.sqft = 'Square footage must be greater than 0';
+                }
+                if (this.unit.sqft > 10000) {
+                    this.errors.sqft = 'Square footage must be less than 10,000';
+                }
+            }
+            
+            // Validate rent (> 0)
+            if (this.unit.rent !== null && this.unit.rent !== undefined) {
+                if (this.unit.rent <= 0) {
+                    this.errors.rent = 'Rent must be greater than 0';
+                }
+                if (this.unit.rent > 25000) {
+                    this.errors.rent = 'Rent must be less than $25,000';
+                }
+            }
+            
+            // Validate maxOccupants (1-20)
+            if (this.unit.maxOccupants !== null && this.unit.maxOccupants !== undefined) {
+                if (this.unit.maxOccupants < 1 || this.unit.maxOccupants > 20) {
+                    this.errors.maxOccupants = 'Max occupants must be between 1 and 20';
+                }
+            }
+            
+            // Validate perPersonRent (>= 0)
+            if (this.unit.perPersonRent !== null && this.unit.perPersonRent !== undefined) {
+                if (this.unit.perPersonRent < 0) {
+                    this.errors.perPersonRent = 'Per person rent must be 0 or greater';
+                }
+            }
+            
+            // Validate deposit
+            if (this.unit.deposit !== null && this.unit.deposit !== undefined) {
+                if (typeof this.unit.deposit === 'number') {
+                    if (this.unit.deposit < 0) {
+                        this.errors.deposit = 'Deposit must be 0 or greater';
+                    }
+                } else if (typeof this.unit.deposit === 'object') {
+                    if (!this.unit.deposit.amount || this.unit.deposit.amount < 0) {
+                        this.errors.depositAmount = 'Deposit amount is required and must be 0 or greater';
+                    }
+                    if (this.unit.deposit.partialRefundPercentage !== undefined && this.unit.deposit.partialRefundPercentage !== null) {
+                        if (this.unit.deposit.partialRefundPercentage < 0 || this.unit.deposit.partialRefundPercentage > 100) {
+                            this.errors.depositPartialRefund = 'Partial refund percentage must be between 0 and 100';
+                        }
+                    }
+                }
+            }
+            
+            // Validate lease terms
+            if (this.unit.minLeaseTerm !== null && this.unit.minLeaseTerm !== undefined) {
+                if (this.unit.minLeaseTerm < 1 || this.unit.minLeaseTerm > 24) {
+                    this.errors.minLeaseTerm = 'Min lease term must be between 1 and 24 months';
+                }
+            }
+            
+            if (this.unit.maxLeaseTerm !== null && this.unit.maxLeaseTerm !== undefined) {
+                if (this.unit.maxLeaseTerm < 1 || this.unit.maxLeaseTerm > 24) {
+                    this.errors.maxLeaseTerm = 'Max lease term must be between 1 and 24 months';
+                }
+            }
+            
+            // Validate lease term logic
+            if (this.unit.minLeaseTerm && this.unit.maxLeaseTerm && this.unit.minLeaseTerm > this.unit.maxLeaseTerm) {
+                this.errors.leaseTerm = 'Minimum lease term cannot be greater than maximum';
+            }
+            
+            // Validate available date
+            if (this.unit.availableDate) {
+                const availDate = new Date(this.unit.availableDate);
+                const minDate = new Date('2025-01-01');
+                const maxDate = new Date('2028-01-01');
+                
+                if (availDate < minDate || availDate > maxDate) {
+                    this.errors.availableDate = 'Available date must be between 2025 and 2028';
+                }
+            }
+            
+            // Validate vacate date
+            if (this.unit.vacateDate) {
+                const vacateDate = new Date(this.unit.vacateDate);
+                const minDate = new Date('2025-01-01');
+                const maxDate = new Date('2030-01-01');
+                
+                if (vacateDate < minDate || vacateDate > maxDate) {
+                    this.errors.vacateDate = 'Vacate date must be between 2025 and 2030';
+                }
+            }
+            
+            // Validate made ready date
+            if (this.unit.madeReadyDate) {
+                const madeReadyDate = new Date(this.unit.madeReadyDate);
+                const minDate = new Date('2025-01-01');
+                const maxDate = new Date('2030-01-01');
+                
+                if (madeReadyDate < minDate || madeReadyDate > maxDate) {
+                    this.errors.madeReadyDate = 'Made ready date must be between 2025 and 2030';
+                }
+            }
+            
+            // Validate date logic for vacancy workflow
+            if (this.unit.vacateDate && this.unit.madeReadyDate) {
+                const vacateDate = new Date(this.unit.vacateDate);
+                const madeReadyDate = new Date(this.unit.madeReadyDate);
+                
+                if (vacateDate > madeReadyDate) {
+                    this.errors.vacancyDates = 'Vacate date cannot be after made ready date';
+                }
+            }
+            
+            if (this.unit.madeReadyDate && this.unit.availableDate) {
+                const madeReadyDate = new Date(this.unit.madeReadyDate);
+                const availableDate = new Date(this.unit.availableDate);
+                
+                if (madeReadyDate > availableDate) {
+                    this.errors.vacancyDates = 'Made ready date cannot be after available date';
+                }
+            }
+            
+            // Validate rent special dates
+            if (this.unit.unitRentSpecial) {
+                if (this.unit.unitRentSpecial.startDate && this.unit.unitRentSpecial.endDate) {
+                    const startDate = new Date(this.unit.unitRentSpecial.startDate);
+                    const endDate = new Date(this.unit.unitRentSpecial.endDate);
+                    
+                    if (startDate > endDate) {
+                        this.errors.rentSpecial = 'Special start date must be before end date';
+                    }
+                }
+                
+                // If any rent special field is filled, title is required
+                if ((this.unit.unitRentSpecial.description || this.unit.unitRentSpecial.startDate || this.unit.unitRentSpecial.endDate) 
+                    && (!this.unit.unitRentSpecial.title || this.unit.unitRentSpecial.title.trim() === '')) {
+                    this.errors.rentSpecialTitle = 'Special title is required when adding a rent special';
+                }
+            }
+            
+            return Object.keys(this.errors).length === 0;
+        },
+
+        clearFieldError(fieldName) {
+            delete this.errors[fieldName];
+        },
+
+        async saveUnit(myThis) {
+            myThis = this || myThis; // Allow passing 'this' context
+            if (!myThis.isDirty()) { return; }
+
+            if (!myThis.validateForm()) {
+                console.error('Validation failed:', myThis.errors);
+                return;
+            }
+
+            this.saving = true;
+            try {
+                const response = await fetch(myThis.apiURL + 'buildings/' + myThis.unit.buildingID + '/units/' + myThis.unit.unitID, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(myThis.unit),
+                });
+                if (response.ok) {
+                    myThis.originalUnit = { ...myThis.unit };
+                    myThis.errors = {}; // Clear all errors on successful save
+                } else {
+                    const errorData = await response.json();
+                    console.error('Save failed:', errorData);
+                    myThis.errors.submit = errorData.error || 'Failed to save unit';
+                    // Revert to original value on save failure
+                    myThis.unit = { ...myThis.originalUnit };
+                }
+            } catch (error) {
+                console.error('Network error during save:', error);
+                myThis.errors.submit = 'Network error. Please try again.';
+                // Revert to original value on network error
+                myThis.unit = { ...myThis.originalUnit };
+            } finally {
+                myThis.saving = false;
+            }
+        },
+
+        async deleteUnit() {
+            if (!confirm('Are you sure you want to delete this unit?')) return;
+            try {
+                const response = await fetch(this.apiURL + 'buildings/' + this.unit.buildingID + '/units/' + this.unit.unitID, { method: 'DELETE' });
+                if (response.ok) {
+                    // Reload the page or remove the row from the DOM
+                    window.location.reload(); // Simplest for now
+                } else {
+                    console.error('Delete failed:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Network error during delete:', error);
+            }
+        },
+        
+        formatCurrency(value) {
+            if (!value) return '';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        },
+        
+        toggleSection(section) {
+            this.expandedSections[section] = !this.expandedSections[section];
+        },
+        
+        // Deposit handling functions
+        initializeDeposit() {
+            // Convert legacy number deposits to enhanced object format
+            if (typeof this.unit.deposit === 'number') {
+                this.unit.deposit = {
+                    amount: this.unit.deposit,
+                    refundable: true
+                };
+            }
+            // Initialize empty deposit object if not present
+            if (!this.unit.deposit) {
+                this.unit.deposit = null;
+            }
+        },
+        
+        getDepositAmount() {
+            if (!this.unit.deposit) return null;
+            if (typeof this.unit.deposit === 'number') return this.unit.deposit;
+            return this.unit.deposit.amount;
+        },
+        
+        setDepositAmount(value) {
+            if (!value || value === '') {
+                this.unit.deposit = null;
+                return;
+            }
+            
+            const amount = parseFloat(value);
+            if (isNaN(amount) || amount < 0) return;
+            
+            if (!this.unit.deposit) {
+                this.unit.deposit = {
+                    amount: amount,
+                    refundable: true
+                };
+            } else if (typeof this.unit.deposit === 'number') {
+                this.unit.deposit = {
+                    amount: amount,
+                    refundable: true
+                };
+            } else {
+                this.unit.deposit.amount = amount;
+            }
+        },
+        
+        getDepositRefundable() {
+            if (!this.unit.deposit) return true;
+            if (typeof this.unit.deposit === 'number') return true;
+            return this.unit.deposit.refundable !== false;
+        },
+        
+        setDepositRefundable(value) {
+            if (!this.unit.deposit || typeof this.unit.deposit === 'number') return;
+            this.unit.deposit.refundable = value;
+            if (value) {
+                // Clear partial refund percentage when fully refundable
+                delete this.unit.deposit.partialRefundPercentage;
+            }
+        },
+        
+        getDepositPartialRefundPercentage() {
+            if (!this.unit.deposit || typeof this.unit.deposit === 'number') return null;
+            return this.unit.deposit.partialRefundPercentage || null;
+        },
+        
+        setDepositPartialRefundPercentage(value) {
+            if (!this.unit.deposit || typeof this.unit.deposit === 'number') return;
+            const percentage = parseFloat(value);
+            if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+                delete this.unit.deposit.partialRefundPercentage;
+                return;
+            }
+            this.unit.deposit.partialRefundPercentage = percentage;
+        },
+        
+        async loadBuildingAmenities() {
+            try {
+                const response = await fetch(this.apiURL + 'buildings/' + this.unit.buildingID);
+                if (response.ok) {
+                    const building = await response.json();
+                    this.buildingAmenities = building.propertyAmenities || [];
+                }
+            } catch (error) {
+                console.error('Failed to load building amenities:', error);
+                this.buildingAmenities = [];
+            }
+        }
+    };
+}
+</script>
+
+<li 
+    x-data="unitCardData()" 
+    x-init="init(); $watch('unit', () => saveUnit(this))" 
+    class="card bg-base-100 shadow-xl mb-4" 
+    :class="{'opacity-50': saving}" 
+    data-unit={JSON.stringify(unit)} 
+    data-unit-types={JSON.stringify(unitTypes)} 
+    data-api-url={apiURL}
+>
+    <div class="card-body">
+        <!-- Error Summary -->
+        <div x-show="Object.keys(errors).length > 0" class="alert alert-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+                <span x-show="errors.submit" x-text="errors.submit"></span>
+                <span x-show="!errors.submit">Please fix the validation errors below before saving.</span>
+            </div>
+        </div>
+        
+        <!-- Header with Unit Number, Model Selection, and Actions -->
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex-1">
+                <UnitBasicInfo />
+            </div>
+            <div class="flex items-center gap-2">
+                <Saving />
+                <button class="btn btn-error btn-sm" x-on:click="deleteUnit()">Delete</button>
+            </div>
+        </div>
+
+        <!-- Main Details Grid -->
+        <div class="mb-6">
+            <UnitDetailsGrid />
+        </div>
+
+        <!-- Deposit Section -->
+        <div class="mb-6">
+            <UnitDepositSection />
+        </div>
+
+        <!-- Vacancy Status -->
+        <div class="mb-6">
+            <UnitVacancyStatus />
+        </div>
+        
+        <!-- Descriptions -->
+        <div class="mb-6">
+            <UnitDescriptions />
+        </div>
+        
+        <!-- Unit Rent Special -->
+        <div class="mb-6">
+            <UnitRentSpecial />
+        </div>
+        
+        <!-- Unit Amenities Section -->
+        <div class="collapse collapse-arrow bg-base-200 mb-4">
+            <input type="checkbox" x-model="expandedSections.amenities" />
+            <div class="collapse-title text-lg font-medium">
+                Unit Amenities
+                <span class="badge badge-primary badge-sm ml-2" x-text="getEffectiveAmenities().length"></span>
+            </div>
+            <div class="collapse-content">
+                <div class="pt-4">
+                    <UnitAmenitiesSection />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Photos Section -->
+        <div class="collapse collapse-arrow bg-base-200 mb-4">
+            <input type="checkbox" x-model="expandedSections.photos" />
+            <div class="collapse-title text-lg font-medium">
+                Photos
+                <span class="badge badge-primary badge-sm ml-2" x-text="unit.photos?.length || 0"></span>
+            </div>
+            <div class="collapse-content">
+                <div class="pt-4">
+                    <PhotoUploader
+                        name="photos"
+                        label="Unit photos"
+                        xModel="unit.photos"
+                        buildingId={unit.buildingID}
+                        unitId={unit.unitID}
+                    />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Website Status & Listing IDs Section -->
+        <div class="collapse collapse-arrow bg-base-200">
+            <input type="checkbox" x-model="expandedSections.websites" />
+            <div class="collapse-title text-lg font-medium">
+                Website Status
+                <span class="badge badge-primary badge-sm ml-2" x-text="Object.keys(unit.feedInclusion || {}).length"></span>
+            </div>
+            <div class="collapse-content">
+                <div class="pt-4">
+                    <UnitWebsiteStatus />
+                </div>
+            </div>
+        </div>
+    </div>
+</li>
+
+<style>
+    /* Ensure smooth transitions */
+    .collapse-content {
+        transition: all 0.3s ease;
+    }
+    
+    /* Style for inherited value indicator */
+    .input-ghost {
+        background-color: transparent;
+        border-style: dashed;
+        opacity: 0.7;
+    }
+    
+    .input-ghost:focus {
+        opacity: 1;
+        border-style: solid;
+    }
+    
+    /* Badge styling for inheritance indicators */
+    .badge-ghost {
+        background-color: transparent;
+        border: 1px dashed currentColor;
+        opacity: 0.7;
+    }
+    
+    /* Inheritance chain styling */
+    .inheritance-chain {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background: linear-gradient(90deg, 
+            hsl(var(--b2)) 0%, 
+            hsl(var(--b3)) 50%, 
+            hsl(var(--b2)) 100%);
+    }
+    
+    /* Hide number input spinners */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+    
+    /* Smooth transitions for inheritance indicators */
+    [x-transition] {
+        transition: all 0.2s ease;
+    }
+</style>

@@ -11,6 +11,13 @@ const { buildingID, onSuccess } = Astro.props as {
 const apiURL = Resource.API.url;
 
 // No longer need xData variable - moved to script tag
+
+// Declare the global window property for TypeScript
+declare global {
+    interface Window {
+        unitTypeFormData: (apiUrlData: string, buildingIdData: string) => any;
+    }
+}
 ---
 
 <script define:vars={{ apiURL, buildingID }} is:inline>

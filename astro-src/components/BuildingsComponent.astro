@@ -1,350 +1,157 @@
 ---
-import BuildingProvider from './building/BuildingProvider.astro';
-import TabNavigator from './building/TabNavigator.astro';
-import TabPanels from './building/TabPanels.astro';
-import SaveIndicator from './building/SaveIndicator.astro';
-
-// Tab components
-import BuildingInfoTab from './building/tabs/BuildingInfoTab.astro';
-import FloorplansUnitsTab from './building/tabs/FloorplansUnitsTab.astro';
-import PricingPoliciesTab from './building/tabs/PricingPoliciesTab.astro';
-import MarketingTab from './building/tabs/MarketingTab.astro';
-import UnitsTab from './building/tabs/UnitsTab.astro';
-
-// Dialog components
-import AddUnitDialog from './building/dialogs/AddUnitDialog.astro';
-import BulkStatusDialog from './building/dialogs/BulkStatusDialog.astro';
-import BulkRentDialog from './building/dialogs/BulkRentDialog.astro';
+// Refactored BuildingsComponent.astro - Now uses modular components with lazy loading
+import BuildingsList from './BuildingsList.astro';
+import AddBuildingForm from './AddBuildingForm.astro';
+import BuildingManager from './BuildingManager.astro';
 
 import { getBuildings } from '../../data/buildings';
-import { getUnits } from '../../data/units';
-import { getUnitTypes } from '../../data/unitTypes';
 import { Resource } from 'sst';
 
-import _ from 'lodash';
-
+// Only fetch basic building list - units/unit types loaded lazily
 const buildings = await getBuildings();
 const apiURL = Resource.API.url;
-
-// For each building, fetch its units and unit types
-const buildingsWithData = await Promise.all(
-    buildings.map(async (building) => {
-        const [units, unitTypes] = await Promise.all([
-            getUnits(building.buildingID),
-            getUnitTypes(building.buildingID)
-        ]);
-        return { building, units, unitTypes };
-    })
-);
 ---
-<div x-data="{ 
-    activeBuildingTab: 0, 
-    showToast: false, 
-    toastMessage: '', 
-    toastType: '',
-    buildingsData: [],
-    buildingID: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    description: '',
-    specialtyType: 'market-rate',
-    propertyWebsite: '',
-    managementWebsite: '',
-    apiURL: '',
-    saving: false,
-    init() {
-        this.buildingsData = JSON.parse(this.$el.dataset.buildings);
-        this.apiURL = this.$el.dataset.apiUrl;
-        const hash = decodeURIComponent(window.location.hash.substring(1));
-        if (hash) {
-            const index = this.buildingsData.findIndex(b => b.building.buildingID === hash);
-            if (index !== -1) {
-                this.activeBuildingTab = index;
-            } else if(hash === 'add-new-building') {
-                this.activeBuildingTab = this.buildingsData.length;
-            } else {
-                this.activeBuildingTab = 0;
-            }
-        }
-    }, 
-    showAndHideToast(message, type) {
-        this.toastMessage = message;
-        this.toastType = type;
-        this.showToast = true;
-        setTimeout(() => {
-            this.showToast = false;
-        }, 3000);
-    },
-    setActiveTab(tabIndex, buildingID = null) {
-        this.activeBuildingTab = tabIndex;
-        if (buildingID) {
-            window.location.hash = buildingID;
-        } else if (tabIndex === this.buildingsData.length) {
-            window.location.hash = 'add-new-building';
-        }
-    },
-    async addBuilding() {
-        if(!this.buildingID) {
-            this.$dispatch('show-toast', { message: 'Building ID is required.', type: 'error' });
-            return;
-        }
-        this.saving = true;
-        try {
-            const response = await fetch(`${this.apiURL}buildings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    buildingID: this.buildingID,
-                    street: this.street,
-                    city: this.city,
-                    state: this.state,
-                    zip: this.zip,
-                    description: this.description,
-                    specialtyType: this.specialtyType,
-                    contactInfo: {
-                        propertyWebsite: this.propertyWebsite || undefined,
-                        managementWebsite: this.managementWebsite || undefined
-                    }
-                }),
-            });
-            this.saving = false;
-            if(response.ok) {
-                this.$dispatch('show-toast', { message: 'Building added successfully!', type: 'success' });
-                window.location.hash = this.buildingID;
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                this.$dispatch('show-toast', { message: 'Failed to add building.', type: 'error' });
-            }
-        } catch(error) {
-            this.saving = false;
-            this.$dispatch('show-toast', { message: 'Failed to add building: ' + error.message, type: 'error' });
-        }
-    },
-    clearForm() {
-        this.buildingID = '';
-        this.street = '';
-        this.city = '';
-        this.state = '';
-        this.zip = '';
-        this.description = '';
-        this.specialtyType = 'market-rate';
-        this.propertyWebsite = '';
-        this.managementWebsite = '';
-    }
-}" 
-@show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
-@toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
-data-buildings={JSON.stringify(buildingsWithData)}
-data-api-url={apiURL}>
+
+<div x-data="buildingsComponentData()" 
+     x-init="init()"
+     @building-tab-changed="handleTabChange($event)"
+     @show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
+     @toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
+     @building-data-loaded="handleBuildingDataLoaded($event)"
+     data-buildings={JSON.stringify(buildings)}
+     data-api-url={apiURL}>
+     
+    <!-- Toast notifications -->
     <div class="toast toast-center toast-middle" x-show="showToast" x-transition.opacity>
         <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
             <span x-text="toastMessage"></span>
         </div>
     </div>
-    <div role="tablist" class="tabs tabs-lift">
-        <template x-for="(buildingData, index) in buildingsData" :key="buildingData.building.buildingID">
-            <a role="tab" class="tab" 
-               :class="{ 'tab-active': activeBuildingTab === index }"
-               @click="setActiveTab(index, buildingData.building.buildingID)"
-               x-text="buildingData.building.buildingID">
-            </a>
-        </template>
-        <a role="tab" class="tab items-center" 
-           :class="{ 'tab-active': activeBuildingTab === buildingsData.length }"
-           @click="setActiveTab(buildingsData.length)">
-            <svg class="size-4 text-secondary me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line>
-            </svg>
-            <span class="text-secondary">Add Building</span>
-        </a>
+    
+    <!-- Building navigation tabs -->
+    <div data-buildings={JSON.stringify(buildings)}>
+        <BuildingsList buildings={buildings} />
     </div>
     
-    {/* Building Cards - Show only the active one using new modular architecture */}
-    {buildingsWithData.map((buildingData, i) => (
-        <div x-show={`activeBuildingTab === ${i}`} x-cloak>
-            <BuildingProvider 
-                building={buildingData.building} 
-                units={buildingData.units} 
-                unitTypes={buildingData.unitTypes} 
+    <!-- Individual building managers with lazy loading -->
+    {buildings.map((building, i) => (
+        <div x-show={`activeBuildingTab === ${i}`} 
+             x-cloak 
+             data-building-id={building.buildingID}
+             data-api-url={apiURL}
+             data-should-load="false">
+            <BuildingManager 
+                building={building}
                 apiURL={apiURL}
-            >
-                <!-- Save indicator at the top -->
-                <div class="mb-4">
-                    <SaveIndicator />
-                </div>
-                
-                <!-- Tab navigation -->
-                <TabNavigator />
-                
-                <!-- Tab content panels -->
-                <TabPanels>
-                    <BuildingInfoTab 
-                        slot="building-info" 
-                        building={buildingData.building}
-                        apiUrl={apiURL}
-                    />
-                    <FloorplansUnitsTab 
-                        slot="floorplans-units" 
-                    />
-                    <PricingPoliciesTab 
-                        slot="pricing-policies" 
-                        building={buildingData.building}
-                        errors={{}}
-                    />
-                    <MarketingTab 
-                        slot="marketing" 
-                        building={buildingData.building}
-                        apiUrl={apiURL}
-                    />
-                    <UnitsTab 
-                        slot="units" 
-                    />
-                </TabPanels>
-                
-                <!-- Dialogs -->
-                <AddUnitDialog 
-                    building={{
-                        buildingID: buildingData.building.buildingID,
-                        street: buildingData.building.street || '',
-                        city: buildingData.building.city || '',
-                        state: buildingData.building.state || ''
-                    }}
-                    unitTypes={buildingData.unitTypes}
-                    apiUrl={apiURL}
-                />
-                <BulkStatusDialog 
-                    building={{
-                        buildingID: buildingData.building.buildingID
-                    }}
-                    apiUrl={apiURL}
-                />
-                <BulkRentDialog 
-                    building={{
-                        buildingID: buildingData.building.buildingID
-                    }}
-                    apiUrl={apiURL}
-                />
-            </BuildingProvider>
+            />
         </div>
     ))}
-    {/* Add Building Form */}
-    <div class="tab-content bg-base-100 border-base-300 p-4" x-show="activeBuildingTab === buildingsData.length" x-cloak>
-            <fieldset class="fieldset w-xl relative">
-                <div class="indicator w-full">
-                    <span class="indicator-item badge" style="z-index:2" x-show="buildingID === ''">Required</span>
-                    <label class="floating-label mb-6 w-full">
-                        <span>Building Name</span>
-                            <input type="text" name="buildingID" x-model="buildingID" placeholder="Building Name" class="input input-xl w-full" required />
-                    </label>
-                </div>
-                <label class="floating-label mb-2">
-                    <span>Street</span>
-                    <input type="text" name="street" x-model="street" placeholder="Street" class="input w-full"/>
-                </label>
-                <label class="floating-label mb-2">
-                    <span>City</span>
-                    <input type="text" name="city" x-model="city" placeholder="City" class="input w-full"/>
-                </label>
-                <label class="floating-label mb-2">
-                    <span>State</span>
-                    <input type="text" name="state" x-model="state" placeholder="State" class="input w-full"/>
-                </label>
-                <label class="floating-label mb-2">
-                    <span>Zip</span>
-                    <input type="text" name="zip" x-model="zip" placeholder="Zip" class="input w-full"/>
-                </label>
-                <label class="floating-label mt-4">
-                    <span>Description</span>
-                    <textarea name="description" class="textarea w-full" placeholder="Description" x-model="description" />
-                </label>
-                
-                <!-- Website Fields Section -->
-                <div class="mt-6">
-                    <h4 class="text-base font-semibold mb-4 flex items-center gap-2">
-                        <span>Website Information (Optional)</span>
-                        <div class="tooltip tooltip-right" data-tip="Property websites are used on listings to show property-specific information. Management websites link to your company's main site for corporate information.">
-                            <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </h4>
-                    
-                    <label class="floating-label mb-2">
-                        <span>Property Website</span>
-                        <input type="url" name="propertyWebsite" x-model="propertyWebsite" placeholder="https://property-specific-site.com" class="input w-full"/>
-                    </label>
-                    
-                    <label class="floating-label mb-2">
-                        <span>Management Company Website</span>
-                        <input type="url" name="managementWebsite" x-model="managementWebsite" placeholder="https://your-management-company.com" class="input w-full"/>
-                    </label>
-                    
-                    <!-- Explanatory text for add form -->
-                    <div class="text-sm text-base-content/70 mt-2 space-y-1">
-                        <p><strong>Property Website:</strong> Specific to this building - shown on rental listings</p>
-                        <p><strong>Management Website:</strong> Your company's main site - for corporate information</p>
-                    </div>
-                </div>
-                
-                <!-- Rental Type Section -->
-                <div class="mt-6">
-                    <label class="floating-label select-label">
-                        <span>Rental Type</span>
-                        <select name="specialtyType" x-model="specialtyType" class="select w-full">
-                            <option value="market-rate">Market Rate</option>
-                            <option value="affordable">Affordable</option>
-                            <option value="student">Student</option>
-                            <option value="senior">Senior</option>
-                        </select>
-                    </label>
-                    
-                    <!-- Rental Type Explanations -->
-                    <div class="mt-3 text-sm space-y-2">
-                        <div x-show="specialtyType === 'market-rate'" class="alert alert-info text-xs py-2">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span><strong>Market Rate:</strong> Standard apartments with no restrictions</span>
-                        </div>
-                        
-                        <div x-show="specialtyType === 'affordable'" class="alert alert-warning text-xs py-2">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                            </svg>
-                            <span><strong>Affordable:</strong> Income-restricted housing (AMI requirements)</span>
-                        </div>
-                        
-                        <div x-show="specialtyType === 'student'" class="alert alert-info text-xs py-2">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span><strong>Student:</strong> Campus or university-affiliated housing</span>
-                        </div>
-                        
-                        <div x-show="specialtyType === 'senior'" class="alert alert-info text-xs py-2">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span><strong>Senior:</strong> Age-restricted housing (55+ or 62+ communities)</span>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-warning mt-3 text-xs py-2">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
-                        <span>Selecting the wrong type may result in listing rejection</span>
-                    </div>
-                </div>
-                <!-- Saving indicator is handled by the modular architecture -->
-            </fieldset>
-            <div class="mt-2 space-x-2">
-                <button class="btn btn-primary" @click="addBuilding()">Add Building</button>
-                <button class="btn btn-soft" @click="clearForm()">Cancel</button>
-            </div>
-        </div>
+    
+    <!-- Add building form -->
+    <div x-show="activeBuildingTab === buildings.length" x-cloak data-api-url={apiURL}>
+        <AddBuildingForm />
+    </div>
 </div>
+
+<script>
+// Alpine.js magic properties type
+type AlpineComponent<T = {}> = T & {
+    $dispatch: (event: string, detail?: any) => void;
+    $root: HTMLElement;
+    $el: HTMLElement;
+    $watch: (expression: string, callback: (value: any) => void) => void;
+};
+
+type Building = {
+    buildingID: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    [key: string]: any;
+};
+
+type BuildingsComponentData = AlpineComponent<{
+    activeBuildingTab: number;
+    showToast: boolean;
+    toastMessage: string;
+    toastType: string;
+    buildings: Building[];
+    apiURL: string;
+    init(): void;
+    handleTabChange(event: CustomEvent<{ tabIndex: number; buildingID?: string }>): void;
+    handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string; units: any[]; unitTypes: any[] }>): void;
+    showAndHideToast(message: string, type: string): void;
+}>;
+
+function buildingsComponentData(): BuildingsComponentData {
+    return {
+        activeBuildingTab: 0,
+        showToast: false,
+        toastMessage: '',
+        toastType: '',
+        buildings: [] as Building[],
+        apiURL: '',
+        
+        init() {
+            this.buildings = JSON.parse(this.$el.dataset.buildings || '[]');
+            this.apiURL = this.$el.dataset.apiUrl || '';
+            
+            // Initialize from URL hash if present
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+            if (hash) {
+                const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
+                if (index !== -1) {
+                    this.activeBuildingTab = index;
+                } else if (hash === 'add-new-building') {
+                    this.activeBuildingTab = this.buildings.length;
+                } else {
+                    this.activeBuildingTab = 0;
+                }
+            }
+        },
+        
+        handleTabChange(event: CustomEvent<{ tabIndex: number; buildingID?: string }>) {
+            const { tabIndex, buildingID } = event.detail;
+            this.activeBuildingTab = tabIndex;
+            
+            // Trigger lazy loading for the selected building
+            if (buildingID && tabIndex < this.buildings.length) {
+                const buildingElement = document.querySelector(`[data-building-id="${buildingID}"]`) as HTMLElement;
+                if (buildingElement) {
+                    buildingElement.dataset.shouldLoad = 'true';
+                }
+            }
+        },
+        
+        handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string; units: any[]; unitTypes: any[] }>) {
+            const { buildingID, units, unitTypes } = event.detail;
+            console.log(`Loaded data for building ${buildingID}:`, { units: units.length, unitTypes: unitTypes.length });
+        },
+        
+        showAndHideToast(message: string, type: string) {
+            this.toastMessage = message;
+            this.toastType = type;
+            this.showToast = true;
+            setTimeout(() => {
+                this.showToast = false;
+            }, 3000);
+        }
+    } as BuildingsComponentData;
+}
+
+// Make available globally for Alpine.js
+declare global {
+    interface Window {
+        buildingsComponentData: typeof buildingsComponentData;
+    }
+}
+
+window.buildingsComponentData = buildingsComponentData;
+</script>
+
+<style>
+/* Smooth loading transitions */
+[x-cloak] { 
+    display: none !important; 
+}
+</style>

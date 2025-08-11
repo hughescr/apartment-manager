@@ -1,0 +1,127 @@
+---
+// BuildingsList.astro - Handles building navigation tabs
+export interface Props {
+    buildings: Array<{
+        buildingID: string;
+        street?: string;
+        city?: string;
+        state?: string;
+    }>;
+}
+
+// Buildings passed as prop for static data
+---
+
+<div class="buildings-list" x-data="buildingsListData()" x-init="init()">
+    <div role="tablist" class="tabs tabs-lift">
+        <!-- Building tabs -->
+        <template x-for="(building, index) in buildings" :key="building.buildingID">
+            <a role="tab" 
+               class="tab" 
+               :class="{ 'tab-active': activeBuildingTab === index }"
+               @click="setActiveTab(index, building.buildingID)"
+               x-text="building.buildingID">
+            </a>
+        </template>
+        
+        <!-- Add building tab -->
+        <a role="tab" 
+           class="tab items-center" 
+           :class="{ 'tab-active': activeBuildingTab === buildings.length }"
+           @click="setActiveTab(buildings.length)">
+            <svg class="size-4 text-secondary me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span class="text-secondary">Add Building</span>
+        </a>
+    </div>
+</div>
+
+<script>
+// Alpine.js magic properties type
+type AlpineComponent<T = {}> = T & {
+    $dispatch: (event: string, detail?: any) => void;
+    $root: HTMLElement;
+    $el: HTMLElement;
+    $watch: (expression: string, callback: (value: any) => void) => void;
+};
+
+type Building = {
+    buildingID: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    [key: string]: any;
+};
+
+type BuildingsListData = AlpineComponent<{
+    activeBuildingTab: number;
+    buildings: Building[];
+    init(): void;
+    setActiveTab(tabIndex: number, buildingID?: string | null): void;
+}>;
+
+function buildingsListData(): BuildingsListData {
+    return {
+        activeBuildingTab: 0,
+        buildings: [] as Building[],
+        
+        init() {
+            this.buildings = this.$root.dataset.buildings ? JSON.parse(this.$root.dataset.buildings) : [];
+            
+            // Handle URL hash for initial tab selection
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+            if (hash) {
+                const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
+                if (index !== -1) {
+                    this.activeBuildingTab = index;
+                } else if (hash === 'add-new-building') {
+                    this.activeBuildingTab = this.buildings.length;
+                } else {
+                    this.activeBuildingTab = 0;
+                }
+            }
+            
+            // Dispatch initial selection
+            this.$dispatch('building-tab-changed', {
+                tabIndex: this.activeBuildingTab,
+                buildingID: this.activeBuildingTab < this.buildings.length ? this.buildings[this.activeBuildingTab].buildingID : null
+            });
+        },
+        
+        setActiveTab(tabIndex: number, buildingID: string | null = null) {
+            this.activeBuildingTab = tabIndex;
+            
+            // Update URL hash
+            if (buildingID) {
+                window.location.hash = buildingID;
+            } else if (tabIndex === this.buildings.length) {
+                window.location.hash = 'add-new-building';
+            }
+            
+            // Dispatch tab change event for lazy loading
+            this.$dispatch('building-tab-changed', {
+                tabIndex: tabIndex,
+                buildingID: buildingID
+            });
+        }
+    } as BuildingsListData;
+}
+
+// Make available globally for Alpine.js
+declare global {
+    interface Window {
+        buildingsListData: typeof buildingsListData;
+    }
+}
+
+window.buildingsListData = buildingsListData;
+</script>
+
+<style>
+.buildings-list {
+    @apply mb-4;
+}
+</style>

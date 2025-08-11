@@ -1,11 +1,5 @@
 import _ from 'lodash';
-import type { UnitData } from '../../types';
-
-export interface Deposit {
-    amount: number | null
-    refundable: boolean
-    partialRefundPercentage?: number
-}
+import type { UnitData, Deposit } from '../../types';
 
 export class DepositManager {
     initializeDeposit(unit: UnitData): void {
@@ -17,7 +11,7 @@ export class DepositManager {
         if(_.isObject(unit.deposit) && unit.deposit !== null) {
             const deposit = unit.deposit as Deposit;
             if(deposit.amount === undefined) {
-                deposit.amount = null;
+                deposit.amount = 0;
             }
             if(deposit.refundable === undefined) {
                 deposit.refundable = true;

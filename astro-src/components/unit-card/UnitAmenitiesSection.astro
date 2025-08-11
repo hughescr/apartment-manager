@@ -1,0 +1,145 @@
+---
+import { AmenitySelector } from '../forms';
+
+export interface Props {
+    xModelPrefix?: string;
+}
+
+const { xModelPrefix = 'unit' } = Astro.props;
+---
+
+<div class="space-y-4">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <h3 class="text-lg font-semibold">Unit Amenities</h3>
+            <span class="badge badge-primary badge-sm" x-text="getEffectiveAmenities().length"></span>
+            <template x-if="getAmenityInheritanceSource() === 'unit'">
+                <span class="badge badge-warning badge-sm">custom</span>
+            </template>
+            <template x-if="getAmenityInheritanceSource() === 'floorplan'">
+                <span class="badge badge-info badge-sm">from floorplan</span>
+            </template>
+            <template x-if="getAmenityInheritanceSource() === 'building'">
+                <span class="badge badge-ghost badge-sm">from building</span>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Inheritance Status Info -->
+    <div class="alert" :class="{'alert-warning': getAmenityInheritanceSource() === 'unit', 'alert-info': getAmenityInheritanceSource() === 'floorplan', 'alert-ghost': getAmenityInheritanceSource() === 'building'}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+            <!-- Unit has custom amenities -->
+            <template x-if="getAmenityInheritanceSource() === 'unit'">
+                <span>
+                    This unit has custom amenities that override inherited values.
+                    <button type="button" class="btn btn-ghost btn-xs ml-2" x-on:click="resetToInheritedAmenities()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Reset to Inherited
+                    </button>
+                </span>
+            </template>
+            
+            <!-- Unit inherits from floorplan -->
+            <template x-if="getAmenityInheritanceSource() === 'floorplan'">
+                <span>
+                    This unit inherits <span x-text="selectedUnitType?.modelAmenities?.length || 0"></span> amenities from its floorplan. Add amenities here to customize this unit.
+                </span>
+            </template>
+            
+            <!-- Unit inherits from building -->
+            <template x-if="getAmenityInheritanceSource() === 'building'">
+                <span>
+                    This unit inherits <span x-text="buildingAmenities?.length || 0"></span> amenities from the building (no floorplan amenities). Add amenities here to customize this unit.
+                </span>
+            </template>
+            
+            <!-- No amenities at any level -->
+            <template x-if="getAmenityInheritanceSource() === 'none'">
+                <span>
+                    No amenities are defined at the building or floorplan level. Add amenities here to customize this unit.
+                </span>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Inheritance Chain Display -->
+    <div class="border border-base-300 rounded-lg p-4 bg-base-50">
+        <div class="text-sm font-semibold mb-2">Inheritance Chain:</div>
+        <div class="flex items-center gap-2 text-sm flex-wrap">
+            <!-- Building Level -->
+            <div class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h2M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span class="font-medium">Building</span>
+                <span class="badge badge-xs" :class="buildingAmenities?.length > 0 ? 'badge-success' : 'badge-ghost'" x-text="buildingAmenities?.length || 0"></span>
+            </div>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+            
+            <!-- Floorplan Level -->
+            <div class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span class="font-medium">Floorplan</span>
+                <span class="badge badge-xs" :class="selectedUnitType?.modelAmenities?.length > 0 ? 'badge-success' : 'badge-ghost'" x-text="selectedUnitType?.modelAmenities?.length || 0"></span>
+                <span x-show="!selectedUnitType" class="text-xs text-base-content/50">(none selected)</span>
+            </div>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+            
+            <!-- Unit Level -->
+            <div class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                <span class="font-medium">Unit</span>
+                <span class="badge badge-xs" :class={`${xModelPrefix}.unitAmenities?.length > 0 ? 'badge-warning' : 'badge-ghost'`} x-text={`${xModelPrefix}.unitAmenities?.length || 0`}></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Inherited Amenities Display -->
+    <div x-show={`(!${xModelPrefix}.unitAmenities || ${xModelPrefix}.unitAmenities.length === 0) && getEffectiveAmenities().length > 0`} class="border border-info/20 rounded-lg p-4 bg-info/5">
+        <div class="text-sm text-base-content/70 mb-2">
+            <span class="font-semibold">Currently Active Amenities</span>
+            <template x-if="getAmenityInheritanceSource() === 'floorplan'">
+                <span> (inherited from floorplan):</span>
+            </template>
+            <template x-if="getAmenityInheritanceSource() === 'building'">
+                <span> (inherited from building):</span>
+            </template>
+            <span x-text="getEffectiveAmenities().length"></span> amenities
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <template x-for="amenity in getEffectiveAmenities()" :key="amenity.name + amenity.category">
+                <div class="badge badge-lg gap-2" :class="{'badge-info': getAmenityInheritanceSource() === 'floorplan', 'badge-ghost': getAmenityInheritanceSource() === 'building'}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5M6 12h12" />
+                    </svg>
+                    <span x-text="amenity.name"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Unit-specific Amenity Selector -->
+    <div class="border border-base-300 rounded-lg p-4">
+        <AmenitySelector
+            name="unitAmenities"
+            label="Unit-specific amenities (overrides inherited amenities)"
+            xModel={`${xModelPrefix}.unitAmenities`}
+            showLabel={false}
+        />
+    </div>
+</div>

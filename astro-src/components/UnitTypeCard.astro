@@ -15,6 +15,13 @@ const apiURL = Resource.API.url;
 
 // Initialize missing properties
 if (!unitType.modelAmenities) unitType.modelAmenities = [];
+
+// Declare the global window property for TypeScript
+declare global {
+    interface Window {
+        unitTypeCardData: (unitTypeData: any, buildingAmenitiesData: any, apiUrlData: string) => any;
+    }
+}
 ---
 
 <script define:vars={{ unitType, buildingAmenities, apiURL }} is:inline>

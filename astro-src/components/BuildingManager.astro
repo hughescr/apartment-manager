@@ -1,0 +1,253 @@
+---
+// BuildingManager.astro - Handles individual building management with lazy loading
+import BuildingProvider from './building/BuildingProvider.astro';
+import TabNavigator from './building/TabNavigator.astro';
+import TabPanels from './building/TabPanels.astro';
+import SaveIndicator from './building/SaveIndicator.astro';
+
+// Tab components
+import BuildingInfoTab from './building/tabs/BuildingInfoTab.astro';
+import FloorplansUnitsTab from './building/tabs/FloorplansUnitsTab.astro';
+import PricingPoliciesTab from './building/tabs/PricingPoliciesTab.astro';
+import MarketingTab from './building/tabs/MarketingTab.astro';
+import UnitsTab from './building/tabs/UnitsTab.astro';
+
+// Dialog components
+import AddUnitDialog from './building/dialogs/AddUnitDialog.astro';
+import BulkStatusDialog from './building/dialogs/BulkStatusDialog.astro';
+import BulkRentDialog from './building/dialogs/BulkRentDialog.astro';
+
+export interface Props {
+    building: {
+        buildingID: string;
+        street?: string;
+        city?: string;
+        state?: string;
+        [key: string]: any;
+    };
+    apiURL: string;
+}
+
+const { building, apiURL } = Astro.props;
+
+// Note: For lazy loading, we'll initially pass empty arrays and load data client-side
+const emptyUnits: any[] = [];
+const emptyUnitTypes: any[] = [];
+---
+
+<div class="building-manager" 
+     x-cloak
+     x-data="buildingManagerData()"
+     x-init="init()">
+     
+    <!-- Loading state -->
+    <div x-show="loading" class="flex justify-center items-center py-8">
+        <div class="loading loading-spinner loading-lg"></div>
+        <span class="ml-2">Loading building data...</span>
+    </div>
+    
+    <!-- Building management interface -->
+    <div x-show="!loading && dataLoaded" x-transition.opacity.duration.300ms>
+        <BuildingProvider 
+            building={building} 
+            units={emptyUnits} 
+            unitTypes={emptyUnitTypes} 
+            apiURL={apiURL}
+        >
+            <!-- Save indicator at the top -->
+            <div class="mb-4">
+                <SaveIndicator />
+            </div>
+            
+            <!-- Tab navigation -->
+            <TabNavigator />
+            
+            <!-- Tab content panels -->
+            <TabPanels>
+                <BuildingInfoTab 
+                    slot="building-info" 
+                    building={building}
+                    apiUrl={apiURL}
+                />
+                <FloorplansUnitsTab 
+                    slot="floorplans-units" 
+                />
+                <PricingPoliciesTab 
+                    slot="pricing-policies" 
+                    building={building}
+                    errors={{}}
+                />
+                <MarketingTab 
+                    slot="marketing" 
+                    building={building}
+                    apiUrl={apiURL}
+                />
+                <UnitsTab 
+                    slot="units" 
+                />
+            </TabPanels>
+            
+            <!-- Dialogs -->
+            <AddUnitDialog 
+                building={{
+                    buildingID: building.buildingID,
+                    street: building.street || '',
+                    city: building.city || '',
+                    state: building.state || ''
+                }}
+                unitTypes={emptyUnitTypes}
+                apiUrl={apiURL}
+            />
+            <BulkStatusDialog 
+                building={{
+                    buildingID: building.buildingID
+                }}
+                apiUrl={apiURL}
+            />
+            <BulkRentDialog 
+                building={{
+                    buildingID: building.buildingID
+                }}
+                apiUrl={apiURL}
+            />
+        </BuildingProvider>
+    </div>
+    
+    <!-- Error state -->
+    <div x-show="error" class="alert alert-error">
+        <svg class="w-6 h-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span x-text="`Failed to load building data: ${errorMessage}`"></span>
+        <button class="btn btn-sm" @click="retryLoad()">Retry</button>
+    </div>
+</div>
+
+<script>
+// Alpine.js magic properties type
+type AlpineComponent<T = {}> = T & {
+    $dispatch: (event: string, detail?: any) => void;
+    $root: HTMLElement;
+    $el: HTMLElement;
+    $watch: (expression: string, callback: (value: any) => void) => void;
+};
+
+type BuildingManagerData = AlpineComponent<{
+    loading: boolean;
+    dataLoaded: boolean;
+    error: boolean;
+    errorMessage: string;
+    buildingID: string;
+    apiURL: string;
+    units: any[];
+    unitTypes: any[];
+    init(): void;
+    loadBuildingData(): Promise<void>;
+    retryLoad(): void;
+}>;
+
+function buildingManagerData(): BuildingManagerData {
+    return {
+        loading: false,
+        dataLoaded: false,
+        error: false,
+        errorMessage: '',
+        buildingID: '',
+        apiURL: '',
+        units: [],
+        unitTypes: [],
+        
+        init() {
+            this.buildingID = this.$root.dataset.buildingId || '';
+            this.apiURL = this.$root.dataset.apiUrl || '';
+            
+            // Listen for lazy loading triggers
+            this.$watch('$root.dataset.shouldLoad', (shouldLoad: string) => {
+                if (shouldLoad === 'true' && !this.dataLoaded && !this.loading) {
+                    this.loadBuildingData();
+                }
+            });
+            
+            // Check if we should load immediately
+            if (this.$root.dataset.shouldLoad === 'true') {
+                this.loadBuildingData();
+            }
+        },
+        
+        async loadBuildingData() {
+            if (this.dataLoaded || this.loading) return;
+            
+            this.loading = true;
+            this.error = false;
+            
+            try {
+                // Load units and unit types in parallel
+                const [unitsResponse, unitTypesResponse] = await Promise.all([
+                    fetch(`${this.apiURL}buildings/${this.buildingID}/units`),
+                    fetch(`${this.apiURL}buildings/${this.buildingID}/unit-types`)
+                ]);
+                
+                if (!unitsResponse.ok || !unitTypesResponse.ok) {
+                    throw new Error('Failed to fetch building data');
+                }
+                
+                const [units, unitTypes] = await Promise.all([
+                    unitsResponse.json(),
+                    unitTypesResponse.json()
+                ]);
+                
+                this.units = units;
+                this.unitTypes = unitTypes;
+                this.dataLoaded = true;
+                this.loading = false;
+                
+                // Update the BuildingProvider component with new data
+                this.$dispatch('building-data-loaded', {
+                    buildingID: this.buildingID,
+                    units: units,
+                    unitTypes: unitTypes
+                });
+                
+            } catch (error) {
+                this.loading = false;
+                this.error = true;
+                this.errorMessage = (error as Error).message;
+                console.error('Failed to load building data:', error);
+            }
+        },
+        
+        retryLoad() {
+            this.error = false;
+            this.errorMessage = '';
+            this.loadBuildingData();
+        },
+        
+        // Add Alpine magic properties
+        $dispatch: (() => {}) as any,
+        $root: null as any,
+        $el: null as any,
+        $watch: (() => {}) as any
+    } as BuildingManagerData;
+}
+
+// Make available globally for Alpine.js
+declare global {
+    interface Window {
+        buildingManagerData: typeof buildingManagerData;
+    }
+}
+
+window.buildingManagerData = buildingManagerData;
+</script>
+</script>
+
+<style>
+.building-manager {
+    @apply min-h-[200px];
+}
+
+/* Smooth loading transitions */
+[x-cloak] { 
+    display: none !important; 
+}
+</style>
