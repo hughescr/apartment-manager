@@ -2,12 +2,9 @@ import type { UnitData, UnitTypeData, Amenity } from '../../types';
 import type { AlpineMagicProperties } from '../alpine';
 import type { InheritableField } from '../types/alpine-state';
 import { FieldInheritanceManager } from './fieldInheritance';
-import { UnitFormValidator } from './formValidation';
-import { UnitApiClient } from './apiOperations';
-import { DepositManager } from './depositHandling';
-import { AmenityInheritanceManager } from './amenityInheritance';
 import { UnitFormatters } from './unitFormatters';
 import { UnitEventManager } from './unitEvents';
+import { ValidationService, DepositService, AmenityService, ApiService } from './services';
 import { find, forOwn } from 'lodash';
 
 /**
@@ -34,12 +31,14 @@ export interface UnitCardState {
 
     // Service instances
     fieldInheritance: FieldInheritanceManager | null
-    validator: UnitFormValidator | null
-    apiClient: UnitApiClient | null
-    depositManager: DepositManager | null
-    amenityManager: AmenityInheritanceManager | null
     formatters: UnitFormatters | null
     events: UnitEventManager | null
+
+    // New focused services
+    validationService: ValidationService | null
+    depositService: DepositService | null
+    amenityService: AmenityService | null
+    apiService: ApiService | null
 
     // Methods
     init(this: UnitCardState & AlpineMagicProperties): void
@@ -103,22 +102,21 @@ function unitCardStateObject(): UnitCardState {
 
         // Service instances (will be initialized in init())
         fieldInheritance: null as FieldInheritanceManager | null,
-        validator: null as UnitFormValidator | null,
-        apiClient: null as UnitApiClient | null,
-        depositManager: null as DepositManager | null,
-        amenityManager: null as AmenityInheritanceManager | null,
         formatters: null as UnitFormatters | null,
         events: null as UnitEventManager | null,
+
+        // New focused services
+        validationService: null as ValidationService | null,
+        depositService: null as DepositService | null,
+        amenityService: null as AmenityService | null,
+        apiService: null as ApiService | null,
 
         /**
          * Initialize the unit card state from HTML dataset
          */
         init(this: UnitCardState & AlpineMagicProperties) {
-            // Initialize service instances
+            // Initialize basic service instances
             this.fieldInheritance = new FieldInheritanceManager();
-            this.validator = new UnitFormValidator();
-            this.depositManager = new DepositManager();
-            this.amenityManager = new AmenityInheritanceManager();
             this.formatters = new UnitFormatters();
             this.events = new UnitEventManager(this.$el);
 
@@ -127,8 +125,11 @@ function unitCardStateObject(): UnitCardState {
             this.parseUnitTypesData();
             this.apiURL = this.$el?.dataset?.apiUrl || '';
 
-            // Initialize API client with URL
-            this.apiClient = new UnitApiClient(this.apiURL);
+            // Initialize focused services (pass state reference)
+            this.validationService = new ValidationService(this);
+            this.depositService = new DepositService(this);
+            this.amenityService = new AmenityService(this);
+            this.apiService = new ApiService(this);
 
             // Store original unit for change detection
             this.originalUnit = this.unit ? JSON.parse(JSON.stringify(this.unit)) : null;
@@ -199,8 +200,8 @@ function unitCardStateObject(): UnitCardState {
             }
 
             // Initialize deposit structure
-            if(this.depositManager) {
-                this.depositManager.initializeDeposit(this.unit);
+            if(this.depositService) {
+                this.depositService.initializeDeposit();
             }
         },
 
@@ -211,14 +212,8 @@ function unitCardStateObject(): UnitCardState {
         },
 
         async loadBuildingAmenities() {
-            if(!this.apiClient || !this.unit?.buildingID) {
-                return;
-            }
-
-            try {
-                this.buildingAmenities = (await this.apiClient.fetchBuildingAmenities(this.unit.buildingID)) as Amenity[];
-            } catch{
-                this.buildingAmenities = [];
+            if(this.apiService) {
+                await this.apiService.loadBuildingAmenities();
             }
         },
 
@@ -254,28 +249,19 @@ function unitCardStateObject(): UnitCardState {
          * Validate the form and return validation result
          */
         validateForm(): boolean {
-            if(!this.validator || !this.unit) {
+            if(!this.validationService) {
                 return false;
             }
 
-            const result = this.validator.validateForm(this.unit);
-            this.errors = result.errors;
-
-            if(!result.isValid && this.events) {
-                this.events.validationError(result.errors);
-            } else if(result.isValid && this.events) {
-                this.events.validationCleared();
-            }
-
-            return result.isValid;
+            return this.validationService.validateForm();
         },
 
         /**
          * Clear validation error for a specific field
          */
         clearFieldError(fieldName: string) {
-            if(this.validator) {
-                this.validator.clearFieldError(this.errors, fieldName);
+            if(this.validationService) {
+                this.validationService.clearFieldError(fieldName);
             }
         },
 
@@ -283,61 +269,8 @@ function unitCardStateObject(): UnitCardState {
          * Save unit changes to the server
          */
         async saveUnit() {
-            if(!this.unit || !this.apiClient || !this.isDirty()) {
-                return;
-            }
-
-            if(!this.validateForm()) {
-                return;
-            }
-
-            this.saving = true;
-            if(this.events) {
-                this.events.unitSaving(this.unit);
-            }
-
-            try {
-                const result = await this.apiClient.saveUnit(this.unit, this.unit.buildingID);
-
-                if(result.success && result.unit) {
-                    // Update both current and original unit
-                    this.unit = result.unit as UnitData;
-                    this.originalUnit = JSON.parse(JSON.stringify(this.unit));
-                    this.errors = {};
-
-                    if(this.events) {
-                        this.events.unitSaved(this.unit);
-                        this.events.showToast('Unit saved successfully', 'success');
-                    }
-                } else {
-                    // Revert to original on save failure
-                    if(this.originalUnit) {
-                        this.unit = JSON.parse(JSON.stringify(this.originalUnit));
-                    }
-
-                    const errorMessage = result.error || 'Failed to save unit';
-                    this.errors.submit = errorMessage;
-
-                    if(this.events) {
-                        this.events.unitSaveError(this.unit, errorMessage);
-                        this.events.showToast(errorMessage, 'error');
-                    }
-                }
-            } catch{
-                // Revert to original on network error
-                if(this.originalUnit) {
-                    this.unit = JSON.parse(JSON.stringify(this.originalUnit));
-                }
-
-                const errorMessage = 'Network error. Please try again.';
-                this.errors.submit = errorMessage;
-
-                if(this.events) {
-                    this.events.unitSaveError(this.unit, errorMessage);
-                    this.events.showToast(errorMessage, 'error');
-                }
-            } finally {
-                this.saving = false;
+            if(this.apiService) {
+                await this.apiService.saveUnit();
             }
         },
 
@@ -345,41 +278,8 @@ function unitCardStateObject(): UnitCardState {
          * Delete the unit
          */
         async deleteUnit() {
-            if(!this.unit || !this.apiClient) {
-                return;
-            }
-
-            if(!confirm('Are you sure you want to delete this unit?')) {
-                return;
-            }
-
-            if(this.events) {
-                this.events.unitDeleting(this.unit.unitID);
-            }
-
-            try {
-                const result = await this.apiClient.deleteUnit(this.unit.unitID, this.unit.buildingID);
-
-                if(result.success) {
-                    if(this.events) {
-                        this.events.unitDeleted(this.unit.unitID);
-                        this.events.showToast('Unit deleted successfully', 'success');
-                    }
-                    // Reload page or redirect
-                    window.location.reload();
-                } else {
-                    const errorMessage = result.error || 'Failed to delete unit';
-                    if(this.events) {
-                        this.events.unitDeleteError(this.unit.unitID, errorMessage);
-                        this.events.showToast(errorMessage, 'error');
-                    }
-                }
-            } catch{
-                const errorMessage = 'Network error during delete';
-                if(this.events) {
-                    this.events.unitDeleteError(this.unit.unitID, errorMessage);
-                    this.events.showToast(errorMessage, 'error');
-                }
+            if(this.apiService) {
+                await this.apiService.deleteUnit();
             }
         },
 
@@ -451,85 +351,63 @@ function unitCardStateObject(): UnitCardState {
 
         // Amenity methods
         getEffectiveAmenities(): Amenity[] {
-            if(!this.amenityManager || !this.unit) {
+            if(!this.amenityService) {
                 return [];
             }
-            return this.amenityManager.getEffectiveAmenities(this.unit, this.selectedUnitType, this.buildingAmenities);
+            return this.amenityService.getEffectiveAmenities();
         },
 
         getAmenityInheritanceSource(): string {
-            if(!this.amenityManager || !this.unit) {
+            if(!this.amenityService) {
                 return 'none';
             }
-            return this.amenityManager.getAmenityInheritanceSource(this.unit, this.selectedUnitType, this.buildingAmenities);
+            return this.amenityService.getAmenityInheritanceSource();
         },
 
         resetToInheritedAmenities() {
-            if(!this.amenityManager || !this.unit) {
-                return;
-            }
-
-            const source = this.getAmenityInheritanceSource();
-            let message = 'This will remove unit-specific amenities. ';
-
-            if(source === 'floorplan' || (this.selectedUnitType?.modelAmenities?.length ?? 0) > 0) {
-                message += 'The unit will inherit amenities from its floorplan.';
-            } else if(this.buildingAmenities.length > 0) {
-                message += 'The unit will inherit amenities from the building.';
-            } else {
-                message += 'The unit will have no amenities.';
-            }
-
-            if(confirm(message + ' Continue?')) {
-                this.amenityManager.resetToInheritedAmenities(this.unit);
-
-                if(this.events) {
-                    this.events.amenitiesReset(this.unit);
-                }
+            if(this.amenityService) {
+                this.amenityService.resetToInheritedAmenities();
             }
         },
 
         // Deposit methods
         getDepositAmount(): number | null {
-            if(!this.depositManager || !this.unit) {
+            if(!this.depositService) {
                 return null;
             }
-            return this.depositManager.getDepositAmount(this.unit.deposit);
+            return this.depositService.getDepositAmount();
         },
 
         setDepositAmount(value: string | number) {
-            if(!this.depositManager || !this.unit) {
-                return;
+            if(this.depositService) {
+                this.depositService.setDepositAmount(value);
             }
-            this.depositManager.setDepositAmount(this.unit, value);
         },
 
         getDepositRefundable(): boolean {
-            if(!this.depositManager || !this.unit) {
+            if(!this.depositService) {
                 return true;
             }
-            return this.depositManager.isDepositRefundable(this.unit.deposit);
+            return this.depositService.getDepositRefundable();
         },
 
         setDepositRefundable(value: boolean) {
-            if(!this.depositManager || !this.unit) {
-                return;
+            if(this.depositService) {
+                this.depositService.setDepositRefundable(value);
             }
-            this.depositManager.setDepositRefundable(this.unit, value);
         },
 
         getDepositPartialRefundPercentage(): number | null {
-            if(!this.depositManager || !this.unit) {
+            if(!this.depositService) {
                 return null;
             }
-            return this.depositManager.getDepositPartialRefundPercentage(this.unit.deposit);
+            return this.depositService.getDepositPartialRefundPercentage();
         },
 
         setDepositPartialRefundPercentage(value: string | number) {
-            if(!this.depositManager || !this.unit) {
-                return;
+            if(this.depositService) {
+                this.depositService.setDepositPartialRefundPercentage(value);
             }
-            this.depositManager.setDepositPartialRefundPercentage(this.unit, value);
         },
 
         // Formatting methods

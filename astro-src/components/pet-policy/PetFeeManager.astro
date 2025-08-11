@@ -1,0 +1,117 @@
+---
+import type { PetFeeManagerProps } from '../../lib/pet-policy/petPolicyTypes';
+
+export interface Props extends PetFeeManagerProps {}
+
+const { 
+    xModel,
+    disabled = false,
+    showSummary = true
+} = Astro.props;
+---
+
+<div class="card bg-base-200">
+    <div class="card-body">
+        <h3 class="card-title text-base">Pet Fees</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Pet Deposit (Refundable)</span>
+                </label>
+                <div class="join">
+                    <span class="join-item btn btn-disabled">$</span>
+                    <input
+                        type="number"
+                        x-model={`${xModel}.deposit`}
+                        class="input input-bordered join-item flex-1"
+                        min="0"
+                        max="5000"
+                        step="25"
+                        placeholder="e.g., 500"
+                        disabled={disabled}
+                    />
+                </div>
+                <label class="label">
+                    <span class="label-text-alt">Refundable security deposit</span>
+                </label>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">One-Time Pet Fee</span>
+                </label>
+                <div class="join">
+                    <span class="join-item btn btn-disabled">$</span>
+                    <input
+                        type="number"
+                        x-model={`${xModel}.oneTimeFee`}
+                        class="input input-bordered join-item flex-1"
+                        min="0"
+                        max="5000"
+                        step="25"
+                        placeholder="e.g., 250"
+                        disabled={disabled}
+                    />
+                </div>
+                <label class="label">
+                    <span class="label-text-alt">Non-refundable fee</span>
+                </label>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Monthly Pet Rent</span>
+                </label>
+                <div class="join">
+                    <span class="join-item btn btn-disabled">$</span>
+                    <input
+                        type="number"
+                        x-model={`${xModel}.monthlyFee`}
+                        class="input input-bordered join-item flex-1"
+                        min="0"
+                        max="500"
+                        step="5"
+                        placeholder="e.g., 50"
+                        disabled={disabled}
+                    />
+                </div>
+                <label class="label">
+                    <span class="label-text-alt">Per pet per month</span>
+                </label>
+            </div>
+        </div>
+        
+        {showSummary && (
+            <div x-show="totalPetCost.upfront > 0 || totalPetCost.monthly > 0" class="mt-4 p-4 bg-base-100 rounded-lg">
+                <div class="text-sm font-medium mb-2">Fee Summary:</div>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div>Upfront Cost:</div>
+                    <div class="font-semibold">$<span x-text="totalPetCost.upfront.toFixed(2)"></span></div>
+                    <div>Monthly Cost:</div>
+                    <div class="font-semibold">$<span x-text="totalPetCost.monthly.toFixed(2)"></span></div>
+                    <div>Annual Cost:</div>
+                    <div class="font-semibold">$<span x-text="totalPetCost.annual.toFixed(2)"></span></div>
+                </div>
+                
+                <!-- Total Cost Highlight -->
+                <div class="divider divider-horizontal"></div>
+                <div class="flex justify-between items-center mt-2 p-2 bg-primary/10 rounded">
+                    <span class="font-medium">Total First Year:</span>
+                    <span class="text-lg font-bold">$<span x-text="(totalPetCost.upfront + totalPetCost.annual).toFixed(2)"></span></span>
+                </div>
+            </div>
+        )}
+        
+        <!-- Fee Structure Help -->
+        <div class="alert alert-info text-xs mt-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <p><strong>Pet Deposit:</strong> Refundable security deposit to cover potential pet damage.</p>
+                <p><strong>One-Time Fee:</strong> Non-refundable fee for pet processing or cleaning.</p>
+                <p><strong>Monthly Rent:</strong> Recurring monthly charge per pet.</p>
+            </div>
+        </div>
+    </div>
+</div>

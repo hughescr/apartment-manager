@@ -1,0 +1,55 @@
+---
+// astro-src/components/unit-type-form/UnitTypeRentSection.astro
+import { BaseInput } from "../forms";
+---
+
+<!-- Pricing Section -->
+<div class="divider">Pricing</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div>
+        <label class="label">
+            <span class="label-text">Rent Range</span>
+        </label>
+        <div class="flex gap-2 items-center">
+            <BaseInput
+                name="minRent"
+                xModel="unitType.minRent"
+                type="number"
+                placeholder="Min"
+                min="0"
+                class="flex-1"
+            />
+            <span>-</span>
+            <BaseInput
+                name="maxRent"
+                xModel="unitType.maxRent"
+                type="number"
+                placeholder="Max"
+                min="0"
+                class="flex-1"
+            />
+        </div>
+        <div x-show="errors.rent" class="text-error text-sm mt-1" x-text="errors.rent"></div>
+    </div>
+    
+    <BaseInput
+        name="deposit"
+        label="Security Deposit"
+        type="number"
+        xModel="unitType.deposit"
+        placeholder="Not specified"
+        min="0"
+    />
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <BaseInput
+        name="perPersonRent"
+        label="Per Person Rent (for shared units)"
+        type="number"
+        xModel="unitType.perPersonRent"
+        placeholder="Not applicable"
+        min="0"
+        helpText="Used for units with roommate matching"
+    />
+</div>

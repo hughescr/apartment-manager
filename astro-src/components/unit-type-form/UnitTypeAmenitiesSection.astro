@@ -1,0 +1,15 @@
+---
+// astro-src/components/unit-type-form/UnitTypeAmenitiesSection.astro
+import { AmenitySelector } from "../forms";
+---
+
+<!-- Model Amenities -->
+<div class="divider">Default Amenities</div>
+<div class="mb-6">
+    <AmenitySelector
+        name="modelAmenities"
+        label="Select default amenities for all units of this type"
+        xModel="unitType.modelAmenities"
+        helpText="These amenities will be the default for all units created with this model"
+    />
+</div>

@@ -1,0 +1,20 @@
+---
+import { AmenitySelector } from "../../forms";
+
+export interface Props {
+    building: any;
+}
+
+const { building: _building } = Astro.props;
+---
+
+<!-- Building Amenities -->
+<div class="card bg-base-200 mt-6">
+    <div class="card-body">
+        <h3 class="card-title text-lg">Building Amenities</h3>
+        <AmenitySelector
+            name="propertyAmenities"
+            xModel="building.propertyAmenities"
+        />
+    </div>
+</div>

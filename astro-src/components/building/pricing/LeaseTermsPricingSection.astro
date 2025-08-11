@@ -1,0 +1,223 @@
+---
+import { 
+    BaseInput,
+    BaseSelect
+} from "../../forms";
+
+export interface Props {
+    building: any;
+    errors: Record<string, string>;
+}
+
+const { building: _building, errors: _errors } = Astro.props;
+---
+
+<!-- Lease Terms & Pricing Section -->
+<div class="card bg-base-100">
+    <div class="card-body">
+        <h3 class="card-title text-lg mb-4">Lease Terms & Pricing</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <BaseInput
+                name="leaseLength"
+                label="Default Lease Length (months)"
+                type="number"
+                xModel="building.leaseLength"
+                placeholder="12"
+                min="1"
+                max="36"
+                helpText="Standard lease term offered"
+            />
+            <span x-show="errors.leaseLength" class="label-text-alt text-error" x-text="errors.leaseLength"></span>
+            
+            <BaseInput
+                name="applicationFee"
+                label="Application Fee"
+                type="number"
+                xModel="building.applicationFee"
+                placeholder="50"
+                min="0"
+                step="5"
+                helpText="Fee to process rental applications"
+            />
+            <span x-show="errors.applicationFee" class="label-text-alt text-error" x-text="errors.applicationFee"></span>
+            
+            <div class="form-control">
+                <label class="label cursor-pointer">
+                    <span class="label-text">Accepts Online Applications</span>
+                    <input 
+                        type="checkbox" 
+                        class="checkbox checkbox-primary" 
+                        x-model="building.acceptsOnlineApplications"
+                    />
+                </label>
+            </div>
+        </div>
+        
+        <!-- Rental Type Section -->
+        <div class="border-t border-base-200 pt-4 mt-4">
+            <h4 class="font-semibold mb-4 flex items-center gap-2">
+                <span>Rental Type (Property Specialty)</span>
+                <div class="tooltip tooltip-right" data-tip="This affects how your property appears on listing sites like Apartments.com and Zillow">
+                    <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <BaseSelect
+                    name="specialtyType"
+                    label="Rental Type"
+                    xModel="building.specialtyType"
+                    options={[
+                        { value: 'market-rate', label: 'Market Rate' },
+                        { value: 'affordable', label: 'Affordable' },
+                        { value: 'student', label: 'Student' },
+                        { value: 'senior', label: 'Senior' }
+                    ]}
+                    placeholder="Select rental type"
+                />
+                <BaseInput
+                    name="specialtySubType"
+                    label="Specialty Sub-Type"
+                    xModel="building.specialtySubType"
+                    placeholder="e.g., 55+, 62+, graduate"
+                />
+            </div>
+            
+            <div class="form-control mb-4">
+                <label class="label cursor-pointer">
+                    <span class="label-text">Rooms for Rent Available</span>
+                    <input 
+                        type="checkbox" 
+                        class="toggle toggle-primary" 
+                        x-model="building.roomsForRent"
+                    />
+                </label>
+            </div>
+        </div>
+        
+        <!-- Rent Specials -->
+        <div class="border-t border-base-200 pt-4 mt-4">
+            <h4 class="font-semibold mb-4">Rent Specials</h4>
+            <div x-data='{ addSpecial() { if (!$parent.building.rentSpecials) $parent.building.rentSpecials = []; $parent.building.rentSpecials.push({ id: Date.now() + Math.random(), title: "", description: "", startDate: "", endDate: "" }); }, removeSpecial(index) { $parent.building.rentSpecials.splice(index, 1); } }'>
+                <template x-for="(special, index) in building.rentSpecials || []" :key="special.id || ('special-' + index)">
+                    <div class="border border-base-300 rounded-lg p-4 mb-4">
+                        <div class="flex justify-end mb-2">
+                            <button 
+                                @click="removeSpecial(index)"
+                                class="btn btn-ghost btn-sm text-error"
+                            >Remove</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Title Input -->
+                            <label class="floating-label">
+                                <span>Title<span class="text-error">*</span></span>
+                                <input
+                                    type="text"
+                                    :name="'special-title-' + index"
+                                    x-model="special.title"
+                                    placeholder="Move-in Special"
+                                    class="input w-full"
+                                    :class="errors['rentSpecial' + index + 'Title'] ? 'input-error' : ''"
+                                    required
+                                />
+                                <span x-show="errors['rentSpecial' + index + 'Title']" class="label-text-alt text-error" x-text="errors['rentSpecial' + index + 'Title']"></span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <!-- Start Date Input -->
+                                <label class="floating-label">
+                                    <span>Start Date</span>
+                                    <input
+                                        type="date"
+                                        :name="'special-start-' + index"
+                                        x-model="special.startDate"
+                                        class="input w-full"
+                                    />
+                                </label>
+                                <!-- End Date Input -->
+                                <label class="floating-label">
+                                    <span>End Date</span>
+                                    <input
+                                        type="date"
+                                        :name="'special-end-' + index"
+                                        x-model="special.endDate"
+                                        class="input w-full"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                        <div x-show="errors['rentSpecial' + index + 'Dates']" class="text-error text-sm mt-1" x-text="errors['rentSpecial' + index + 'Dates']"></div>
+                        <!-- Description Textarea -->
+                        <label class="floating-label textarea-label">
+                            <span>Description</span>
+                            <textarea
+                                :name="'special-desc-' + index"
+                                x-model="special.description"
+                                placeholder="Special details..."
+                                class="textarea w-full resize-vertical"
+                                rows="2"
+                            ></textarea>
+                        </label>
+                    </div>
+                </template>
+                <button 
+                    @click="addSpecial()"
+                    class="btn btn-primary btn-sm"
+                >Add Rent Special</button>
+            </div>
+        </div>
+        
+        <!-- Income Restrictions -->
+        <div class="border-t border-base-200 pt-4 mt-4">
+            <h4 class="font-semibold mb-4">Income Restrictions</h4>
+            <div x-data="{ hasRestrictions: !!(building.incomeRestrictions?.amiLimit), initRestrictions() { if (!building.incomeRestrictions) building.incomeRestrictions = { amiLimit: null, maxIncomeByHouseholdSize: {} }; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if (!this.hasRestrictions) { building.incomeRestrictions.amiLimit = null; } } }" x-init="initRestrictions()" x-effect="initRestrictions()">
+                <div class="form-control mb-4">
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Has Income Restrictions</span>
+                        <input 
+                            type="checkbox" 
+                            class="toggle toggle-primary" 
+                            x-model="hasRestrictions"
+                        />
+                    </label>
+                </div>
+                <div x-show="hasRestrictions" class="space-y-4">
+                    <BaseInput
+                        name="amiLimit"
+                        label="AMI Limit (%)"
+                        type="number"
+                        xModel="building.incomeRestrictions.amiLimit"
+                        placeholder="80"
+                        min="0"
+                        max="200"
+                        helpText="Area Median Income percentage limit"
+                    />
+                    <span x-show="errors.amiLimit" class="label-text-alt text-error" x-text="errors.amiLimit"></span>
+                    <!-- Simplified income limits by household size -->
+                    <div>
+                        <label class="label">Maximum Income by Household Size</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <template x-for="size in [1, 2, 3, 4]" :key="'income-size-' + size">
+                                <label class="floating-label">
+                                    <span x-text="size + ' Person'"></span>
+                                    <input
+                                        type="number"
+                                        :name="'income-size-' + size"
+                                        :value="building.incomeRestrictions && building.incomeRestrictions.maxIncomeByHouseholdSize ? building.incomeRestrictions.maxIncomeByHouseholdSize[size] || '' : ''"
+                                        @input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
+                                        placeholder="50000"
+                                        class="input w-full"
+                                        min="0"
+                                        step="1000"
+                                    />
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

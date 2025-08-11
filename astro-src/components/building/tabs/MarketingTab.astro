@@ -1,10 +1,8 @@
 ---
-import { DayOfWeek, type Building } from "../../../types";
-import {
-    BaseInput,
-    BaseTextarea,
-    PhotoUploader
-} from "../../forms";
+import type { Building } from "../../../types";
+import PropertyDetailsSection from "../marketing/PropertyDetailsSection.astro";
+import MediaGallerySection from "../marketing/MediaGallerySection.astro";
+import TourInformationSection from "../marketing/TourInformationSection.astro";
 
 export interface Props {
     building: Building; // Building object from the data layer
@@ -16,209 +14,15 @@ export interface Props {
 const { 
     building, 
     apiUrl: _apiUrl, 
+    errors,
     onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)" 
 } = Astro.props;
-
-// Days of week for tour hours
-const daysOfWeek = Object.values(DayOfWeek);
 ---
 
 <div class="marketing-tab space-y-6">
-    <!-- Property Details Section -->
-    <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="card-title text-xl">Property Details & Marketing</h3>
-                <div class="badge badge-info badge-outline">How your property is presented</div>
-            </div>
-            <div class="text-base-content/70 mb-6">
-                Marketing descriptions and highlights that will be shown to prospective tenants on listing sites.
-            </div>
-            
-            <!-- Marketing Description -->
-            <div class="mb-6">
-                <BaseTextarea
-                    name="marketingDescription"
-                    label="Marketing Description"
-                    xModel="building.marketingDescription"
-                    placeholder="Experience luxury living in this stunning property featuring modern amenities, spacious layouts, and prime location..."
-                    rows={6}
-                    helpText="Primary description used on rental listings - highlight key selling points"
-                />
-            </div>
-            
-            <!-- Property Highlights -->
-            <div class="mb-6">
-                <h4 class="font-semibold mb-4">Property Highlights</h4>
-                <div x-data='{ addHighlight() { if (!$parent.building.propertyHighlights) $parent.building.propertyHighlights = []; $parent.building.propertyHighlights.push({ id: Date.now() + Math.random(), highlight: "" }); }, removeHighlight(index) { $parent.building.propertyHighlights.splice(index, 1); } }'>
-                    <template x-for="(item, index) in building.propertyHighlights || []" :key="item.id || ('highlight-' + index)">
-                        <div class="flex gap-2 items-center mb-2">
-                            <input
-                                type="text"
-                                x-model="item.highlight"
-                                placeholder="Prime downtown location"
-                                class="input input-bordered flex-1"
-                            />
-                            <button 
-                                @click="removeHighlight(index)"
-                                class="btn btn-ghost btn-sm text-error"
-                                title="Remove highlight"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    </template>
-                    <button 
-                        @click="addHighlight()"
-                        class="btn btn-primary btn-sm mt-2"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Add Highlight
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <PropertyDetailsSection building={building} errors={errors} />
     
-    <!-- Media Gallery Section -->
-    <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="card-title text-xl">Media Gallery</h3>
-                <div class="badge badge-secondary badge-outline">Photos & Virtual Tours</div>
-            </div>
-            <div class="text-base-content/70 mb-4">
-                Upload and manage photos that showcase your property to prospective tenants.
-            </div>
-            
-            <PhotoUploader
-                name="photos"
-                xModel="building.photos"
-                buildingId={building.buildingID}
-                unitId="property-photos"
-            />
-        </div>
-    </div>
+    <MediaGallerySection building={building} />
     
-    <!-- Tour Information Section -->
-    <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="card-title text-xl">Tour Information</h3>
-                <div class="badge badge-success badge-outline">Scheduling & Availability</div>
-            </div>
-            <div class="text-base-content/70 mb-6">
-                Configure tour options and availability for prospective tenants.
-            </div>
-            
-            <!-- Tour Options -->
-            <div class="mb-6">
-                <h4 class="font-semibold mb-4">Available Tour Types</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="form-control">
-                        <label class="label cursor-pointer">
-                            <span class="label-text">Self-Guided Tours</span>
-                            <input 
-                                type="checkbox" 
-                                class="checkbox checkbox-primary" 
-                                x-model="building.tourAvailability.selfGuidedTours"
-                                x-init="if (!building.tourAvailability) building.tourAvailability = {}"
-                            />
-                        </label>
-                        <div class="label">
-                            <span class="label-text-alt text-base-content/60">Tenants can tour independently</span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label class="label cursor-pointer">
-                            <span class="label-text">Virtual Tours</span>
-                            <input 
-                                type="checkbox" 
-                                class="checkbox checkbox-primary" 
-                                x-model="building.tourAvailability.virtualTours"
-                            />
-                        </label>
-                        <div class="label">
-                            <span class="label-text-alt text-base-content/60">Online 360° or video tours</span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label class="label cursor-pointer">
-                            <span class="label-text">In-Person Tours</span>
-                            <input 
-                                type="checkbox" 
-                                class="checkbox checkbox-primary" 
-                                x-model="building.tourAvailability.inPersonTours"
-                            />
-                        </label>
-                        <div class="label">
-                            <span class="label-text-alt text-base-content/60">Scheduled tours with staff</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tour Scheduling -->
-            <div class="mb-6">
-                <BaseInput
-                    name="tourSchedulingUrl"
-                    label="Tour Scheduling URL"
-                    type="url"
-                    xModel="building.tourAvailability.tourSchedulingUrl"
-                    placeholder="https://calendly.com/property-tours"
-                    helpText="Link where tenants can schedule tours (e.g., Calendly, property website)"
-                />
-                <span x-show="errors.tourSchedulingUrl" class="label-text-alt text-error" x-text="errors.tourSchedulingUrl"></span>
-            </div>
-            
-            <!-- Tour Hours -->
-            <div>
-                <h4 class="font-semibold mb-4">Tour Availability Hours</h4>
-                <div class="text-sm text-base-content/60 mb-4">
-                    Set the days and hours when tours are available. This helps tenants know when they can schedule visits.
-                </div>
-                <div class="grid gap-2">
-                    {daysOfWeek.map(day => {
-                        const xDataStr = `{ day: '${day}', isOpen: !!(building.tourAvailability?.tourHours?.['${day}']), toggle() { if (!building.tourAvailability) building.tourAvailability = {}; if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {}; if (this.isOpen) { building.tourAvailability.tourHours[this.day] = { open: "09:00", close: "17:00" }; } else { delete building.tourAvailability.tourHours[this.day]; } } }`;
-                        return (
-                        <div class="grid grid-cols-4 gap-4 items-center py-2 border-b border-base-200 last:border-b-0" x-data={xDataStr}>
-                            <div class="form-control">
-                                <label class="label cursor-pointer justify-start gap-3">
-                                    <input 
-                                        type="checkbox" 
-                                        class="checkbox checkbox-sm checkbox-primary" 
-                                        x-model="isOpen"
-                                        @change="toggle()"
-                                    />
-                                    <span class="label-text font-medium capitalize">{day}</span>
-                                </label>
-                            </div>
-                            <div class="text-center text-sm text-base-content/60" x-show="!isOpen">Closed</div>
-                            <input
-                                x-show="isOpen"
-                                type="time"
-                                class="input input-sm w-full"
-                                :value="building.tourAvailability?.tourHours?.[day]?.open || ''"
-                                @input="if (building.tourAvailability?.tourHours?.[day]) building.tourAvailability.tourHours[day].open = $event.target.value"
-                                placeholder="09:00"
-                            />
-                            <input
-                                x-show="isOpen"
-                                type="time"
-                                class="input input-sm w-full"
-                                :value="building.tourAvailability?.tourHours?.[day]?.close || ''"
-                                @input="if (building.tourAvailability?.tourHours?.[day]) building.tourAvailability.tourHours[day].close = $event.target.value"
-                                placeholder="17:00"
-                            />
-                        </div>
-                        )
-                    })}
-                </div>
-            </div>
-        </div>
-    </div>
+    <TourInformationSection building={building} errors={errors} />
 </div>

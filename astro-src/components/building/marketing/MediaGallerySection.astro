@@ -1,0 +1,30 @@
+---
+import { PhotoUploader } from "../../forms";
+import type { Building } from "../../../types";
+
+export interface Props {
+    building: Building;
+}
+
+const { building } = Astro.props;
+---
+
+<!-- Media Gallery Section -->
+<div class="card bg-base-100 shadow-lg">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="card-title text-xl">Media Gallery</h3>
+            <div class="badge badge-secondary badge-outline">Photos & Virtual Tours</div>
+        </div>
+        <div class="text-base-content/70 mb-4">
+            Upload and manage photos that showcase your property to prospective tenants.
+        </div>
+        
+        <PhotoUploader
+            name="photos"
+            xModel="building.photos"
+            buildingId={building.buildingID}
+            unitId="property-photos"
+        />
+    </div>
+</div>

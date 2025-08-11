@@ -1,0 +1,68 @@
+---
+// QuickActionsToolbar.astro - Bulk operations toolbar for units management
+
+export interface Props {
+    // No props needed - uses shared state from parent BuildingProvider
+}
+---
+
+<!-- Quick Actions Toolbar -->
+<div class="card bg-base-100 shadow-xl" data-testid="units-quick-actions">
+    <div class="card-body p-4 sm:p-6">
+        <div class="flex flex-col gap-4">
+            <!-- Top row: Selection Controls -->
+            <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                <!-- Select All Checkbox -->
+                <label class="flex items-center gap-3 cursor-pointer min-h-[44px]">
+                    <input 
+                        type="checkbox" 
+                        class="checkbox checkbox-primary w-5 h-5" 
+                        data-testid="bulk-select-all"
+                        :checked="selectedUnits.size === filteredUnits.length && filteredUnits.length > 0"
+                        :indeterminate="selectedUnits.size > 0 && selectedUnits.size < filteredUnits.length"
+                        @change="toggleSelectAll()"
+                    />
+                    <span class="font-medium">Select All</span>
+                </label>
+                
+                <!-- Selection Counter -->
+                <div x-show="selectedUnits.size > 0" class="badge badge-primary text-sm py-2 px-3" data-testid="selection-counter">
+                    <span x-text="selectedUnits.size"></span> units selected
+                </div>
+            </div>
+            
+            <!-- Bottom row: Bulk Actions (Stack vertically on mobile, horizontal on larger screens) -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button 
+                    class="btn btn-outline btn-primary min-h-[44px] flex-1 sm:flex-none"
+                    data-testid="bulk-status-update"
+                    :disabled="selectedUnits.size === 0 || bulkOperation.loading"
+                    @click="showBulkStatusDialog = true"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Update Status</span>
+                </button>
+                
+                <button 
+                    class="btn btn-outline btn-secondary min-h-[44px] flex-1 sm:flex-none"
+                    data-testid="bulk-rent-update"
+                    :disabled="selectedUnits.size === 0 || bulkOperation.loading"
+                    @click="showBulkRentDialog = true"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    <span>Update Rent</span>
+                </button>
+            </div>
+            
+            <!-- Loading indicator -->
+            <div x-show="bulkOperation.loading" class="flex items-center justify-center py-2">
+                <div class="loading loading-spinner loading-sm" data-testid="bulk-operation-loading"></div>
+                <span class="ml-2 text-sm">Processing...</span>
+            </div>
+        </div>
+    </div>
+</div>

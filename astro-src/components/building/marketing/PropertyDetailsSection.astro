@@ -1,0 +1,72 @@
+---
+import {
+    BaseTextarea
+} from "../../forms";
+
+export interface Props {
+    building: any;
+    errors?: Record<string, string>;
+}
+
+const { building: _building, errors: _errors = {} } = Astro.props;
+---
+
+<!-- Property Details Section -->
+<div class="card bg-base-100 shadow-lg">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="card-title text-xl">Property Details & Marketing</h3>
+            <div class="badge badge-info badge-outline">How your property is presented</div>
+        </div>
+        <div class="text-base-content/70 mb-6">
+            Marketing descriptions and highlights that will be shown to prospective tenants on listing sites.
+        </div>
+        
+        <!-- Marketing Description -->
+        <div class="mb-6">
+            <BaseTextarea
+                name="marketingDescription"
+                label="Marketing Description"
+                xModel="building.marketingDescription"
+                placeholder="Experience luxury living in this stunning property featuring modern amenities, spacious layouts, and prime location..."
+                rows={6}
+                helpText="Primary description used on rental listings - highlight key selling points"
+            />
+        </div>
+        
+        <!-- Property Highlights -->
+        <div class="mb-6">
+            <h4 class="font-semibold mb-4">Property Highlights</h4>
+            <div x-data='{ addHighlight() { if (!$parent.building.propertyHighlights) $parent.building.propertyHighlights = []; $parent.building.propertyHighlights.push({ id: Date.now() + Math.random(), highlight: "" }); }, removeHighlight(index) { $parent.building.propertyHighlights.splice(index, 1); } }'>
+                <template x-for="(item, index) in building.propertyHighlights || []" :key="item.id || ('highlight-' + index)">
+                    <div class="flex gap-2 items-center mb-2">
+                        <input
+                            type="text"
+                            x-model="item.highlight"
+                            placeholder="Prime downtown location"
+                            class="input input-bordered flex-1"
+                        />
+                        <button 
+                            @click="removeHighlight(index)"
+                            class="btn btn-ghost btn-sm text-error"
+                            title="Remove highlight"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+                <button 
+                    @click="addHighlight()"
+                    class="btn btn-primary btn-sm mt-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Add Highlight
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

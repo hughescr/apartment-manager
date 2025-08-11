@@ -1,0 +1,149 @@
+---
+// astro-src/components/unit-type-form/UnitTypeFormProvider.astro
+import { Resource } from "sst";
+
+// Import child components
+import UnitTypeBasicInfo from "./UnitTypeBasicInfo.astro";
+import UnitTypeRentSection from "./UnitTypeRentSection.astro";
+import UnitTypeDimensionsSection from "./UnitTypeDimensionsSection.astro";
+import UnitTypeAmenitiesSection from "./UnitTypeAmenitiesSection.astro";
+
+const { buildingID, onSuccess } = Astro.props as { 
+    buildingID: string;
+    onSuccess?: string; // JavaScript code to execute on success
+};
+
+const apiURL = Resource.API.url;
+
+// Declare the global window property for TypeScript
+declare global {
+    interface Window {
+        unitTypeFormData: (apiUrlData: string, buildingIdData: string) => any;
+    }
+}
+---
+
+<script>
+// Import the state management function
+import { createUnitTypeFormState } from '../../lib/unit-type-form';
+
+// Declare global type for Alpine.js
+declare global {
+    interface Window {
+        createUnitTypeFormState: typeof createUnitTypeFormState;
+    }
+}
+
+// Make the state creation function available globally for Alpine.js
+if(typeof window !== 'undefined') {
+    window.createUnitTypeFormState = createUnitTypeFormState;
+}
+</script>
+
+<script define:vars={{ apiURL, buildingID }} is:inline>
+// Used by Alpine.js x-data attribute - wrapper for the state function
+window.unitTypeFormData = function unitTypeFormData(apiUrlData, buildingIdData) {
+    return window.createUnitTypeFormState(apiUrlData, buildingIdData);
+}
+</script>
+
+{onSuccess && (
+    <script define:vars={{ onSuccess }} is:inline>
+        window.unitTypeFormOnSuccess = function() {
+            eval(onSuccess);
+        };
+    </script>
+)}
+
+<div x-data="unitTypeFormData(apiURL, buildingID)" class="unit-type-form">
+    <!-- Toggle Button -->
+    <button 
+        class="btn btn-primary"
+        x-on:click="toggleForm()"
+        x-show="!showForm"
+        data-testid="add-unit-type-button"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Unit Type
+    </button>
+
+    <!-- Form Modal/Card -->
+    <div x-show="showForm" x-transition class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h3 class="card-title text-xl mb-4">Create New Unit Type</h3>
+            
+            <!-- Error Summary -->
+            <div x-show="errors.submit" class="alert alert-error mb-4" data-testid="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-text="errors.submit"></span>
+            </div>
+
+            <!-- Basic Information Section -->
+            <UnitTypeBasicInfo />
+
+            <!-- Pricing Section -->
+            <UnitTypeRentSection />
+
+            <!-- Unit Details Section -->
+            <UnitTypeDimensionsSection />
+
+            <!-- Model Amenities Section -->
+            <UnitTypeAmenitiesSection />
+
+            <!-- Form Actions -->
+            <div class="card-actions justify-end">
+                <button 
+                    class="btn btn-ghost"
+                    x-on:click="toggleForm()"
+                    :disabled="saving"
+                >
+                    Cancel
+                </button>
+                <button 
+                    class="btn btn-primary"
+                    x-on:click="saveUnitType()"
+                    :disabled="saving"
+                    :class="{'loading': saving}"
+                    data-testid="submit-button"
+                >
+                    <span x-show="!saving">Create Unit Type</span>
+                    <span x-show="saving">Creating...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @reference "../../styles/global.css";
+    
+    /* Smooth transitions */
+    [x-transition] {
+        transition: all 0.3s ease;
+    }
+    
+    /* Form styling */
+    .unit-type-form {
+        @apply mb-6;
+    }
+    
+    /* Divider styling */
+    .divider {
+        @apply my-6 font-semibold text-base-content/70;
+    }
+    
+    /* Ensure number inputs don't show spinners */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+</style>
