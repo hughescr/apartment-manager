@@ -24,7 +24,6 @@ export interface Props {
 const { 
     building, 
     unitTypes = [], 
-    apiUrl,
     isOpen: _isOpen = false,
     dialogId = 'add-unit-dialog'
 } = Astro.props;
@@ -108,50 +107,22 @@ const statusOptions = [
                             return;
                         }
                         
-                        const apiUrl = $el.dataset.apiUrl;
-                        const buildingId = $el.dataset.buildingId;
-                        const response = await fetch(`${apiUrl}buildings/${buildingId}/units`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                ...this.newUnit,
-                                buildingID: buildingId,
-                                lastUpdated: new Date().toISOString()
-                            })
-                        });
+                        // Use parent's add unit method
+                        $parent.newUnit = this.newUnit;
+                        await $parent.addUnit();
                         
-                        if (response.ok) {
-                            const addedUnit = await response.json();
-                            
-                            // Emit event for parent to handle
-                            $dispatch('unit-added', addedUnit);
-                            $dispatch('show-toast', { 
-                                message: `Unit ${this.newUnit.unitNumber} added successfully`, 
-                                type: 'success' 
-                            });
-                            
-                            // Reset form and close dialog
-                            this.newUnit = {
-                                unitNumber: '',
-                                modelID: '',
-                                beds: 0,
-                                baths: 1,
-                                sqft: null,
-                                rent: 0,
-                                vacancyClass: 'Unoccupied',
-                                description: ''
-                            };
-                            showAddUnitDialog = false;
-                        } else {
-                            const errorData = await response.json();
-                            if (errorData.errors) {
-                                this.errors = errorData.errors;
-                            } else {
-                                this.errors.general = errorData.error || 'Failed to add unit';
-                            }
-                        }
+                        // Reset form and close dialog
+                        this.newUnit = {
+                            unitNumber: '',
+                            modelID: '',
+                            beds: 0,
+                            baths: 1,
+                            sqft: null,
+                            rent: 0,
+                            vacancyClass: 'Unoccupied',
+                            description: ''
+                        };
+                        $parent.showAddUnitDialog = false;
                     } catch (error) {
                         console.error('Add unit error:', error);
                         this.errors.general = 'Failed to add unit. Please try again.';
@@ -166,9 +137,6 @@ const statusOptions = [
                 
                 unitTypes: JSON.parse($el.dataset.unitTypes || '[]')
             }"
-            :data-unit-types={JSON.stringify(unitTypes)}
-            :data-api-url={apiUrl}
-            :data-building-id={building.buildingID}
         >
             <!-- General Error Display -->
             <div x-show="errors.general" class="alert alert-error" data-testid="add-unit-general-error">

@@ -59,21 +59,21 @@ const safeUnitTypes = unitTypes || [];
 
 <script>
 // Import the state management function directly
-import { createBuildingCardState } from '../../lib/building/buildingState';
+import { createBuildingState } from '../../lib/building/buildingState';
 
 // Make the state creation function available globally for Alpine.js
 if(typeof window !== 'undefined') {
-    window.createBuildingCardState = createBuildingCardState;
+    window.createBuildingState = createBuildingState;
 }
 </script>
 
 <div
     class="building-provider"
-    x-data="createBuildingCardState()"
+    x-data="createBuildingState()"
     :class="{'opacity-50': saving}"
-    data-building={JSON.stringify(building)}
-    data-units={JSON.stringify(safeUnits)}
-    data-unit-types={JSON.stringify(safeUnitTypes)}
+    data-building-data={JSON.stringify(building)}
+    data-initial-units={JSON.stringify(safeUnits)}
+    data-initial-unit-types={JSON.stringify(safeUnitTypes)}
     data-api-url={apiURL}
 >
     <!-- Provider passes state down to child components through Alpine.js context -->

@@ -126,6 +126,7 @@ const daysOfWeek = Object.values(DayOfWeek);
                                 type="checkbox" 
                                 class="checkbox checkbox-primary" 
                                 x-model="building.tourAvailability.selfGuidedTours"
+                                x-init="if (!building.tourAvailability) building.tourAvailability = {}"
                             />
                         </label>
                         <div class="label">

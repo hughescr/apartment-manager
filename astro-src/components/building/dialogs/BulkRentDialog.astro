@@ -9,8 +9,6 @@ export interface Props {
 }
 
 const {
-    building,
-    apiUrl,
     isOpen: _isOpen = false,
     dialogId = 'bulk-rent-dialog'
 } = Astro.props;
@@ -104,41 +102,16 @@ const {
                     this.loading = true;
                     
                     try {
-                        const unitIDs = Array.from(selectedUnits);
-                        const apiUrl = $el.dataset.apiUrl;
-                        const buildingId = $el.dataset.buildingId;
-                        const response = await fetch(`${apiUrl}buildings/${buildingId}/units/bulk-rent`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                unitIDs,
-                                updateType: this.rentUpdateType,
-                                value: parseFloat(this.rentValue)
-                            })
-                        });
+                        // Use parent's bulk operation method
+                        $parent.bulkOperation.rentUpdateType = this.rentUpdateType;
+                        $parent.bulkOperation.rentValue = parseFloat(this.rentValue);
+                        await $parent.performBulkRentUpdate();
                         
-                        if (response.ok) {
-                            // Emit event for parent to handle
-                            $dispatch('units-rent-updated', {
-                                unitIDs,
-                                updateType: this.rentUpdateType,
-                                value: parseFloat(this.rentValue)
-                            });
-                            
-                            $dispatch('show-toast', { 
-                                message: `${unitIDs.length} units updated successfully`, 
-                                type: 'success' 
-                            });
-                            
-                            // Reset and close
-                            this.rentUpdateType = 'absolute';
-                            this.rentValue = '';
-                            this.errors = {};
-                            showBulkRentDialog = false;
-                        } else {
-                            const errorData = await response.json();
-                            this.errors.general = errorData.error || 'Bulk rent update failed';
-                        }
+                        // Reset and close
+                        this.rentUpdateType = 'absolute';
+                        this.rentValue = '';
+                        this.errors = {};
+                        $parent.showBulkRentDialog = false;
                     } catch (error) {
                         console.error('Bulk rent update error:', error);
                         this.errors.general = 'Failed to update rents. Please try again.';
@@ -152,8 +125,6 @@ const {
                 }
             }"
             class="space-y-4"
-            :data-api-url={apiUrl}
-            :data-building-id={building.buildingID}
         >
             <!-- General Error Display -->
             <div x-show="errors.general" class="alert alert-error" data-testid="bulk-rent-general-error">

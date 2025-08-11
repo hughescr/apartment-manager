@@ -1,13 +1,41 @@
 ---
-import BuildingCard from './BuildingCard.astro';
-import Saving from './Saving.astro';
+import BuildingProvider from './building/BuildingProvider.astro';
+import TabNavigator from './building/TabNavigator.astro';
+import TabPanels from './building/TabPanels.astro';
+import SaveIndicator from './building/SaveIndicator.astro';
+
+// Tab components
+import BuildingInfoTab from './building/tabs/BuildingInfoTab.astro';
+import FloorplansUnitsTab from './building/tabs/FloorplansUnitsTab.astro';
+import PricingPoliciesTab from './building/tabs/PricingPoliciesTab.astro';
+import MarketingTab from './building/tabs/MarketingTab.astro';
+import UnitsTab from './building/tabs/UnitsTab.astro';
+
+// Dialog components
+import AddUnitDialog from './building/dialogs/AddUnitDialog.astro';
+import BulkStatusDialog from './building/dialogs/BulkStatusDialog.astro';
+import BulkRentDialog from './building/dialogs/BulkRentDialog.astro';
+
 import { getBuildings } from '../../data/buildings';
+import { getUnits } from '../../data/units';
+import { getUnitTypes } from '../../data/unitTypes';
 import { Resource } from 'sst';
 
 import _ from 'lodash';
 
 const buildings = await getBuildings();
 const apiURL = Resource.API.url;
+
+// For each building, fetch its units and unit types
+const buildingsWithData = await Promise.all(
+    buildings.map(async (building) => {
+        const [units, unitTypes] = await Promise.all([
+            getUnits(building.buildingID),
+            getUnitTypes(building.buildingID)
+        ]);
+        return { building, units, unitTypes };
+    })
+);
 ---
 <div x-data="{ 
     activeBuildingTab: 0, 
@@ -31,7 +59,7 @@ const apiURL = Resource.API.url;
         this.apiURL = this.$el.dataset.apiUrl;
         const hash = decodeURIComponent(window.location.hash.substring(1));
         if (hash) {
-            const index = this.buildingsData.findIndex(b => b.buildingID === hash);
+            const index = this.buildingsData.findIndex(b => b.building.buildingID === hash);
             if (index !== -1) {
                 this.activeBuildingTab = index;
             } else if(hash === 'add-new-building') {
@@ -109,7 +137,8 @@ const apiURL = Resource.API.url;
     }
 }" 
 @show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
-data-buildings={JSON.stringify(buildings)}
+@toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
+data-buildings={JSON.stringify(buildingsWithData)}
 data-api-url={apiURL}>
     <div class="toast toast-center toast-middle" x-show="showToast" x-transition.opacity>
         <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
@@ -117,11 +146,11 @@ data-api-url={apiURL}>
         </div>
     </div>
     <div role="tablist" class="tabs tabs-lift">
-        <template x-for="(building, index) in buildingsData" :key="building.buildingID">
+        <template x-for="(buildingData, index) in buildingsData" :key="buildingData.building.buildingID">
             <a role="tab" class="tab" 
                :class="{ 'tab-active': activeBuildingTab === index }"
-               @click="setActiveTab(index, building.buildingID)"
-               x-text="building.buildingID">
+               @click="setActiveTab(index, buildingData.building.buildingID)"
+               x-text="buildingData.building.buildingID">
             </a>
         </template>
         <a role="tab" class="tab items-center" 
@@ -134,13 +163,74 @@ data-api-url={apiURL}>
         </a>
     </div>
     
-    {/* Building Cards - Show only the active one */}
-    {_.map(buildings, (building, i) => (
+    {/* Building Cards - Show only the active one using new modular architecture */}
+    {buildingsWithData.map((buildingData, i) => (
         <div x-show={`activeBuildingTab === ${i}`} x-cloak>
-            <BuildingCard buildingID={building.buildingID} />
+            <BuildingProvider 
+                building={buildingData.building} 
+                units={buildingData.units} 
+                unitTypes={buildingData.unitTypes} 
+                apiURL={apiURL}
+            >
+                <!-- Save indicator at the top -->
+                <div class="mb-4">
+                    <SaveIndicator />
+                </div>
+                
+                <!-- Tab navigation -->
+                <TabNavigator />
+                
+                <!-- Tab content panels -->
+                <TabPanels>
+                    <BuildingInfoTab 
+                        slot="building-info" 
+                        building={buildingData.building}
+                        apiUrl={apiURL}
+                    />
+                    <FloorplansUnitsTab 
+                        slot="floorplans-units" 
+                    />
+                    <PricingPoliciesTab 
+                        slot="pricing-policies" 
+                        building={buildingData.building}
+                        errors={{}}
+                    />
+                    <MarketingTab 
+                        slot="marketing" 
+                        building={buildingData.building}
+                        apiUrl={apiURL}
+                    />
+                    <UnitsTab 
+                        slot="units" 
+                    />
+                </TabPanels>
+                
+                <!-- Dialogs -->
+                <AddUnitDialog 
+                    building={{
+                        buildingID: buildingData.building.buildingID,
+                        street: buildingData.building.street || '',
+                        city: buildingData.building.city || '',
+                        state: buildingData.building.state || ''
+                    }}
+                    unitTypes={buildingData.unitTypes}
+                    apiUrl={apiURL}
+                />
+                <BulkStatusDialog 
+                    building={{
+                        buildingID: buildingData.building.buildingID
+                    }}
+                    apiUrl={apiURL}
+                />
+                <BulkRentDialog 
+                    building={{
+                        buildingID: buildingData.building.buildingID
+                    }}
+                    apiUrl={apiURL}
+                />
+            </BuildingProvider>
         </div>
     ))}
-    
     {/* Add Building Form */}
     <div class="tab-content bg-base-100 border-base-300 p-4" x-show="activeBuildingTab === buildingsData.length" x-cloak>
             <fieldset class="fieldset w-xl relative">
@@ -250,7 +340,7 @@ data-api-url={apiURL}>
                         <span>Selecting the wrong type may result in listing rejection</span>
                     </div>
                 </div>
-                <Saving />
+                <!-- Saving indicator is handled by the modular architecture -->
             </fieldset>
             <div class="mt-2 space-x-2">
                 <button class="btn btn-primary" @click="addBuilding()">Add Building</button>

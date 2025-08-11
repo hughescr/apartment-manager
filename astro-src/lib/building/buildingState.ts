@@ -5,16 +5,16 @@ import { trim, forEach, filter, toLower, isError } from 'lodash';
 import type { ExtendedUnitData } from './types';
 
 /**
- * Creates the Alpine.js state object for BuildingCard using native Alpine.js features
+ * Creates the Alpine.js state object for building management using native Alpine.js features
  * This replaces the complex orchestrator pattern with simple, direct state management
  */
-export function createBuildingCardState() {
-    const state = buildingCardStateObject();
+export function createBuildingState() {
+    const state = buildingStateObject();
     return state as typeof state & AlpineMagicProperties;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Alpine.js requires dynamic typing for proper state management
-function buildingCardStateObject(): any {
+function buildingStateObject(): any {
     return {
         building: null as BuildingData | null,
         original: null as BuildingData | null,
@@ -49,10 +49,11 @@ function buildingCardStateObject(): any {
         /**
          * Initialize the component state from HTML dataset
          */
-        init(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        init(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this.parseBuildingData();
             this.parseLocationData();
             this.parseUnitsData();
+            this.parseUnitTypesData();
             this.apiURL = this.$el?.dataset?.apiUrl || '';
 
             // Store original state for change detection
@@ -67,7 +68,7 @@ function buildingCardStateObject(): any {
             this.updateFilteredUnits();
         },
 
-        parseBuildingData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        parseBuildingData(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             try {
                 const buildingDataStr = this.$el?.dataset?.buildingData;
                 if(!buildingDataStr || trim(buildingDataStr) === '') {
@@ -80,7 +81,7 @@ function buildingCardStateObject(): any {
             }
         },
 
-        parseLocationData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        parseLocationData(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             try {
                 const locationDataset = this.$el?.closest('[data-location-config]')?.dataset?.locationConfig;
                 if(locationDataset) {
@@ -91,7 +92,7 @@ function buildingCardStateObject(): any {
             }
         },
 
-        parseUnitsData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        parseUnitsData(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             try {
                 const unitsData = this.$el?.closest('[data-initial-units]')?.dataset?.initialUnits;
                 if(unitsData) {
@@ -102,7 +103,7 @@ function buildingCardStateObject(): any {
             }
         },
 
-        parseUnitTypesData(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        parseUnitTypesData(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             try {
                 const unitTypesDataset = this.$el?.closest('[data-initial-unit-types]')?.dataset?.initialUnitTypes;
                 if(unitTypesDataset) {
@@ -128,7 +129,7 @@ function buildingCardStateObject(): any {
         /**
          * Setup Alpine.js watchers for reactive behavior
          */
-        setupWatchers(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        setupWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             // Watch for building changes to update showSave
             this.$watch('building', (value: BuildingData | null) => {
                 this.showSave = hasUnsavedChanges(this.building, this.original);
@@ -162,7 +163,7 @@ function buildingCardStateObject(): any {
         /**
          * Update filtered units based on current filter criteria
          */
-        updateFilteredUnits(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        updateFilteredUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             let filtered = [...this.units];
 
             // Apply status filter
@@ -192,7 +193,7 @@ function buildingCardStateObject(): any {
         /**
          * Validate the current form state
          */
-        validateForm(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        validateForm(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             const errors: Record<string, string> = {};
             let isValid = true;
 
@@ -219,7 +220,7 @@ function buildingCardStateObject(): any {
         /**
          * Save building changes
          */
-        async saveBuilding(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        async saveBuilding(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             if(!this.validateForm() || !this.building) {
                 return;
             }
@@ -258,7 +259,7 @@ function buildingCardStateObject(): any {
         /**
          * Delete building
          */
-        async deleteBuilding(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        async deleteBuilding(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             if(!this.building || !confirm('Are you sure you want to delete this building?')) {
                 return;
             }
@@ -287,7 +288,7 @@ function buildingCardStateObject(): any {
             }
         },
 
-        undoChanges(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        undoChanges(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             if(this.original) {
                 this.building = JSON.parse(JSON.stringify(this.original));
                 this.showSave = false;
@@ -311,7 +312,7 @@ function buildingCardStateObject(): any {
         /**
          * Add new unit
          */
-        async addUnit(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        async addUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             if(!trim(this.newUnit.unitID) || !this.newUnit.modelID) {
                 this.errors = { unitID: 'Unit ID and Model are required' };
                 return;
@@ -378,7 +379,7 @@ function buildingCardStateObject(): any {
         /**
          * Perform bulk status update
          */
-        async performBulkStatusUpdate(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        async performBulkStatusUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             if(this.selectedUnits.size === 0 || !this.bulkOperation.statusValue) {
                 return;
             }
@@ -433,7 +434,7 @@ function buildingCardStateObject(): any {
         /**
          * Perform bulk rent update
          */
-        async performBulkRentUpdate(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties) {
+        async performBulkRentUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             if(this.selectedUnits.size === 0 || !this.bulkOperation.rentValue) {
                 return;
             }
@@ -497,13 +498,17 @@ function buildingCardStateObject(): any {
         /**
          * Toggle unit availability (quick action)
          */
-        async toggleUnitAvailability(this: ReturnType<typeof buildingCardStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
-            const newStatus = unit.status === 'available' ? 'occupied' : 'available';
+        async toggleUnitAvailability(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
+            const newStatus = unit.vacancyClass === 'Occupied' ? 'Unoccupied' : 'Occupied';
             try {
-                const response = await fetch(`${this.apiURL}/units/${unit.unitID}`, {
-                    method: 'PATCH',
+                const response = await fetch(`${this.apiURL}/buildings/${this.building?.buildingID}/units/${unit.unitID}`, {
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
+                    body: JSON.stringify({
+                        ...unit,
+                        vacancyClass: newStatus,
+                        lastUpdated: new Date().toISOString()
+                    })
                 });
 
                 if(!response.ok) {
@@ -511,12 +516,12 @@ function buildingCardStateObject(): any {
                 }
 
                 // Update local state
-                unit.status = newStatus;
+                unit.vacancyClass = newStatus;
                 unit.lastUpdated = new Date().toISOString();
                 this.updateFilteredUnits();
 
                 this.$dispatch('toast:show', {
-                    message: `Unit ${unit.unitID} is now ${newStatus}`,
+                    message: `Unit ${unit.unitID} status updated to ${newStatus}`,
                     type: 'success'
                 });
             } catch(error) {
@@ -524,6 +529,56 @@ function buildingCardStateObject(): any {
                     message: 'Failed to update unit: ' + (isError(error) ? error.message : 'Unknown error'),
                     type: 'error'
                 });
+            }
+        },
+
+        /**
+         * Update unit rent (inline editing)
+         */
+        async updateUnitRent(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData, newRentValue: string) {
+            const rentAmount = parseFloat(newRentValue);
+            if(isNaN(rentAmount) || rentAmount < 0 || rentAmount > 25000) {
+                this.$dispatch('toast:show', {
+                    message: 'Please enter a valid rent amount between $0 and $25,000',
+                    type: 'error'
+                });
+                unit.editingRent = false;
+                return;
+            }
+
+            unit.savingField = 'rent';
+            unit.editingRent = false;
+
+            try {
+                const response = await fetch(`${this.apiURL}/buildings/${this.building?.buildingID}/units/${unit.unitID}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...unit,
+                        rent: rentAmount,
+                        lastUpdated: new Date().toISOString()
+                    })
+                });
+
+                if(!response.ok) {
+                    throw new Error('Rent update failed');
+                }
+
+                // Update local state
+                unit.rent = rentAmount;
+                unit.lastUpdated = new Date().toISOString();
+
+                this.$dispatch('toast:show', {
+                    message: `Unit ${unit.unitID} rent updated to ${this.formatCurrency(rentAmount)}`,
+                    type: 'success'
+                });
+            } catch(error) {
+                this.$dispatch('toast:show', {
+                    message: 'Failed to update rent: ' + (isError(error) ? error.message : 'Unknown error'),
+                    type: 'error'
+                });
+            } finally {
+                unit.savingField = null;
             }
         },
 
@@ -591,11 +646,11 @@ function buildingCardStateObject(): any {
  */
 declare global {
     interface Window {
-        createBuildingCardState: typeof createBuildingCardState
+        createBuildingState: typeof createBuildingState
     }
 }
 
 // Expose to global for Alpine.js usage
 if(typeof window !== 'undefined') {
-    window.createBuildingCardState = createBuildingCardState;
+    window.createBuildingState = createBuildingState;
 }

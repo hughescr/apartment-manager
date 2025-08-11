@@ -9,8 +9,6 @@ export interface Props {
 }
 
 const {
-    building,
-    apiUrl,
     isOpen: _isOpen = false,
     dialogId = 'bulk-status-dialog'
 } = Astro.props;
@@ -46,37 +44,13 @@ const statusOptions = [
                     this.errors = {};
                     
                     try {
-                        const unitIDs = Array.from(selectedUnits);
-                        const apiUrl = $el.dataset.apiUrl;
-                        const buildingId = $el.dataset.buildingId;
-                        const response = await fetch(`${apiUrl}buildings/${buildingId}/units/bulk-status`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                unitIDs,
-                                status: this.statusValue
-                            })
-                        });
+                        // Use parent's bulk operation method
+                        $parent.bulkOperation.statusValue = this.statusValue;
+                        await $parent.performBulkStatusUpdate();
                         
-                        if (response.ok) {
-                            // Emit event for parent to handle
-                            $dispatch('units-status-updated', {
-                                unitIDs,
-                                status: this.statusValue
-                            });
-                            
-                            $dispatch('show-toast', { 
-                                message: `${unitIDs.length} units updated successfully`, 
-                                type: 'success' 
-                            });
-                            
-                            // Reset and close
-                            this.statusValue = '';
-                            showBulkStatusDialog = false;
-                        } else {
-                            const errorData = await response.json();
-                            this.errors.general = errorData.error || 'Bulk update failed';
-                        }
+                        // Reset and close
+                        this.statusValue = '';
+                        $parent.showBulkStatusDialog = false;
                     } catch (error) {
                         console.error('Bulk status update error:', error);
                         this.errors.general = 'Failed to update units. Please try again.';
@@ -87,10 +61,9 @@ const statusOptions = [
                     } finally {
                         this.loading = false;
                     }
+                }
             }"
             class="space-y-4"
-            :data-api-url={apiUrl}
-            :data-building-id={building.buildingID}
         >
             <!-- General Error Display -->
             <div x-show="errors.general" class="alert alert-error" data-testid="bulk-status-general-error">

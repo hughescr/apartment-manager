@@ -21,7 +21,7 @@
 ### Astro Component Structure
 ```astro
 ---
-// See components/BuildingCard.astro for patterns
+// See components/building/ for modular component patterns
 import type { BuildingData } from "../types";
 import { getBuildings } from "../../data/buildings";
 

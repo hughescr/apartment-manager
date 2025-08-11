@@ -5,6 +5,8 @@ export interface ExtendedUnitData extends UnitData {
     lastUpdated?: string
     status?: string  // For runtime status display
     currentRent?: number  // For runtime rent value
+    editingRent?: boolean  // UI state for inline rent editing
+    savingField?: string | null  // UI state for showing saving indicators
 }
 
 // Building-specific UI state interfaces
@@ -45,7 +47,7 @@ export interface LocationState {
 }
 
 // Combined state interface
-export interface BuildingCardState extends BuildingUIState, UnitsTabState, LocationState {}
+export interface BuildingState extends BuildingUIState, UnitsTabState, LocationState {}
 
 // Event types for the event bus
 // Event types for the event bus

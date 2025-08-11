@@ -5,7 +5,7 @@ import { describe, it, expect } from 'bun:test';
 import _ from 'lodash';
 
 /**
- * Tests for BuildingCard 5-Tab Structure
+ * Tests for Building Management 5-Tab Structure
  *
  * These tests validate the new consolidated tab navigation system:
  * 1. Building Info - Basic info, contact, amenities
@@ -15,7 +15,7 @@ import _ from 'lodash';
  * 5. Units - Unit management with quick actions
  */
 
-describe('BuildingCard Tab Navigation', () => {
+describe('Building Tab Navigation', () => {
     describe('Tab Structure', () => {
         it('should have exactly 5 tabs with correct names', () => {
             const expectedTabs = [

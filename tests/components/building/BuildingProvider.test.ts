@@ -26,7 +26,7 @@ describe('BuildingProvider Component', () => {
         consoleErrorSpy = jest.fn(); // Fixed jest.spyOn usage
 
         // Reset window mock
-        mockWindow.createBuildingCardState = jest.fn();
+        mockWindow.createBuildingState = jest.fn();
         mockWindow.buildingProviderData = jest.fn();
     });
 
@@ -278,10 +278,10 @@ describe('BuildingProvider Component', () => {
     describe('Window Integration Logic', () => {
         it('should call window functions when available', () => {
             // Test window function calls
-            mockWindow.createBuildingCardState('test');
+            mockWindow.createBuildingState('test');
             mockWindow.buildingProviderData();
 
-            expect(mockWindow.createBuildingCardState).toHaveBeenCalledWith('test');
+            expect(mockWindow.createBuildingState).toHaveBeenCalledWith('test');
             expect(mockWindow.buildingProviderData).toHaveBeenCalled();
         });
 
@@ -289,7 +289,7 @@ describe('BuildingProvider Component', () => {
             const emptyWindow = {} as typeof mockWindow;
 
             // Should not throw when window functions are missing
-            expect(emptyWindow.createBuildingCardState).toBeUndefined();
+            expect(emptyWindow.createBuildingState).toBeUndefined();
             expect(emptyWindow.buildingProviderData).toBeUndefined();
         });
     });

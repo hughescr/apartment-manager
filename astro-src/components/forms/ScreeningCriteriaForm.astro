@@ -145,7 +145,7 @@ const xData = `{
         this.setModelValue(model);
         
         // Force Alpine.js reactivity by triggering a change event on the parent
-        // This ensures the BuildingCard's x-effect detects the change
+        // This ensures the building state's x-effect detects the change
         this.$nextTick(() => {
             this.$dispatch('change', { field: this.xModelRef, value: model });
         });

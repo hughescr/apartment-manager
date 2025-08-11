@@ -62,11 +62,18 @@ export const createMockResponse = (options: {
 
 // Mock window object for tests
 export const mockWindow = {
-    createBuildingCardState: jest.fn(),
+    createBuildingState: jest.fn(), // Updated from createBuildingCardState
     buildingProviderData: jest.fn(),
     confirm: jest.fn().mockReturnValue(true),
     location: {
         reload: jest.fn()
+    }
+} as {
+    createBuildingState: jest.Mock
+    buildingProviderData: jest.Mock
+    confirm: jest.Mock
+    location: {
+        reload: jest.Mock
     }
 };
 
