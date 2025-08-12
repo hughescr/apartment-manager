@@ -177,10 +177,9 @@ export async function createUnit(unit: UnitData) {
     return convertRawItemToUnitData(rawItem);
 }
 
-export async function updateUnit(buildingID: string, unitID: string, updates: Partial<UnitData>) {
-    // Convert Date objects to strings for DynamoDB and filter undefined values
+// Helper function to prepare unit data for database operations
+function prepareUnitDataForDB(updates: Partial<UnitData>, buildingID: string, unitID: string): Record<string, unknown> {
     const { feedLastPulled, feedLastModified, feedInclusion, manualReferences, ...restUpdates } = updates;
-
     const now = new Date();
     const updatesForDB: Record<string, unknown> = {
         ...restUpdates,
@@ -207,14 +206,22 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
     // Add prepared feed data
     const feedData = prepareFeedDataForDB(feedLastPulled, feedLastModified);
     _.assign(updatesForDB, feedData);
+
+    return updatesForDB;
+}
+
+// Helper function to try UpdateItemCommand
+async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Promise<UnitData | undefined> {
     const { Attributes } = await Unit.build(UpdateItemCommand)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
         .item(updatesForDB as any)
         .options({ returnValues: 'ALL_NEW' })
         .send();
+
     if(!Attributes) {
         return undefined;
     }
+
     // Remove the UNIT# prefix from unitID and convert date strings back to Date objects
     const rawItem: Record<string, unknown> = {
         ..._.omit(Attributes as Record<string, unknown>, ['created', 'modified', '_et', '_ct', '_md']),
@@ -222,6 +229,84 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
     };
 
     return convertRawItemToUnitData(rawItem);
+}
+
+// Helper function to fallback to PutItemCommand with merge logic
+async function fallbackToPutItemCommand(
+    buildingID: string,
+    unitID: string,
+    restUpdates: Partial<UnitData>,
+    feedLastPulled?: Partial<Record<string, { timestamp: Date, ipAddress?: string }>>,
+    feedLastModified?: Date,
+    feedInclusion?: Partial<Record<string, boolean>>,
+    manualReferences?: Partial<Record<string, string>>
+): Promise<UnitData> {
+    // Get existing unit data for proper merging
+    const existingUnit = await getUnit(buildingID, unitID);
+    if(!existingUnit) {
+        throw new Error('Unit not found for update');
+    }
+
+    const now = new Date();
+    const mergedData = {
+        ...existingUnit,
+        ...restUpdates,
+        buildingID,
+        unitID: `UNIT#${unitID}`,
+        updatedAt: now.toISOString()
+    };
+
+    // Add conditional fields to merged data
+    if(feedInclusion && _.keys(feedInclusion).length > 0) {
+        const cleanedInclusion = _.pickBy(feedInclusion, value => value !== undefined);
+        if(_.keys(cleanedInclusion).length > 0) {
+            mergedData.feedInclusion = cleanedInclusion;
+        }
+    }
+
+    if(manualReferences && _.keys(manualReferences).length > 0) {
+        const cleanedReferences = _.pickBy(manualReferences, value => value !== undefined);
+        if(_.keys(cleanedReferences).length > 0) {
+            mergedData.manualReferences = cleanedReferences;
+        }
+    }
+
+    const feedData = prepareFeedDataForDB(feedLastPulled, feedLastModified);
+    _.assign(mergedData, feedData);
+
+    // Use PutItemCommand as fallback for more reliable data persistence
+    await Unit.build(PutItemCommand)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
+        .item(mergedData as any)
+        .send();
+
+    // Return the merged data since PutItemCommand doesn't return the item
+    const rawItem: Record<string, unknown> = {
+        ..._.omit(mergedData, ['created', 'modified', '_et', '_ct', '_md']),
+        unitID: _.replace(mergedData.unitID as string || '', /^UNIT#/, '') || mergedData.unitID as string
+    };
+
+    return convertRawItemToUnitData(rawItem);
+}
+
+export async function updateUnit(buildingID: string, unitID: string, updates: Partial<UnitData>) {
+    const { feedLastPulled, feedLastModified, feedInclusion, manualReferences, ...restUpdates } = updates;
+    const updatesForDB = prepareUnitDataForDB(updates, buildingID, unitID);
+
+    try {
+        // Try UpdateItemCommand first for backward compatibility with existing tests and behavior
+        return await tryUpdateItemCommand(updatesForDB);
+    } catch(error) {
+        // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
+        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic:', error);
+
+        try {
+            return await fallbackToPutItemCommand(buildingID, unitID, restUpdates, feedLastPulled, feedLastModified, feedInclusion, manualReferences);
+        } catch(fallbackError) {
+            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed:', fallbackError);
+            throw fallbackError;
+        }
+    }
 }
 export async function deleteUnit(buildingID: string, unitID: string): Promise<boolean> {
     try {

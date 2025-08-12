@@ -3,6 +3,7 @@ import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuildi
 import { BuildingData } from '../src/types';
 import _ from 'lodash';
 import { validateId, validateTextField, sanitizeObject, validateNumericValue, validateArraySize } from './security-validation';
+import { logger } from '@hughescr/logger';
 
 // Helper validation functions to reduce complexity
 function validateAddress(data: Partial<BuildingData>, errors: Record<string, string>): void {
@@ -18,34 +19,32 @@ function validateAddress(data: Partial<BuildingData>, errors: Record<string, str
     if('zip' in data && data.zip !== undefined) {
         if(_.trim(data.zip) === '') {
             errors.zip = 'ZIP code cannot be empty';
-        } else if(!/^\d{5}(?:-\d{4})?$/.test(data.zip)) {
+        }
+    }
+}
+
+function validateAddressSecurity(data: Partial<BuildingData>, errors: Record<string, string>): void {
+    // Security validation for ZIP code format - always an error
+    if('zip' in data && data.zip !== undefined && _.trim(data.zip) !== '') {
+        if(!/^\d{5}(?:-\d{4})?$/.test(data.zip)) {
             errors.zip = 'ZIP code must be in format 12345 or 12345-6789';
         }
     }
 }
 
 function validateNumericFields(data: Partial<BuildingData>, errors: Record<string, string>): void {
-    if(data.yearBuilt !== undefined) {
-        const currentYear = new Date().getFullYear();
-        if(data.yearBuilt < 1800 || data.yearBuilt > currentYear + 1) {
-            errors.yearBuilt = `Year built must be between 1800 and ${currentYear + 1}`;
-        }
+    if(data.applicationFee !== undefined && data.applicationFee < 0) {
+        errors.applicationFee = 'Application fee cannot be negative';
     }
+}
 
+function validateNumericBusinessRules(data: Partial<BuildingData>, errors: Record<string, string>): void {
     if(data.numberStories !== undefined && (data.numberStories < 1 || data.numberStories > 100)) {
         errors.numberStories = 'Number of stories must be between 1 and 100';
     }
 
-    if(data.totalUnits !== undefined && (data.totalUnits < 1 || data.totalUnits > 1000)) {
-        errors.totalUnits = 'Total units must be between 1 and 1000';
-    }
-
     if(data.leaseLength !== undefined && (data.leaseLength < 1 || data.leaseLength > 36)) {
         errors.leaseLength = 'Lease length must be between 1 and 36 months';
-    }
-
-    if(data.applicationFee !== undefined && data.applicationFee < 0) {
-        errors.applicationFee = 'Application fee cannot be negative';
     }
 }
 
@@ -194,6 +193,63 @@ interface ValidationResponse {
     sanitizedData: Partial<BuildingData>
 }
 
+// Helper function to perform additional validations
+function performAdditionalValidations(sanitized: Partial<BuildingData>, validationTarget: Record<string, string>): void {
+    const yearError = validateNumericValue(sanitized.yearBuilt, 'yearBuilt', 1800, new Date().getFullYear() + 1);
+    if(yearError) {
+        validationTarget.yearBuilt = yearError;
+    }
+
+    const applicationFeeError = validateNumericValue(sanitized.applicationFee, 'applicationFee', 0, Number.MAX_SAFE_INTEGER);
+    if(applicationFeeError) {
+        validationTarget.applicationFee = applicationFeeError;
+    }
+
+    const totalUnitsError = validateNumericValue(sanitized.totalUnits, 'totalUnits', 1, 1000);
+    if(totalUnitsError) {
+        validationTarget.totalUnits = totalUnitsError;
+    }
+
+    // Validate arrays
+    if(sanitized.rentSpecials) {
+        const arrayError = validateArraySize(sanitized.rentSpecials, 'rentSpecials', 50);
+        if(arrayError) {
+            validationTarget.rentSpecials = arrayError;
+        }
+    }
+}
+
+// Helper function to validate required fields for publishing
+function validatePublishRequiredFields(sanitized: Partial<BuildingData>, errors: Record<string, string>): void {
+    if(!sanitized.buildingName || _.trim(sanitized.buildingName) === '') {
+        errors.buildingName = 'Building name is required for publishing';
+    }
+    if(!sanitized.street || _.trim(sanitized.street) === '') {
+        errors.street = 'Street address is required for publishing';
+    }
+    if(!sanitized.city || _.trim(sanitized.city) === '') {
+        errors.city = 'City is required for publishing';
+    }
+    if(!sanitized.state || _.trim(sanitized.state) === '') {
+        errors.state = 'State is required for publishing';
+    }
+    if(!sanitized.zip || _.trim(sanitized.zip) === '') {
+        errors.zip = 'ZIP code is required for publishing';
+    }
+}
+
+// Helper function to validate and sanitize building ID
+function validateBuildingId(data: Partial<BuildingData>, isCreate: boolean, errors: Record<string, string>, sanitized: Partial<BuildingData>): void {
+    if(isCreate || data.buildingID !== undefined) {
+        const idError = validateId(data.buildingID || '', 'buildingID');
+        if(idError) {
+            errors.buildingID = idError; // Always an error - required for save
+        } else {
+            sanitized.buildingID = data.buildingID;
+        }
+    }
+}
+
 // Main validation function for building data with tier support
 function validateBuildingData(
     data: Partial<BuildingData>,
@@ -205,14 +261,7 @@ function validateBuildingData(
     let sanitized: Partial<BuildingData> = {};
 
     // ALWAYS validate and sanitize buildingID for security
-    if(isCreate || data.buildingID !== undefined) {
-        const idError = validateId(data.buildingID || '', 'buildingID');
-        if(idError) {
-            errors.buildingID = idError; // Always an error - required for save
-        } else {
-            sanitized.buildingID = data.buildingID;
-        }
-    }
+    validateBuildingId(data, isCreate, errors, sanitized);
 
     // Sanitize text fields (for security, but don't validate content)
     const textFieldData = sanitizeTextFields(data, tier === 'publish' ? errors : warnings);
@@ -234,44 +283,14 @@ function validateBuildingData(
     validateIncomeRestrictions(sanitized, validationTarget);
     validateScreeningCriteria(sanitized, validationTarget);
 
-    // Additional numeric validations
-    const yearError = validateNumericValue(sanitized.yearBuilt, 'yearBuilt', 1800, new Date().getFullYear() + 1);
-    if(yearError) {
-        validationTarget.yearBuilt = yearError;
-    }
+    // Security validations - ALWAYS errors, regardless of tier
+    performAdditionalValidations(sanitized, errors);
+    validateAddressSecurity(sanitized, errors);
+    validateNumericBusinessRules(sanitized, errors);
 
-    const applicationFeeError = validateNumericValue(sanitized.applicationFee, 'applicationFee', 0, Number.MAX_SAFE_INTEGER);
-    if(applicationFeeError) {
-        validationTarget.applicationFee = applicationFeeError;
-    }
-
-    // Validate arrays
-    if(sanitized.rentSpecials) {
-        const arrayError = validateArraySize(sanitized.rentSpecials, 'rentSpecials', 50);
-        if(arrayError) {
-            validationTarget.rentSpecials = arrayError;
-        }
-    }
-
-    // For save tier: Required fields check only for buildingID
     // For publish tier: Check all required fields
     if(tier === 'publish') {
-        // Additional required field checks for publishing
-        if(!sanitized.buildingName || _.trim(sanitized.buildingName) === '') {
-            errors.buildingName = 'Building name is required for publishing';
-        }
-        if(!sanitized.street || _.trim(sanitized.street) === '') {
-            errors.street = 'Street address is required for publishing';
-        }
-        if(!sanitized.city || _.trim(sanitized.city) === '') {
-            errors.city = 'City is required for publishing';
-        }
-        if(!sanitized.state || _.trim(sanitized.state) === '') {
-            errors.state = 'State is required for publishing';
-        }
-        if(!sanitized.zip || _.trim(sanitized.zip) === '') {
-            errors.zip = 'ZIP code is required for publishing';
-        }
+        validatePublishRequiredFields(sanitized, errors);
     }
 
     return {
@@ -385,12 +404,12 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         };
         return { statusCode: 200, body: JSON.stringify(responseData) };
     } catch(error) {
-        console.error('Error updating building:', error);
+        logger.error('Error updating building:', error);
         return {
             statusCode: 500,
             body: JSON.stringify({
                 error: 'Internal server error during update',
-                details: error instanceof Error ? error.message : 'Unknown error'
+                details: _.isError(error) ? error.message : 'Unknown error'
             })
         };
     }

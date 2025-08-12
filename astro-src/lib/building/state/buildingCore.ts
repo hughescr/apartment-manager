@@ -3,7 +3,7 @@ import type { AlpineMagicProperties } from '../../alpine';
 import { BuildingDataParser } from './dataParser';
 import { BuildingApiService } from '../services/buildingApiService';
 import { validateBuildingForm, hasUnsavedChanges } from '../validation';
-import { isError } from 'lodash';
+import { isError, keys } from 'lodash';
 
 export interface BuildingCoreState {
     building: BuildingData | null
@@ -90,15 +90,19 @@ export class BuildingCore {
             }
 
             // Check if response has validation warnings
-            const responseData = result.data as Record<string, unknown>;
-            const warnings = responseData?._validationWarnings as Record<string, string>;
+            const responseData = result.data ? { ...result.data } as Record<string, unknown> : null;
+            const warnings = responseData?._validationWarnings as Record<string, string> | undefined;
 
-            // Update original state with the saved data (minus warnings)
-            const savedBuilding = { ...this.state.building };
+            // Use the response data as the source of truth, not merge it with existing state
+            let savedBuilding: BuildingData;
             if(responseData) {
                 // Remove the _validationWarnings from the saved data
                 delete (responseData as { _validationWarnings?: unknown })._validationWarnings;
-                Object.assign(savedBuilding, responseData);
+                // Use the response data directly as it contains the complete saved building
+                savedBuilding = responseData as unknown as BuildingData;
+            } else {
+                // Fallback to current building if no response data (shouldn't happen)
+                savedBuilding = { ...this.state.building };
             }
 
             this.state.original = JSON.parse(JSON.stringify(savedBuilding));
@@ -106,8 +110,8 @@ export class BuildingCore {
             this.state.showSave = false;
 
             // Show appropriate success message based on warnings
-            if(warnings && Object.keys(warnings).length > 0) {
-                const warningCount = Object.keys(warnings).length;
+            if(warnings && keys(warnings).length > 0) {
+                const warningCount = keys(warnings).length;
                 this.state.$dispatch('toast:show', {
                     message: `Building saved with ${warningCount} warning${warningCount > 1 ? 's' : ''}. Complete all fields to publish.`,
                     type: 'warning'

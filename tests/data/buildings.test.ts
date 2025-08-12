@@ -112,13 +112,14 @@ describe('Building Data Layer', () => {
     });
 
     it('should update a building', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
         const updatedDescription = 'Updated description';
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
         dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testBuilding, unitID: 'BUILDING', description: updatedDescription }));
 
         const updatedBuilding = await updateBuilding(testBuilding.buildingID, { description: updatedDescription });
-        expect(updatedBuilding.description).toBe(updatedDescription);
+        expect(updatedBuilding).toBeDefined();
+        expect(updatedBuilding!.description).toBe(updatedDescription);
 
         const fetchedBuilding = await getBuilding(testBuilding.buildingID);
         expect(fetchedBuilding?.description).toBe(updatedDescription);
@@ -200,7 +201,7 @@ describe('Building Data Layer', () => {
     });
 
     it('should update complex fields in building', async () => {
-        expect.assertions(3);
+        expect.assertions(4);
         const updatedFields = {
             petPolicies: {
                 allowed: false
@@ -221,9 +222,10 @@ describe('Building Data Layer', () => {
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'BUILDING' }));
 
         const updatedBuilding = await updateBuilding(testBuilding.buildingID, updatedFields);
-        expect(updatedBuilding.petPolicies!.allowed).toBe(false);
-        expect(updatedBuilding.screeningCriteria!.minCreditScore).toBe(700);
-        expect(updatedBuilding.photos).toHaveLength(1);
+        expect(updatedBuilding).toBeDefined();
+        expect(updatedBuilding!.petPolicies!.allowed).toBe(false);
+        expect(updatedBuilding!.screeningCriteria!.minCreditScore).toBe(700);
+        expect(updatedBuilding!.photos).toHaveLength(1);
     });
 
     // Edge Case Tests - DynamoDB Errors
@@ -343,7 +345,7 @@ describe('Building Data Layer', () => {
         });
 
         it('should handle concurrent update operations with version conflicts', async () => {
-            expect.assertions(2);
+            expect.assertions(4);
             const update1 = { description: 'Update 1' };
             const update2 = { description: 'Update 2' };
 
@@ -357,8 +359,10 @@ describe('Building Data Layer', () => {
                 updateBuilding(testBuilding.buildingID, update2)
             ]);
 
-            expect(result1.description).toBe('Update 1');
-            expect(result2.description).toBe('Update 2');
+            expect(result1).toBeDefined();
+            expect(result2).toBeDefined();
+            expect(result1!.description).toBe('Update 1');
+            expect(result2!.description).toBe('Update 2');
         });
     });
 

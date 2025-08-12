@@ -442,7 +442,7 @@ describe('Data Layer Performance Tests', () => {
         });
 
         it('should handle concurrent operations on same partition', async () => {
-            expect.assertions(5);
+            expect.assertions(6);
 
             const buildingId = 'concurrent-test';
 
@@ -468,7 +468,8 @@ describe('Data Layer Performance Tests', () => {
 
             expect(building).toBeDefined();
             expect(units).toHaveLength(3);
-            expect(updated.description).toBe('Updated');
+            expect(updated).toBeDefined();
+            expect(updated!.description).toBe('Updated');
             expect(dynamoDbMock).toHaveBeenCalledTimes(3);
 
             // All operations should complete despite same partition
@@ -776,7 +777,7 @@ describe('Data Layer Performance Tests', () => {
 
     describe('Write amplification in updates', () => {
         it('should measure write units consumed by large item updates', async () => {
-            expect.assertions(4);
+            expect.assertions(5);
 
             // Large building near 400KB limit
             const largeBuilding = {
@@ -794,12 +795,13 @@ describe('Data Layer Performance Tests', () => {
 
             const updated = await updateBuilding('write-amp-test', { yearBuilt: 2024 });
 
-            expect(updated.yearBuilt).toBe(2024);
-            expect(updated.description).toBeDefined();
-            expect(updated.description!.length).toBe(300000);
+            expect(updated).toBeDefined();
+            expect(updated!.yearBuilt).toBe(2024);
+            expect(updated!.description).toBeDefined();
+            expect(updated!.description!.length).toBe(300000);
 
             // Document write amplification - updating 1 field rewrites entire 300KB item
-            expect(JSON.stringify(updated).length).toBeGreaterThan(300000);
+            expect(JSON.stringify(updated!).length).toBeGreaterThan(300000);
         });
 
         it('should show impact of frequent small updates', async () => {
@@ -838,7 +840,7 @@ describe('Data Layer Performance Tests', () => {
         });
 
         it('should demonstrate conditional update patterns', async () => {
-            expect.assertions(3);
+            expect.assertions(4);
 
             const building = {
                 buildingID: 'conditional-test',
@@ -857,8 +859,9 @@ describe('Data Layer Performance Tests', () => {
                 yearBuilt: 2021
             });
 
-            expect(updated.totalUnits).toBe(12);
-            expect(updated.yearBuilt).toBe(2021);
+            expect(updated).toBeDefined();
+            expect(updated!.totalUnits).toBe(12);
+            expect(updated!.yearBuilt).toBe(2021);
 
             // Document that current implementation doesn't use conditions
             // Could prevent lost updates in concurrent scenarios

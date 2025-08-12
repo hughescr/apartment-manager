@@ -156,6 +156,9 @@ describe('Unit Types API - Update and Delete', () => {
 
         it('should handle data layer errors', async () => {
             expect.assertions(1);
+            // Mock UpdateItemCommand to fail first
+            dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
+            // Mock GetItemCommand to also fail for the fallback logic
             dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({

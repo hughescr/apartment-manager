@@ -55,7 +55,7 @@ if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {};
 // Income restrictions - initialize with sensible defaults
 if (!building.incomeRestrictions) {
     building.incomeRestrictions = {
-        amiLimit: null,
+        amiLimit: undefined,
         maxIncomeByHouseholdSize: {}
     };
 }

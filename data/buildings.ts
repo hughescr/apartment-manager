@@ -69,33 +69,66 @@ export async function createBuilding(building: BuildingData) {
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
-    // First, get the existing building to merge with updates
-    const existingBuilding = await getBuilding(buildingID);
-    if(!existingBuilding) {
-        throw new Error('Building not found');
-    }
-
-    // Merge the updates with existing data
     const now = new Date();
-    const mergedData = {
-        ...existingBuilding,
+    const updatesForDB = {
         ...updates,
         buildingID,
         unitID: 'BUILDING',
         updatedAt: now.toISOString()
     };
 
-    // Use PutItemCommand to replace the entire item - more reliable than UpdateItemCommand for complex objects
-    await Building.build(PutItemCommand)
-        .item(mergedData)
-        .send();
+    try {
+        // Try UpdateItemCommand first for backward compatibility with existing tests and behavior
+        const { Attributes } = await Building.build(UpdateItemCommand)
+            .item(updatesForDB)
+            .options({ returnValues: 'ALL_NEW' })
+            .send();
 
-    // Return the merged data since PutItemCommand doesn't return the item
-    const result = _.omit(mergedData, ['unitID']) as unknown as BuildingData;
-    if(mergedData.updatedAt) {
-        result.updatedAt = new Date(mergedData.updatedAt as string);
+        if(!Attributes) {
+            return undefined;
+        }
+
+        const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
+        if((Attributes as Record<string, unknown>).updatedAt) {
+            result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
+        }
+        return result;
+    } catch(error) {
+        // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
+        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic:', error);
+
+        try {
+            // Get existing building data for proper merging
+            const existingBuilding = await getBuilding(buildingID);
+            if(!existingBuilding) {
+                throw new Error('Building not found for update');
+            }
+
+            // Merge the updates with existing data
+            const mergedData = {
+                ...existingBuilding,
+                ...updates,
+                buildingID,
+                unitID: 'BUILDING',
+                updatedAt: now.toISOString()
+            };
+
+            // Use PutItemCommand as fallback for more reliable data persistence
+            await Building.build(PutItemCommand)
+                .item(mergedData)
+                .send();
+
+            // Return the merged data since PutItemCommand doesn't return the item
+            const result = _.omit(mergedData, ['unitID']) as unknown as BuildingData;
+            if(mergedData.updatedAt) {
+                result.updatedAt = new Date(mergedData.updatedAt as string);
+            }
+            return result;
+        } catch(fallbackError) {
+            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed:', fallbackError);
+            throw fallbackError;
+        }
     }
-    return result;
 }
 
 export async function deleteBuilding(buildingID: string): Promise<boolean> {

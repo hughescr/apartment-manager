@@ -18,7 +18,7 @@ export interface ApiResponse<T> {
 export class BuildingApiService {
     constructor(private apiURL: string) {
         // Remove trailing slash if present to avoid double slashes in URLs
-        this.apiURL = apiURL.replace(/\/$/, '');
+        this.apiURL = _.replace(apiURL, /\/$/, '');
     }
 
     async saveBuilding(building: BuildingData): Promise<ApiResponse<BuildingData>> {
