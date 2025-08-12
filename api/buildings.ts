@@ -166,22 +166,66 @@ function copyNumericFields(data: Partial<BuildingData>, sanitized: Partial<Build
     if(data.applicationFee !== undefined) {
         sanitized.applicationFee = safeParseNumber(data.applicationFee) as number;
     }
+    if(data.latitude !== undefined) {
+        sanitized.latitude = safeParseNumber(data.latitude) as number;
+    }
+    if(data.longitude !== undefined) {
+        sanitized.longitude = safeParseNumber(data.longitude) as number;
+    }
+    if(data.coordinatesVerified !== undefined) {
+        sanitized.coordinatesVerified = data.coordinatesVerified;
+    }
 }
 
-// Helper function to copy complex fields
+// Helper function to copy object and array fields
+function copyObjectAndArrayFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
+    // Define fields to copy directly
+    const objectFields: (keyof BuildingData)[] = [
+        'contactInfo', 'rentSpecials', 'incomeRestrictions', 'screeningCriteria',
+        'tourAvailability', 'petPolicies', 'parkingOptions', 'storageOptions',
+        'propertyAmenities', 'oneTimeFees', 'monthlyFees', 'utilitiesIncluded', 'photos'
+    ];
+
+    // Copy each field if defined
+    _.forEach(objectFields, (field) => {
+        if(data[field] !== undefined) {
+            (sanitized as Record<string, unknown>)[field] = data[field];
+        }
+    });
+}
+
+// Helper function to copy string and enum fields
+function copyStringAndEnumFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
+    const stringFields: (keyof BuildingData)[] = [
+        'propertyType', 'specialtyType', 'specialtySubType',
+        'propertyDescription', 'propertyLicenseNumber'
+    ];
+
+    _.forEach(stringFields, (field) => {
+        if(data[field] !== undefined) {
+            (sanitized as Record<string, unknown>)[field] = data[field];
+        }
+    });
+}
+
+// Helper function to copy boolean fields
+function copyBooleanFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
+    const booleanFields: (keyof BuildingData)[] = [
+        'roomsForRent', 'shortTermLeaseAllowed', 'acceptsOnlineApplications'
+    ];
+
+    _.forEach(booleanFields, (field) => {
+        if(data[field] !== undefined) {
+            (sanitized as Record<string, unknown>)[field] = data[field];
+        }
+    });
+}
+
+// Helper function to copy complex fields (delegates to specific functions)
 function copyComplexFields(data: Partial<BuildingData>, sanitized: Partial<BuildingData>): void {
-    if(data.contactInfo) {
-        sanitized.contactInfo = data.contactInfo;
-    }
-    if(data.rentSpecials) {
-        sanitized.rentSpecials = data.rentSpecials;
-    }
-    if(data.incomeRestrictions) {
-        sanitized.incomeRestrictions = data.incomeRestrictions;
-    }
-    if(data.screeningCriteria) {
-        sanitized.screeningCriteria = data.screeningCriteria;
-    }
+    copyObjectAndArrayFields(data, sanitized);
+    copyStringAndEnumFields(data, sanitized);
+    copyBooleanFields(data, sanitized);
 }
 
 // Validation response types
