@@ -54,79 +54,84 @@ const containerClasses = [
             <span class="label-text font-medium">Building Location</span>
         </label>
         
-        <!-- Map Controls -->
-        <div class="flex flex-wrap gap-2 mb-3">
-            <button
-                type="button"
-                class="btn btn-sm btn-outline btn-primary"
-                x-show={addressModel ? `${addressModel} && ${addressModel}.trim()` : 'false'}
-                @click="geocodeAddress()"
-                :disabled="geocoding"
-                id="geocode-address-btn"
-            >
-                <span x-show="!geocoding">📍 Use Address Location</span>
-                <span x-show="geocoding" class="loading loading-spinner loading-xs"></span>
-                <span x-show="geocoding">Geocoding...</span>
-            </button>
+        <!-- Alpine.js Component Container - encompasses all interactive elements -->
+        <div
+            x-data={`locationMapData('${latModel}', '${lngModel}', '${verifiedModel}', ${defaultLat}, ${defaultLng}, '${apiUrl}', ${JSON.stringify({addressModel, cityModel, stateModel})})`}
+            x-init="initMapWhenReady()"
+        >
+            <!-- Map Controls -->
+            <div class="flex flex-wrap gap-2 mb-3">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline btn-primary"
+                    x-show={addressModel ? `${addressModel} && ${addressModel}.trim()` : 'false'}
+                    @click="geocodeAddress()"
+                    :disabled="geocoding"
+                    id="geocode-address-btn"
+                >
+                    <span x-show="!geocoding">📍 Use Address Location</span>
+                    <span x-show="geocoding" class="loading loading-spinner loading-xs"></span>
+                    <span x-show="geocoding">Geocoding...</span>
+                </button>
+                
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline"
+                    @click="centerOnMarker()"
+                    x-show={`${latModel} && ${lngModel}`}
+                    id="center-on-marker-btn"
+                >
+                    🎯 Center on Pin
+                </button>
+            </div>
             
-            <button
-                type="button"
-                class="btn btn-sm btn-outline"
-                @click="centerOnMarker()"
-                x-show={`${latModel} && ${lngModel}`}
-                id="center-on-marker-btn"
-            >
-                🎯 Center on Pin
-            </button>
-        </div>
-        
-        <!-- Coordinates Display -->
-        {showCoordinates && (
-            <div class="bg-base-200 rounded-lg p-3 mb-3 text-sm">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <span class="font-medium">Latitude:</span>
-                        <span x-text={`${latModel} ? ${latModel}.toFixed(6) : 'Not set'`} class="font-mono"></span>
-                    </div>
-                    <div>
-                        <span class="font-medium">Longitude:</span>
-                        <span x-text={`${lngModel} ? ${lngModel}.toFixed(6) : 'Not set'`} class="font-mono"></span>
-                    </div>
-                </div>
-                {verifiedModel && (
-                    <div class="mt-2 flex items-center gap-2">
-                        <div class="badge badge-sm" :class={`${verifiedModel} ? 'badge-success' : 'badge-warning'`}>
-                            <span x-show={verifiedModel}>✓ Coordinates Verified</span>
-                            <span x-show={`!${verifiedModel}`}>⚠ Coordinates Not Verified</span>
+            <!-- Coordinates Display -->
+            {showCoordinates && (
+                <div class="bg-base-200 rounded-lg p-3 mb-3 text-sm">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="font-medium">Latitude:</span>
+                            <span x-text={`${latModel} ? ${latModel}.toFixed(6) : 'Not set'`} class="font-mono"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">Longitude:</span>
+                            <span x-text={`${lngModel} ? ${lngModel}.toFixed(6) : 'Not set'`} class="font-mono"></span>
                         </div>
                     </div>
-                )}
-            </div>
-        )}
-        
-        <!-- Map Container -->
-        <div
-            class="map-container border border-base-300 rounded-lg overflow-hidden bg-base-100"
-            style={`height: ${height}`}
-            x-data={`locationMapData('${latModel}', '${lngModel}', '${verifiedModel}', ${defaultLat}, ${defaultLng}, '${apiUrl}', ${JSON.stringify({addressModel, cityModel, stateModel})})`}
-            x-init="initMap()"
-            id="location-map-container"
-        >
-            <!-- Map will be initialized here -->
-            <div class="flex items-center justify-center h-full text-base-content/60">
-                <div class="text-center">
-                    <div class="loading loading-spinner loading-lg mb-2"></div>
-                    <div>Loading map...</div>
+                    {verifiedModel && (
+                        <div class="mt-2 flex items-center gap-2">
+                            <div class="badge badge-sm" :class={`${verifiedModel} ? 'badge-success' : 'badge-warning'`}>
+                                <span x-show={verifiedModel}>✓ Coordinates Verified</span>
+                                <span x-show={`!${verifiedModel}`}>⚠ Coordinates Not Verified</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+            
+            <!-- Map Container -->
+            <div
+                class="map-container border border-base-300 rounded-lg overflow-hidden bg-base-100"
+                style={`height: ${height}`}
+                x-ref="mapElement"
+                id="location-map-container"
+            >
+                <!-- Map will be initialized here -->
+                <div x-show="!mapInitialized" class="flex items-center justify-center h-full text-base-content/60">
+                    <div class="text-center">
+                        <div class="loading loading-spinner loading-lg mb-2"></div>
+                        <div>Loading map...</div>
+                    </div>
                 </div>
             </div>
+            
+            <!-- Help Text -->
+            {helpText && (
+                <div class="label">
+                    <span class="label-text-alt">{helpText}</span>
+                </div>
+            )}
         </div>
-        
-        <!-- Help Text -->
-        {helpText && (
-            <div class="label">
-                <span class="label-text-alt">{helpText}</span>
-            </div>
-        )}
     </div>
 </div>
 
@@ -167,10 +172,67 @@ function locationMapData(
         map: null as any, // Leaflet map instance
         marker: null as any, // Leaflet marker instance
         geocoding: false,
+        mapInitialized: false,
         $el: null as any as HTMLElement, // Alpine.js magic property
         $dispatch: null as any as (event: string, data?: any) => void, // Alpine.js magic property
         
+        // Helper function to get nested property value
+        getNestedProperty(path: string): any {
+            if (!path) return undefined;
+            const parts = path.split('.');
+            let current: any = this;
+            for (const part of parts) {
+                if (current == null) return undefined;
+                current = current[part];
+            }
+            return current;
+        },
+        
+        // Helper function to set nested property value
+        setNestedProperty(path: string, value: any): void {
+            if (!path) return;
+            const parts = path.split('.');
+            const lastPart = parts.pop();
+            if (!lastPart) return;
+            
+            let current: any = this;
+            for (const part of parts) {
+                if (current[part] == null) {
+                    current[part] = {};
+                }
+                current = current[part];
+            }
+            current[lastPart] = value;
+        },
+        
+        async initMapWhenReady() {
+            // Check if we're in a tab system
+            const isInTab = this.$root && this.$root.activeSectionTab !== undefined;
+            
+            if (isInTab && this.$root.activeSectionTab !== 'building-info') {
+                console.log('Map is in a hidden tab, waiting for tab to be visible...');
+                
+                // Wait for the correct tab to be active
+                const unwatch = this.$watch('$root.activeSectionTab', async (newTab: string) => {
+                    if (newTab === 'building-info') {
+                        console.log('Tab is now visible, initializing map...');
+                        unwatch(); // Stop watching
+                        await this.initMap();
+                    }
+                });
+            } else {
+                // Initialize immediately if not in a tab or if already visible
+                await this.initMap();
+            }
+        },
+        
         async initMap() {
+            // Prevent multiple initialization
+            if (this.mapInitialized || this.map) {
+                console.log('Map already initialized, skipping...');
+                return;
+            }
+            
             // Import Leaflet dynamically
             if (typeof window !== 'undefined') {
                 // Import Leaflet CSS
@@ -183,32 +245,87 @@ function locationMapData(
                 
                 // Import Leaflet JS
                 const LeafletModule = await import('leaflet');
+                window.L = LeafletModule;
+                
+                // Use Alpine's $nextTick to ensure DOM is ready
+                await (this as any).$nextTick();
                 
                 // Initialize map
-                const lat = (this as any)[latModel] || defaultLat;
-                const lng = (this as any)[lngModel] || defaultLng;
+                const lat = this.getNestedProperty(latModel) || defaultLat;
+                const lng = this.getNestedProperty(lngModel) || defaultLng;
                 
-                this.map = LeafletModule.map(this.$el, {
+                // Use x-ref to get the map element
+                const mapElement = (this as any).$refs.mapElement;
+                if (!mapElement) {
+                    console.error('Map element not found');
+                    return;
+                }
+                
+                // Ensure the container has dimensions before initializing
+                const rect = mapElement.getBoundingClientRect();
+                console.log('Map container dimensions before init:', { width: rect.width, height: rect.height });
+                
+                // If container has no dimensions, force them
+                if (rect.width === 0 || rect.height === 0) {
+                    console.warn('Map container has no dimensions, forcing size...');
+                    mapElement.style.minHeight = '350px';
+                    mapElement.style.width = '100%';
+                    
+                    // Wait a frame for styles to apply
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                }
+                
+                this.map = LeafletModule.map(mapElement, {
                     center: [lat, lng],
-                    zoom: (this as any)[latModel] && (this as any)[lngModel] ? 16 : 4,
+                    zoom: this.getNestedProperty(latModel) && this.getNestedProperty(lngModel) ? 16 : 4,
                     zoomControl: true,
                 });
                 
                 // Add OpenStreetMap tiles
-                LeafletModule.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                LeafletModule.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    maxZoom: 18,
+                    maxZoom: 19,
                 }).addTo(this.map);
                 
                 // Add marker if coordinates exist
-                if ((this as any)[latModel] && (this as any)[lngModel]) {
-                    this.addMarker((this as any)[latModel], (this as any)[lngModel]);
+                if (this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
+                    this.addMarker(this.getNestedProperty(latModel), this.getNestedProperty(lngModel));
                 }
                 
                 // Add click handler to add/move marker
                 this.map.on('click', (e: any) => {
                     this.setMarker(e.latlng.lat, e.latlng.lng);
                 });
+                
+                // Mark map as initialized to hide loading text
+                this.mapInitialized = true;
+                
+                // Multiple invalidateSize calls with increasing delays for robustness
+                const refreshMap = () => {
+                    if (this.map) {
+                        console.log('Refreshing map size...');
+                        this.map.invalidateSize();
+                    }
+                };
+                
+                // Immediate refresh after Alpine's next tick
+                await (this as any).$nextTick();
+                refreshMap();
+                
+                // Quick refresh after a short delay
+                setTimeout(refreshMap, 100);
+                
+                // Another refresh after components settle
+                setTimeout(refreshMap, 300);
+                
+                // Final refresh after everything should be loaded
+                setTimeout(refreshMap, 1000);
+                
+                // Set up tab visibility handler
+                this.handleTabVisibility();
+                
+                // Also refresh on window resize
+                window.addEventListener('resize', () => refreshMap());
             }
         },
         
@@ -248,10 +365,10 @@ function locationMapData(
         
         setMarker(lat: number, lng: number) {
             // Update the Alpine.js models
-            (this as any)[latModel] = lat;
-            (this as any)[lngModel] = lng;
+            this.setNestedProperty(latModel, lat);
+            this.setNestedProperty(lngModel, lng);
             if (verifiedModel) {
-                (this as any)[verifiedModel] = true; // Mark as verified when manually set
+                this.setNestedProperty(verifiedModel, true); // Mark as verified when manually set
             }
             
             // Add or update marker
@@ -274,8 +391,8 @@ function locationMapData(
         },
         
         centerOnMarker() {
-            if (this.map && (this as any)[latModel] && (this as any)[lngModel]) {
-                this.map.setView([(this as any)[latModel], (this as any)[lngModel]], 16);
+            if (this.map && this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
+                this.map.setView([this.getNestedProperty(latModel), this.getNestedProperty(lngModel)], 16);
                 if (this.marker) {
                     this.marker.openPopup();
                 }
@@ -288,9 +405,9 @@ function locationMapData(
             this.geocoding = true;
             
             try {
-                const address = (this as any)[addressModels.addressModel!];
-                const city = addressModels.cityModel ? (this as any)[addressModels.cityModel] : undefined;
-                const state = addressModels.stateModel ? (this as any)[addressModels.stateModel] : undefined;
+                const address = this.getNestedProperty(addressModels.addressModel!);
+                const city = addressModels.cityModel ? this.getNestedProperty(addressModels.cityModel) : undefined;
+                const state = addressModels.stateModel ? this.getNestedProperty(addressModels.stateModel) : undefined;
                 
                 if (!address || !address.trim()) {
                     (this as AlpineContext).$dispatch('show-toast', {
@@ -325,7 +442,7 @@ function locationMapData(
                     
                     // Mark as geocoded (not manually verified)
                     if (verifiedModel) {
-                        (this as any)[verifiedModel!] = false;
+                        this.setNestedProperty(verifiedModel!, false);
                     }
                     
                     (this as AlpineContext).$dispatch('show-toast', {
@@ -346,6 +463,56 @@ function locationMapData(
                 });
             } finally {
                 this.geocoding = false;
+            }
+        },
+        
+        handleTabVisibility() {
+            // Watch for tab changes and refresh map when visible
+            this.$watch('$root.activeSectionTab', async (newTab: string) => {
+                if (newTab === 'building-info' && this.map) {
+                    console.log('Tab switched to building-info, refreshing map...');
+                    
+                    // Use Alpine's nextTick first
+                    await (this as any).$nextTick();
+                    
+                    // Multiple refreshes for robustness
+                    this.map.invalidateSize();
+                    
+                    setTimeout(() => {
+                        if (this.map) {
+                            this.map.invalidateSize();
+                        }
+                    }, 100);
+                    
+                    setTimeout(() => {
+                        if (this.map) {
+                            this.map.invalidateSize();
+                            // Also re-center if we have coordinates
+                            if (this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
+                                this.map.setView([this.getNestedProperty(latModel), this.getNestedProperty(lngModel)]);
+                            }
+                        }
+                    }, 300);
+                }
+            });
+            
+            // Also handle visibility changes (for modals, hidden tabs, etc.)
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && this.map) {
+                        console.log('Map became visible, refreshing...');
+                        setTimeout(() => {
+                            if (this.map) {
+                                this.map.invalidateSize();
+                            }
+                        }, 100);
+                    }
+                });
+            });
+            
+            const mapElement = (this as any).$refs.mapElement;
+            if (mapElement) {
+                observer.observe(mapElement);
             }
         },
         
@@ -371,6 +538,14 @@ window.locationMapData = locationMapData;
 .map-container {
     position: relative;
     z-index: 1;
+    min-height: 350px; /* Ensure minimum height */
+    width: 100%; /* Ensure full width */
+}
+
+/* Ensure Leaflet container fills the parent */
+.map-container .leaflet-container {
+    height: 100%;
+    width: 100%;
 }
 
 /* Override Leaflet's z-index to work with DaisyUI modals */

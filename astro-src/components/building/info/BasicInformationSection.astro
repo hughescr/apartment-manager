@@ -8,12 +8,11 @@ import {
 } from "../../forms";
 
 export interface Props {
-    building: any;
     apiUrl: string;
     errors?: Record<string, string>;
 }
 
-const { building: _building, apiUrl, errors: _errors = {} } = Astro.props;
+const { apiUrl, errors: _errors = {} } = Astro.props;
 
 // Property type options
 const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => ({

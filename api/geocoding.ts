@@ -6,18 +6,10 @@ import _ from 'lodash';
 const logger = baseLogger;
 
 // Helper function to create consistent headers
-function createHeaders(includeAllowMethods = false): Record<string, string> {
-    const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+function createHeaders(): Record<string, string> {
+    return {
+        'Content-Type': 'application/json'
     };
-
-    if(includeAllowMethods) {
-        headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
-        headers['Access-Control-Allow-Headers'] = 'Content-Type';
-    }
-
-    return headers;
 }
 
 /**
@@ -53,19 +45,10 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
             path: event.rawPath
         });
 
-        // Handle preflight OPTIONS request first
-        if(event.requestContext.http.method === 'OPTIONS') {
-            return {
-                statusCode: 200,
-                headers: createHeaders(true),
-                body: JSON.stringify({ success: true })
-            };
-        }
-
         if(event.requestContext.http.method !== 'POST') {
             return {
                 statusCode: 405,
-                headers: createHeaders(true),
+                headers: createHeaders(),
                 body: JSON.stringify({
                     success: false,
                     error: 'Method not allowed. Use POST.'
