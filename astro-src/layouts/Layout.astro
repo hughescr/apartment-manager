@@ -3,6 +3,12 @@ import BaseHead from "../components/BaseHead.astro";
 import Footer from "../components/Footer.astro";
 const { title } = Astro.props;
 import '../styles/global.css';
+const navItems = [
+    { href: '/buildings', label: 'Buildings' },
+    { href: '/uploads', label: 'Uploads' },
+    { href: '/settings', label: 'Settings' }
+];
+const currentPath = Astro.url.pathname;
 ---
 
 <html lang="en">
@@ -12,12 +18,62 @@ import '../styles/global.css';
         <BaseHead title={title} />
     </head>
     <body>
-        <nav aria-label="Main navigation">
-            <!-- Mobile menu button - visible only on small screens -->
-            <button data-testid="mobile-menu-button" class="md:hidden">
-                Menu
-            </button>
-            <!-- Navigation will be added here as needed -->
+        <nav
+            aria-label="Main navigation"
+            class="navbar bg-base-100"
+            x-data={`{ open: false, current: '${currentPath}' }`}
+        >
+            <div class="flex-1">
+                <a class="btn btn-ghost normal-case text-xl" href="/">Apartment Manager</a>
+            </div>
+            <div class="flex-none">
+                <button
+                    data-testid="mobile-menu-button"
+                    class="btn btn-square btn-ghost md:hidden"
+                    @click="open = !open"
+                    :aria-expanded="open"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <ul class="menu menu-horizontal px-1 hidden md:flex">
+                    {navItems.map((item) => (
+                        <li>
+                            <a
+                                href={item.href}
+                                class={currentPath.startsWith(item.href) ? 'active' : ''}
+                            >
+                                {item.label}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+                <ul
+                    class="menu menu-sm mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 absolute right-0 md:hidden"
+                    x-show="open"
+                    x-transition
+                    @click.outside="open = false"
+                    data-testid="mobile-menu"
+                >
+                    {navItems.map((item) => (
+                        <li>
+                            <a
+                                href={item.href}
+                                class={currentPath.startsWith(item.href) ? 'active' : ''}
+                            >
+                                {item.label}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </nav>
         <main>
             <h1 class="text-3xl font-bold mb-6">Apartment Manager</h1>
