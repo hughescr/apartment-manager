@@ -6,7 +6,8 @@
       "mcp__eslint",
       "mcp__language-server",
       "mcp__tmux",
-      "Bash(tsc --pretty false)"
+      "Bash(astro check --watch)",
+      "Bash(tsc --pretty false --watch)"
     ],
     "deny": []
   },

@@ -85,6 +85,7 @@ export type VacancyClass = 'Occupied' | 'Unoccupied' | 'Notice' | 'Down';
 
 // Complex nested structures
 export interface RentSpecial {
+    id?: number | string  // Optional unique identifier for UI tracking
     title: string
     startDate?: string // ISO date string
     endDate?: string // ISO date string
@@ -360,6 +361,11 @@ export type PartialUnitTypeData = Partial<Omit<UnitTypeData, 'buildingID' | 'mod
 // Default values helper
 export const getDefaultBuildingData = (): Partial<BuildingData> => ({
     buildingName: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    description: '',
     notes: '',
     propertyType: PropertyType.APARTMENT,
     roomsForRent: false,

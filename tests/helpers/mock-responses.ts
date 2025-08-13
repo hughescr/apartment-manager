@@ -11,39 +11,32 @@ export interface MockResponseOptions {
     ScannedCount?: number
 }
 
-import { isObject, map } from 'lodash';
+import { isObject, map, merge } from 'lodash';
+import { getDefaultBuildingData } from '../../src/types/index.js';
 
 /**
- * Add DynamoDB Toolbox v2 metadata fields to an item
+ * Add DynamoDB Toolbox v2 metadata fields to an item and merge defaults for Building entities
+ * This simulates the same default merging that production getBuilding()/getBuildings() do
  */
 function addToolboxMetadata(item: unknown): unknown {
     if(!item || !isObject(item)) {
         return item;
     }
 
-    // Add required metadata fields for DynamoDB Toolbox v2
     const itemWithMetadata = item as Record<string, unknown>;
 
-    // Entity type detection is no longer needed since we let DynamoDB Toolbox handle _et
-    // Keeping the logic commented for reference
-    // let entityType = 'Unknown';
-    // if(itemWithMetadata.unitID === 'BUILDING') {
-    //     entityType = 'Building';
-    // } else if(isString(itemWithMetadata.unitID) && startsWith(itemWithMetadata.unitID, 'MODEL#')) {
-    //     entityType = 'UnitType';
-    // } else if(isString(itemWithMetadata.unitID) && startsWith(itemWithMetadata.unitID, 'UNIT#')) {
-    //     entityType = 'Unit';
-    // } else if(itemWithMetadata.unitID) {
-    //     // Fallback for unitID values that don't follow the expected patterns
-    //     entityType = 'Unit';
-    // }
+    // Apply default merging for Building entities to match production behavior
+    let processedItem = itemWithMetadata;
+    if(itemWithMetadata.unitID === 'BUILDING') {
+        // Merge with defaults like production does: _.merge({}, getDefaultBuildingData(), rawBuilding)
+        processedItem = merge({}, getDefaultBuildingData(), itemWithMetadata);
+    }
 
     return {
-        ...itemWithMetadata,
+        ...processedItem,
         // Don't add _et automatically - let DynamoDB Toolbox handle it
-        // _et: itemWithMetadata._et || entityType, // Entity type
-        _ct: itemWithMetadata._ct || new Date().toISOString(), // Created timestamp
-        _md: itemWithMetadata._md || new Date().toISOString(), // Modified timestamp
+        _ct: processedItem._ct || new Date().toISOString(), // Created timestamp
+        _md: processedItem._md || new Date().toISOString(), // Modified timestamp
     };
 }
 

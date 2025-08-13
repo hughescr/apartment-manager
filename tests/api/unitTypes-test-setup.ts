@@ -1,11 +1,11 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest } from '../data/test-setup';
+import { dynamoDbMock, jest, resetAllMocks } from '../data/test-setup';
 
 import { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { AmenityCategory } from '../../src/types';
 
-export { dynamoDbMock, jest };
+export { dynamoDbMock, jest, resetAllMocks };
 
 export const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => {
     const baseEvent: APIGatewayProxyEventV2 = {

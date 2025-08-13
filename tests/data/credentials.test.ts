@@ -1,5 +1,5 @@
-import { describe, test, expect, beforeEach } from 'bun:test';
-import { ssmMock } from './test-setup';
+import { describe, test, expect, beforeEach, beforeAll } from 'bun:test';
+import { ssmMock, resetAllMocks, jest } from './test-setup';
 
 // Type for AWS service errors that have a name property
 interface AWSServiceError extends Error {
@@ -15,9 +15,20 @@ import {
 } from '../../data/credentials';
 
 describe('Credentials Data Layer', () => {
+    beforeAll(() => {
+        resetAllMocks();
+    });
+
     beforeEach(() => {
-        // Clear all mock calls between tests
-        ssmMock.mockClear();
+        // Reset all mock state including queued responses
+        jest.clearAllMocks();
+        jest.restoreAllMocks();
+
+        // CRITICAL: Reset the mock completely to clear any queued responses
+        ssmMock.mockReset();
+
+        // Set default successful implementation for SSM commands
+        ssmMock.mockResolvedValue({});
     });
 
     describe('storeCredential', () => {

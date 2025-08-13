@@ -1,14 +1,19 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 // Component logic testing - no render needed
 // import SaveIndicator from '../../../astro-src/components/building/SaveIndicator.astro';
 import {
-    jest
+    jest,
+    resetAllMocks
 } from './test-setup';
 
 describe('SaveIndicator Component Logic', () => {
+    beforeAll(() => {
+        resetAllMocks();
+    });
+
     beforeEach(() => {
         jest.clearAllMocks();
     });

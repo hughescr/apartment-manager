@@ -1,6 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest } from './test-setup';
+import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { AmenityCategory } from '../../src/types';
@@ -19,6 +19,9 @@ import {
 
 describe('UnitType Data Layer', () => {
     beforeAll(() => {
+        // Reset mocks at the start of this test file to prevent cross-file pollution
+        resetAllMocks();
+
         // Validate that all expected exports are available
         expect(typeof getUnitTypes).toBe('function');
         expect(typeof getUnitType).toBe('function');
@@ -29,8 +32,12 @@ describe('UnitType Data Layer', () => {
     });
 
     beforeEach(() => {
-        // Clear mock calls before each test
+        // Reset all mock state including queued responses
         jest.clearAllMocks();
+        jest.restoreAllMocks();
+
+        // CRITICAL: Reset the mock completely to clear any queued responses
+        dynamoDbMock.mockReset();
     });
 
     const testBuildingID = 'test-building-1';

@@ -1,8 +1,8 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest } from './test-setup';
+import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import {
     mockQueryResponse,
     mockGetResponse,
@@ -16,8 +16,18 @@ import { getBuildings, getBuilding, createBuilding, updateBuilding } from '../..
 import { getUnits } from '../../data/units';
 
 describe('Data Layer Performance Tests', () => {
+    beforeAll(() => {
+        // Reset mocks at the start of this test file to prevent cross-file pollution
+        resetAllMocks();
+    });
+
     beforeEach(() => {
+        // Reset all mock state including queued responses
         jest.clearAllMocks();
+        jest.restoreAllMocks();
+
+        // CRITICAL: Reset the mock completely to clear any queued responses
+        dynamoDbMock.mockReset();
     });
 
     describe('Pagination with >1MB of data (DynamoDB limit)', () => {

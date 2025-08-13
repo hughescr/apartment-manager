@@ -32,7 +32,7 @@ export class BuildingApiService {
             });
 
             if(response.ok) {
-                // Handle empty response body gracefully
+                // Handle response body - API should always return updated building data
                 const responseText = await response.text();
                 let data;
 
@@ -40,12 +40,12 @@ export class BuildingApiService {
                     try {
                         data = JSON.parse(responseText);
                     } catch{
-                        // If JSON parsing fails, return the raw text
-                        data = { message: responseText };
+                        // If JSON parsing fails, return null data
+                        data = null;
                     }
                 } else {
-                    // Empty response body - assume success with building data
-                    data = building;
+                    // Empty response body indicates API error - should always return updated data
+                    data = null;
                 }
 
                 return { success: true, data };

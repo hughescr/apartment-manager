@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
-import { createMockEvent, testUnitType, dynamoDbMock, jest } from './unitTypes-test-setup';
+import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
+import { createMockEvent, testUnitType, dynamoDbMock, jest, resetAllMocks } from './unitTypes-test-setup';
 import { mockScanResponse, mockGetResponse } from '../helpers/mock-responses';
 import _ from 'lodash';
 
@@ -7,9 +7,17 @@ import _ from 'lodash';
 import { list, get } from '../../api/unitTypes';
 
 describe('Unit Types API - List and Get', () => {
+    beforeAll(() => {
+        resetAllMocks();
+    });
+
     beforeEach(() => {
-        // Clear mock calls before each test
+        // Reset all mock state including queued responses
         jest.clearAllMocks();
+        jest.restoreAllMocks();
+
+        // CRITICAL: Reset the mock completely to clear any queued responses
+        dynamoDbMock.mockReset();
     });
 
     describe('list endpoint', () => {

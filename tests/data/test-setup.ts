@@ -3,6 +3,7 @@
  * This sets up all the necessary mocks for DynamoDB operations.
  */
 import { mock, jest } from 'bun:test';
+import _ from 'lodash';
 
 // Import AWS SDK command classes before mocking
 import {
@@ -42,12 +43,40 @@ import {
 process.env.BUN_ENV = 'test';
 process.env.SST_STAGE = 'test';
 
-// Mock logger
+// Mock logger with proper error handling
 const mockLogger = {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn()
+    info: jest.fn().mockImplementation((...args: unknown[]) => {
+        // Consume all arguments including error objects to prevent unhandled errors
+        _.forEach(args, (arg) => {
+            if(_.isError(arg)) {
+                // Consume error silently
+            }
+        });
+    }),
+    warn: jest.fn().mockImplementation((...args: unknown[]) => {
+        // Consume all arguments including error objects to prevent unhandled errors
+        _.forEach(args, (arg) => {
+            if(_.isError(arg)) {
+                // Consume error silently
+            }
+        });
+    }),
+    error: jest.fn().mockImplementation((...args: unknown[]) => {
+        // Consume all arguments including error objects to prevent unhandled errors
+        _.forEach(args, (arg) => {
+            if(_.isError(arg)) {
+                // Consume error silently
+            }
+        });
+    }),
+    debug: jest.fn().mockImplementation((...args: unknown[]) => {
+        // Consume all arguments including error objects to prevent unhandled errors
+        _.forEach(args, (arg) => {
+            if(_.isError(arg)) {
+                // Consume error silently
+            }
+        });
+    })
 };
 
 mock.module('@hughescr/logger', () => ({
@@ -57,38 +86,112 @@ mock.module('@hughescr/logger', () => ({
 // Mock functions that track calls and provide responses
 const mockDestroy = () => Promise.resolve();
 
-// Create DynamoDB mock
-const dynamoDbMock = (() => {
+// Mock crypto module for consistent UUIDs in tests
+const mockRandomUUID = jest.fn().mockReturnValue('test-uuid');
+
+// Mock S3 request presigner with default implementation
+const mockGetSignedUrl = jest.fn().mockResolvedValue('https://presigned-url.example.com');
+// Type for DynamoDB item with optional properties
+type DynamoItem = Record<string, unknown> & {
+    buildingID?: string
+    unitID?: string
+};
+
+// Helper function to determine entity type based on unitID
+function getEntityType(unitID: string): string {
+    if(_.startsWith(unitID, 'UNIT#') || (unitID !== 'BUILDING' && !_.startsWith(unitID, 'MODEL#'))) {
+        return 'Unit';
+    }
+    if(_.startsWith(unitID, 'MODEL#')) {
+        return 'UnitType';
+    }
+    return 'Building';
+}
+
+// Helper function to handle put commands
+function handlePutCommand(cmd: { input?: Record<string, unknown> }) {
+    const item = cmd.input?.Item || cmd.input || {};
+    const unitID = (item as DynamoItem).unitID || 'BUILDING';
+    const entityType = getEntityType(unitID);
+
+    const responseItem = {
+        buildingID: (item as DynamoItem).buildingID || 'test-building',
+        unitID: unitID,
+        ...item,
+        _ct: new Date().toISOString(),
+        _md: new Date().toISOString(),
+        _et: entityType
+    };
+
+    return Promise.resolve({
+        Attributes: responseItem,
+        Item: responseItem
+    });
+}
+
+// Helper function to handle update commands
+function handleUpdateCommand(cmd: { input?: Record<string, unknown> }) {
+    const key = cmd.input?.Key || {};
+    const updates = cmd.input?.Item || cmd.input || {};
+    const unitID = (key as DynamoItem).unitID || (updates as DynamoItem).unitID || 'BUILDING';
+    const entityType = getEntityType(unitID);
+
+    const responseItem = {
+        buildingID: (key as DynamoItem).buildingID || (updates as DynamoItem).buildingID || 'test-building',
+        unitID: unitID,
+        ...updates,
+        _ct: new Date().toISOString(),
+        _md: new Date().toISOString(),
+        _et: entityType
+    };
+
+    return Promise.resolve({
+        Attributes: responseItem,
+        Item: responseItem
+    });
+}
+
+// Create DynamoDB mock with reset capability
+const createDynamoDbMock = () => {
     const mockFn = jest.fn();
-    // Default implementation that returns empty results
+    // Default implementation that returns proper responses for DynamoDB Toolbox
     mockFn.mockImplementation((command: unknown) => {
-        const cmd = command as { constructor: { name: string } };
+        const cmd = command as { constructor: { name: string }, input?: Record<string, unknown> };
+
         // Handle both client-dynamodb and lib-dynamodb commands
         if(cmd.constructor.name === 'QueryCommand') {
             return Promise.resolve({ Items: [], Count: 0 });
         }
+
         if(cmd.constructor.name === 'GetItemCommand' || cmd.constructor.name === 'GetCommand') {
             return Promise.resolve({});
         }
+
         if(cmd.constructor.name === 'PutItemCommand' || cmd.constructor.name === 'PutCommand') {
-            return Promise.resolve({});
+            return handlePutCommand(cmd);
         }
+
         if(cmd.constructor.name === 'UpdateItemCommand' || cmd.constructor.name === 'UpdateCommand') {
-            return Promise.resolve({});
+            return handleUpdateCommand(cmd);
         }
+
         if(cmd.constructor.name === 'DeleteItemCommand' || cmd.constructor.name === 'DeleteCommand') {
             return Promise.resolve({});
         }
+
         if(cmd.constructor.name === 'TransactWriteItemsCommand' || cmd.constructor.name === 'TransactWriteCommand') {
             return Promise.resolve({});
         }
+
         return Promise.reject(new Error(`Unmocked DynamoDB command: ${cmd.constructor.name}`));
     });
     return mockFn;
-})();
+};
 
-// Create S3 mock
-const s3Mock = (() => {
+let dynamoDbMock = createDynamoDbMock();
+
+// Create S3 mock with reset capability
+const createS3Mock = () => {
     const mockFn = jest.fn();
     // Default implementation that returns success
     mockFn.mockImplementation((command: unknown) => {
@@ -119,10 +222,12 @@ const s3Mock = (() => {
         return Promise.reject(new Error(`Unmocked S3 command: ${cmd.constructor.name}`));
     });
     return mockFn;
-})();
+};
 
-// Create SSM mock
-const ssmMock = (() => {
+let s3Mock = createS3Mock();
+
+// Create SSM mock with reset capability
+const createSSMMock = () => {
     const mockFn = jest.fn();
     // Default implementation that returns success
     mockFn.mockImplementation((command: unknown) => {
@@ -155,7 +260,9 @@ const ssmMock = (() => {
         return Promise.reject(new Error(`Unmocked SSM command: ${cmd.constructor.name}`));
     });
     return mockFn;
-})();
+};
+
+let ssmMock = createSSMMock();
 
 // Mock the SST module FIRST before any other imports can access it
 mock.module('sst', () => ({
@@ -175,10 +282,59 @@ mock.module('sst', () => ({
     }
 }));
 
+// Global mock reset function that can be called between test files
+const resetAllMocks = () => {
+    // Create fresh mock instances
+    dynamoDbMock = createDynamoDbMock();
+    s3Mock = createS3Mock();
+    ssmMock = createSSMMock();
+    mockRandomUUID.mockClear();
+    mockRandomUUID.mockReturnValue('test-uuid');
+    mockGetSignedUrl.mockClear();
+    mockGetSignedUrl.mockResolvedValue('https://presigned-url.example.com');
+
+    // Reset logger mocks
+    mockLogger.info.mockClear();
+    mockLogger.warn.mockClear();
+    mockLogger.error.mockClear();
+    mockLogger.debug.mockClear();
+
+    // Set up default successful responses for security tests
+    dynamoDbMock.mockImplementation((command: unknown) => {
+        const cmd = command as { constructor: { name: string }, input?: Record<string, unknown> };
+
+        if(cmd.constructor.name === 'PutItemCommand' || cmd.constructor.name === 'PutCommand') {
+            return handlePutCommand(cmd);
+        }
+
+        if(cmd.constructor.name === 'GetItemCommand' || cmd.constructor.name === 'GetCommand') {
+            return Promise.resolve({});
+        }
+
+        if(cmd.constructor.name === 'UpdateItemCommand' || cmd.constructor.name === 'UpdateCommand') {
+            return handleUpdateCommand(cmd);
+        }
+
+        if(cmd.constructor.name === 'QueryCommand') {
+            return Promise.resolve({ Items: [], Count: 0 });
+        }
+
+        if(cmd.constructor.name === 'DeleteItemCommand' || cmd.constructor.name === 'DeleteCommand') {
+            return Promise.resolve({});
+        }
+
+        if(cmd.constructor.name === 'TransactWriteItemsCommand' || cmd.constructor.name === 'TransactWriteCommand') {
+            return Promise.resolve({});
+        }
+
+        return Promise.reject(new Error(`Unmocked DynamoDB command: ${cmd.constructor.name}`));
+    });
+};
+
 // Mock AWS SDK v3 DynamoDB Client
 mock.module('@aws-sdk/client-dynamodb', () => ({
     DynamoDBClient: class MockDynamoDBClient {
-        send = dynamoDbMock;
+        get send() { return dynamoDbMock; }
         destroy = mockDestroy;
     },
     // Re-export command classes
@@ -193,7 +349,7 @@ mock.module('@aws-sdk/client-dynamodb', () => ({
 // Mock AWS SDK v3 S3 Client
 mock.module('@aws-sdk/client-s3', () => ({
     S3Client: class MockS3Client {
-        send = s3Mock;
+        get send() { return s3Mock; }
         destroy = mockDestroy;
     },
     // Re-export command classes
@@ -207,7 +363,7 @@ mock.module('@aws-sdk/client-s3', () => ({
 mock.module('@aws-sdk/lib-dynamodb', () => ({
     DynamoDBDocumentClient: {
         from: (_client: unknown, _config?: unknown) => ({
-            send: dynamoDbMock,
+            get send() { return dynamoDbMock; },
             destroy: mockDestroy,
             config: {}
         })
@@ -221,14 +377,12 @@ mock.module('@aws-sdk/lib-dynamodb', () => ({
     TransactWriteCommand: LibDynamoTransactWriteCommand
 }));
 
-// Mock crypto module for consistent UUIDs in tests
-const mockRandomUUID = jest.fn().mockReturnValue('test-uuid');
+// Mock crypto module
 mock.module('crypto', () => ({
     randomUUID: mockRandomUUID
 }));
 
-// Mock S3 request presigner with default implementation
-const mockGetSignedUrl = jest.fn().mockResolvedValue('https://presigned-url.example.com');
+// Mock S3 request presigner
 mock.module('@aws-sdk/s3-request-presigner', () => ({
     getSignedUrl: mockGetSignedUrl
 }));
@@ -236,7 +390,7 @@ mock.module('@aws-sdk/s3-request-presigner', () => ({
 // Mock AWS SDK v3 SSM Client
 mock.module('@aws-sdk/client-ssm', () => ({
     SSMClient: class MockSSMClient {
-        send = ssmMock;
+        get send() { return ssmMock; }
         destroy = mockDestroy;
     },
     // Re-export command classes
@@ -247,7 +401,7 @@ mock.module('@aws-sdk/client-ssm', () => ({
 }));
 
 // Export mocks for test files to use
-export { dynamoDbMock, s3Mock, ssmMock, mockRandomUUID, mockGetSignedUrl };
+export { dynamoDbMock, s3Mock, ssmMock, mockRandomUUID, mockGetSignedUrl, mockLogger, resetAllMocks };
 
 // Re-export jest for convenience
 export { jest };

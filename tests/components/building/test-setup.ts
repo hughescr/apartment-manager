@@ -304,8 +304,26 @@ export const createTestUnitData = (overrides: Partial<UnitData> = {}): UnitData 
     ...overrides
 });
 
+// Function to reset all mocks (matches pattern from data/test-setup.ts)
+const resetAllMocks = () => {
+    // Clear all function mocks
+    jest.clearAllMocks();
+
+    // Reset fetch mock
+    mockFetch.mockClear();
+
+    // Reset crypto mock
+    mockRandomUUID.mockClear();
+
+    // Reset window mocks
+    mockWindow.createBuildingState.mockClear();
+    mockWindow.buildingProviderData.mockClear();
+    mockWindow.confirm.mockClear();
+    mockWindow.location.reload.mockClear();
+};
+
 // Export additional mocks
-export { mockRandomUUID, mockLogger };
+export { mockRandomUUID, mockLogger, resetAllMocks };
 
 // Re-export jest for convenience
 export { jest };

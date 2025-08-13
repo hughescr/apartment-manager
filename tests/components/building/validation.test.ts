@@ -1,19 +1,23 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import _ from 'lodash';
 import {
     validateBuildingForm,
     validateSingleField,
     hasUnsavedChanges
 } from '../../../astro-src/lib/building/validation';
-import { createTestBuildingData } from './test-setup';
+import { createTestBuildingData, resetAllMocks } from './test-setup';
 import type { BuildingData } from '../../../astro-src/types';
 import { AmenityCategory } from '../../../src/types';
 
 describe('Building Form Validation', () => {
     let validBuilding: BuildingData;
+
+    beforeAll(() => {
+        resetAllMocks();
+    });
 
     beforeEach(() => {
         validBuilding = createTestBuildingData();

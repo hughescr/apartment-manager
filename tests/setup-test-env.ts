@@ -25,3 +25,6 @@ process.env.SST_RESOURCE_PhotosBucket = JSON.stringify({
     name: 'test-photos-bucket',
     type: 'sst.aws.Bucket'
 });
+
+// Import global test setup to handle mock isolation
+import './setup-global';

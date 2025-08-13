@@ -101,7 +101,8 @@ export class BuildingCore {
                 // Use the response data directly as it contains the complete saved building
                 savedBuilding = responseData as unknown as BuildingData;
             } else {
-                // Fallback to current building if no response data (shouldn't happen)
+                // No response data indicates potential API issue
+                // Use current building state as fallback, but this means changes might not be persisted
                 savedBuilding = { ...this.state.building };
             }
 
@@ -206,5 +207,39 @@ export class BuildingCore {
      */
     hasUnsavedChanges(): boolean {
         return hasUnsavedChanges(this.state.building, this.state.original);
+    }
+
+    /**
+     * Add a new rent special
+     */
+    addRentSpecial(): void {
+        if(!this.state.building) {
+            return;
+        }
+
+        // Initialize rentSpecials array if it doesn't exist
+        if(!this.state.building.rentSpecials) {
+            this.state.building.rentSpecials = [];
+        }
+
+        // Add new rent special with unique ID
+        this.state.building.rentSpecials.push({
+            id: Date.now() + Math.random(),
+            title: '',
+            description: '',
+            startDate: '',
+            endDate: ''
+        });
+    }
+
+    /**
+     * Remove a rent special by index
+     */
+    removeRentSpecial(index: number): void {
+        if(!this.state.building?.rentSpecials) {
+            return;
+        }
+
+        this.state.building.rentSpecials.splice(index, 1);
     }
 }

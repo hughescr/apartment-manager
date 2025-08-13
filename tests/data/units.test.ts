@@ -1,8 +1,8 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest } from './test-setup';
+import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { AmenityCategory, Amenity, RentSpecial } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 
@@ -11,9 +11,18 @@ import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../dat
 import _ from 'lodash';
 
 describe('Unit Data Layer', () => {
+    beforeAll(() => {
+        // Reset mocks at the start of this test file to prevent cross-file pollution
+        resetAllMocks();
+    });
+
     beforeEach(() => {
-        // Clear mock calls before each test
+        // Reset all mock state including queued responses
         jest.clearAllMocks();
+        jest.restoreAllMocks();
+
+        // CRITICAL: Reset the mock completely to clear any queued responses
+        dynamoDbMock.mockReset();
     });
 
     const testBuildingID = 'test-building-1';

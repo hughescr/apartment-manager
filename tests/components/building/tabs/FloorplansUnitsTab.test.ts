@@ -1,13 +1,14 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import '../test-setup';
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 import _ from 'lodash';
 import {
     createTestBuildingData,
     createTestUnitData,
     createTestUnitTypeData,
-    jest
+    jest,
+    resetAllMocks
 } from '../test-setup';
 
 describe('FloorplansUnitsTab Component Logic', () => {
@@ -15,6 +16,10 @@ describe('FloorplansUnitsTab Component Logic', () => {
     let mockUnitsData: ReturnType<typeof createTestUnitData>[];
     let mockUnitTypesData: ReturnType<typeof createTestUnitTypeData>[];
     let mockBuildingAmenities: { id: string, name: string, category: string }[];
+
+    beforeAll(() => {
+        resetAllMocks();
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();

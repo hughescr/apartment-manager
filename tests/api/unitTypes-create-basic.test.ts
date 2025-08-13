@@ -1,14 +1,22 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
-import { createMockEvent, dynamoDbMock, jest } from './unitTypes-test-setup';
+import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
+import { createMockEvent, dynamoDbMock, jest, resetAllMocks } from './unitTypes-test-setup';
 import { mockGetResponse, mockPutResponse } from '../helpers/mock-responses';
 
 // Import API functions directly - they will use the mocked DynamoDB client from test-setup
 import { create } from '../../api/unitTypes';
 
 describe('Unit Types API - Create Basic', () => {
+    beforeAll(() => {
+        resetAllMocks();
+    });
+
     beforeEach(() => {
-        // Clear mock calls before each test
+        // Reset all mock state including queued responses
         jest.clearAllMocks();
+        jest.restoreAllMocks();
+
+        // CRITICAL: Reset the mock completely to clear any queued responses
+        dynamoDbMock.mockReset();
     });
 
     describe('create endpoint', () => {

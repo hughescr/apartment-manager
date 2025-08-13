@@ -1,20 +1,25 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 // Component logic testing - no render needed
 // import BuildingProvider from '../../../astro-src/components/building/BuildingProvider.astro';
 import {
     createTestBuildingData,
     createTestUnitData,
     mockWindow,
-    jest
+    jest,
+    resetAllMocks
 } from './test-setup';
 import type { BuildingData, UnitData, UnitTypeData } from '../../../astro-src/types';
 
 describe('BuildingProvider Component', () => {
     let mockBuildingData: BuildingData;
     let consoleErrorSpy: ReturnType<typeof jest.fn>;
+
+    beforeAll(() => {
+        resetAllMocks();
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();

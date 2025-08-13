@@ -101,12 +101,12 @@ const { building: _building, errors: _errors } = Astro.props;
         <!-- Rent Specials -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="font-semibold mb-4">Rent Specials</h4>
-            <div x-data='{ addSpecial() { if (!$parent.building.rentSpecials) $parent.building.rentSpecials = []; $parent.building.rentSpecials.push({ id: Date.now() + Math.random(), title: "", description: "", startDate: "", endDate: "" }); }, removeSpecial(index) { $parent.building.rentSpecials.splice(index, 1); } }'>
+            <div>
                 <template x-for="(special, index) in building.rentSpecials || []" :key="special.id || ('special-' + index)">
                     <div class="border border-base-300 rounded-lg p-4 mb-4">
                         <div class="flex justify-end mb-2">
                             <button 
-                                @click="removeSpecial(index)"
+                                @click="removeRentSpecial(index)"
                                 class="btn btn-ghost btn-sm text-error"
                             >Remove</button>
                         </div>
@@ -163,7 +163,7 @@ const { building: _building, errors: _errors } = Astro.props;
                     </div>
                 </template>
                 <button 
-                    @click="addSpecial()"
+                    @click="addRentSpecial()"
                     class="btn btn-primary btn-sm"
                 >Add Rent Special</button>
             </div>

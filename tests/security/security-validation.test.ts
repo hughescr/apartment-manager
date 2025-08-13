@@ -15,19 +15,109 @@
  * - Insecure direct object references
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 import '../data/test-setup'; // Import test setup FIRST to set up mocks
 import * as buildingsHandler from '../../api/buildings';
 import * as unitsHandler from '../../api/units';
 import { handler as uploadHandler } from '../../api/upload';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { dynamoDbMock } from '../data/test-setup';
+import { dynamoDbMock, resetAllMocks } from '../data/test-setup';
 import _ from 'lodash';
+// Type for DynamoDB item with optional properties
+type DynamoItem = Record<string, unknown> & {
+    buildingID?: string
+    unitID?: string
+};
+
+// Helper function to determine entity type based on unitID
+function getEntityType(unitID: string): string {
+    if(_.startsWith(unitID, 'UNIT#') || (unitID !== 'BUILDING' && !_.startsWith(unitID, 'MODEL#'))) {
+        return 'Unit';
+    }
+    if(_.startsWith(unitID, 'MODEL#')) {
+        return 'UnitType';
+    }
+    return 'Building';
+}
+
+// Helper function to handle put commands
+function handlePutCommand(cmd: { input?: Record<string, unknown> }) {
+    const item = cmd.input?.Item || cmd.input || {};
+    const unitID = (item as DynamoItem).unitID || 'BUILDING';
+    const entityType = getEntityType(unitID);
+
+    const responseItem = {
+        buildingID: (item as DynamoItem).buildingID || 'test-building',
+        unitID: unitID,
+        ...item,
+        _ct: new Date().toISOString(),
+        _md: new Date().toISOString(),
+        _et: entityType
+    };
+
+    return Promise.resolve({
+        Attributes: responseItem,
+        Item: responseItem
+    });
+}
+
+// Helper function to handle update commands
+function handleUpdateCommand(cmd: { input?: Record<string, unknown> }) {
+    const key = cmd.input?.Key || {};
+    const updates = cmd.input?.Item || cmd.input || {};
+    const unitID = (key as DynamoItem).unitID || (updates as DynamoItem).unitID || 'BUILDING';
+    const entityType = getEntityType(unitID);
+
+    const responseItem = {
+        buildingID: (key as DynamoItem).buildingID || (updates as DynamoItem).buildingID || 'test-building',
+        unitID: unitID,
+        ...updates,
+        _ct: new Date().toISOString(),
+        _md: new Date().toISOString(),
+        _et: entityType
+    };
+
+    return Promise.resolve({
+        Attributes: responseItem,
+        Item: responseItem
+    });
+}
 
 // Setup function for tests
 async function setupTestEnvironment() {
-    // Clear all mocks before each test
-    dynamoDbMock.mockClear();
+    // Reset all mock state including queued responses
+    dynamoDbMock.mockReset();
+
+    // Set up proper mock implementation for DynamoDB Toolbox
+    dynamoDbMock.mockImplementation((command: unknown) => {
+        const cmd = command as { constructor: { name: string }, input?: Record<string, unknown> };
+
+        if(cmd.constructor.name === 'PutItemCommand' || cmd.constructor.name === 'PutCommand') {
+            return handlePutCommand(cmd);
+        }
+
+        if(cmd.constructor.name === 'GetItemCommand' || cmd.constructor.name === 'GetCommand') {
+            return Promise.resolve({});
+        }
+
+        if(cmd.constructor.name === 'UpdateItemCommand' || cmd.constructor.name === 'UpdateCommand') {
+            return handleUpdateCommand(cmd);
+        }
+
+        if(cmd.constructor.name === 'QueryCommand') {
+            return Promise.resolve({ Items: [], Count: 0 });
+        }
+
+        if(cmd.constructor.name === 'DeleteItemCommand' || cmd.constructor.name === 'DeleteCommand') {
+            return Promise.resolve({});
+        }
+
+        if(cmd.constructor.name === 'TransactWriteItemsCommand' || cmd.constructor.name === 'TransactWriteCommand') {
+            return Promise.resolve({});
+        }
+
+        return Promise.reject(new Error(`Unmocked DynamoDB command: ${cmd.constructor.name}`));
+    });
 }
 
 // Cleanup function for tests
@@ -37,6 +127,10 @@ async function cleanupTestEnvironment() {
 }
 
 describe('Security Validation Tests', () => {
+    beforeAll(() => {
+        resetAllMocks();
+    });
+
     beforeEach(async () => {
         await setupTestEnvironment();
     });

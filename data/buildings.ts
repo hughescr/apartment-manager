@@ -4,13 +4,104 @@ import { ApartmentTable, Building } from './model';
 import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
 import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
-import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
+import { UpdateItemCommand, $set } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
 import _ from 'lodash';
 
 import  { logger } from '@hughescr/logger';
 
+// Array fields that require complete replacement (not partial update)
+const ARRAY_FIELDS = [
+    'photos', 'rentSpecials', 'oneTimeFees', 'monthlyFees',
+    'parkingOptions', 'storageOptions', 'propertyAmenities'
+] as const;
+
+/**
+ * Prepares updates by wrapping EMPTY array fields with $set() for complete replacement
+ * Only empty arrays need special handling to persist correctly in DynamoDB
+ */
+function prepareUpdatesWithArrayReplacement(updates: Partial<BuildingData> & Record<string, unknown>): Record<string, unknown> {
+    const preparedUpdates = { ...updates };
+
+    // Apply $set() ONLY to EMPTY array fields to ensure they persist
+    for(const field of ARRAY_FIELDS) {
+        if(field in updates && _.isArray(updates[field]) && updates[field].length === 0) {
+            (preparedUpdates as Record<string, unknown>)[field] = $set([]);
+        }
+    }
+
+    // Handle nested arrays in petPolicies - only wrap empty arrays
+    if(updates.petPolicies && _.isObject(updates.petPolicies)) {
+        const petPolicies = updates.petPolicies;
+        const updatedPetPolicies = { ...petPolicies };
+        let hasEmptyArrays = false;
+
+        if('petTypes' in petPolicies && _.isArray(petPolicies.petTypes) && petPolicies.petTypes.length === 0) {
+            (updatedPetPolicies as Record<string, unknown>).petTypes = $set([]);
+            hasEmptyArrays = true;
+        }
+        if('breedRestrictions' in petPolicies && _.isArray(petPolicies.breedRestrictions) && petPolicies.breedRestrictions.length === 0) {
+            (updatedPetPolicies as Record<string, unknown>).breedRestrictions = $set([]);
+            hasEmptyArrays = true;
+        }
+
+        if(hasEmptyArrays) {
+            preparedUpdates.petPolicies = updatedPetPolicies;
+        }
+    }
+
+    return preparedUpdates;
+}
+
+/**
+ * Handles explicit array field overwrites to ensure empty arrays persist correctly
+ */
+function handleArrayFieldOverwrites(mergedData: Record<string, unknown>, updates: Partial<BuildingData>): void {
+    // Handle array fields explicitly - if they exist in updates, use them as-is (including empty arrays)
+    if('photos' in updates && updates.photos !== undefined) {
+        mergedData.photos = updates.photos;
+    }
+    if('rentSpecials' in updates && updates.rentSpecials !== undefined) {
+        mergedData.rentSpecials = updates.rentSpecials;
+    }
+    if('oneTimeFees' in updates && updates.oneTimeFees !== undefined) {
+        mergedData.oneTimeFees = updates.oneTimeFees;
+    }
+    if('monthlyFees' in updates && updates.monthlyFees !== undefined) {
+        mergedData.monthlyFees = updates.monthlyFees;
+    }
+    if('parkingOptions' in updates && updates.parkingOptions !== undefined) {
+        mergedData.parkingOptions = updates.parkingOptions;
+    }
+    if('storageOptions' in updates && updates.storageOptions !== undefined) {
+        mergedData.storageOptions = updates.storageOptions;
+    }
+    if('propertyAmenities' in updates && updates.propertyAmenities !== undefined) {
+        mergedData.propertyAmenities = updates.propertyAmenities;
+    }
+}
+
+/**
+ * Handles nested array overwrites within petPolicies to ensure empty arrays persist correctly
+ */
+function handlePetPolicyArrayOverwrites(mergedData: Record<string, unknown>, existingBuilding: BuildingData, updates: Partial<BuildingData>): void {
+    if(updates.petPolicies) {
+        mergedData.petPolicies = {
+            ...existingBuilding.petPolicies,
+            ...updates.petPolicies
+        };
+
+        // Handle nested arrays within petPolicies with proper type casting
+        const petPolicies = mergedData.petPolicies as BuildingData['petPolicies'];
+        if(updates.petPolicies && 'petTypes' in updates.petPolicies && updates.petPolicies.petTypes !== undefined && petPolicies) {
+            petPolicies.petTypes = updates.petPolicies.petTypes;
+        }
+        if(updates.petPolicies && 'breedRestrictions' in updates.petPolicies && updates.petPolicies.breedRestrictions !== undefined && petPolicies) {
+            petPolicies.breedRestrictions = updates.petPolicies.breedRestrictions;
+        }
+    }
+}
 export async function getBuildings() {
     const scanResult = await ApartmentTable.build(ScanCommand)
         .entities(Building)
@@ -61,26 +152,39 @@ export async function createBuilding(building: BuildingData) {
     if(!Attributes) {
         return building;
     }
-    const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
+    const rawBuilding = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
+    // Convert updatedAt from string to Date if present
     if((Attributes as Record<string, unknown>).updatedAt) {
-        result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
+        rawBuilding.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
     }
-    return result;
+    // Merge with defaults to ensure consistency with getBuilding behavior
+    return _.merge({}, getDefaultBuildingData(), rawBuilding);
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
     const now = new Date();
-    const updatesForDB = {
+    const baseUpdates: Partial<BuildingData> = {
         ...updates,
         buildingID,
-        unitID: 'BUILDING',
-        updatedAt: now.toISOString()
+        updatedAt: now // Keep as Date for type compatibility
     };
+
+    // Create updates for DB with string timestamp
+    // Create updates for DB with string timestamp and required fields
+    const dbUpdates: Record<string, unknown> = {
+        ...baseUpdates,
+        buildingID, // Ensure buildingID is always present
+        unitID: 'BUILDING',
+        updatedAt: now.toISOString() // Convert to string for DynamoDB
+    };
+
+    // Apply $set() for array fields to ensure complete replacement
+    const updatesForDB = prepareUpdatesWithArrayReplacement(dbUpdates);
 
     try {
         // Try UpdateItemCommand first for backward compatibility with existing tests and behavior
         const { Attributes } = await Building.build(UpdateItemCommand)
-            .item(updatesForDB)
+            .item(updatesForDB as Record<string, unknown> & { buildingID: string, unitID: string }) // Type assertion needed for $set() operators
             .options({ returnValues: 'ALL_NEW' })
             .send();
 
@@ -104,6 +208,8 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
                 throw new Error('Building not found for update');
             }
 
+            // Define array fields that should be overwritten, not merged (for debugging)
+            // Arrays: photos, rentSpecials, oneTimeFees, monthlyFees, parkingOptions, storageOptions, propertyAmenities
             // Merge the updates with existing data
             const mergedData = {
                 ...existingBuilding,
@@ -112,6 +218,14 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
                 unitID: 'BUILDING',
                 updatedAt: now.toISOString()
             };
+
+            // Handle array field overwrites using extracted function
+            handleArrayFieldOverwrites(mergedData, updates);
+
+            // Handle petPolicies nested arrays using extracted function
+            handlePetPolicyArrayOverwrites(mergedData, existingBuilding, updates);
+
+            logger.debug('Merged data for PutItemCommand fallback:', mergedData);
 
             // Use PutItemCommand as fallback for more reliable data persistence
             await Building.build(PutItemCommand)

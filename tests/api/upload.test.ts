@@ -1,6 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { s3Mock, mockRandomUUID, mockGetSignedUrl } from '../data/test-setup';
+import { s3Mock, mockRandomUUID, mockGetSignedUrl, resetAllMocks } from '../data/test-setup';
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
@@ -20,6 +20,8 @@ describe('Upload API', () => {
     };
 
     beforeAll(async () => {
+        resetAllMocks();
+
         // Set default return values for centralized mocks
         mockGetSignedUrl.mockResolvedValue('https://s3.example.com/signed-url');
         mockRandomUUID.mockReturnValue('test-uuid');

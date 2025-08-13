@@ -265,6 +265,15 @@ function buildingStateObject(): any {
 
         getTabDisplayName(tabKey: string) {
             return this._stateHelpers?.getTabDisplayName(tabKey) || tabKey;
+        },
+
+        // Rent Special Methods
+        addRentSpecial() {
+            this._buildingCore?.addRentSpecial();
+        },
+
+        removeRentSpecial(index: number) {
+            this._buildingCore?.removeRentSpecial(index);
         }
     };
 }
