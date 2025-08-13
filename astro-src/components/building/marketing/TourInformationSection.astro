@@ -1,6 +1,5 @@
 ---
-import { BaseInput } from "../../forms";
-import { DayOfWeek } from "../../../types";
+import { BaseInput, HoursEditor } from "../../forms";
 
 export interface Props {
     building: any;
@@ -8,9 +7,6 @@ export interface Props {
 }
 
 const { building: _building, errors: _errors = {} } = Astro.props;
-
-// Days of week for tour hours
-const daysOfWeek = Object.values(DayOfWeek);
 ---
 
 <!-- Tour Information Section -->
@@ -27,7 +23,7 @@ const daysOfWeek = Object.values(DayOfWeek);
         <!-- Tour Options -->
         <div class="mb-6">
             <h4 class="font-semibold mb-4">Available Tour Types</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="space-y-2 max-w-md">
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <span class="label-text">Self-Guided Tours</span>
@@ -86,47 +82,19 @@ const daysOfWeek = Object.values(DayOfWeek);
         
         <!-- Tour Hours -->
         <div>
-            <h4 class="font-semibold mb-4">Tour Availability Hours</h4>
             <div class="text-sm text-base-content/60 mb-4">
                 Set the days and hours when tours are available. This helps tenants know when they can schedule visits.
             </div>
-            <div class="grid gap-2">
-                {daysOfWeek.map(day => {
-                    const xDataStr = `{ day: '${day}', isOpen: !!(building.tourAvailability?.tourHours?.['${day}']), toggle() { if (!building.tourAvailability) building.tourAvailability = {}; if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {}; if (this.isOpen) { building.tourAvailability.tourHours[this.day] = { open: "09:00", close: "17:00" }; } else { delete building.tourAvailability.tourHours[this.day]; } } }`;
-                    return (
-                    <div class="grid grid-cols-4 gap-4 items-center py-2 border-b border-base-200 last:border-b-0" x-data={xDataStr}>
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-3">
-                                <input 
-                                    type="checkbox" 
-                                    class="checkbox checkbox-sm checkbox-primary" 
-                                    x-model="isOpen"
-                                    @change="toggle()"
-                                />
-                                <span class="label-text font-medium capitalize">{day}</span>
-                            </label>
-                        </div>
-                        <div class="text-center text-sm text-base-content/60" x-show="!isOpen">Closed</div>
-                        <input
-                            x-show="isOpen"
-                            type="time"
-                            class="input input-sm w-full"
-                            :value="building.tourAvailability?.tourHours?.[day]?.open || ''"
-                            @input="if (building.tourAvailability?.tourHours?.[day]) building.tourAvailability.tourHours[day].open = $event.target.value"
-                            placeholder="09:00"
-                        />
-                        <input
-                            x-show="isOpen"
-                            type="time"
-                            class="input input-sm w-full"
-                            :value="building.tourAvailability?.tourHours?.[day]?.close || ''"
-                            @input="if (building.tourAvailability?.tourHours?.[day]) building.tourAvailability.tourHours[day].close = $event.target.value"
-                            placeholder="17:00"
-                        />
-                    </div>
-                    )
-                })}
-            </div>
+            <HoursEditor
+                xModel="building.tourAvailability.tourHours"
+                title="Tour Availability Hours"
+                showCopyActions={true}
+                showBulkActions={true}
+                defaultOpenTime="10:00"
+                defaultCloseTime="18:00"
+                compact={true}
+                helpText="Set tour hours to let prospective tenants know when they can schedule visits."
+            />
         </div>
     </div>
 </div>

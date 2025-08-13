@@ -39,13 +39,12 @@ const {
     error,
     helpText,
     showLabel = true,
-    floatingLabel = true,
+    floatingLabel = false,
     resize = 'vertical',
 } = Astro.props;
 
 // Determine if we should show the label
 const shouldShowLabel = showLabel && label;
-const labelClass = floatingLabel ? 'floating-label textarea-label' : 'label';
 
 // Build textarea classes
 const textareaClasses = [
@@ -58,43 +57,67 @@ const textareaClasses = [
 
 // Container classes
 const containerClasses = [
-    labelClass,
+    'form-control',
     className
 ].filter(Boolean).join(' ');
 ---
 
-<label class={containerClasses}>
+<div class={containerClasses}>
     {shouldShowLabel && !floatingLabel && (
-        <span class="label-text">
-            {label}
-            {required && <span class="text-error">*</span>}
-        </span>
+        <label class="label">
+            <span class="label-text">
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+        </label>
     )}
-    {shouldShowLabel && floatingLabel && (
-        <span>
-            {label}
-            {required && <span class="text-error">*</span>}
-        </span>
+    
+    {floatingLabel ? (
+        <label class="floating-label textarea-label">
+            {shouldShowLabel && (
+                <span>
+                    {label}
+                    {required && <span class="text-error">*</span>}
+                </span>
+            )}
+            <textarea
+                name={name}
+                placeholder={placeholder || label}
+                class={textareaClasses}
+                required={required}
+                disabled={disabled}
+                readonly={readonly}
+                x-model={xModel}
+                rows={rows}
+                cols={cols}
+                maxlength={maxlength}
+                minlength={minlength}
+            >{value}</textarea>
+        </label>
+    ) : (
+        <textarea
+            name={name}
+            placeholder={placeholder}
+            class={textareaClasses}
+            required={required}
+            disabled={disabled}
+            readonly={readonly}
+            x-model={xModel}
+            rows={rows}
+            cols={cols}
+            maxlength={maxlength}
+            minlength={minlength}
+        >{value}</textarea>
     )}
-    <textarea
-        name={name}
-        placeholder={placeholder || (floatingLabel ? label : '')}
-        class={textareaClasses}
-        required={required}
-        disabled={disabled}
-        readonly={readonly}
-        x-model={xModel}
-        rows={rows}
-        cols={cols}
-        maxlength={maxlength}
-        minlength={minlength}
-    >{value}</textarea>
+    
     {(error || helpText) && (
-        <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
-            {error || helpText}
-        </span>
+        <label class="label">
+            <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
+                {error || helpText}
+            </span>
+        </label>
     )}
-</label>
+</div>
 
 <style>
     /* Floating label styles for textarea */

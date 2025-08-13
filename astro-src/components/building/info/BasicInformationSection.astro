@@ -2,7 +2,7 @@
 import { PropertyType } from "../../../types";
 import {
     BaseInput,
-    BaseSelect,
+    DropdownSelect,
     BaseTextarea,
     LocationMapPicker
 } from "../../forms";
@@ -34,7 +34,7 @@ const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => (
                 required={true}
             />
             <span x-show="errors.buildingID" class="label-text-alt text-error" x-text="errors.buildingID"></span>
-            <BaseSelect
+            <DropdownSelect
                 name="propertyType"
                 label="Property Type"
                 xModel="building.propertyType"

@@ -1,0 +1,211 @@
+---
+export interface SelectOption {
+    value: string | number;
+    label: string;
+    disabled?: boolean;
+}
+
+export interface Props {
+    name: string;
+    label?: string;
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+    xModel: string;
+    options: SelectOption[] | string[];
+    value?: string | number;
+    class?: string;
+    error?: string;
+    helpText?: string;
+    showLabel?: boolean;
+}
+
+const {
+    name,
+    label,
+    placeholder = 'Select an option',
+    required = false,
+    disabled = false,
+    xModel,
+    options,
+    value,
+    class: className = '',
+    error,
+    helpText,
+    showLabel = true,
+} = Astro.props;
+
+// Normalize options to SelectOption format
+const normalizedOptions: SelectOption[] = options ? options.map(opt => 
+    typeof opt === 'string' 
+        ? { value: opt, label: opt }
+        : opt
+) : [];
+
+// Determine if we should show the label
+const shouldShowLabel = showLabel && label;
+
+// Container classes
+const containerClasses = [
+    'form-control',
+    className
+].filter(Boolean).join(' ');
+
+// Button classes - styled to look like a select input
+const buttonClasses = [
+    'btn',
+    'btn-outline',
+    'w-full',
+    'justify-between',
+    'font-normal',
+    'h-12',
+    'min-h-[3rem]',
+    'border-base-300',
+    'hover:bg-base-100',
+    'hover:border-base-300',
+    error ? 'border-error' : '',
+    disabled ? 'btn-disabled' : ''
+].filter(Boolean).join(' ');
+---
+
+<div class={containerClasses}>
+    {shouldShowLabel && (
+        <label class="label">
+            <span class="label-text">
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+        </label>
+    )}
+    
+    <div 
+        class="dropdown dropdown-bottom dropdown-end w-full"
+        x-data={`{
+            selectedValue: ${xModel},
+            get selectedLabel() {
+                const option = ${JSON.stringify(normalizedOptions)}.find(opt => opt.value === this.selectedValue);
+                return option ? option.label : '${placeholder}';
+            },
+            selectOption(value) {
+                this.selectedValue = value;
+                ${xModel} = value;
+                // Close dropdown after selection
+                this.$refs.dropdownDetails.removeAttribute('open');
+            }
+        }`}
+    >
+        <details x-ref="dropdownDetails">
+            <summary 
+                tabindex="0" 
+                class={buttonClasses}
+                role="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+            >
+                <span 
+                    x-text="selectedLabel"
+                    :class="selectedValue ? '' : 'text-base-content/60'"
+                >
+                    {placeholder}
+                </span>
+                <svg 
+                    class="w-4 h-4 transition-transform"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                >
+                    <path 
+                        stroke-linecap="round" 
+                        stroke-linejoin="round" 
+                        stroke-width="2" 
+                        d="M19 9l-7 7-7-7"
+                    />
+                </svg>
+            </summary>
+            
+            <ul 
+                tabindex="0" 
+                class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1 border border-base-300 max-h-60 overflow-auto"
+                role="listbox"
+            >
+                {normalizedOptions.map((option) => (
+                    <li>
+                        <a 
+                            @click={`selectOption('${option.value}')`}
+                            class:list={[
+                                'justify-between',
+                                option.disabled ? 'disabled' : ''
+                            ]}
+                            :class={`selectedValue === '${option.value}' ? 'active' : ''`}
+                            role="option"
+                            aria-selected={value === option.value}
+                            tabindex={option.disabled ? -1 : 0}
+                        >
+                            <span>{option.label}</span>
+                            <svg 
+                                x-show={`selectedValue === '${option.value}'`}
+                                class="w-4 h-4 text-primary"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path 
+                                    fill-rule="evenodd" 
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </details>
+        
+        <!-- Hidden input for form submission -->
+        <input 
+            type="hidden" 
+            name={name}
+            x-model="selectedValue"
+            required={required}
+        />
+    </div>
+    
+    {(error || helpText) && (
+        <label class="label">
+            <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
+                {error || helpText}
+            </span>
+        </label>
+    )}
+</div>
+
+<style>
+    /* Ensure dropdown doesn't get cut off */
+    .dropdown-content {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+    
+    /* Style disabled options */
+    .menu li a.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    /* Ensure proper focus styles */
+    .dropdown summary:focus {
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+    }
+    
+    .dropdown summary:focus-visible {
+        box-shadow: 0 0 0 2px var(--fallback-b1, oklch(var(--b1))), 0 0 0 4px var(--fallback-p, oklch(var(--p)));
+    }
+    
+    /* Rotate chevron when open */
+    details[open] summary svg {
+        transform: rotate(180deg);
+    }
+</style>

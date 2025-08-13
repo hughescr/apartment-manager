@@ -1,7 +1,8 @@
 ---
 import { 
     BaseInput,
-    BaseSelect
+    CurrencyInput,
+    DropdownSelect
 } from "../../forms";
 
 export interface Props {
@@ -17,7 +18,7 @@ const { building: _building, errors: _errors } = Astro.props;
     <div class="card-body">
         <h3 class="card-title text-lg mb-4">Lease Terms & Pricing</h3>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-start">
             <BaseInput
                 name="leaseLength"
                 label="Default Lease Length (months)"
@@ -28,19 +29,16 @@ const { building: _building, errors: _errors } = Astro.props;
                 max="36"
                 helpText="Standard lease term offered"
             />
-            <span x-show="errors.leaseLength" class="label-text-alt text-error" x-text="errors.leaseLength"></span>
             
-            <BaseInput
+            <CurrencyInput
                 name="applicationFee"
                 label="Application Fee"
-                type="number"
                 xModel="building.applicationFee"
-                placeholder="50"
+                placeholder="50.00"
                 min="0"
-                step="5"
+                step="1"
                 helpText="Fee to process rental applications"
             />
-            <span x-show="errors.applicationFee" class="label-text-alt text-error" x-text="errors.applicationFee"></span>
             
             <div class="form-control">
                 <label class="label cursor-pointer">
@@ -66,7 +64,7 @@ const { building: _building, errors: _errors } = Astro.props;
             </h4>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <BaseSelect
+                <DropdownSelect
                     name="specialtyType"
                     label="Rental Type"
                     xModel="building.specialtyType"

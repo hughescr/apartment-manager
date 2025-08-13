@@ -99,10 +99,29 @@ const containerClasses = [
                         </div>
                     </div>
                     {verifiedModel && (
-                        <div class="mt-2 flex items-center gap-2">
-                            <div class="badge badge-sm" :class={`${verifiedModel} ? 'badge-success' : 'badge-warning'`}>
-                                <span x-show={verifiedModel}>✓ Coordinates Verified</span>
-                                <span x-show={`!${verifiedModel}`}>⚠ Coordinates Not Verified</span>
+                        <div class="mt-2">
+                            <div class="flex items-center gap-2">
+                                <div class="badge badge-sm" :class={`${verifiedModel} ? 'badge-success' : 'badge-info'`}>
+                                    <span x-show={verifiedModel}>✓ Manually Positioned</span>
+                                    <span x-show={`!${verifiedModel}`}>📍 Auto-Geocoded</span>
+                                </div>
+                                <div class="dropdown dropdown-hover dropdown-right">
+                                    <label tabindex="0" class="cursor-help">
+                                        <svg class="w-3 h-3 text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </label>
+                                    <div tabindex="0" class="dropdown-content z-[1] card card-compact w-72 p-3 shadow-lg bg-base-100 border border-base-300">
+                                        <div class="text-xs space-y-1">
+                                            <p x-show={verifiedModel} class="text-success">
+                                                <strong>Manually Positioned:</strong> You've placed the pin exactly where the building is located.
+                                            </p>
+                                            <p x-show={`!${verifiedModel}`}>
+                                                <strong>Auto-Geocoded:</strong> Location was estimated from the address. Click on the map to place the pin exactly where your building is.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
