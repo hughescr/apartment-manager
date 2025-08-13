@@ -36,7 +36,8 @@
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
     "luxon": "^3.7.1",
-    "sst": "^3.17.10"
+    "sst": "^3.17.10",
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",

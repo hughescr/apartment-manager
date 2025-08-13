@@ -4,6 +4,8 @@ import { BuildingData } from '../src/types';
 import _ from 'lodash';
 import { validateId, validateTextField, sanitizeObject, validateNumericValue, validateArraySize } from './security-validation';
 import { logger } from '@hughescr/logger';
+import { BuildingSchema, BuildingInput } from './validation/buildingSchema';
+import { ZodError } from 'zod';
 
 // Helper validation functions to reduce complexity
 function validateAddress(data: Partial<BuildingData>, errors: Record<string, string>): void {
@@ -21,6 +23,33 @@ function validateAddress(data: Partial<BuildingData>, errors: Record<string, str
             errors.zip = 'ZIP code cannot be empty';
         }
     }
+}
+
+function mapZodErrors(error: ZodError): Record<string, string> {
+    const errors: Record<string, string> = {};
+    for(const issue of error.issues) {
+        const path = issue.path.join('.');
+        switch(path) {
+            case 'contactInfo.email':
+                errors.contactEmail = issue.message;
+                break;
+            case 'contactInfo.phone':
+                errors.contactPhone = issue.message;
+                break;
+            case 'contactInfo.propertyWebsite':
+                errors.contactWebsite = issue.message;
+                break;
+            case 'contactInfo.managementWebsite':
+                errors.managementWebsite = issue.message;
+                break;
+            case 'tourAvailability.tourSchedulingUrl':
+                errors.tourSchedulingUrl = issue.message;
+                break;
+            default:
+                errors[path] = issue.message;
+        }
+    }
+    return errors;
 }
 
 function validateAddressSecurity(data: Partial<BuildingData>, errors: Record<string, string>): void {
@@ -381,25 +410,46 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     // Sanitize object to prevent prototype pollution
     const data = sanitizeObject(rawData);
 
-    // Use 'save' tier for permissive validation
-    const validation = validateBuildingData(data, 'save', true);
+    let parsed: BuildingInput;
+    try {
+        parsed = BuildingSchema.parse(data);
+    } catch(error) {
+        if(error instanceof ZodError) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Validation failed', errors: mapZodErrors(error) }),
+            };
+        }
+        throw error;
+    }
 
-    // Only block on critical errors (canSave = false)
-    if(!validation.canSave) {
+    const errors: Record<string, string> = {};
+    const sanitizedText = sanitizeTextFields(parsed, errors);
+    const sanitizedData = { ...parsed, ...sanitizedText } as BuildingInput;
+    if(!sanitizedData.buildingName) {
+        sanitizedData.buildingName = parsed.buildingName || 'unknown';
+    }
+    validateNumericFields(sanitizedData, errors);
+    validateContactInfo(sanitizedData, errors);
+    validateRentSpecials(sanitizedData, errors);
+    validateIncomeRestrictions(sanitizedData, errors);
+    validateScreeningCriteria(sanitizedData, errors);
+    performAdditionalValidations(sanitizedData, errors);
+    validateAddress(sanitizedData, errors);
+    validateAddressSecurity(sanitizedData, errors);
+    if('buildingName' in sanitizedData && sanitizedData.buildingName !== undefined && _.trim(sanitizedData.buildingName) === '') {
+        errors.buildingName = 'Building name cannot be empty';
+    }
+
+    if(Object.keys(errors).length > 0) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
+            body: JSON.stringify({ error: 'Validation failed', errors }),
         };
     }
 
-    const newBuilding = await createBuilding(validation.sanitizedData as BuildingData);
-    // Ensure we return the sanitized data, not the raw response
-    const responseData = {
-        ...validation.sanitizedData,
-        ..._.pick(newBuilding, ['created', 'modified']),
-        _validationWarnings: validation.warnings // Include warnings in response
-    };
-    return { statusCode: 201, body: JSON.stringify(responseData) };
+    const newBuilding = await createBuilding(sanitizedData as BuildingData);
+    return { statusCode: 201, body: JSON.stringify({ ...newBuilding, buildingName: sanitizedData.buildingName || 'unknown' }) };
 };
 
 export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
@@ -424,29 +474,50 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     // Sanitize object to prevent prototype pollution
     const data = sanitizeObject(rawData);
 
-    // Use 'save' tier for permissive validation
-    const validation = validateBuildingData(data, 'save', false);
+    let parsed: BuildingInput;
+    try {
+        parsed = BuildingSchema.parse(data);
+    } catch(error) {
+        if(error instanceof ZodError) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Validation failed', errors: mapZodErrors(error) }),
+            };
+        }
+        throw error;
+    }
 
-    // Only block on critical errors (canSave = false)
-    if(!validation.canSave) {
+    const errors: Record<string, string> = {};
+    const sanitizedText = sanitizeTextFields(parsed, errors);
+    const sanitizedData = { ...parsed, ...sanitizedText } as BuildingInput;
+    if(!sanitizedData.buildingName) {
+        sanitizedData.buildingName = parsed.buildingName || 'unknown';
+    }
+    validateNumericFields(sanitizedData, errors);
+    validateContactInfo(sanitizedData, errors);
+    validateRentSpecials(sanitizedData, errors);
+    validateIncomeRestrictions(sanitizedData, errors);
+    validateScreeningCriteria(sanitizedData, errors);
+    performAdditionalValidations(sanitizedData, errors);
+    validateAddress(sanitizedData, errors);
+    validateAddressSecurity(sanitizedData, errors);
+    if('buildingName' in sanitizedData && sanitizedData.buildingName !== undefined && _.trim(sanitizedData.buildingName) === '') {
+        errors.buildingName = 'Building name cannot be empty';
+    }
+
+    if(Object.keys(errors).length > 0) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors: validation.errors }),
+            body: JSON.stringify({ error: 'Validation failed', errors }),
         };
     }
 
     try {
-        const updatedBuilding = await updateBuilding(buildingID, validation.sanitizedData);
+        const updatedBuilding = await updateBuilding(buildingID, sanitizedData);
         if(!updatedBuilding) {
             return { statusCode: 404, body: 'Not Found' };
         }
-
-        // Include validation warnings in response
-        const responseData = {
-            ...updatedBuilding,
-            _validationWarnings: validation.warnings
-        };
-        return { statusCode: 200, body: JSON.stringify(responseData) };
+        return { statusCode: 200, body: JSON.stringify({ ...updatedBuilding, buildingName: sanitizedData.buildingName || updatedBuilding.buildingName || 'unknown' }) };
     } catch(error) {
         logger.error('Error updating building:', error);
         return {
