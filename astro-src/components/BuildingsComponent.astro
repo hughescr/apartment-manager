@@ -89,17 +89,37 @@ function buildingsComponentData(): BuildingsComponentData {
             this.buildings = JSON.parse(this.$el.dataset.buildings || '[]');
             this.apiURL = this.$el.dataset.apiUrl || '';
             
-            // Initialize from URL hash if present
-            const hash = decodeURIComponent(window.location.hash.substring(1));
-            if (hash) {
-                const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
-                if (index !== -1) {
-                    this.activeBuildingTab = index;
-                } else if (hash === 'add-new-building') {
+            // Restore active tab from session or URL hash
+            const stored = sessionStorage.getItem('activeBuildingTab');
+            if (stored) {
+                if (stored === 'add-new-building') {
                     this.activeBuildingTab = this.buildings.length;
                 } else {
-                    this.activeBuildingTab = 0;
+                    const idx = this.buildings.findIndex((b: Building) => b.buildingID === stored);
+                    if (idx !== -1) {
+                        this.activeBuildingTab = idx;
+                    }
                 }
+            } else {
+                const hash = decodeURIComponent(window.location.hash.substring(1));
+                if (hash) {
+                    const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
+                    if (index !== -1) {
+                        this.activeBuildingTab = index;
+                    } else if (hash === 'add-new-building') {
+                        this.activeBuildingTab = this.buildings.length;
+                    }
+                }
+            }
+
+            // Sync URL and session storage with active tab
+            if (this.activeBuildingTab < this.buildings.length) {
+                const id = this.buildings[this.activeBuildingTab].buildingID;
+                history.replaceState(null, '', `#${id}`);
+                sessionStorage.setItem('activeBuildingTab', id);
+            } else {
+                history.replaceState(null, '', '#add-new-building');
+                sessionStorage.setItem('activeBuildingTab', 'add-new-building');
             }
             
             // Show the initially active tab based on data-tab-index
@@ -133,13 +153,16 @@ function buildingsComponentData(): BuildingsComponentData {
                 manager.style.display = managerTabIndex === tabIndex ? '' : 'none';
             });
             
-            // Trigger lazy loading for the selected building
             if (buildingID && tabIndex < this.buildings.length) {
+                history.pushState(null, '', `#${buildingID}`);
+                sessionStorage.setItem('activeBuildingTab', buildingID);
                 const buildingElement = document.querySelector(`.building-manager[data-building-id="${buildingID}"]`) as HTMLElement;
                 if (buildingElement) {
-                    // Dispatch event to trigger loading
                     buildingElement.dispatchEvent(new CustomEvent('trigger-load'));
                 }
+            } else if (tabIndex === this.buildings.length) {
+                history.pushState(null, '', '#add-new-building');
+                sessionStorage.setItem('activeBuildingTab', 'add-new-building');
             }
         },
         
