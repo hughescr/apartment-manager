@@ -53,13 +53,7 @@ const apiURL = Resource.API.url;
 </div>
 
 <script>
-// Alpine.js magic properties type
-type AlpineComponent<T = {}> = T & {
-    $dispatch: (event: string, detail?: any) => void;
-    $root: HTMLElement;
-    $el: HTMLElement;
-    $watch: (expression: string, callback: (value: any) => void) => void;
-};
+import type { AlpineComponent } from "../types/alpine";
 
 type Building = {
     buildingID: string;
