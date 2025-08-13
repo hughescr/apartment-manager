@@ -71,16 +71,26 @@ function buildingsListData(): BuildingsListData {
         init() {
             this.buildings = this.$root.dataset.buildings ? JSON.parse(this.$root.dataset.buildings) : [];
             
-            // Handle URL hash for initial tab selection
-            const hash = decodeURIComponent(window.location.hash.substring(1));
-            if (hash) {
-                const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
-                if (index !== -1) {
-                    this.activeBuildingTab = index;
-                } else if (hash === 'add-new-building') {
+            // Restore tab from session or URL hash
+            const stored = sessionStorage.getItem('activeBuildingTab');
+            if (stored) {
+                if (stored === 'add-new-building') {
                     this.activeBuildingTab = this.buildings.length;
                 } else {
-                    this.activeBuildingTab = 0;
+                    const idx = this.buildings.findIndex((b: Building) => b.buildingID === stored);
+                    if (idx !== -1) {
+                        this.activeBuildingTab = idx;
+                    }
+                }
+            } else {
+                const hash = decodeURIComponent(window.location.hash.substring(1));
+                if (hash) {
+                    const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
+                    if (index !== -1) {
+                        this.activeBuildingTab = index;
+                    } else if (hash === 'add-new-building') {
+                        this.activeBuildingTab = this.buildings.length;
+                    }
                 }
             }
             
@@ -94,14 +104,6 @@ function buildingsListData(): BuildingsListData {
         setActiveTab(tabIndex: number, buildingID: string | null = null) {
             this.activeBuildingTab = tabIndex;
             
-            // Update URL hash
-            if (buildingID) {
-                window.location.hash = buildingID;
-            } else if (tabIndex === this.buildings.length) {
-                window.location.hash = 'add-new-building';
-            }
-            
-            // Dispatch tab change event for lazy loading
             this.$dispatch('building-tab-changed', {
                 tabIndex: tabIndex,
                 buildingID: buildingID
