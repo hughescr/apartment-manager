@@ -8,5 +8,6 @@ export const getTableName = () => {
     return getConfig().tableName;
 };
 
-// For backward compatibility, export tableName as a getter
-export const tableName = getTableName();
+// Note: tableName is now accessed via getTableName() function to avoid
+// module load time access to SST Resources
+// This allows proper mocking in test environments

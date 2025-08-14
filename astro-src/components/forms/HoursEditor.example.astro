@@ -6,7 +6,7 @@
  * for various use cases in the apartment manager application.
  */
 
-import { HoursEditor } from "./index";
+import HoursEditorComponent from './HoursEditor.astro';
 ---
 
 <!-- Example 1: Full-featured Office Hours Editor -->
@@ -14,7 +14,7 @@ import { HoursEditor } from "./index";
     <div>
         <h3 class="text-lg font-semibold mb-4">Example 1: Office Hours (Full Features)</h3>
         <div class="border border-base-300 rounded-lg p-4">
-            <HoursEditor
+            <HoursEditorComponent
                 xModel="building.contactInfo.officeHours"
                 title="Office Hours"
                 showCopyActions={true}
@@ -30,7 +30,7 @@ import { HoursEditor } from "./index";
     <div>
         <h3 class="text-lg font-semibold mb-4">Example 2: Tour Hours (Compact)</h3>
         <div class="border border-base-300 rounded-lg p-4">
-            <HoursEditor
+            <HoursEditorComponent
                 xModel="building.tourAvailability.tourHours"
                 title="Tour Availability Hours"
                 showCopyActions={false}
@@ -47,7 +47,7 @@ import { HoursEditor } from "./index";
     <div>
         <h3 class="text-lg font-semibold mb-4">Example 3: Simple Hours (Minimal)</h3>
         <div class="border border-base-300 rounded-lg p-4">
-            <HoursEditor
+            <HoursEditorComponent
                 xModel="amenity.poolHours"
                 title="Pool Hours"
                 showCopyActions={false}
@@ -64,7 +64,7 @@ import { HoursEditor } from "./index";
     <div>
         <h3 class="text-lg font-semibold mb-4">Example 4: Business Hours (Custom Defaults)</h3>
         <div class="border border-base-300 rounded-lg p-4">
-            <HoursEditor
+            <HoursEditorComponent
                 xModel="business.operatingHours"
                 title="Operating Hours"
                 showCopyActions={true}

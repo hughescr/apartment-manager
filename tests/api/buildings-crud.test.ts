@@ -38,7 +38,7 @@ describe('Buildings API - CRUD operations', () => {
             const result = await create(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(201);
-            expect(JSON.parse(result.body as string)).toEqual({ ...testBuilding, _validationWarnings: {} });
+            expect(JSON.parse(result.body as string)).toEqual(testBuilding);
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 

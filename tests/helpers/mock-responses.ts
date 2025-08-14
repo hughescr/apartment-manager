@@ -11,12 +11,11 @@ export interface MockResponseOptions {
     ScannedCount?: number
 }
 
-import { isObject, map, merge } from 'lodash';
-import { getDefaultBuildingData } from '../../src/types/index.js';
+import { isObject, map, isString, startsWith } from 'lodash';
 
 /**
- * Add DynamoDB Toolbox v2 metadata fields to an item and merge defaults for Building entities
- * This simulates the same default merging that production getBuilding()/getBuildings() do
+ * Add DynamoDB Toolbox v2 metadata fields to an item
+ * This simulates the metadata that DynamoDB Toolbox adds to items
  */
 function addToolboxMetadata(item: unknown): unknown {
     if(!item || !isObject(item)) {
@@ -25,16 +24,23 @@ function addToolboxMetadata(item: unknown): unknown {
 
     const itemWithMetadata = item as Record<string, unknown>;
 
-    // Apply default merging for Building entities to match production behavior
-    let processedItem = itemWithMetadata;
-    if(itemWithMetadata.unitID === 'BUILDING') {
-        // Merge with defaults like production does: _.merge({}, getDefaultBuildingData(), rawBuilding)
-        processedItem = merge({}, getDefaultBuildingData(), itemWithMetadata);
+    // Don't apply defaults here - the getBuilding/getBuildings functions will do that
+    // We're mocking the raw DynamoDB response, not the processed result
+    const processedItem = itemWithMetadata;
+
+    // Determine entity type based on unitID pattern
+    let entityType = 'Building'; // default
+    if(isString(processedItem.unitID)) {
+        if(startsWith(processedItem.unitID, 'MODEL#')) {
+            entityType = 'UnitType';
+        } else if(startsWith(processedItem.unitID, 'UNIT#') || (processedItem.unitID !== 'BUILDING' && !startsWith(processedItem.unitID, 'MODEL#'))) {
+            entityType = 'Unit';
+        }
     }
 
     return {
         ...processedItem,
-        // Don't add _et automatically - let DynamoDB Toolbox handle it
+        _et: processedItem._et || entityType, // Entity type for DynamoDB Toolbox
         _ct: processedItem._ct || new Date().toISOString(), // Created timestamp
         _md: processedItem._md || new Date().toISOString(), // Modified timestamp
     };

@@ -1,6 +1,6 @@
-export type AlpineComponent<T = {}> = T & {
-    $dispatch: (event: string, detail?: any) => void;
-    $root: HTMLElement;
-    $el: HTMLElement;
-    $watch: (expression: string, callback: (value: any) => void) => void;
+export type AlpineComponent<T = Record<string, unknown>> = T & {
+    $dispatch: (event: string, detail?: unknown) => void
+    $root: HTMLElement
+    $el: HTMLElement
+    $watch: (expression: string, callback: (value: unknown) => void) => void
 };

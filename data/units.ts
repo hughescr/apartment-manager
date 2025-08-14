@@ -1,4 +1,4 @@
-import { UnitData } from '../src/types';
+import { UnitData, VacancyClass } from '../src/types';
 import { ApartmentTable, Unit } from './model';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
@@ -61,6 +61,9 @@ function convertRawItemToUnitData(rawItem: Record<string, unknown>): UnitData {
         photos: rawItem.photos as string[] | undefined,
         features: rawItem.features as string[] | undefined,
         notes: rawItem.notes as string | undefined,
+        vacancyClass: rawItem.vacancyClass as VacancyClass | undefined,
+        vacateDate: rawItem.vacateDate as string | undefined,
+        madeReadyDate: rawItem.madeReadyDate as string | undefined,
         feedInclusion: rawItem.feedInclusion as Partial<Record<string, boolean>> | undefined,
         manualReferences: rawItem.manualReferences as Partial<Record<string, string>> | undefined
     };

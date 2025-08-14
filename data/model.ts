@@ -23,7 +23,7 @@ export const ApartmentTable = new Table({
 
 // Workaround for DynamoDB Toolbox v2.7.0 compatibility issue
 // The getDocumentClient() method returns an empty object instead of the actual client
-// This override ensures it returns the correct document client
+// Building.buildingName was added below
 ApartmentTable.getDocumentClient = () => db;
 
 export const Building = new Entity({
@@ -32,6 +32,9 @@ export const Building = new Entity({
     schema: item({
         buildingID: string().key(),
         unitID: string().key().default('BUILDING'),
+        buildingName: string().optional(),
+        structureType: string().optional(),
+        rentalType: string().optional(),
         street: string().optional(),
         city: string().optional(),
         state: string().optional(),

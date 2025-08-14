@@ -4,7 +4,7 @@
  */
 import './test-setup';
 import { describe, it, expect } from 'bun:test';
-import { db, getTableName, tableName } from '../../data/db';
+import { db, getTableName } from '../../data/db';
 
 describe('data/db', () => {
     describe('exports', () => {
@@ -19,11 +19,7 @@ describe('data/db', () => {
             expect(typeof getTableName).toBe('function');
         });
 
-        it('should export tableName as a string', () => {
-            expect(tableName).toBeDefined();
-            expect(typeof tableName).toBe('string');
-            expect(tableName).toBe('test-table-name');
-        });
+        // tableName export removed to avoid module load time SST Resource access
     });
 
     describe('getTableName', () => {
@@ -32,9 +28,10 @@ describe('data/db', () => {
             expect(name).toBe('test-table-name');
         });
 
-        it('should return the same value as tableName export', () => {
-            const name = getTableName();
-            expect(name).toBe(tableName);
+        it('should return the same value when called multiple times', () => {
+            const name1 = getTableName();
+            const name2 = getTableName();
+            expect(name1).toBe(name2);
         });
     });
 });

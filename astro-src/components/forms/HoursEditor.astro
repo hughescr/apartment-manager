@@ -41,13 +41,14 @@ const daysOfWeek = Object.values(DayOfWeek);
 const parentPath = xModel.split('.').slice(0, -1).join('.');
 
 // Generate unique component ID for Alpine.js scope
-const componentId = `hours_editor_${Math.random().toString(36).substr(2, 9)}`;
+// Used in x-id attribute below
+const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
 ---
 
 <div 
     class={`hours-editor ${containerClass}`} 
-    x-data={`hoursEditor('${xModel}', '${parentPath}', '${componentId}')`}
-    x-id="['${componentId}']"
+    x-data={`hoursEditor('${xModel}', '${parentPath}')`}
+    x-id={`['${componentId}']`}
 >
     <div class={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-4'}`}>
         <h4 class={`font-semibold ${compact ? 'text-sm' : 'text-base'}`}>{title}</h4>
@@ -176,7 +177,7 @@ const componentId = `hours_editor_${Math.random().toString(36).substr(2, 9)}`;
 
 <script>
 // Hours Editor Alpine.js component
-function hoursEditor(modelPath: string, parentPath: string, componentId: string) {
+function hoursEditor(modelPath: string, parentPath: string) {
     const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     
     return {
