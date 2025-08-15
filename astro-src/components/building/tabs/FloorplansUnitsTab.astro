@@ -2,6 +2,8 @@
 // astro-src/components/building/tabs/FloorplansUnitsTab.astro
 // Uses shared state from BuildingProvider
 
+import SimpleUnitsSection from '../units/SimpleUnitsSection.astro';
+
 export interface Props {
     // No props needed - uses shared state from parent BuildingProvider
 }
@@ -89,65 +91,18 @@ export interface Props {
         <span class="text-lg font-medium">Individual Units</span>
     </div>
     
-    <!-- Units Section -->
+    <!-- Units Section with Listing Management -->
     <div class="card bg-base-100 shadow-lg">
         <div class="card-body">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="card-title text-xl">Units in this Building</h3>
+                <h3 class="card-title text-xl">Units & Listing Management</h3>
                 <div class="badge badge-primary badge-lg" x-text="(units?.length || 0) + ' units'"></div>
             </div>
             <div class="text-base-content/70 mb-4">
-                Individual units can inherit settings from their assigned floorplan and override them as needed.
+                Manage individual units, set availability status, and update rental pricing all in one place.
             </div>
             
-            <!-- Units List -->
-            <div class="space-y-4">
-                <template x-for="unit in units.slice(0, 5)" :key="unit.unitID">
-                    <div class="card bg-base-100 border border-base-300">
-                        <div class="card-body p-4">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-semibold" x-text="'Unit ' + (unit.unitNumber || unit.unitID)"></h4>
-                                    <div class="text-sm text-base-content/70">
-                                        <span x-text="unit.beds + ' bed, ' + unit.baths + ' bath'"></span>
-                                        <span x-show="unit.sqft" x-text="' • ' + unit.sqft + ' sq ft'"></span>
-                                    </div>
-                                    <div x-show="unit.modelID" class="text-xs text-base-content/60 mt-1">
-                                        <span>Floorplan: </span>
-                                        <span x-text="unitTypes.find(ut => ut.modelID === unit.modelID)?.modelName || unit.modelID"></span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="badge" :class="getStatusBadgeClass(unit.vacancyClass)" x-text="unit.vacancyClass || 'Unknown'"></div>
-                                    <div class="text-sm font-semibold mt-1" x-text="formatCurrency(unit.rent)"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                
-                <!-- Show more button -->
-                <div x-show="units.length > 5" class="text-center py-4">
-                    <button @click="activeSectionTab = 'units'" class="btn btn-outline btn-sm">
-                        View All <span x-text="units.length"></span> Units
-                    </button>
-                </div>
-                
-                <!-- Empty State -->
-                <div x-show="units.length === 0" class="text-center py-8 text-base-content/60">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                    </svg>
-                    <p class="text-lg mb-2 font-semibold">No units added yet</p>
-                    <p class="mb-4">Add individual units to this building. Units can inherit settings from floorplans or be configured independently.</p>
-                    <button @click="openAddUnitDialog()" class="btn btn-primary btn-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Your First Unit
-                    </button>
-                </div>
-            </div>
+            <SimpleUnitsSection />
         </div>
     </div>
 </div>

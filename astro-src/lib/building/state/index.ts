@@ -212,6 +212,10 @@ function buildingStateObject(): any {
             this._unitTypeManagement?.closeAddUnitTypeDialog();
         },
 
+        addUnitType() {
+            this._unitTypeManagement?.addUnitType();
+        },
+
         async addUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             await this._unitManagement?.addUnit();
         },

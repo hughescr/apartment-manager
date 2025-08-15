@@ -64,18 +64,6 @@ export interface Props {
         </slot>
     </div>
 
-    <!-- Units Tab -->
-    <div x-show="activeSectionTab === 'units'" class="space-y-6" x-cloak>
-        <slot name="units">
-            <!-- Default content if no slot provided -->
-            <div class="card bg-base-100 shadow-lg">
-                <div class="card-body">
-                    <h3 class="card-title">Units</h3>
-                    <p>Units management content will be displayed here.</p>
-                </div>
-            </div>
-        </slot>
-    </div>
 </div>
 
 <style>

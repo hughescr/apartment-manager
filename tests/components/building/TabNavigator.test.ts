@@ -26,8 +26,7 @@ describe('TabNavigator Component Logic', () => {
                 'building-info',
                 'floorplans-units',
                 'pricing-policies',
-                'marketing',
-                'units'
+                'marketing'
             ];
 
             // TAB_CONFIGS is an array, extract the actual tab keys
@@ -90,8 +89,8 @@ describe('TabNavigator Component Logic', () => {
             switchToTab('pricing-policies');
             expect(activeSectionTab).toBe('pricing-policies');
 
-            switchToTab('units');
-            expect(activeSectionTab).toBe('units');
+            switchToTab('marketing');
+            expect(activeSectionTab).toBe('marketing');
         });
 
         it('should provide tab display names', () => {
@@ -164,7 +163,7 @@ describe('TabNavigator Component Logic', () => {
 
             expect(directives.activeTabText).toContain('getTabDisplayName');
             expect(directives.tabClick('building-info')).toContain('building-info');
-            expect(directives.activeClass('units')).toContain('tab-active');
+            expect(directives.activeClass('marketing')).toContain('tab-active');
             expect(directives.mobileActiveClass('marketing')).toContain('active');
         });
 
@@ -206,7 +205,7 @@ describe('TabNavigator Component Logic', () => {
         it('should maintain consistent button heights', () => {
             // Test consistent sizing
             const buttonHeight = 'min-h-[44px]';
-            const expectedButtonCount = TAB_CONFIGS ? TAB_CONFIGS.length : 5;
+            const expectedButtonCount = TAB_CONFIGS ? TAB_CONFIGS.length : 4;
 
             expect(buttonHeight).toBe('min-h-[44px]');
             expect(expectedButtonCount).toBeGreaterThan(0);
@@ -267,10 +266,10 @@ describe('TabNavigator Component Logic', () => {
             };
 
             expect(checkActiveState('building-info')).toBe(true);
-            expect(checkActiveState('units')).toBe(false);
+            expect(checkActiveState('marketing')).toBe(false);
 
-            activeSectionTab = 'units';
-            expect(checkActiveState('units')).toBe(true);
+            activeSectionTab = 'marketing';
+            expect(checkActiveState('marketing')).toBe(true);
             expect(checkActiveState('building-info')).toBe(false);
         });
     });
@@ -323,7 +322,7 @@ describe('TabNavigator Component Logic', () => {
             const expectedTabCount = TAB_CONFIGS.length;
             const maxNestingLevel = 4;
 
-            expect(expectedTabCount).toBe(5);
+            expect(expectedTabCount).toBe(4);
             expect(maxNestingLevel).toBeLessThan(5);
         });
 

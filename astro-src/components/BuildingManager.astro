@@ -10,12 +10,10 @@ import BuildingInfoTab from './building/tabs/BuildingInfoTab.astro';
 import FloorplansUnitsTab from './building/tabs/FloorplansUnitsTab.astro';
 import PricingPoliciesTab from './building/tabs/PricingPoliciesTab.astro';
 import MarketingTab from './building/tabs/MarketingTab.astro';
-import UnitsTab from './building/tabs/UnitsTab.astro';
 
 // Dialog components
 import AddUnitDialog from './building/dialogs/AddUnitDialog.astro';
-import BulkStatusDialog from './building/dialogs/BulkStatusDialog.astro';
-import BulkRentDialog from './building/dialogs/BulkRentDialog.astro';
+import AddUnitTypeDialog from './building/dialogs/AddUnitTypeDialog.astro';
 
 export interface Props {
     building: {
@@ -87,9 +85,6 @@ const emptyUnitTypes: any[] = [];
                     building={building}
                     apiUrl={apiURL}
                 />
-                <UnitsTab 
-                    slot="units" 
-                />
             </TabPanels>
             
             <!-- Dialogs -->
@@ -103,15 +98,12 @@ const emptyUnitTypes: any[] = [];
                 unitTypes={emptyUnitTypes}
                 apiUrl={apiURL}
             />
-            <BulkStatusDialog 
+            <AddUnitTypeDialog 
                 building={{
-                    buildingID: building.buildingID
-                }}
-                apiUrl={apiURL}
-            />
-            <BulkRentDialog 
-                building={{
-                    buildingID: building.buildingID
+                    buildingID: building.buildingID,
+                    street: building.street || '',
+                    city: building.city || '',
+                    state: building.state || ''
                 }}
                 apiUrl={apiURL}
             />

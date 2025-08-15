@@ -107,6 +107,7 @@ function createTypedBuildingState(): BuildingStateWithMagic {
         openAddUnitDialog: noop,
         openAddUnitTypeDialog: noop,
         closeAddUnitTypeDialog: noop,
+        addUnitType: noop,
         addUnit: async () => Promise.resolve(),
         toggleSelectAll: noop,
         isUnitSelected: constant(false),

@@ -26,14 +26,24 @@ const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => (
     <div class="card-body p-4 sm:p-6">
         <h3 class="card-title text-lg mb-4">Basic Information</h3>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <BaseInput
-                name="buildingID"
-                label="Building ID"
-                xModel="building.buildingID"
-                disabled={true}
-                required={true}
-            />
-            <span x-show="errors.buildingID" class="label-text-alt text-error" x-text="errors.buildingID"></span>
+            <div class="form-control">
+                <BaseInput
+                    name="buildingID"
+                    label="Building ID"
+                    xModel="building.buildingID"
+                    disabled={true}
+                    required={true}
+                />
+                <div class="label">
+                    <span class="label-text-alt text-base-content/60 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Locked for data integrity - cannot be changed after creation
+                    </span>
+                </div>
+                <span x-show="errors.buildingID" class="label-text-alt text-error" x-text="errors.buildingID"></span>
+            </div>
             <DropdownSelect
                 name="propertyType"
                 label="Property Type"

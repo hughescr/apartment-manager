@@ -70,6 +70,7 @@ export interface BuildingAlpineState extends BaseAlpineState {
     openAddUnitDialog(): void
     openAddUnitTypeDialog(): void
     closeAddUnitTypeDialog(): void
+    addUnitType(): void
     addUnit(): Promise<void>
     toggleSelectAll(): void
     isUnitSelected(unitID: string): boolean

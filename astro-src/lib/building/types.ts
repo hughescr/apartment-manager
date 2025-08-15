@@ -25,20 +25,11 @@ export interface BuildingUIState {
     showAddUnitTypeDialog: boolean
 }
 
-// Units tab specific state
-export interface UnitsTabState {
+// Simplified units filtering state (no bulk operations)
+export interface UnitsFilterState {
     filteredUnits: ExtendedUnitData[]
-    selectedUnits: Set<string>
     statusFilter: string
     searchQuery: string
-    showBulkStatusDialog: boolean
-    showBulkRentDialog: boolean
-    bulkOperation: {
-        loading: boolean
-        statusValue: string
-        rentUpdateType: 'absolute' | 'percentage'
-        rentValue: number
-    }
 }
 
 // LocationMapPicker state
@@ -47,7 +38,7 @@ export interface LocationState {
 }
 
 // Combined state interface
-export interface BuildingState extends BuildingUIState, UnitsTabState, LocationState {}
+export interface BuildingState extends BuildingUIState, UnitsFilterState, LocationState {}
 
 // Event types for the event bus
 // Event types for the event bus
@@ -59,7 +50,6 @@ export interface BuildingEvents {
     'building:validate': { isValid: boolean, errors: Record<string, string> }
     'tab:change': { activeTab: string }
     'units:filter': { filter: string, query: string }
-    'units:bulk-update': { operationType: 'status' | 'rent', unitIDs: string[] }
     'toast:show': { message: string, toastType: 'success' | 'error' | 'warning' }
     'photos:updated': { photos: string[] }
     'tours:updated': { selfGuidedTours?: boolean, virtualTours?: boolean, inPersonTours?: boolean }
@@ -77,8 +67,7 @@ export const TAB_CONFIGS: TabConfig[] = [
     { key: 'building-info', label: 'Building Info' },
     { key: 'floorplans-units', label: 'Floorplans & Units', mobileLabel: 'Floorplans' },
     { key: 'pricing-policies', label: 'Pricing & Policies', mobileLabel: 'Pricing' },
-    { key: 'marketing', label: 'Marketing' },
-    { key: 'units', label: 'Units' }
+    { key: 'marketing', label: 'Marketing' }
 ];
 
 // Validation types
