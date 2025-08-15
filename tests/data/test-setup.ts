@@ -457,6 +457,13 @@ let buildingEntityMock = createEntityMock('Building');
 let unitEntityMock = createEntityMock('Unit');
 let unitTypeEntityMock = createEntityMock('UnitType');
 
+// Set entity mocks globally to avoid require() calls in data/model.ts (only in test environment)
+if(process.env.BUN_ENV === 'test') {
+    (globalThis as typeof globalThis & { buildingEntityMock?: typeof buildingEntityMock }).buildingEntityMock = buildingEntityMock;
+    (globalThis as typeof globalThis & { unitEntityMock?: typeof unitEntityMock }).unitEntityMock = unitEntityMock;
+    (globalThis as typeof globalThis & { unitTypeEntityMock?: typeof unitTypeEntityMock }).unitTypeEntityMock = unitTypeEntityMock;
+}
+
 // Mock client classes that can be instantiated in tests
 export class TestDynamoDBClient {
     send = dynamoDbMock;
@@ -624,6 +631,12 @@ const resetAllMocks = () => {
 
     // Recreate mockDataClients with fresh instances
     mockDataClients = createMockDataClients();
+
+    // Update global references used by data/model.ts to avoid require() calls
+    (globalThis as typeof globalThis & { mockDataClients?: MockDataClients }).mockDataClients = mockDataClients;
+    (globalThis as typeof globalThis & { buildingEntityMock?: typeof buildingEntityMock }).buildingEntityMock = buildingEntityMock;
+    (globalThis as typeof globalThis & { unitEntityMock?: typeof unitEntityMock }).unitEntityMock = unitEntityMock;
+    (globalThis as typeof globalThis & { unitTypeEntityMock?: typeof unitTypeEntityMock }).unitTypeEntityMock = unitTypeEntityMock;
 
     // Command builders now use their own enhanced send method that calls dynamoDbMock
     // No need to manually update send methods as they're created fresh

@@ -1,5 +1,5 @@
 import { BuildingData, getDefaultBuildingData, BuildingDynamoDBItem } from '../src/types';
-import { ApartmentTable, getBuildingEntity, getApartmentTable } from './model';
+import { ApartmentTable, getBuildingEntity, getApartmentTable, Building } from './model';
 
 import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
@@ -102,11 +102,12 @@ function handlePetPolicyArrayOverwrites(mergedData: Record<string, unknown>, exi
         }
     }
 }
+
 export async function getBuildings() {
-    const BuildingEntity = getBuildingEntity();
-    const TableInstance = process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test'
+    const BuildingEntity = getBuildingEntity() as typeof Building;
+    const TableInstance = (process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test'
         ? getApartmentTable()
-        : ApartmentTable;
+        : ApartmentTable) as typeof ApartmentTable;
 
     const scanResult = await TableInstance.build(ScanCommand)
         .entities(BuildingEntity)
@@ -114,7 +115,7 @@ export async function getBuildings() {
         .send();
 
     const buildings = _.map(scanResult.Items, (item) => {
-        const typedItem = item as BuildingDynamoDBItem;
+        const typedItem = item as unknown as BuildingDynamoDBItem;
         const rawBuilding = _.omit(typedItem, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
         // Convert updatedAt from string to Date if present
         if(typedItem?.updatedAt && _.isString(typedItem.updatedAt)) {
@@ -127,7 +128,7 @@ export async function getBuildings() {
 }
 
 export async function getBuilding(buildingID: string) {
-    const BuildingEntity = getBuildingEntity();
+    const BuildingEntity = getBuildingEntity() as typeof Building;
     const { Item } = await BuildingEntity.build(GetItemCommand)
         .key({ buildingID, unitID: 'BUILDING' })
         .send();
@@ -147,7 +148,7 @@ export async function getBuilding(buildingID: string) {
 
 export async function createBuilding(building: BuildingData) {
     const now = new Date();
-    const BuildingEntity = getBuildingEntity();
+    const BuildingEntity = getBuildingEntity() as typeof Building;
     const { Attributes } = await BuildingEntity.build(PutItemCommand)
         .item({ ...building, unitID: 'BUILDING', updatedAt: now.toISOString() })
         .options({
@@ -191,7 +192,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
 
     try {
         // Try UpdateItemCommand first for backward compatibility with existing tests and behavior
-        const BuildingEntity = getBuildingEntity();
+        const BuildingEntity = getBuildingEntity() as typeof Building;
         const { Attributes } = await BuildingEntity.build(UpdateItemCommand)
             .item(updatesForDB as Record<string, unknown> & { buildingID: string, unitID: string }) // Type assertion needed for $set() operators
             .options({ returnValues: 'ALL_NEW' })
@@ -242,7 +243,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
             logger.debug('Merged data for PutItemCommand fallback:', mergedData);
 
             // Use PutItemCommand as fallback for more reliable data persistence
-            const BuildingEntity = getBuildingEntity();
+            const BuildingEntity = getBuildingEntity() as typeof Building;
             await BuildingEntity.build(PutItemCommand)
                 .item(mergedData)
                 .send();
@@ -262,7 +263,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
 
 export async function deleteBuilding(buildingID: string): Promise<boolean> {
     try {
-        const BuildingEntity = getBuildingEntity();
+        const BuildingEntity = getBuildingEntity() as typeof Building;
         await BuildingEntity.build(DeleteItemCommand)
             .key({ buildingID, unitID: 'BUILDING' })
             .send();

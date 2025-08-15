@@ -101,17 +101,8 @@ export function getDynamoClient(injectedClient?: DynamoDBDocumentClient): Dynamo
     // In test environment, use a basic mock if no test client is set
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         if(!_dynamoClient) {
-            // Try to use the test mock from the test setup if available
-            let mockSend = createTestDynamoClient().send;
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access to test mock in test environment
-                const testSetup = require('../tests/data/test-setup');
-                if(testSetup.dynamoDbMock) {
-                    mockSend = testSetup.dynamoDbMock;
-                }
-            } catch{
-                // Test setup not available, use fallback mock
-            }
+            // Use fallback test mock
+            const mockSend = createTestDynamoClient().send;
 
             _dynamoClient = {
                 send: mockSend,
@@ -217,17 +208,8 @@ export function getSSMClient(injectedClient?: SSMClient): SSMClient {
     // In test environment, use a basic mock if no test client is set
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         if(!_ssmClient) {
-            // Try to use the test mock from the test setup if available
-            let mockSend = createTestSSMClient().send;
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access to test mock in test environment
-                const testSetup = require('../tests/data/test-setup');
-                if(testSetup.ssmMock) {
-                    mockSend = testSetup.ssmMock;
-                }
-            } catch{
-                // Test setup not available, use fallback mock
-            }
+            // Use fallback test mock
+            const mockSend = createTestSSMClient().send;
 
             _ssmClient = {
                 send: mockSend,

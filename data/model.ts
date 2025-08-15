@@ -28,12 +28,7 @@ export const getApartmentTable = () => {
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         try {
             // Use the mock table from test setup if available
-            // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access to test mock in test environment
-            const testSetup = require('../tests/data/test-setup');
-            if(testSetup.mockDataClients && testSetup.mockDataClients.getApartmentTable) {
-                return testSetup.mockDataClients.getApartmentTable();
-            }
-            // Also check global mock clients
+            // Check global mock clients first to avoid require()
             if((globalThis as typeof globalThis & { mockDataClients?: unknown }).mockDataClients) {
                 const mockClients = (globalThis as typeof globalThis & { mockDataClients: { getApartmentTable: () => unknown } }).mockDataClients;
                 if(mockClients.getApartmentTable) {
@@ -121,19 +116,17 @@ export const getBuildingEntity = () => {
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         try {
             // Use the entity mock from test setup if available
-            // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access to test mock in test environment
-            const testSetup = require('../tests/data/test-setup');
-            if(testSetup.buildingEntityMock && testSetup.buildingEntityMock.mockEntity) {
-                return testSetup.buildingEntityMock.mockEntity;
+            // Check global mock clients to avoid require()
+            if((globalThis as typeof globalThis & { buildingEntityMock?: { mockEntity: unknown } }).buildingEntityMock) {
+                return (globalThis as typeof globalThis & { buildingEntityMock: { mockEntity: unknown } }).buildingEntityMock.mockEntity;
             }
         } catch{
             // Test setup not available, fall back to regular entity
         }
 
-        // @ts-expect-error - Type definition conflict between static ApartmentTable and getApartmentTable() return type
         return new Entity({
             name: 'Building',
-            table: getApartmentTable(),
+            table: getApartmentTable() as typeof ApartmentTable,
             schema: buildingSchema,
         });
     }
@@ -185,19 +178,17 @@ export const getUnitEntity = () => {
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         try {
             // Use the entity mock from test setup if available
-            // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access to test mock in test environment
-            const testSetup = require('../tests/data/test-setup');
-            if(testSetup.unitEntityMock && testSetup.unitEntityMock.mockEntity) {
-                return testSetup.unitEntityMock.mockEntity;
+            // Check global mock clients to avoid require()
+            if((globalThis as typeof globalThis & { unitEntityMock?: { mockEntity: unknown } }).unitEntityMock) {
+                return (globalThis as typeof globalThis & { unitEntityMock: { mockEntity: unknown } }).unitEntityMock.mockEntity;
             }
         } catch{
             // Test setup not available, fall back to regular entity
         }
 
-        // @ts-expect-error - Type definition conflict between static ApartmentTable and getApartmentTable() return type
         return new Entity({
             name: 'Unit',
-            table: getApartmentTable(),
+            table: getApartmentTable() as typeof ApartmentTable,
             schema: unitSchema,
         });
     }
@@ -238,19 +229,17 @@ export const getUnitTypeEntity = () => {
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         try {
             // Use the entity mock from test setup if available
-            // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access to test mock in test environment
-            const testSetup = require('../tests/data/test-setup');
-            if(testSetup.unitTypeEntityMock && testSetup.unitTypeEntityMock.mockEntity) {
-                return testSetup.unitTypeEntityMock.mockEntity;
+            // Check global mock clients to avoid require()
+            if((globalThis as typeof globalThis & { unitTypeEntityMock?: { mockEntity: unknown } }).unitTypeEntityMock) {
+                return (globalThis as typeof globalThis & { unitTypeEntityMock: { mockEntity: unknown } }).unitTypeEntityMock.mockEntity;
             }
         } catch{
             // Test setup not available, fall back to regular entity
         }
 
-        // @ts-expect-error - Type definition conflict between static ApartmentTable and getApartmentTable() return type
         return new Entity({
             name: 'UnitType',
-            table: getApartmentTable(),
+            table: getApartmentTable() as typeof ApartmentTable,
             schema: unitTypeSchema,
         });
     }

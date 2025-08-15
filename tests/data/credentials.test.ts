@@ -1,5 +1,10 @@
+// CRITICAL: Import test setup FIRST before any other imports
+import './test-setup';
+import { ssmMock, resetAllMocks, jest, createTestSSMClient } from './test-setup';
+
 import { describe, test, expect, beforeEach, beforeAll } from 'bun:test';
-import { ssmMock, resetAllMocks, jest } from './test-setup';
+import { SSMClient } from '@aws-sdk/client-ssm';
+import { setTestClients } from '../../data/clients';
 
 // Type for AWS service errors that have a name property
 interface AWSServiceError extends Error {
@@ -26,6 +31,10 @@ describe('Credentials Data Layer', () => {
 
         // CRITICAL: Reset the mock completely to clear any queued responses
         ssmMock.mockReset();
+
+        // Inject the mock SSM client so credentials.ts uses our controlled mock
+        const testSSMClient = createTestSSMClient();
+        setTestClients(undefined, undefined, testSSMClient as unknown as SSMClient);
 
         // Set default successful implementation for SSM commands
         ssmMock.mockResolvedValue({});

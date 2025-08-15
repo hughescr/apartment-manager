@@ -7,6 +7,7 @@
 import './test-setup';
 import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
+import { resetClients } from '../../data/clients';
 
 /**
  * Helper functions for mock implementations
@@ -75,8 +76,6 @@ export const setupBuildingsTests = () => {
     resetAllMocks();
 
     // Also reset the data layer clients to ensure they pick up our test mocks
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access for test setup
-    const { resetClients } = require('../../data/clients');
     resetClients();
 };
 
@@ -95,8 +94,6 @@ export const setupBuildingsTest = () => {
     dynamoDbMock.mockImplementation(createDefaultMockImplementation());
 
     // Reset clients to ensure fresh connections for each test
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Need synchronous access for test setup
-    const { resetClients } = require('../../data/clients');
     resetClients();
 };
 
