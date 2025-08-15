@@ -1,5 +1,5 @@
-import { BuildingData, getDefaultBuildingData } from '../src/types';
-import { ApartmentTable, Building } from './model';
+import { BuildingData, getDefaultBuildingData, BuildingDynamoDBItem } from '../src/types';
+import { ApartmentTable, getBuildingEntity, getApartmentTable } from './model';
 
 import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
@@ -103,16 +103,22 @@ function handlePetPolicyArrayOverwrites(mergedData: Record<string, unknown>, exi
     }
 }
 export async function getBuildings() {
-    const scanResult = await ApartmentTable.build(ScanCommand)
-        .entities(Building)
+    const BuildingEntity = getBuildingEntity();
+    const TableInstance = process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test'
+        ? getApartmentTable()
+        : ApartmentTable;
+
+    const scanResult = await TableInstance.build(ScanCommand)
+        .entities(BuildingEntity)
         .options({ consistent: true })
         .send();
 
     const buildings = _.map(scanResult.Items, (item) => {
-        const rawBuilding = _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+        const typedItem = item as BuildingDynamoDBItem;
+        const rawBuilding = _.omit(typedItem, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
         // Convert updatedAt from string to Date if present
-        if(item?.updatedAt) {
-            rawBuilding.updatedAt = new Date(item.updatedAt as string);
+        if(typedItem?.updatedAt && _.isString(typedItem.updatedAt)) {
+            (rawBuilding as BuildingData & { updatedAt?: Date }).updatedAt = new Date(typedItem.updatedAt);
         }
         // Merge with defaults to ensure all nested structures exist
         return _.merge({}, getDefaultBuildingData(), rawBuilding);
@@ -121,7 +127,8 @@ export async function getBuildings() {
 }
 
 export async function getBuilding(buildingID: string) {
-    const { Item } = await Building.build(GetItemCommand)
+    const BuildingEntity = getBuildingEntity();
+    const { Item } = await BuildingEntity.build(GetItemCommand)
         .key({ buildingID, unitID: 'BUILDING' })
         .send();
 
@@ -140,7 +147,8 @@ export async function getBuilding(buildingID: string) {
 
 export async function createBuilding(building: BuildingData) {
     const now = new Date();
-    const { Attributes } = await Building.build(PutItemCommand)
+    const BuildingEntity = getBuildingEntity();
+    const { Attributes } = await BuildingEntity.build(PutItemCommand)
         .item({ ...building, unitID: 'BUILDING', updatedAt: now.toISOString() })
         .options({
             condition: { // Fail if unit already exists
@@ -183,7 +191,8 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
 
     try {
         // Try UpdateItemCommand first for backward compatibility with existing tests and behavior
-        const { Attributes } = await Building.build(UpdateItemCommand)
+        const BuildingEntity = getBuildingEntity();
+        const { Attributes } = await BuildingEntity.build(UpdateItemCommand)
             .item(updatesForDB as Record<string, unknown> & { buildingID: string, unitID: string }) // Type assertion needed for $set() operators
             .options({ returnValues: 'ALL_NEW' })
             .send();
@@ -198,6 +207,11 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
         }
         return result;
     } catch(error) {
+        // If building doesn't exist (ConditionalCheckFailedException), return undefined
+        if(_.isError(error) && error.message.includes('ConditionalCheckFailedException')) {
+            return undefined;
+        }
+
         // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
         logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic:', error);
 
@@ -205,7 +219,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
             // Get existing building data for proper merging
             const existingBuilding = await getBuilding(buildingID);
             if(!existingBuilding) {
-                throw new Error('Building not found for update');
+                return undefined; // Building doesn't exist, return undefined instead of throwing
             }
 
             // Define array fields that should be overwritten, not merged (for debugging)
@@ -228,7 +242,8 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
             logger.debug('Merged data for PutItemCommand fallback:', mergedData);
 
             // Use PutItemCommand as fallback for more reliable data persistence
-            await Building.build(PutItemCommand)
+            const BuildingEntity = getBuildingEntity();
+            await BuildingEntity.build(PutItemCommand)
                 .item(mergedData)
                 .send();
 
@@ -247,7 +262,8 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
 
 export async function deleteBuilding(buildingID: string): Promise<boolean> {
     try {
-        await Building.build(DeleteItemCommand)
+        const BuildingEntity = getBuildingEntity();
+        await BuildingEntity.build(DeleteItemCommand)
             .key({ buildingID, unitID: 'BUILDING' })
             .send();
         return true;

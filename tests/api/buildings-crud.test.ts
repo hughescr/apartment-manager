@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { create, get, update, del } from '../../api/buildings';
 import { mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
+import { getDefaultBuildingData } from '../../src/types';
 
 const testBuilding = {
     buildingID: 'test-building-1',
@@ -29,7 +30,14 @@ describe('Buildings API - CRUD operations', () => {
 
     describe('create endpoint', () => {
         it('should create a new building', async () => {
-            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING' }));
+            // Expected building with defaults applied
+            const expectedBuilding = {
+                ...getDefaultBuildingData(),
+                ...testBuilding,
+                unitID: 'BUILDING'
+            };
+
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse(expectedBuilding));
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify(testBuilding)
@@ -38,7 +46,18 @@ describe('Buildings API - CRUD operations', () => {
             const result = await create(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(201);
-            expect(JSON.parse(result.body as string)).toEqual(testBuilding);
+            const responseBuilding = JSON.parse(result.body as string);
+            // Check that key fields from input are preserved
+            expect(responseBuilding.buildingID).toBe(testBuilding.buildingID);
+            expect(responseBuilding.buildingName).toBe(testBuilding.buildingName);
+            expect(responseBuilding.street).toBe(testBuilding.street);
+            expect(responseBuilding.city).toBe(testBuilding.city);
+            expect(responseBuilding.state).toBe(testBuilding.state);
+            expect(responseBuilding.zip).toBe(testBuilding.zip);
+            // Check that defaults are applied
+            expect(responseBuilding.acceptsOnlineApplications).toBe(true);
+            expect(responseBuilding.leaseLength).toBe(12);
+            expect(responseBuilding.photos).toEqual([]);
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 
@@ -107,7 +126,12 @@ describe('Buildings API - CRUD operations', () => {
 
     describe('update endpoint', () => {
         it('should update a building', async () => {
-            const updates = { city: 'New City' };
+            // Include required fields in update request
+            const updates = {
+                buildingID: testBuilding.buildingID,
+                buildingName: testBuilding.buildingName,
+                city: 'New City'
+            };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testBuilding, ...updates, unitID: 'BUILDING' }));
 
             const event: Partial<APIGatewayProxyEventV2> = {
@@ -141,7 +165,11 @@ describe('Buildings API - CRUD operations', () => {
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 pathParameters: { buildingID: testBuilding.buildingID },
-                body: JSON.stringify({ city: 'New City' })
+                body: JSON.stringify({
+                    buildingID: testBuilding.buildingID,
+                    buildingName: testBuilding.buildingName,
+                    city: 'New City'
+                })
             };
 
             const result = await update(event as APIGatewayProxyEventV2);

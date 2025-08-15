@@ -71,7 +71,7 @@ describe('Validation Helper Functions', () => {
             expect(result.success).toBe(false);
             expect(result.errors).toHaveLength(1);
             expect(result.errors[0].field).toBe('buildingID');
-            expect(result.errors[0].message).toContain('Invalid');
+            expect(result.errors[0].message).toContain('can only contain letters, numbers, underscores, and hyphens');
             expect(result.errors[0].context).toContain('Draft validation allows incomplete data');
         });
 

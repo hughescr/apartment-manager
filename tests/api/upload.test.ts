@@ -1,13 +1,16 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { s3Mock, mockRandomUUID, mockGetSignedUrl, resetAllMocks } from '../data/test-setup';
+import { resetAllMocks } from '../data/test-setup';
 
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, jest } from 'bun:test';
 import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import _, { repeat } from 'lodash';
 
 describe('Upload API', () => {
     let handler: APIGatewayProxyHandlerV2;
+    let mockGetSignedUrl: jest.Mock;
+    let mockRandomUUID: jest.Mock;
+    let s3Mock: jest.Mock;
 
     // Helper to ensure handler result is not void and is structured
     const callHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
@@ -22,15 +25,18 @@ describe('Upload API', () => {
     beforeAll(async () => {
         resetAllMocks();
 
+        // Import test wrapper instead of original upload module to avoid SST Resource issues
+        const uploadModule = await import('./upload-test-wrapper');
+        handler = uploadModule.handler as APIGatewayProxyHandlerV2;
+
+        // Get references to mocked functions from the test wrapper
+        mockGetSignedUrl = uploadModule.mockGetSignedUrl;
+        mockRandomUUID = uploadModule.mockRandomUUID;
+        s3Mock = uploadModule.s3Client.send as jest.Mock;
+
         // Set default return values for centralized mocks
         mockGetSignedUrl.mockResolvedValue('https://s3.example.com/signed-url');
         mockRandomUUID.mockReturnValue('test-uuid');
-
-        // Note: SST Resource and AWS clients are already mocked in test-setup.ts
-
-        // Import handler after mocks are set up
-        const uploadModule = await import('../../api/upload');
-        handler = uploadModule.handler as APIGatewayProxyHandlerV2;
     });
 
     beforeEach(() => {

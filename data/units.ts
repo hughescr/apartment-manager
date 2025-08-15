@@ -1,5 +1,5 @@
 import { UnitData, VacancyClass } from '../src/types';
-import { ApartmentTable, Unit } from './model';
+import { getApartmentTable, getUnitEntity } from './model';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
@@ -91,11 +91,12 @@ function convertRawItemToUnitData(rawItem: Record<string, unknown>): UnitData {
 }
 
 export async function getUnits(buildingID: string) {
-    const { Items } = await ApartmentTable.build(QueryCommand)
-    .entities(Unit)
+    const { Items } = await getApartmentTable().build(QueryCommand)
+    .entities(getUnitEntity())
     .query({ partition: buildingID })
     .options({ consistent: true })
     .send();
+
     // Remove the UNIT# prefix from unitID and convert date strings back to Date objects
     return _.map(Items, (item) => {
         const rawItem: Record<string, unknown> = {
@@ -110,7 +111,8 @@ export async function getUnits(buildingID: string) {
 }
 
 export async function getUnit(buildingID: string, unitID: string) {
-    const { Item } = await Unit.build(GetItemCommand)
+    const UnitEntity = getUnitEntity();
+    const { Item } = await UnitEntity.build(GetItemCommand)
         .key({ buildingID, unitID: `UNIT#${unitID}` })
         .send();
     if(!Item) {
@@ -155,7 +157,8 @@ export async function createUnit(unit: UnitData) {
     const feedData = prepareFeedDataForDB(feedLastPulled, feedLastModified);
     _.assign(unitForDB, feedData);
 
-    const { Attributes } = await Unit.build(PutItemCommand)
+    const UnitEntity = getUnitEntity();
+    const { Attributes } = await UnitEntity.build(PutItemCommand)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
         .item(unitForDB as any)
         .options({
@@ -215,7 +218,8 @@ function prepareUnitDataForDB(updates: Partial<UnitData>, buildingID: string, un
 
 // Helper function to try UpdateItemCommand
 async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Promise<UnitData | undefined> {
-    const { Attributes } = await Unit.build(UpdateItemCommand)
+    const UnitEntity = getUnitEntity();
+    const { Attributes } = await UnitEntity.build(UpdateItemCommand)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
         .item(updatesForDB as any)
         .options({ returnValues: 'ALL_NEW' })
@@ -278,7 +282,8 @@ async function fallbackToPutItemCommand(
     _.assign(mergedData, feedData);
 
     // Use PutItemCommand as fallback for more reliable data persistence
-    await Unit.build(PutItemCommand)
+    const UnitEntity = getUnitEntity();
+    await UnitEntity.build(PutItemCommand)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
         .item(mergedData as any)
         .send();
@@ -313,7 +318,8 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
 }
 export async function deleteUnit(buildingID: string, unitID: string): Promise<boolean> {
     try {
-        await Unit.build(DeleteItemCommand)
+        const UnitEntity = getUnitEntity();
+        await UnitEntity.build(DeleteItemCommand)
             .key({ buildingID, unitID: `UNIT#${unitID}` })
             .send();
         return true;

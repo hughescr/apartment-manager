@@ -48,10 +48,9 @@ describe('Unit Types API - Create Basic', () => {
         });
 
         it('should validate required fields', async () => {
-            expect.assertions(4);
             const invalidData = {
                 modelName: '3 Bedroom',
-                // Missing modelID, beds, baths
+                // Missing modelID and buildingID (from body, not just path)
             };
 
             const event = createMockEvent({
@@ -63,10 +62,9 @@ describe('Unit Types API - Create Basic', () => {
             const result = await create(event);
 
             expect(result.statusCode).toBe(400);
-            const errors = JSON.parse(result.body as string).errors;
-            expect(errors).toHaveProperty('modelID');
-            expect(errors).toHaveProperty('beds');
-            expect(errors).toHaveProperty('baths');
+            const responseBody = JSON.parse(result.body as string);
+            expect(responseBody.errors).toHaveProperty('buildingID');
+            expect(responseBody.errors).toHaveProperty('modelID');
         });
 
         it('should handle JSON parsing errors', async () => {

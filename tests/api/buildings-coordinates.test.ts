@@ -30,7 +30,7 @@ describe('Building Coordinates API', () => {
             longitude: -122.4194,
             coordinatesVerified: true,
             propertyType: 'apartment',
-            photos: ['photo1.jpg', 'photo2.jpg'],
+            photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
             acceptsOnlineApplications: true
         };
 

@@ -1,5 +1,5 @@
-import { UnitTypeData, UnitData } from '../src/types';
-import { ApartmentTable, UnitType, Unit } from './model';
+import { UnitTypeData, UnitData, UnitTypeDynamoDBItem } from '../src/types';
+import { ApartmentTable, Unit, getUnitTypeEntity, getApartmentTable } from './model';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
@@ -11,8 +11,12 @@ import { logger } from '@hughescr/logger';
 import _ from 'lodash';
 
 export async function getUnitTypes(buildingID: string) {
-    const { Items } = await ApartmentTable.build(QueryCommand)
-        .entities(UnitType)
+    const UnitTypeEntity = getUnitTypeEntity();
+    const TableInstance = process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test'
+        ? getApartmentTable()
+        : ApartmentTable;
+    const { Items } = await TableInstance.build(QueryCommand)
+        .entities(UnitTypeEntity)
         .query({
             partition: buildingID,
             range: { beginsWith: 'MODEL#' }
@@ -20,17 +24,19 @@ export async function getUnitTypes(buildingID: string) {
         .options({ consistent: true })
         .send();
     return _.map(Items, (item) => {
-        const result = _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
+        const typedItem = item as UnitTypeDynamoDBItem;
+        const result = _.omit(typedItem, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
         // Convert updatedAt from string to Date if present
-        if(item?.updatedAt) {
-            result.updatedAt = new Date(item.updatedAt as string);
+        if(typedItem?.updatedAt && _.isString(typedItem.updatedAt)) {
+            (result as UnitTypeData & { updatedAt?: Date }).updatedAt = new Date(typedItem.updatedAt);
         }
         return result;
     }) as UnitTypeData[];
 }
 
 export async function getUnitType(buildingID: string, modelID: string) {
-    const { Item } = await UnitType.build(GetItemCommand)
+    const UnitTypeEntity = getUnitTypeEntity();
+    const { Item } = await UnitTypeEntity.build(GetItemCommand)
         .key({ buildingID, unitID: `MODEL#${modelID}` })
         .send();
     if(!Item) {
@@ -46,7 +52,8 @@ export async function getUnitType(buildingID: string, modelID: string) {
 
 export async function createUnitType(unitType: UnitTypeData) {
     const now = new Date();
-    const { Attributes } = await UnitType.build(PutItemCommand)
+    const UnitTypeEntity = getUnitTypeEntity();
+    const { Attributes } = await UnitTypeEntity.build(PutItemCommand)
         .item({ ...unitType, unitID: `MODEL#${unitType.modelID}`, updatedAt: now.toISOString() })
         .options({
             condition: { // Fail if unit type already exists
@@ -93,7 +100,8 @@ function convertItemToUnitTypeData(item: Record<string, unknown>): UnitTypeData 
 async function tryUpdateUnitTypeCommand(updatesForDB: Record<string, unknown>): Promise<UnitTypeData | undefined> {
     // updatesForDB is guaranteed to have buildingID and unitID from prepareUnitTypeDataForDB
     const typedUpdates = updatesForDB as Record<string, unknown> & { buildingID: string, unitID: string };
-    const { Attributes } = await UnitType.build(UpdateItemCommand)
+    const UnitTypeEntity = getUnitTypeEntity();
+    const { Attributes } = await UnitTypeEntity.build(UpdateItemCommand)
         .item(typedUpdates)
         .options({ returnValues: 'ALL_NEW' })
         .send();
@@ -124,7 +132,8 @@ async function fallbackToPutItemCommandForUnitType(buildingID: string, modelID: 
     };
 
     // Use PutItemCommand as fallback for more reliable data persistence
-    await UnitType.build(PutItemCommand)
+    const UnitTypeEntity = getUnitTypeEntity();
+    await UnitTypeEntity.build(PutItemCommand)
         .item(mergedData)
         .send();
 
@@ -159,7 +168,8 @@ export async function updateUnitType(buildingID: string, modelID: string, update
 
 export async function deleteUnitType(buildingID: string, modelID: string): Promise<boolean> {
     try {
-        await UnitType.build(DeleteItemCommand)
+        const UnitTypeEntity = getUnitTypeEntity();
+        await UnitTypeEntity.build(DeleteItemCommand)
             .key({ buildingID, unitID: `MODEL#${modelID}` })
             .send();
         return true;
@@ -170,7 +180,10 @@ export async function deleteUnitType(buildingID: string, modelID: string): Promi
 }
 
 export async function getUnitsByModelID(buildingID: string, modelID: string) {
-    const { Items } = await ApartmentTable.build(QueryCommand)
+    const TableInstance = process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test'
+        ? getApartmentTable()
+        : ApartmentTable;
+    const { Items } = await TableInstance.build(QueryCommand)
         .entities(Unit)
         .query({ partition: buildingID })
         .send();

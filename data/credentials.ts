@@ -3,12 +3,10 @@
  * Provides secure storage and retrieval of third-party site credentials
  */
 
-import { SSMClient, PutParameterCommand, GetParameterCommand, DeleteParameterCommand, DescribeParametersCommand } from '@aws-sdk/client-ssm';
+import { PutParameterCommand, GetParameterCommand, DeleteParameterCommand, DescribeParametersCommand } from '@aws-sdk/client-ssm';
 import { logger } from '@hughescr/logger';
 import { isObject } from 'lodash';
-
-// Initialize SSM client
-const ssmClient = new SSMClient({ region: 'us-west-2' });
+import { getSSMClient } from './clients';
 
 // Get parameter path prefix based on stage
 function getParameterPrefix(): string {
@@ -48,7 +46,7 @@ export async function storeCredential(site: string, credentials: SiteCredentials
             Tier: 'Standard'
         });
 
-        await ssmClient.send(command);
+        await getSSMClient().send(command);
         logger.info(`Stored credentials for site: ${site}`);
         return true;
     } catch(error) {
@@ -71,7 +69,7 @@ export async function getCredential(site: string): Promise<SiteCredentials | nul
             WithDecryption: true
         });
 
-        const response = await ssmClient.send(command);
+        const response = await getSSMClient().send(command);
 
         if(response.Parameter?.Value) {
             return JSON.parse(response.Parameter.Value) as SiteCredentials;
@@ -101,7 +99,7 @@ export async function deleteCredential(site: string): Promise<boolean> {
             Name: parameterName
         });
 
-        await ssmClient.send(command);
+        await getSSMClient().send(command);
         logger.info(`Deleted credentials for site: ${site}`);
         return true;
     } catch(error) {
@@ -137,7 +135,7 @@ export async function listCredentials(): Promise<string[]> {
                 MaxResults: 50
             });
 
-            const response = await ssmClient.send(command);
+            const response = await getSSMClient().send(command);
 
             if(response.Parameters) {
                 for(const param of response.Parameters) {

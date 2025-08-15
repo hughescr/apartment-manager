@@ -5,6 +5,7 @@ import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import {
     mockQueryResponse,
+    mockScanResponse,
     mockGetResponse,
     mockPutResponse,
     mockUpdateResponse
@@ -49,7 +50,7 @@ describe('Data Layer Performance Tests', () => {
 
             // First call returns partial results with LastEvaluatedKey
             dynamoDbMock.mockResolvedValueOnce({
-                Items: _.map(page1, b => ({ ...b, _et: 'Building', _ct: new Date().toISOString(), _md: new Date().toISOString() })),
+                ...mockQueryResponse(page1),
                 LastEvaluatedKey: { buildingID: 'building-249', unitID: 'BUILDING' }
             });
 
@@ -81,9 +82,9 @@ describe('Data Layer Performance Tests', () => {
             const page1 = largeUnits.slice(0, 500);
 
             dynamoDbMock.mockResolvedValueOnce({
-                Items: _.map(page1, u => ({ ...u, _et: 'Unit', _ct: new Date().toISOString(), _md: new Date().toISOString() })),
+                ...mockScanResponse(page1),
                 LastEvaluatedKey: { buildingID: 'test-building', unitID: 'UNIT#unit-499' },
-                Count: 500
+                Count: page1.length
             });
 
             const units = await getUnits('test-building');
@@ -110,12 +111,7 @@ describe('Data Layer Performance Tests', () => {
 
             // Mock first page
             dynamoDbMock.mockResolvedValueOnce({
-                Items: _.map(allBuildings.slice(0, pageSize), b => ({
-                    ...b,
-                    _et: 'Building',
-                    _ct: new Date().toISOString(),
-                    _md: new Date().toISOString()
-                })),
+                ...mockQueryResponse(allBuildings.slice(0, pageSize)),
                 LastEvaluatedKey: { buildingID: 'paginated-99', unitID: 'BUILDING' },
                 ScannedCount: pageSize
             });
@@ -325,15 +321,7 @@ describe('Data Layer Performance Tests', () => {
                 availableDate: i < 50 ? '2024-01-01' : undefined
             }));
 
-            dynamoDbMock.mockResolvedValueOnce({
-                Items: _.map(allUnits, u => ({
-                    ...u,
-                    _et: 'Unit',
-                    _ct: new Date().toISOString(),
-                    _md: new Date().toISOString()
-                })),
-                Count: 1000
-            });
+            dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(allUnits));
 
             // const startTime = performance.now(); // Reserved for performance logging
             const units = await getUnits('large-building');
@@ -357,15 +345,12 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(4);
 
             // Query with partition key is efficient
+            const mockUnits = _.times(10, i => ({
+                buildingID: 'building-1',
+                unitID: `UNIT#${i}`
+            }));
             dynamoDbMock.mockResolvedValueOnce({
-                Items: _.times(10, i => ({
-                    buildingID: 'building-1',
-                    unitID: `UNIT#${i}`,
-                    _et: 'Unit',
-                    _ct: new Date().toISOString(),
-                    _md: new Date().toISOString()
-                })),
-                Count: 10,
+                ...mockQueryResponse(mockUnits),
                 ScannedCount: 10 // Query scans only matching items
             });
 
@@ -422,16 +407,11 @@ describe('Data Layer Performance Tests', () => {
 
             // Mock responses for each building
             _.forEach(buildingIds, (id) => {
-                dynamoDbMock.mockResolvedValueOnce({
-                    Items: _.times(5, j => ({
-                        buildingID: id,
-                        unitID: `UNIT#${j}`,
-                        _et: 'Unit',
-                        _ct: new Date().toISOString(),
-                        _md: new Date().toISOString()
-                    })),
-                    Count: 5
-                });
+                const units = _.times(5, j => ({
+                    buildingID: id,
+                    unitID: `UNIT#${j}`
+                }));
+                dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
             });
 
             const startTime = performance.now();
@@ -530,15 +510,7 @@ describe('Data Layer Performance Tests', () => {
                 rent: 2000
             }));
 
-            dynamoDbMock.mockResolvedValueOnce({
-                Items: _.map(manyUnits, u => ({
-                    ...u,
-                    _et: 'Unit',
-                    _ct: new Date().toISOString(),
-                    _md: new Date().toISOString()
-                })),
-                Count: 5000
-            });
+            dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(manyUnits));
 
             const startMemory = process.memoryUsage().heapUsed;
             const units = await getUnits('mega-building');

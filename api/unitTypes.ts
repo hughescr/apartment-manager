@@ -94,7 +94,15 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     }
 
     const data = sanitizeObject(rawData);
-    const validation = validateForSave('unitType', data);
+
+    // Add URL parameters to data for validation (required for draft schema)
+    const dataWithIds = {
+        ...data,
+        buildingID,
+        modelID
+    };
+
+    const validation = validateForSave('unitType', dataWithIds);
     if(!validation.success) {
         const errors: Record<string, string> = {};
         _.forEach(validation.errors, (err) => {

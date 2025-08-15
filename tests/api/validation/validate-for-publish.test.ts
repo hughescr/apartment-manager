@@ -343,23 +343,41 @@ describe('Validate for Publish API Endpoint', () => {
         const completeUnits = [
             {
                 buildingID: 'test-building',
-                unitID: 'unit-101',  // Changed to alphanumeric only for validation
+                unitID: 'UNIT#unit-101',  // Database format with UNIT# prefix for proper entity detection
                 unitNumber: '101',
                 beds: 1,
                 baths: 1,
                 sqft: 700,
                 rent: 1250,
                 vacancyClass: 'Unoccupied',
-                availableDate: '2024-01-01'
+                availableDate: '2024-01-01',
+                _et: 'Unit'  // Explicitly set entity type for filtering
             }
         ];
 
         it('should validate complete building with all data', async () => {
             // Mock database responses
+            const buildingResponse = mockGetResponse(completeBuilding);
+            const unitTypesResponse = mockQueryResponse(completeUnitTypes);
+            const unitsResponse = mockQueryResponse(completeUnits);
+
+            // Clear mock call history to ensure clean state for this test
+            jest.clearAllMocks();
+            // Don't reset the mock - just clear call history
+
+            // Set up mock responses with enough for parallel calls
+            // Since the calls are parallel, we need to ensure units response is available
             dynamoDbMock
-                .mockResolvedValueOnce(mockGetResponse(completeBuilding))
-                .mockResolvedValueOnce(mockQueryResponse(completeUnitTypes))
-                .mockResolvedValueOnce(mockQueryResponse(completeUnits));
+                .mockResolvedValue(buildingResponse)     // Default to building response
+                .mockResolvedValueOnce(buildingResponse) // getBuilding
+                .mockResolvedValueOnce(unitTypesResponse)// getUnitTypes
+                .mockResolvedValueOnce(unitsResponse);   // getUnits
+
+            // Additional setup to ensure units get through
+            dynamoDbMock
+                .mockResolvedValueOnce(unitsResponse)    // Extra units response
+                .mockResolvedValueOnce(unitsResponse)    // More units responses
+                .mockResolvedValueOnce(unitsResponse);
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
@@ -370,14 +388,9 @@ describe('Validate for Publish API Endpoint', () => {
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
-            // Debug logging
-            if(result.statusCode !== 200 || !JSON.parse(result.body as string).success) {
-                // eslint-disable-next-line no-console -- Debug logging for test failures
-                console.log('Response:', JSON.stringify(JSON.parse(result.body as string), null, 2));
-            }
-
             expect(result.statusCode).toBe(200);
             const response = JSON.parse(result.body as string);
+
             expect(response.success).toBe(true);
             expect(response.buildingID).toBe('test-building');
             expect(response.totalEntities).toBe(3); // building + 1 unit type + 1 unit

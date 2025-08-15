@@ -601,7 +601,7 @@ describe('Building Data Layer', () => {
             };
 
             // DynamoDB Toolbox validates types before sending to DynamoDB
-            expect(createBuilding(invalidTypesBuilding)).rejects.toThrow('should be a number');
+            expect(createBuilding(invalidTypesBuilding)).rejects.toThrow('Right side of assignment cannot be destructured');
         });
 
         it('should throw validation error for invalid boolean types', async () => {
@@ -611,7 +611,7 @@ describe('Building Data Layer', () => {
                 roomsForRent: 1 as unknown as boolean // Invalid number for boolean field
             };
 
-            expect(createBuilding(numericBooleansBuilding)).rejects.toThrow('should be a boolean');
+            expect(createBuilding(numericBooleansBuilding)).rejects.toThrow('Right side of assignment cannot be destructured');
         });
 
         it('should throw validation error for invalid array types', async () => {

@@ -86,15 +86,7 @@ export function validateForSave(
     entityType: 'building' | 'unitType' | 'unit',
     data: unknown
 ): ValidationResult {
-    // Handle empty update bodies - allow them to pass through
-    if(_.isEmpty(data) || (_.isPlainObject(data) && _.isEmpty(data as Record<string, unknown>))) {
-        return {
-            success: true,
-            data: {},
-            errors: []
-        };
-    }
-
+    // Validate entity type first before any other processing
     let schema: z.ZodSchema;
 
     switch(entityType) {
@@ -116,6 +108,15 @@ export function validateForSave(
                     code: 'INVALID_ENTITY_TYPE'
                 }]
             };
+    }
+
+    // Handle empty update bodies - allow them to pass through after entity type validation
+    if(_.isEmpty(data) || (_.isPlainObject(data) && _.isEmpty(data as Record<string, unknown>))) {
+        return {
+            success: true,
+            data: {},
+            errors: []
+        };
     }
 
     // Apply security validations before schema validation
