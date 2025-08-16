@@ -1,5 +1,6 @@
 /**
  * Test setup file for API tests.
+ * Uses jest.fn() patterns instead of mock.module() to avoid Bun's global state issues.
  * This extends the data layer test setup with API-specific mocks.
  */
 

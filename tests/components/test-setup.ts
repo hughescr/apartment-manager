@@ -1,5 +1,6 @@
 /**
  * Test setup file for component tests.
+ * Uses jest.fn() patterns instead of mock.module() to avoid Bun's global state issues.
  * This file sets up basic mocking for component testing without AWS dependencies.
  */
 import { mock, jest } from 'bun:test';

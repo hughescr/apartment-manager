@@ -1,92 +1,49 @@
 # SST Infrastructure Agent Guidelines
 
-## CRITICAL RULES FOR THIS MODULE
+## CRITICAL RULES
 
-1. **ALWAYS optimize for AWS free tier** - Check limits before adding resources
-2. **ALWAYS use SST v3 patterns** - NOT v2 syntax
-3. **ALWAYS bind resources properly** - Use `link` for resource access
-4. **NEVER hardcode ARNs or IDs** - Use SST resource references
-5. **ALWAYS use least privilege IAM** - Only grant necessary permissions
+1. **Optimize for AWS free tier** - Check limits first
+2. **Use SST v3 patterns** - Not v2 syntax
+3. **Bind resources properly** - Use `link` for access
+4. **No hardcoded ARNs/IDs** - Use SST references
+5. **Least privilege IAM** - Only necessary permissions
 
-## COMMON MISTAKES IN SST CONFIG
+## COMMON MISTAKES
 
-❌ Hardcoding table names → ✅ Use `Resource.MyTable.name`
-❌ Manual IAM policies → ✅ Use SST's automatic permissions
-❌ Creating multiple stacks → ✅ Keep everything in one stack for free tier
-❌ Not linking resources → ✅ Use `link: [table]` in function config
-❌ Using CDK constructs → ✅ Use SST components
+❌ Hardcoding names → ✅ `Resource.MyTable.name`
+❌ Manual IAM → ✅ SST auto permissions
+❌ Multiple stacks → ✅ One stack for free tier
+❌ Not linking → ✅ `link: [table]` in functions
+❌ CDK constructs → ✅ SST components
 
-## PATTERNS TO FOLLOW
+## PATTERNS
 
-### Resource Definition
-```typescript
-// See sst/dynamo.ts for patterns
-export const buildingsTable = new sst.aws.Dynamo("Buildings", {
-  fields: {
-    buildingID: "string",
-  },
-  primaryIndex: { hashKey: "buildingID" },
-  // No provisioned capacity - use on-demand for free tier
-});
-```
+**Resources:** Use `new sst.aws.Dynamo()` with on-demand billing  
+**Functions:** Use `link: [table]` for auto permissions  
+**API:** `new sst.aws.ApiGatewayV2()` with `cors: true`  
+**Examples:** See sst/dynamo.ts, sst/api.ts
 
-### Function Configuration
-```typescript
-// See sst/api.ts for patterns
-new sst.aws.Function("GetBuildings", {
-  handler: "api/buildings.handler",
-  link: [buildingsTable], // Automatic permissions
-  environment: {
-    // SST handles table name injection
-  }
-});
-```
+## FREE TIER LIMITS
 
-### API Gateway
-```typescript
-// See sst/api.ts
-export const api = new sst.aws.ApiGatewayV2("Api", {
-  cors: true, // SST handles CORS properly
-});
+**DynamoDB:** On-demand, 25GB storage, 25 read/write units  
+**Lambda:** 1M requests/month, 400K GB-seconds  
+**S3:** 5GB storage, 20K GET, 2K PUT  
+**CloudFront:** 1TB transfer, 10M requests
 
-api.route("GET /buildings", "api/buildings.list");
-api.route("POST /buildings", "api/buildings.create");
-```
+## FILES
 
-## FREE TIER OPTIMIZATION
+`api.ts` (API/Lambda), `astro.ts` (site), `dynamo.ts` (tables), `s3.ts` (buckets), `sst.config.ts` (main)
 
-### DynamoDB
-- Use on-demand billing (not provisioned)
-- 25GB storage free
-- 25 read/write units free
+## TESTING & MONITORING
 
-### Lambda
-- 1M requests/month free
-- 400,000 GB-seconds free
-- Keep functions small
+**Testing:** Use `bun run sst-diagnostics` for validation, test permissions/limits/linking, check tmux test output  
+**Monitoring:** Check tmux typecheck/test outputs after changes  
+**Tools:** Use `mcp__language-server__edit_file` for TypeScript, `mcp__tmux__get_output` for monitoring  
+**SST Validation:** `bun run sst-diagnostics` is allowed for SST-specific checks
 
-### S3
-- 5GB storage free
-- 20,000 GET requests
-- 2,000 PUT requests
+## TOOL USAGE
 
-### CloudFront
-- 1TB transfer out free
-- 10M requests free
-
-## FILE STRUCTURE
-
-- `api.ts` - API Gateway and Lambda functions
-- `astro.ts` - Astro site configuration
-- `dynamo.ts` - DynamoDB tables
-- `s3.ts` - S3 buckets
-- Root `sst.config.ts` - Main configuration
-
-## TESTING REQUIREMENTS
-
-- Run `bun run sst-diagnostics` to validate config
-- Test resource permissions are correct
-- Verify free tier limits aren't exceeded
-- Check all resources are properly linked
-- Unit tests for SST config don't need running infrastructure
-- Run tests with `bun test`
+**Edit TypeScript:** `mcp__language-server__edit_file` (immediate validation)  
+**Search infrastructure:** `Grep` patterns, `Glob` for files  
+**Web research:** `mcp__search__brave_search` for SST/AWS docs  
+**Avoid:** `Edit`, `WebFetch`, `WebSearch` (use MCP equivalents)

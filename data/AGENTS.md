@@ -1,66 +1,41 @@
 # Data Layer Agent Guidelines
 
-## CRITICAL RULES FOR THIS MODULE
+## CRITICAL RULES
 
-1. **ALWAYS use dynamodb-toolbox entities** - NEVER make raw DynamoDB calls
-2. **ALWAYS return typed data** - NEVER use `any` type
-3. **ALWAYS handle DynamoDB errors properly** - especially NotFound and throttling
-4. **NEVER store unencrypted sensitive data** - use AWS Secrets Manager for credentials
-5. **ALWAYS validate input data** before database operations
+1. **Use dynamodb-toolbox entities** - No raw DynamoDB calls
+2. **Return typed data** - No `any` type
+3. **Handle DynamoDB errors** - NotFound, throttling
+4. **Use AWS Secrets Manager** - No unencrypted sensitive data
+5. **Validate input data** - Before operations
 
-## COMMON MISTAKES IN DATA LAYER
+## COMMON MISTAKES
 
-❌ Using raw DynamoDB client → ✅ Use `entity.get()`, `entity.put()`, etc.
-❌ Not handling undefined values → ✅ Check for undefined before operations  
-❌ Assuming items exist → ✅ Always handle NotFound errors gracefully
-❌ Ignoring DynamoDB limits → ✅ Batch operations max 25 items
-❌ Hardcoding table names → ✅ Use SST Resource bindings
+❌ Raw DynamoDB → ✅ `entity.get()`, `entity.put()`
+❌ Not handling undefined → ✅ Check before operations
+❌ Assuming items exist → ✅ Handle NotFound gracefully
+❌ Ignoring limits → ✅ Batch max 25 items
+❌ Hardcoding names → ✅ Use SST Resource bindings
 
-## PATTERNS TO FOLLOW
+## PATTERNS
 
-### Entity Operations
-```typescript
-// CORRECT: Using entity methods
-const building = await BuildingEntity.get({ buildingID });
+**Entity Operations:** Use `BuildingEntity.get({ buildingID })` not raw DynamoDB
+**Error Handling:** Check for `ResourceNotFoundException`, handle gracefully
+**Batch Operations:** Max 25 items per batch, see `data/units.ts`
 
-// WRONG: Raw DynamoDB
-const building = await client.getItem({ TableName: "...", Key: {...} });
-```
+## FILES
 
-### Error Handling
-```typescript
-// See data/buildings.ts for proper patterns
-try {
-  const result = await BuildingEntity.get({ buildingID });
-  return result.Item;
-} catch (error) {
-  if (error.code === 'ResourceNotFoundException') {
-    return null; // Handle gracefully
-  }
-  throw error; // Re-throw unexpected errors
-}
-```
+`model.ts` (entities), `db.ts` (client), `buildings.ts`/`units.ts`/`unitTypes.ts` (CRUD), `index.ts` (exports)
 
-### Batch Operations
-```typescript
-// See data/units.ts for batch patterns
-// Remember: max 25 items per batch
-const batches = chunk(items, 25);
-```
+## TESTING & MONITORING
 
-## FILE STRUCTURE
+**Testing:** Mock dynamodb-toolbox, test error scenarios, check tmux test output  
+**Monitoring:** Check tmux typecheck/test outputs after changes  
+**Tools:** Use `mcp__language-server__edit_file` for TypeScript, `mcp__tmux__get_output` for monitoring  
+**Examples:** See tests/data/*.test.ts
 
-- `model.ts` - Entity definitions using dynamodb-toolbox
-- `db.ts` - DynamoDB client configuration
-- `buildings.ts` - Building CRUD operations
-- `units.ts` - Unit CRUD operations  
-- `unitTypes.ts` - Unit type CRUD operations
-- `index.ts` - Module exports
+## TOOL USAGE
 
-## TESTING REQUIREMENTS
-
-- Mock dynamodb-toolbox, NOT the raw DynamoDB client
-- Test all error scenarios (NotFound, throttling, validation)
-- Tests are completely isolated - no SST server or AWS credentials needed
-- Run tests with `bun test`
-- See tests/data/*.test.ts for examples
+**Edit TypeScript:** `mcp__language-server__edit_file` (immediate validation)  
+**Search code:** `Grep` patterns, `Glob` for files  
+**Web research:** `mcp__search__brave_search` for DynamoDB docs  
+**Avoid:** `Edit`, `WebFetch`, `WebSearch` (use MCP equivalents)

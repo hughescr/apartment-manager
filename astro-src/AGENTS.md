@@ -1,100 +1,51 @@
 # Frontend (Astro) Agent Guidelines
 
-## CRITICAL RULES FOR THIS MODULE
+## CRITICAL RULES
 
-1. **ALWAYS use SST's astro-sst adapter** - NEVER use standard Astro adapters
-2. **ALWAYS use Alpine.js for interactivity** - NEVER add React/Vue/Svelte
-3. **ALWAYS use DaisyUI components** - NEVER create custom UI components from scratch
-4. **ALWAYS handle loading and error states** in components
-5. **NEVER use `bun run dev`** - Astro requires SST server (`bun run sst-dev`)
+1. **Use astro-sst adapter** - No standard adapters
+2. **Use Alpine.js** - No React/Vue/Svelte
+3. **Use DaisyUI components** - No custom UI from scratch
+4. **Handle loading/error states** in components
+5. **Use `bun run sst-dev`** - Never `bun run dev`
 
-## COMMON MISTAKES IN FRONTEND
+## COMMON MISTAKES
 
-❌ Using React components → ✅ Use Alpine.js directives
-❌ Custom styling → ✅ Use Tailwind + DaisyUI classes
-❌ Client-side API calls → ✅ Use Astro's server-side data fetching
-❌ Creating new CSS files → ✅ Use Tailwind utilities
-❌ Forgetting TypeScript → ✅ All components use TypeScript
+❌ React components → ✅ Alpine.js directives
+❌ Custom styling → ✅ Tailwind + DaisyUI
+❌ Client-side API calls → ✅ Server-side data fetching
+❌ New CSS files → ✅ Tailwind utilities
+❌ No TypeScript → ✅ All components use TypeScript
 
-## PATTERNS TO FOLLOW
+## PATTERNS
 
-### Astro Component Structure
-```astro
----
-// See components/building/ for modular component patterns
-import type { BuildingData } from "../types";
-import { getBuildings } from "../../data/buildings";
+**Component Structure:** Server-side data fetching in frontmatter, DaisyUI classes  
+**Alpine.js:** `x-data`, `@click`, `x-show`, `x-transition` for interactivity  
+**Forms:** POST to `/api/`, Alpine for state, DaisyUI loading spinner  
+**DaisyUI:** Use `card`, `btn`, `input`, `loading`, `modal` classes  
+**Examples:** See components/building/, components/forms/
 
-// Server-side data fetching
-const buildings = await getBuildings();
----
+## FILES
 
-<div class="card bg-base-100 shadow-xl">
-  <!-- Use DaisyUI classes -->
-</div>
-```
+`components/` (reusable), `layouts/` (page layouts), `pages/` (routes), `types/` (TypeScript)
 
-### Alpine.js Integration
-```astro
-<!-- See components/UnitCard.astro for Alpine patterns -->
-<div x-data="{ open: false }">
-  <button @click="open = !open" class="btn btn-primary">
-    Toggle
-  </button>
-  <div x-show="open" x-transition>
-    <!-- Content -->
-  </div>
-</div>
-```
+## ASTRO RULES
 
-### Form Handling
-```astro
-<!-- See components/forms/ for patterns -->
-<form 
-  method="POST" 
-  action="/api/buildings"
-  x-data="{ submitting: false }"
-  @submit="submitting = true"
->
-  <button 
-    class="btn btn-primary" 
-    :disabled="submitting"
-  >
-    <span x-show="!submitting">Save</span>
-    <span x-show="submitting" class="loading loading-spinner"></span>
-  </button>
-</form>
-```
+**Data:** Frontmatter fetching, not client-side  
+**Props:** Define interfaces  
+**Slots:** Use named slots  
+**Styling:** Minimal scoped styles
 
-### DaisyUI Components
-- Cards: `card`, `card-body`, `card-title`
-- Buttons: `btn`, `btn-primary`, `btn-ghost`
-- Forms: `input`, `select`, `textarea` with `input-bordered`
-- Loading: `loading`, `loading-spinner`
-- Modals: `modal`, `modal-box`
+## TESTING & MONITORING
 
-## FILE STRUCTURE
+**Testing:** Test component rendering, Alpine.js interactions, forms, mock data layer, check tmux test output  
+**Monitoring:** Check tmux typecheck/astro-check/test outputs after changes  
+**Tools:** Use `mcp__language-server__edit_file` for TypeScript, `mcp__tmux__get_output` for monitoring  
+**Examples:** See tests/astro/ (when created)
 
-- `components/` - Reusable Astro components
-  - `forms/` - Form-specific components
-- `layouts/` - Page layouts
-- `pages/` - Route-based pages
-- `styles/` - Global styles (minimal, use Tailwind)
-- `types/` - TypeScript type definitions
+## TOOL USAGE
 
-## ASTRO-SPECIFIC RULES
-
-1. **Data Fetching**: Always in component frontmatter, not client-side
-2. **Props**: Define interfaces for all component props
-3. **Slots**: Use named slots for flexibility
-4. **Styling**: Scoped styles only when absolutely necessary
-
-## TESTING REQUIREMENTS
-
-- Test components render correctly with various props
-- Test Alpine.js interactions work
-- Test form submissions
-- Mock data layer calls
-- Tests are completely isolated - no SST server or AWS credentials needed
-- Run tests with `bun test`
-- See tests/astro/ for patterns (when created)
+**Edit TypeScript/Astro:** `mcp__language-server__edit_file` (immediate validation)  
+**Search components:** `Grep` patterns, `Glob` for files  
+**Web research:** `mcp__search__brave_search` for Astro/Alpine.js/DaisyUI docs  
+**UI testing:** `mcp__browser__*` tools for component interaction testing  
+**Avoid:** `Edit`, `WebFetch`, `WebSearch` (use MCP equivalents)

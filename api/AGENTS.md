@@ -1,89 +1,42 @@
 # API Layer Agent Guidelines
 
-## CRITICAL RULES FOR THIS MODULE
+## CRITICAL RULES
 
-1. **ALWAYS return proper HTTP status codes** - 200 OK, 201 Created, 400 Bad Request, 404 Not Found, 500 Internal Error
-2. **ALWAYS validate request bodies** before processing
-3. **ALWAYS use the data layer** - NEVER access DynamoDB directly
-4. **ALWAYS handle errors gracefully** - return meaningful error messages
-5. **NEVER expose internal errors** to clients - log them, return generic message
+1. **Return proper HTTP status codes** - 200/201/400/404/500
+2. **Validate request bodies** before processing
+3. **Use data layer** - No direct DynamoDB access
+4. **Handle errors gracefully** - meaningful messages
+5. **Don't expose internal errors** - log and return generic
 
-## COMMON MISTAKES IN API LAYER
+## COMMON MISTAKES
 
-❌ Returning 200 for all responses → ✅ Use appropriate status codes
-❌ Not validating input → ✅ Validate all request parameters and bodies
-❌ Exposing stack traces → ✅ Return user-friendly error messages
-❌ Direct database access → ✅ Always use data layer functions
-❌ Not handling CORS → ✅ SST handles CORS, don't add custom headers
+❌ Always 200 → ✅ Use proper status codes
+❌ No validation → ✅ Validate all inputs
+❌ Expose stack traces → ✅ User-friendly messages
+❌ Direct DB access → ✅ Use data layer
+❌ Custom CORS → ✅ SST handles CORS
 
-## PATTERNS TO FOLLOW
+## PATTERNS
 
-### Lambda Handler Structure
-```typescript
-// See api/buildings.ts for patterns
-export const handler = async (event: APIGatewayProxyEventV2) => {
-  try {
-    // 1. Extract and validate input
-    const { buildingID } = event.pathParameters || {};
-    if (!buildingID) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing buildingID" })
-      };
-    }
+**Handler Structure:** Extract/validate input → call data layer → return response → handle errors  
+**Validation:** Parse and validate `event.body`, check required fields  
+**HTTP Methods:** GET (retrieve), POST (create/201), PUT (update), PATCH (partial), DELETE (remove/204)  
+**Examples:** See api/buildings.ts
 
-    // 2. Call data layer
-    const result = await getBuilding(buildingID);
-    
-    // 3. Return appropriate response
-    return {
-      statusCode: 200,
-      body: JSON.stringify(result)
-    };
-  } catch (error) {
-    // 4. Handle errors properly
-    console.error("Error:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Internal server error" })
-    };
-  }
-};
-```
+## FILES
 
-### Request Body Validation
-```typescript
-// Always validate before using
-const body = JSON.parse(event.body || "{}");
-if (!body.name || !body.address) {
-  return {
-    statusCode: 400,
-    body: JSON.stringify({ error: "Missing required fields" })
-  };
-}
-```
+`index.ts` (router), `buildings.ts`/`units.ts`/`unitTypes.ts` (endpoints), `upload.ts` (files)
 
-### HTTP Methods
-- GET - Retrieve resources
-- POST - Create new resources (return 201)
-- PUT - Update entire resource
-- PATCH - Partial update
-- DELETE - Remove resource (return 204)
+## TESTING & MONITORING
 
-## FILE STRUCTURE
+**Testing:** Mock data layer, test HTTP methods/status codes/validation/errors, check tmux test output  
+**Monitoring:** Check tmux typecheck/test outputs after changes  
+**Tools:** Use `mcp__language-server__edit_file` for TypeScript, `mcp__tmux__get_output` for monitoring  
+**Examples:** See tests/api/*.test.ts
 
-- `index.ts` - Main API router using sst/node/api
-- `buildings.ts` - Building-related endpoints
-- `units.ts` - Unit-related endpoints
-- `unitTypes.ts` - Unit type endpoints
-- `upload.ts` - File upload handling
+## TOOL USAGE
 
-## TESTING REQUIREMENTS
-
-- Mock the data layer, not the API handlers
-- Test all HTTP methods and status codes
-- Test validation logic thoroughly
-- Test error scenarios
-- Tests are completely isolated - no SST server or AWS credentials needed
-- Run tests with `bun test`
-- See tests/api/*.test.ts for examples
+**Edit TypeScript:** `mcp__language-server__edit_file` (immediate validation)  
+**Search code:** `Grep` patterns, `Glob` for files  
+**Web research:** `mcp__search__brave_search` for AWS Lambda/API Gateway docs  
+**Avoid:** `Edit`, `WebFetch`, `WebSearch` (use MCP equivalents)

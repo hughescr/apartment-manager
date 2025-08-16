@@ -1,5 +1,6 @@
 /**
  * Test setup file for building component tests.
+ * Uses jest.fn() patterns instead of mock.module() to avoid Bun's global state issues.
  * This file sets up mocking and test data factories for component testing.
  */
 import { mock, jest } from 'bun:test';
