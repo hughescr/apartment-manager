@@ -629,7 +629,7 @@ describe('Validate for Publish API Endpoint', () => {
 
             expect(result.statusCode).toBe(400);
             const response = JSON.parse(result.body as string);
-            expect(response.errors.buildingID).toContain('must be a valid 8-character ID');
+            expect(response.errors.buildingID).toContain('must be a valid building ID');
         });
 
         it('should return 400 for missing required parameters', async () => {

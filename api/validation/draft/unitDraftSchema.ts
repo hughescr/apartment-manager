@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import _ from 'lodash';
+import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
 /**
  * Draft validation schema for units - permissive schema for work-in-progress saves
@@ -47,18 +48,10 @@ const dateStringDraft = () => z.string().optional().refine(
 
 export const UnitDraftSchema = z.looseObject({
     // Required fields for identification in draft
-    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens').refine((id) => {
-        // Security validation: prevent injection patterns
-        const maliciousPatterns = [
-            /[{}"'$()|*?[\]^]/,  // NoSQL injection characters
-            /[()&|!]/,                       // LDAP injection characters
-            /[\r\n]/,                        // Header injection (CRLF)
-            /\0/,                          // Null bytes
-            /\.\.[/\\]/,                   // Path traversal
-        ];
-
-        return !_.some(maliciousPatterns, pattern => pattern.test(id));
-    }, 'Building ID contains invalid or potentially dangerous characters'),
+    buildingID: z.string().min(1, 'Building ID is required').max(255).refine((id) => {
+        // Use proper building ID validation for short-uuid format
+        return isValidBuildingId(id);
+    }, 'Building ID must be a valid building ID format'),
     unitID: z.string().min(1, 'Unit ID is required').max(255).regex(/^[\w-]+$/, 'Unit ID can only contain letters, numbers, underscores, and hyphens').refine((id) => {
         // Security validation: prevent injection patterns
         const maliciousPatterns = [

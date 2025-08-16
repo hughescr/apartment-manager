@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import _ from 'lodash';
 import { PropertyType } from '../../../src/types';
+import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
 /**
  * STRICT MITS 4.1 COMPLIANT BUILDING VALIDATION SCHEMA
@@ -32,7 +33,10 @@ export const BuildingPublishedSchema = z.object({
     })
         .min(1, 'Building ID is required for MITS Property_ID identification')
         .max(255, 'Building ID must be 255 characters or less for MITS compliance')
-        .regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens for MITS compliance'),
+        .refine((id) => {
+            // Use proper building ID validation for short-uuid format
+            return isValidBuildingId(id);
+        }, 'Building ID must be a valid building ID format for MITS compliance'),
 
     // MITS Property_ID.Identification.MarketingName - REQUIRED
     buildingName: z.string({

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import _ from 'lodash';
+import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
 /**
  * STRICT MITS 4.1 COMPLIANT UNIT TYPE VALIDATION SCHEMA
@@ -60,7 +61,10 @@ export const UnitTypePublishedSchema = z.object({
     buildingID: z.string()
         .min(1, 'Building ID is required to associate floorplan with property')
         .max(255, 'Building ID must be 255 characters or less')
-        .regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
+        .refine((id) => {
+            // Use proper building ID validation for short-uuid format
+            return isValidBuildingId(id);
+        }, 'Building ID must be a valid building ID format'),
 
     // MITS Floorplan.Identification.FloorplanID - REQUIRED
     modelID: z.string({

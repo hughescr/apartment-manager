@@ -9,8 +9,8 @@ import type {
  * Note: Zillow uses buildings as templates for units
  */
 export const completeBuildingZillowExpected: MappedBuilding = {
-    externalId: 'building-complete-001',
-    name: 'building-complete-001',
+    externalId: 'wgey4dDPEd8qEMGtGoMef7',
+    name: 'wgey4dDPEd8qEMGtGoMef7',
     address: {
         street: '1234 Luxury Lane',
         city: 'San Francisco',
@@ -22,10 +22,10 @@ export const completeBuildingZillowExpected: MappedBuilding = {
     totalUnits: 50,
     description: 'Experience luxury living in the heart of San Francisco. Our premium apartment complex offers stunning views, modern amenities, and a prime location near downtown. Each unit features high-end finishes, stainless steel appliances, and floor-to-ceiling windows. Residents enjoy access to our rooftop terrace, fitness center, and 24/7 concierge service.',
     photos: [
-        'https://s3.amazonaws.com/bucket/building-complete-001/exterior.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/lobby.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/pool.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/gym.jpg'
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/exterior.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/lobby.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/pool.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/gym.jpg'
     ],
     leaseTerms: {
         minMonths: 12,
@@ -270,10 +270,10 @@ export const completeUnitZillowExpected: MappedUnit = {
         'https://s3.amazonaws.com/bucket/unit-complete-001/bathroom.jpg',
         'https://s3.amazonaws.com/bucket/unit-complete-001/view.jpg',
         // Building photos
-        'https://s3.amazonaws.com/bucket/building-complete-001/exterior.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/lobby.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/pool.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/gym.jpg'
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/exterior.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/lobby.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/pool.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/gym.jpg'
     ],
     rentSpecial: {
         title: 'Corner Unit Special',
@@ -344,10 +344,10 @@ export const inheritingUnitZillowExpected: MappedUnit = {
     ],
     photos: [
         // Building photos only (no unit photos)
-        'https://s3.amazonaws.com/bucket/building-complete-001/exterior.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/lobby.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/pool.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/gym.jpg'
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/exterior.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/lobby.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/pool.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/gym.jpg'
     ],
     rentSpecial: {
         title: 'Move-In Special',

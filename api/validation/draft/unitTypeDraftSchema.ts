@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import _ from 'lodash';
+import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
 /**
  * Draft validation schema for unit types - permissive schema for work-in-progress saves
@@ -39,7 +40,10 @@ const dateStringDraft = () => z.string().refine(
 
 export const UnitTypeDraftSchema = z.looseObject({
     // Required identification fields
-    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
+    buildingID: z.string().min(1, 'Building ID is required').max(255).refine((id) => {
+        // Use proper building ID validation for short-uuid format
+        return isValidBuildingId(id);
+    }, 'Building ID must be a valid building ID format'),
     modelID: z.string().min(1, 'Model ID is required').max(255).regex(/^[\w-]+$/, 'Model ID can only contain letters, numbers, underscores, and hyphens'),
 
     // All other fields are optional for draft state

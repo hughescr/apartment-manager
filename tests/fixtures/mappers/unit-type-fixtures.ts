@@ -5,7 +5,7 @@ import { AmenityCategory } from '../../../src/types/index.js';
  * Standard studio unit type
  */
 export const studioUnitType: UnitTypeData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     modelID: 'model-studio-001',
     modelName: 'Cozy Studio',
     countAvailable: 5,
@@ -39,7 +39,7 @@ export const studioUnitType: UnitTypeData = {
  * Standard 1-bedroom unit type
  */
 export const oneBedUnitType: UnitTypeData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     modelID: 'model-1bed-001',
     modelName: 'Classic One Bedroom',
     countAvailable: 10,
@@ -70,7 +70,7 @@ export const oneBedUnitType: UnitTypeData = {
  * Standard 2-bedroom unit type
  */
 export const twoBedUnitType: UnitTypeData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     modelID: 'model-2bed-001',
     modelName: 'Spacious Two Bedroom',
     countAvailable: 8,
@@ -106,7 +106,7 @@ export const twoBedUnitType: UnitTypeData = {
  * Luxury 3-bedroom unit type
  */
 export const threeBedUnitType: UnitTypeData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     modelID: 'model-3bed-001',
     modelName: 'Premium Three Bedroom',
     countAvailable: 3,
@@ -146,7 +146,7 @@ export const threeBedUnitType: UnitTypeData = {
  * Unit type with all fields populated
  */
 export const completeUnitType: UnitTypeData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     modelID: 'model-complete-001',
     modelName: 'Deluxe Corner Unit',
     countAvailable: 2,
@@ -396,7 +396,7 @@ export const roomForRentUnitType: UnitTypeData = {
  * Unit type with no available units
  */
 export const unavailableUnitType: UnitTypeData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     modelID: 'model-unavailable-001',
     modelName: 'Penthouse Suite',
     countAvailable: 0,
@@ -416,7 +416,7 @@ export const unavailableUnitType: UnitTypeData = {
  * Unit type with missing rent information
  */
 export const noRentUnitType: UnitTypeData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     modelID: 'model-norent-001',
     modelName: 'Coming Soon Model',
     beds: 2,

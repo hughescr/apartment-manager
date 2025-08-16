@@ -34,7 +34,7 @@ export function validateId(id: string, fieldName: string): string | null {
     // Special validation for building IDs (using short-uuid format)
     if(_.includes(_.toLower(fieldName), 'building')) {
         if(!isValidBuildingId(id)) {
-            return `${fieldName} must be a valid 8-character ID`;
+            return `${fieldName} must be a valid building ID`;
         }
         return null;
     }

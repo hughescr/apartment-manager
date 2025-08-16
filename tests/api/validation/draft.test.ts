@@ -76,7 +76,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             expect(result.success).toBe(false);
             if(!result.success) {
                 const idError = _.find(result.error.issues, issue => issue.path.includes('buildingID'));
-                expect(idError?.message).toContain('can only contain letters, numbers, underscores, and hyphens');
+                expect(idError?.message).toContain('must be a valid building ID format');
             }
         });
 
@@ -213,7 +213,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             if(!result.success) {
                 const buildingIdError = _.find(result.error.issues, issue => issue.path.includes('buildingID'));
                 const modelIdError = _.find(result.error.issues, issue => issue.path.includes('modelID'));
-                expect(buildingIdError?.message).toContain('can only contain letters, numbers, underscores, and hyphens');
+                expect(buildingIdError?.message).toContain('must be a valid building ID format');
                 expect(modelIdError?.message).toContain('can only contain letters, numbers, underscores, and hyphens');
             }
         });
@@ -349,7 +349,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             if(!result.success) {
                 const buildingIdError = _.find(result.error.issues, issue => issue.path.includes('buildingID'));
                 const unitIdError = _.find(result.error.issues, issue => issue.path.includes('unitID'));
-                expect(buildingIdError?.message).toContain('can only contain letters, numbers, underscores, and hyphens');
+                expect(buildingIdError?.message).toContain('must be a valid building ID format');
                 expect(unitIdError?.message).toContain('can only contain letters, numbers, underscores, and hyphens');
             }
         });
@@ -444,7 +444,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
     describe('Cross-Schema Consistency', () => {
         it('should use consistent ID validation patterns across all schemas', () => {
-            const validId = 'test-id-123';
+            const validId = 'wgey4dDPEd8qEMGtGoMef7'; // Valid short-uuid format
             const invalidId = 'invalid id!';
 
             // Test building ID validation

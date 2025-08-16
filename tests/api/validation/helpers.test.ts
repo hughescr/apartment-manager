@@ -69,16 +69,14 @@ describe('Validation Helper Functions', () => {
 
             const result = validateForSave('building', invalidBuilding);
             expect(result.success).toBe(false);
-            expect(result.errors).toHaveLength(2); // Both regex and security validations fail
-            // Both errors should be for buildingID field
+            expect(result.errors).toHaveLength(1); // Building ID format validation
+            // Error should be for buildingID field
             expect(result.errors[0].field).toBe('buildingID');
-            expect(result.errors[1].field).toBe('buildingID');
 
-            // Should contain both types of validation errors
+            // Should contain building ID validation error
             const errorMessages = _.map(result.errors, 'message');
             expect(errorMessages).toEqual(expect.arrayContaining([
-                expect.stringContaining('can only contain letters, numbers, underscores, and hyphens'),
-                expect.stringContaining('contains invalid or potentially dangerous characters')
+                expect.stringContaining('must be a valid building ID format')
             ]));
 
             // All errors should have draft context

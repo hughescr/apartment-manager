@@ -5,7 +5,7 @@ import { AmenityCategory } from '../../../src/types/index.js';
  * Complete unit with all fields populated
  */
 export const completeUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-complete-001',
     description: 'Corner unit with panoramic views',
     beds: 2,
@@ -68,7 +68,7 @@ export const completeUnit: UnitData = {
  * Unit inheriting most data from unit type
  */
 export const inheritingUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-inheriting-001',
     modelID: 'model-1bed-001',
     unitNumber: '305',
@@ -84,7 +84,7 @@ export const inheritingUnit: UnitData = {
  * Unit inheriting from building (no model)
  */
 export const buildingInheritUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-building-inherit-001',
     unitNumber: '101',
     beds: 0, // Studio
@@ -101,7 +101,7 @@ export const buildingInheritUnit: UnitData = {
  * Unit with field overrides
  */
 export const overrideUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-override-001',
     modelID: 'model-2bed-001',
     unitNumber: '805',
@@ -134,7 +134,7 @@ export const overrideUnit: UnitData = {
  * Occupied unit
  */
 export const occupiedUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-occupied-001',
     unitNumber: '501',
     beds: 1,
@@ -161,7 +161,7 @@ export const minimalUnit: UnitData = {
  * Unit with no rent
  */
 export const noRentUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-norent-001',
     unitNumber: '999',
     beds: 1,
@@ -175,7 +175,7 @@ export const noRentUnit: UnitData = {
  * Unit with no availability date
  */
 export const noDateUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-nodate-001',
     unitNumber: '201',
     beds: 2,
@@ -302,7 +302,7 @@ export const townhomeUnit: UnitData = {
  * Unit with error status
  */
 export const errorStatusUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-error-001',
     unitNumber: '666',
     beds: 1,
@@ -324,7 +324,7 @@ export const errorStatusUnit: UnitData = {
  * Unit with long descriptions and many amenities
  */
 export const verboseUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-verbose-001',
     unitNumber: '1001',
     beds: 2,
@@ -358,7 +358,7 @@ export const verboseUnit: UnitData = {
  * Unit available immediately
  */
 export const immediateUnit: UnitData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     unitID: 'unit-immediate-001',
     unitNumber: '401',
     beds: 1,

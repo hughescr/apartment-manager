@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidBuildingId } from '../../src/utils/building-id.js';
 
 // Helper schema for deposit validation (same as unit schema)
 const DepositSchema = z.union([
@@ -33,7 +34,10 @@ const dateString = () => z.string().refine(
 // Base schema without refinements
 const UnitTypeSchemaBase = z.looseObject({
     // Required identification fields
-    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
+    buildingID: z.string().min(1, 'Building ID is required').max(255).refine((id) => {
+        // Use proper building ID validation for short-uuid format
+        return isValidBuildingId(id);
+    }, 'Building ID must be a valid building ID format'),
     modelID: z.string().min(1, 'Model ID is required').max(255).regex(/^[\w-]+$/, 'Model ID can only contain letters, numbers, underscores, and hyphens'),
 
     // Model name (optional for work-in-progress, but should be required for publishing)

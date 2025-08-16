@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PropertyType } from '../../src/types';
+import { isValidBuildingId } from '../../src/utils/building-id.js';
 
 // Helper for website URLs with custom message
 const websiteUrl = (field: string) => z.url({ error: `${field} must start with http:// or https://` });
@@ -38,7 +39,10 @@ const ScreeningCriteriaSchema = z.object({
 }).partial();
 
 export const BuildingSchema = z.looseObject({
-    buildingID: z.string().min(1).max(255).regex(/^[\w-]+$/),
+    buildingID: z.string().min(1).max(255).refine((id) => {
+        // Use proper building ID validation for short-uuid format
+        return isValidBuildingId(id);
+    }, 'buildingID must be a valid building ID format'),
     buildingName: z.string().min(1, 'buildingName is required').optional(),
     street: z.string().min(1, 'Street address cannot be empty').optional(),
     city: z.string().min(1, 'City cannot be empty').optional(),

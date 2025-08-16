@@ -14,7 +14,7 @@ import {
  * Complete building with all possible fields populated
  */
 export const completeBuilding: BuildingData = {
-    buildingID: 'building-complete-001',
+    buildingID: 'wgey4dDPEd8qEMGtGoMef7',
     street: '1234 Luxury Lane',
     city: 'San Francisco',
     state: 'CA',
@@ -26,10 +26,10 @@ export const completeBuilding: BuildingData = {
     propertyType: PropertyType.APARTMENT,
     roomsForRent: false,
     photos: [
-        'https://s3.amazonaws.com/bucket/building-complete-001/exterior.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/lobby.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/pool.jpg',
-        'https://s3.amazonaws.com/bucket/building-complete-001/gym.jpg'
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/exterior.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/lobby.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/pool.jpg',
+        'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/gym.jpg'
     ],
     leaseLength: 12,
     shortTermLeaseAllowed: true,
@@ -259,14 +259,14 @@ export const completeBuilding: BuildingData = {
  * Minimal building with only required fields
  */
 export const minimalBuilding: BuildingData = {
-    buildingID: 'building-minimal-001'
+    buildingID: 'gqQmZod7ufiVXATBwZwA3P'
 };
 
 /**
  * Building with complex amenities and fees
  */
 export const complexAmenitiesBuilding: BuildingData = {
-    buildingID: 'building-amenities-001',
+    buildingID: 'qpNN3VzxxQZwjEUciWYWpW',
     street: '789 Amenity Ave',
     city: 'Austin',
     state: 'TX',
@@ -313,7 +313,7 @@ export const complexAmenitiesBuilding: BuildingData = {
  * Building with detailed pet policies and parking options
  */
 export const petFriendlyBuilding: BuildingData = {
-    buildingID: 'building-pet-friendly-001',
+    buildingID: 'nEFwwbpgxeYZ3tdzzPWyeg',
     street: '456 Paw Print Place',
     city: 'Portland',
     state: 'OR',
@@ -347,7 +347,7 @@ export const petFriendlyBuilding: BuildingData = {
  * Building with missing optional fields (tests defaults)
  */
 export const sparseBuilding: BuildingData = {
-    buildingID: 'building-sparse-001',
+    buildingID: 'iDyVLX9KgV7pkPn6kpZF3y',
     street: '111 Basic Blvd',
     city: 'Phoenix',
     state: 'AZ',
@@ -366,7 +366,7 @@ export const sparseBuilding: BuildingData = {
  * Student housing building with income restrictions
  */
 export const studentHousingBuilding: BuildingData = {
-    buildingID: 'building-student-001',
+    buildingID: 'nBSzpxnEdsgiBq6wpyDudm',
     street: '100 Campus Court',
     city: 'Berkeley',
     state: 'CA',
@@ -409,7 +409,7 @@ export const studentHousingBuilding: BuildingData = {
  * Senior living building
  */
 export const seniorLivingBuilding: BuildingData = {
-    buildingID: 'building-senior-001',
+    buildingID: 'mCxecDJWDBX41ERLjTTTwH',
     street: '555 Golden Years Lane',
     city: 'Scottsdale',
     state: 'AZ',
@@ -445,7 +445,7 @@ export const seniorLivingBuilding: BuildingData = {
  * Affordable housing building with AMI restrictions
  */
 export const affordableHousingBuilding: BuildingData = {
-    buildingID: 'building-affordable-001',
+    buildingID: 'safrqUjFQhwGHcv5x7rpvb',
     street: '200 Community Circle',
     city: 'Oakland',
     state: 'CA',
@@ -482,7 +482,7 @@ export const affordableHousingBuilding: BuildingData = {
  * Townhome community
  */
 export const townhomeBuilding: BuildingData = {
-    buildingID: 'building-townhome-001',
+    buildingID: '6ihcVTu6X1THFXLAgPYAXD',
     street: '300 Townhome Terrace',
     city: 'Raleigh',
     state: 'NC',
@@ -492,8 +492,8 @@ export const townhomeBuilding: BuildingData = {
     totalUnits: 25,
     propertyDescription: 'Luxury townhome community with private entrances and attached garages.',
     photos: [
-        'https://s3.amazonaws.com/bucket/townhome-001/exterior.jpg',
-        'https://s3.amazonaws.com/bucket/townhome-001/interior.jpg'
+        'https://s3.amazonaws.com/bucket/6ihcVTu6X1THFXLAgPYAXD/exterior.jpg',
+        'https://s3.amazonaws.com/bucket/6ihcVTu6X1THFXLAgPYAXD/interior.jpg'
     ],
     parkingOptions: [
         { type: ParkingType.GARAGE, included: true, spaces: 2, description: 'Private 2-car garage' }
@@ -512,7 +512,7 @@ export const townhomeBuilding: BuildingData = {
  * Building with no pets allowed
  */
 export const noPetsBuilding: BuildingData = {
-    buildingID: 'building-no-pets-001',
+    buildingID: 'fKbTXxSasMnXdCGtsqw28r',
     street: '999 Allergy Avenue',
     city: 'Seattle',
     state: 'WA',

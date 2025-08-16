@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PropertyType } from '../../../src/types';
+import { isValidBuildingId } from '../../../src/utils/building-id.js';
 import _ from 'lodash';
 
 /**
@@ -43,18 +44,10 @@ const ScreeningCriteriaDraftSchema = z.object({
 
 export const BuildingDraftSchema = z.looseObject({
     // Required fields for draft - only ID and name
-    buildingID: z.string().min(1).max(255).regex(/^[\w-]+$/, 'buildingID can only contain letters, numbers, underscores, and hyphens').refine((id) => {
-        // Security validation: prevent injection patterns
-        const maliciousPatterns = [
-            /[{}"'$()|*?[\]^]/,  // NoSQL injection characters
-            /[()&|!]/,                       // LDAP injection characters
-            /[\r\n]/,                        // Header injection (CRLF)
-            /\0/,                          // Null bytes
-            /\.\.[/\\]/,                   // Path traversal
-        ];
-
-        return !_.some(maliciousPatterns, pattern => pattern.test(id));
-    }, 'buildingID contains invalid or potentially dangerous characters'),
+    buildingID: z.string().min(1).max(255).refine((id) => {
+        // Use proper building ID validation for short-uuid format
+        return isValidBuildingId(id);
+    }, 'buildingID must be a valid building ID format'),
     buildingName: z.string().min(1, 'buildingName is required').transform((name) => {
         // Sanitize to prevent XSS while preserving content
         return _.chain(name)

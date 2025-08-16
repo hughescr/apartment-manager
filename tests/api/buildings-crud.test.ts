@@ -72,17 +72,9 @@ describe('Buildings API - CRUD operations', () => {
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 
-        it('should ignore buildingID in input and auto-generate it', async () => {
-            // Input that includes buildingID (should be ignored)
+        it('should reject invalid buildingID format', async () => {
+            // Input that includes invalid buildingID (should be rejected)
             const inputWithId = { ...testBuildingInput, buildingID: 'should-be-ignored' };
-
-            const expectedBuilding = {
-                ...getDefaultBuildingData(),
-                ...testBuildingWithIds,
-                unitID: 'BUILDING'
-            };
-
-            dynamoDbMock.mockResolvedValueOnce(mockPutResponse(expectedBuilding));
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify(inputWithId)
@@ -90,11 +82,10 @@ describe('Buildings API - CRUD operations', () => {
 
             const result = await create(event as APIGatewayProxyEventV2);
 
-            expect(result.statusCode).toBe(201);
-            const responseBuilding = JSON.parse(result.body as string);
-            // buildingID should be auto-generated, not the provided value
-            expect(responseBuilding.buildingID).not.toBe('should-be-ignored');
-            expect(responseBuilding.buildingID).toMatch(/^[\w-]{22}$/);
+            expect(result.statusCode).toBe(400);
+            const error = JSON.parse(result.body as string);
+            expect(error.error).toBe('Validation failed');
+            expect(error.errors.buildingID).toContain('must be a valid building ID format');
         });
 
         it('should surface DynamoDB errors', () => {
