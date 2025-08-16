@@ -37,9 +37,15 @@ const dateStringDraft = () => z.string().refine(
     { message: 'Invalid date format' }
 ).optional();
 
-// Base schema for common fields (without cross-field validation yet)
-const UnitTypeDraftBaseSchema = z.object({
-    // All fields are optional for draft state
+export const UnitTypeDraftSchema = z.looseObject({
+    // Required identification fields
+    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
+    modelID: z.string().min(1, 'Model ID is required').max(255).regex(/^[\w-]+$/, 'Model ID can only contain letters, numbers, underscores, and hyphens'),
+
+    // All other fields are optional for draft state
+    modelName: z.string().transform(val => _.trim(val)).refine(val => val.length > 0, { message: 'Model name cannot be empty' }).optional(),
+
+    // Required room configuration (optional for draft state)
     beds: z.number().int().min(0).max(10, 'Number of beds must be between 0 and 10').optional(),
     baths: z.number().min(0).max(10, 'Number of baths must be between 0 and 10').optional(),
 
@@ -48,7 +54,7 @@ const UnitTypeDraftBaseSchema = z.object({
     dateAvailable: dateStringDraft(),
 
     // Occupancy limits (optional for draft)
-    maxOccupants: z.number().int().min(1).max(20, 'Max occupants must be between 1 and 20').optional(),
+    maxOccupants: z.number().int().min(1, 'Number must be greater than or equal to 1').max(20, 'Max occupants must be between 1 and 20').optional(),
 
     // Rent ranges (optional for draft)
     minRent: z.number().min(0, 'Min rent cannot be negative').optional(),
@@ -69,58 +75,36 @@ const UnitTypeDraftBaseSchema = z.object({
 
     // Timestamps
     updatedAt: z.string().optional(),
-}).passthrough();
-
-// Helper function to apply cross-field validation refinements
-const applyCrossFieldValidation = <T extends z.ZodTypeAny>(schema: T) => schema
-.refine((data: Record<string, unknown>) => {
+})
+.refine((data) => {
     // Cross-field validation: min rent cannot be greater than max rent (only if both exist)
     if(data.minRent !== undefined && data.maxRent !== undefined) {
-        return (data.minRent as number) <= (data.maxRent as number);
+        return data.minRent <= data.maxRent;
     }
     return true;
 }, {
     message: 'Min rent cannot be greater than max rent',
     path: ['maxRent'],
 })
-.refine((data: Record<string, unknown>) => {
+.refine((data) => {
     // Cross-field validation: min sqft cannot be greater than max sqft (only if both exist)
     if(data.minSqft !== undefined && data.maxSqft !== undefined) {
-        return (data.minSqft as number) <= (data.maxSqft as number);
+        return data.minSqft <= data.maxSqft;
     }
     return true;
 }, {
     message: 'Min square footage cannot be greater than max square footage',
     path: ['maxSqft'],
 })
-.refine((data: Record<string, unknown>) => {
+.refine((data) => {
     // Cross-field validation: min lease term cannot be greater than max lease term (only if both exist)
     if(data.minLeaseTerm !== undefined && data.maxLeaseTerm !== undefined) {
-        return (data.minLeaseTerm as number) <= (data.maxLeaseTerm as number);
+        return data.minLeaseTerm <= data.maxLeaseTerm;
     }
     return true;
 }, {
     message: 'Min lease term cannot be greater than max lease term',
     path: ['maxLeaseTerm'],
 });
-
-export const UnitTypeDraftSchema = applyCrossFieldValidation(UnitTypeDraftBaseSchema.extend({
-    // Required identification fields for draft creation
-    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
-    modelID: z.string().min(1, 'Model ID is required').max(255).regex(/^[\w-]+$/, 'Model ID can only contain letters, numbers, underscores, and hyphens'),
-    modelName: z.string().transform(val => _.trim(val)).refine(val => val.length > 0, {
-        message: 'Model name cannot be empty'
-    }).optional(),
-}));
-
-// Schema for updates - doesn't require ID fields since they come from URL
-export const UnitTypeDraftUpdateSchema = applyCrossFieldValidation(UnitTypeDraftBaseSchema.extend({
-    // Optional identification fields for updates (will be overridden by URL params)
-    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens').optional(),
-    modelID: z.string().min(1, 'Model ID is required').max(255).regex(/^[\w-]+$/, 'Model ID can only contain letters, numbers, underscores, and hyphens').optional(),
-    modelName: z.string().transform(val => _.trim(val)).refine(val => val.length > 0, {
-        message: 'Model name cannot be empty'
-    }).optional(),
-}));
 
 export type UnitTypeDraftInput = z.infer<typeof UnitTypeDraftSchema>;

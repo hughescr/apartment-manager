@@ -2,10 +2,10 @@ import { z } from 'zod';
 import { PropertyType } from '../../src/types';
 
 // Helper for website URLs with custom message
-const websiteUrl = (field: string) => z.string().url({ message: `${field} must start with http:// or https://` });
+const websiteUrl = (field: string) => z.url({ error: `${field} must start with http:// or https://` });
 
 const ContactInfoSchema = z.object({
-    email: z.string().email('Invalid email address format').optional(),
+    email: z.email({ error: 'Invalid email address format' }).optional(),
     phone: z.string().regex(/^[\d\s\-().+]+$/, 'Invalid phone number format').optional(),
     propertyWebsite: websiteUrl('Website').optional(),
     managementWebsite: websiteUrl('Management website').optional(),
@@ -28,7 +28,7 @@ const RentSpecialSchema = z.object({
 
 const IncomeRestrictionsSchema = z.object({
     amiLimit: z.number().min(0).max(200).optional(),
-    maxIncomeByHouseholdSize: z.record(z.number()).optional(),
+    maxIncomeByHouseholdSize: z.record(z.string(), z.number()).optional(),
 }).partial();
 
 const ScreeningCriteriaSchema = z.object({
@@ -37,7 +37,7 @@ const ScreeningCriteriaSchema = z.object({
     maxOccupantsPerBedroom: z.number().int().min(0).max(5).optional(),
 }).partial();
 
-export const BuildingSchema = z.object({
+export const BuildingSchema = z.looseObject({
     buildingID: z.string().min(1).max(255).regex(/^[\w-]+$/),
     buildingName: z.string().min(1, 'buildingName is required').optional(),
     street: z.string().min(1, 'Street address cannot be empty').optional(),
@@ -55,8 +55,8 @@ export const BuildingSchema = z.object({
     latitude: z.number().min(-90).max(90, 'Latitude must be between -90 and 90').optional(),
     longitude: z.number().min(-180).max(180, 'Longitude must be between -180 and 180').optional(),
     coordinatesVerified: z.boolean().optional(),
-    propertyType: z.nativeEnum(PropertyType).optional(),
-    photos: z.array(z.string().url('Photo URLs must be valid URLs')).optional(),
+    propertyType: z.enum(PropertyType).optional(),
+    photos: z.array(z.url({ error: 'Photo URLs must be valid URLs' })).optional(),
     acceptsOnlineApplications: z.boolean().optional(),
 
     // Additional MITS compliance fields
@@ -87,7 +87,7 @@ export const BuildingSchema = z.object({
 
     // Timestamps
     updatedAt: z.string().optional(),
-}).passthrough();
+});
 
 export type BuildingInput = z.infer<typeof BuildingSchema>;
 
@@ -105,13 +105,13 @@ export const BuildingMITSSchema = BuildingSchema.extend({
     longitude: z.number().min(-180).max(180, 'Valid longitude is required for MITS compliance'),
 
     // Property classification required
-    propertyType: z.nativeEnum(PropertyType, { required_error: 'Property type is required for MITS compliance' }),
-    structureType: z.enum(['Apartment', 'Condo', 'Townhouse', 'Single Family', 'House'], { required_error: 'Structure type is required for MITS compliance' }),
-    rentalType: z.enum(['Market Rate', 'Affordable', 'Student', 'Senior'], { required_error: 'Rental type is required for MITS compliance' }),
+    propertyType: z.enum(PropertyType, { error: 'Property type is required for MITS compliance' }),
+    structureType: z.enum(['Apartment', 'Condo', 'Townhouse', 'Single Family', 'House'], { message: 'Structure type is required for MITS compliance' }),
+    rentalType: z.enum(['Market Rate', 'Affordable', 'Student', 'Senior'], { message: 'Rental type is required for MITS compliance' }),
 
     // Contact info required for listings
     contactInfo: ContactInfoSchema.extend({
-        email: z.string().email('Valid email is required for MITS compliance'),
+        email: z.email({ error: 'Valid email is required for MITS compliance' }),
         phone: z.string().regex(/^[\d\s\-().+]+$/, 'Valid phone number is required for MITS compliance')
     })
 });

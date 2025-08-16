@@ -45,7 +45,7 @@ const dateStringDraft = () => z.string().optional().refine(
     { message: 'Invalid date format' }
 );
 
-export const UnitDraftSchema = z.object({
+export const UnitDraftSchema = z.looseObject({
     // Required fields for identification in draft
     buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
     unitID: z.string().min(1, 'Unit ID is required').max(255).regex(/^[\w-]+$/, 'Unit ID can only contain letters, numbers, underscores, and hyphens'),
@@ -84,7 +84,7 @@ export const UnitDraftSchema = z.object({
     unitDescription: z.string().optional(),
     unitRentSpecial: UnitRentSpecialDraftSchema,
     unitAmenities: z.array(AmenityDraftSchema).optional(),
-    photos: z.array(z.string().url('Photo URL must be a valid URL')).optional(),
+    photos: z.array(z.url({ error: 'Photo URL must be a valid URL' })).optional(),
 
     // MITS compliance fields (optional for draft)
     vacancyClass: z.enum(['Occupied', 'Unoccupied', 'Notice', 'Down', 'Available']).optional(),
@@ -97,7 +97,7 @@ export const UnitDraftSchema = z.object({
     feedLastPulled: z.record(z.string(), z.any()).optional(),
     feedLastModified: z.string().optional(),
     updatedAt: z.string().optional(),
-}).passthrough()
+})
 .refine((data) => {
     // Cross-field validation: min lease term cannot be greater than max lease term (only if both exist)
     if(data.minLeaseTerm !== undefined && data.minLeaseTerm !== null &&

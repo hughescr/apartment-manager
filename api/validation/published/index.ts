@@ -20,7 +20,6 @@
  * ```
  */
 
-import type { ZodIssue } from 'zod';
 import _ from 'lodash';
 import {
     BuildingPublishedSchema,
@@ -80,7 +79,7 @@ export function validateForMITSPublication(data: {
         results.isValid = false;
         results.errors.push({
             type: 'building',
-            issues: _.map(results.building.error.issues, (issue: ZodIssue) => ({
+            issues: _.map(results.building.error.issues, issue => ({
                 path: issue.path.join('.'),
                 message: issue.message
             }))
@@ -94,7 +93,7 @@ export function validateForMITSPublication(data: {
             results.errors.push({
                 type: 'unitType',
                 index,
-                issues: _.map(result.error.issues, (issue: ZodIssue) => ({
+                issues: _.map(result.error.issues, issue => ({
                     path: issue.path.join('.'),
                     message: issue.message
                 }))
@@ -109,7 +108,7 @@ export function validateForMITSPublication(data: {
             results.errors.push({
                 type: 'unit',
                 index,
-                issues: _.map(result.error.issues, (issue: ZodIssue) => ({
+                issues: _.map(result.error.issues, issue => ({
                     path: issue.path.join('.'),
                     message: issue.message
                 }))

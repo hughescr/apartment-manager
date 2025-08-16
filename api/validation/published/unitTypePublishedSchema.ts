@@ -64,7 +64,7 @@ export const UnitTypePublishedSchema = z.object({
 
     // MITS Floorplan.Identification.FloorplanID - REQUIRED
     modelID: z.string({
-        required_error: 'Model ID is required for MITS Floorplan.Identification.FloorplanID'
+        message: 'Model ID is required for MITS Floorplan.Identification.FloorplanID'
     })
         .min(1, 'Model ID is required for MITS Floorplan.Identification.FloorplanID')
         .max(255, 'Model ID must be 255 characters or less for MITS compliance')
@@ -72,7 +72,7 @@ export const UnitTypePublishedSchema = z.object({
 
     // MITS Floorplan.Identification.Name - REQUIRED
     modelName: z.string({
-        required_error: 'Model name is required for MITS Floorplan.Identification.Name element'
+        message: 'Model name is required for MITS Floorplan.Identification.Name element'
     })
         .min(1, 'Model name is required for MITS Floorplan.Identification.Name element')
         .max(100, 'Model name must be 100 characters or less for MITS compliance')
@@ -83,14 +83,14 @@ export const UnitTypePublishedSchema = z.object({
 
     // MITS Floorplan.Room elements - beds and baths are REQUIRED
     beds: z.number({
-        required_error: 'Number of bedrooms cannot be negative'
+        message: 'Number of bedrooms cannot be negative'
     })
         .int('Number of bedrooms must be a whole number for MITS Room element')
         .min(0, 'Number of bedrooms cannot be negative')
         .max(10, 'Number of bedrooms must be 10 or less for MITS compliance'),
 
     baths: z.number({
-        required_error: 'Number of bathrooms cannot be negative for MITS Room element'
+        message: 'Number of bathrooms cannot be negative for MITS Room element'
     })
         .min(0, 'Number of bathrooms cannot be negative for MITS Room element')
         .max(10, 'Number of bathrooms must be 10 or less for MITS compliance')

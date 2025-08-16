@@ -8,10 +8,10 @@ import { PropertyType } from '../../../src/types';
  */
 
 // Helper for website URLs with custom message (made optional)
-const websiteUrl = (field: string) => z.string().url({ message: `${field} must start with http:// or https://` }).optional();
+const websiteUrl = (field: string) => z.url({ error: `${field} must start with http:// or https://` }).optional();
 
 const ContactInfoDraftSchema = z.object({
-    email: z.string().email('Invalid email address format').optional(),
+    email: z.email({ error: 'Invalid email address format' }).optional(),
     phone: z.string().regex(/^[\d\s\-().+]+$/, 'Invalid phone number format').optional(),
     propertyWebsite: websiteUrl('Website'),
     managementWebsite: websiteUrl('Management website'),
@@ -31,7 +31,7 @@ const RentSpecialDraftSchema = z.object({
 
 const IncomeRestrictionsDraftSchema = z.object({
     amiLimit: z.number().min(0).max(200).optional(),
-    maxIncomeByHouseholdSize: z.record(z.number()).optional(),
+    maxIncomeByHouseholdSize: z.record(z.string(), z.number()).optional(),
 }).partial().optional();
 
 const ScreeningCriteriaDraftSchema = z.object({
@@ -40,7 +40,7 @@ const ScreeningCriteriaDraftSchema = z.object({
     maxOccupantsPerBedroom: z.number().int().min(0).max(5).optional(),
 }).partial().optional();
 
-export const BuildingDraftSchema = z.object({
+export const BuildingDraftSchema = z.looseObject({
     // Required fields for draft - only ID and name
     buildingID: z.string().min(1).max(255).regex(/^[\w-]+$/, 'buildingID can only contain letters, numbers, underscores, and hyphens'),
     buildingName: z.string().min(1, 'buildingName is required'),
@@ -60,8 +60,8 @@ export const BuildingDraftSchema = z.object({
     latitude: z.number().min(-90, 'Latitude must be between -90 and 90').max(90, 'Latitude must be between -90 and 90').optional(),
     longitude: z.number().min(-180, 'Longitude must be between -180 and 180').max(180, 'Longitude must be between -180 and 180').optional(),
     coordinatesVerified: z.boolean().optional(),
-    propertyType: z.nativeEnum(PropertyType).optional(),
-    photos: z.array(z.string().url('Photo URLs must be valid URLs')).optional(),
+    propertyType: z.enum(PropertyType).optional(),
+    photos: z.array(z.url({ error: 'Photo URLs must be valid URLs' })).optional(),
     acceptsOnlineApplications: z.boolean().optional(),
 
     // Additional MITS compliance fields (all optional for draft)
@@ -92,6 +92,6 @@ export const BuildingDraftSchema = z.object({
 
     // Timestamps
     updatedAt: z.string().optional(),
-}).passthrough();
+});
 
 export type BuildingDraftInput = z.infer<typeof BuildingDraftSchema>;

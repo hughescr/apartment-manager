@@ -36,9 +36,10 @@ export async function getUnitTypes(buildingID: string) {
 
 export async function getUnitType(buildingID: string, modelID: string) {
     const UnitTypeEntity = getUnitTypeEntity() as typeof UnitType;
-    const { Item } = await UnitTypeEntity.build(GetItemCommand)
+    const response = await UnitTypeEntity.build(GetItemCommand)
         .key({ buildingID, unitID: `MODEL#${modelID}` })
         .send();
+    const { Item } = response || {};
     if(!Item) {
         return undefined;
     }
@@ -53,7 +54,7 @@ export async function getUnitType(buildingID: string, modelID: string) {
 export async function createUnitType(unitType: UnitTypeData) {
     const now = new Date();
     const UnitTypeEntity = getUnitTypeEntity() as typeof UnitType;
-    const { Attributes } = await UnitTypeEntity.build(PutItemCommand)
+    const response = await UnitTypeEntity.build(PutItemCommand)
         .item({ ...unitType, unitID: `MODEL#${unitType.modelID}`, updatedAt: now.toISOString() })
         .options({
             condition: { // Fail if unit type already exists
@@ -65,6 +66,7 @@ export async function createUnitType(unitType: UnitTypeData) {
             returnValuesOnConditionFalse: 'ALL_OLD',
         })
         .send();
+    const { Attributes } = response || {};
     if(!Attributes) {
         return unitType;
     }

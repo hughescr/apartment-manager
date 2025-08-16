@@ -28,7 +28,7 @@ import { PropertyType } from '../../../src/types';
 export const BuildingPublishedSchema = z.object({
     // MITS Property_ID.Identification.PropertyID - REQUIRED
     buildingID: z.string({
-        required_error: 'Building ID is required for MITS Property_ID identification'
+        message: 'Building ID is required for MITS Property_ID identification'
     })
         .min(1, 'Building ID is required for MITS Property_ID identification')
         .max(255, 'Building ID must be 255 characters or less for MITS compliance')
@@ -36,39 +36,39 @@ export const BuildingPublishedSchema = z.object({
 
     // MITS Property_ID.Identification.MarketingName - REQUIRED
     buildingName: z.string({
-        required_error: 'Building name is required for MITS MarketingName element'
+        message: 'Building name is required for MITS MarketingName element'
     })
         .min(1, 'Building name is required for MITS MarketingName element')
         .max(100, 'Building name must be 100 characters or less for MITS compliance'),
 
     // MITS Property_ID.Address - ALL REQUIRED for proper address element
     street: z.string({
-        required_error: 'Street address is required for MITS Address element'
+        message: 'Street address is required for MITS Address element'
     })
         .min(1, 'Street address is required for MITS Address element')
         .max(100, 'Street address must be 100 characters or less for MITS compliance'),
 
     city: z.string({
-        required_error: 'City is required for MITS Address element'
+        message: 'City is required for MITS Address element'
     })
         .min(1, 'City is required for MITS Address element')
         .max(50, 'City must be 50 characters or less for MITS compliance'),
 
     state: z.string({
-        required_error: 'State is required for MITS Address element'
+        message: 'State is required for MITS Address element'
     })
         .min(2, 'State is required for MITS Address element')
         .max(2, 'State must be 2 uppercase letters for MITS compliance')
         .regex(/^[A-Z]{2}$/, 'State must be 2 uppercase letters for MITS compliance'),
 
     zip: z.string({
-        required_error: 'ZIP code must be 5 digits or 5+4 format'
+        message: 'ZIP code must be 5 digits or 5+4 format'
     })
         .regex(/^\d{5}(?:-\d{4})?$/, 'ZIP code must be 5 digits or 5+4 format (12345 or 12345-6789) for MITS compliance'),
 
     // MITS Property_ID.Location - REQUIRED for mapping and site compliance
     latitude: z.number({
-        required_error: 'Latitude must be between -90 and 90 degrees for MITS Location element'
+        message: 'Latitude must be between -90 and 90 degrees for MITS Location element'
     })
         .min(-90, 'Latitude must be between -90 and 90 degrees for MITS Location element')
         .max(90, 'Latitude must be between -90 and 90 degrees for MITS Location element')
@@ -78,7 +78,7 @@ export const BuildingPublishedSchema = z.object({
         ),
 
     longitude: z.number({
-        required_error: 'Longitude must be between -180 and 180 degrees for MITS Location element'
+        message: 'Longitude must be between -180 and 180 degrees for MITS Location element'
     })
         .min(-180, 'Longitude must be between -180 and 180 degrees for MITS Location element')
         .max(180, 'Longitude must be between -180 and 180 degrees for MITS Location element')
@@ -88,27 +88,23 @@ export const BuildingPublishedSchema = z.object({
         ),
 
     // MITS Property classification - REQUIRED for proper categorization
-    propertyType: z.nativeEnum(PropertyType, {
-        required_error: 'Property type is required for MITS Information.PropertyType classification',
-        invalid_type_error: 'Property type must be a valid PropertyType enum value for MITS compliance'
+    propertyType: z.enum(PropertyType, {
+        error: 'Property type is required for MITS Information.PropertyType classification'
     }),
 
     // MITS Information.StructureType - REQUIRED
     structureType: z.enum(['Apartment', 'Condo', 'Townhouse', 'Single Family', 'House'], {
-        required_error: 'Structure type is required for MITS Information.StructureType element',
-        invalid_type_error: 'Structure type must be one of: Apartment, Condo, Townhouse, Single Family, House'
+        message: 'Structure type is required for MITS Information.StructureType element'
     }),
 
     // MITS ILS_Identification.RentalType - REQUIRED
     rentalType: z.enum(['Market Rate', 'Affordable', 'Student', 'Senior'], {
-        required_error: 'Rental type is required for MITS ILS_Identification.RentalType element',
-        invalid_type_error: 'Rental type must be one of: Market Rate, Affordable, Student, Senior'
+        message: 'Rental type is required for MITS ILS_Identification.RentalType element'
     }),
 
     // MITS Information contact requirements - REQUIRED
     contactInfo: z.object({
-        email: z.string()
-            .email('Valid email address is required for MITS compliance')
+        email: z.email({ error: 'Valid email address is required for MITS compliance' })
             .min(1, 'Email cannot be empty for MITS publication'),
 
         phone: z.string()
@@ -124,10 +120,10 @@ export const BuildingPublishedSchema = z.object({
             ),
 
         // Optional fields that enhance MITS compliance
-        propertyWebsite: z.string().url('Property website must be a valid URL').optional(),
-        managementWebsite: z.string().url('Management website must be a valid URL').optional(),
+        propertyWebsite: z.url({ error: 'Property website must be a valid URL' }).optional(),
+        managementWebsite: z.url({ error: 'Management website must be a valid URL' }).optional(),
     }, {
-        required_error: 'Both email and phone are required in contactInfo for MITS'
+        message: 'Both email and phone are required in contactInfo for MITS'
     })
         .refine(
             contact => contact.email && contact.phone,

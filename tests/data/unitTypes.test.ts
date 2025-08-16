@@ -600,7 +600,7 @@ describe('UnitType Data Layer', () => {
 
     describe('Invalid data types', () => {
         it('should handle invalid data types for numeric fields', async () => {
-            expect.assertions(1);
+            expect.assertions(4);
             const invalidNumericData = {
                 ...testUnitType,
                 beds: 'two' as unknown as number, // Invalid type
@@ -609,11 +609,19 @@ describe('UnitType Data Layer', () => {
                 maxOccupants: undefined // Undefined is ok
             };
 
-            // DynamoDB Toolbox validates before sending to DynamoDB
-            expect(createUnitType(invalidNumericData))
-                .rejects.toThrow('Right side of assignment cannot be destructured');
-        });
+            // The data layer should accept invalid types without validation
+            // Validation is the responsibility of the API layer, not the data layer
+            dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
+                ...invalidNumericData,
+                unitID: `MODEL#${invalidNumericData.modelID}`
+            }));
 
+            const result = await createUnitType(invalidNumericData);
+            expect(result.beds as unknown).toBe('two');
+            expect(result.baths as unknown).toBe('2.5');
+            expect(result.minRent as unknown).toBe(null);
+            expect(result.maxOccupants).toBeUndefined();
+        });
         it('should handle array edge cases', async () => {
             expect.assertions(3);
             // Empty array

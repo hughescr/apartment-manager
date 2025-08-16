@@ -31,7 +31,7 @@ const dateString = () => z.string().refine(
 ).optional();
 
 // Base schema without refinements
-const UnitTypeSchemaBase = z.object({
+const UnitTypeSchemaBase = z.looseObject({
     // Required identification fields
     buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
     modelID: z.string().min(1, 'Model ID is required').max(255).regex(/^[\w-]+$/, 'Model ID can only contain letters, numbers, underscores, and hyphens'),
@@ -69,7 +69,7 @@ const UnitTypeSchemaBase = z.object({
 
     // Timestamps
     updatedAt: z.string().optional(),
-}).passthrough();
+});
 
 // Apply refinements to create the final schema
 export const UnitTypeSchema = UnitTypeSchemaBase
@@ -115,10 +115,10 @@ const mitsExtensions = {
     baths: z.number().min(0).max(10),
 };
 
-export const UnitTypeMITSSchema = z.object({
+export const UnitTypeMITSSchema = z.looseObject({
     ...UnitTypeSchemaBase.shape,
     ...mitsExtensions
-}).passthrough()
+})
 .refine((data) => {
     // Cross-field validation: min rent cannot be greater than max rent
     if(data.minRent !== undefined && data.maxRent !== undefined) {

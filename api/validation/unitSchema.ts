@@ -43,7 +43,7 @@ const dateString = () => z.string().refine(
 ).optional();
 
 // Base schema without refinements
-const UnitSchemaBase = z.object({
+const UnitSchemaBase = z.looseObject({
     // Required fields for identification
     buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
     unitID: z.string().min(1, 'Unit ID is required').max(255).regex(/^[\w-]+$/, 'Unit ID can only contain letters, numbers, underscores, and hyphens'),
@@ -80,7 +80,7 @@ const UnitSchemaBase = z.object({
     unitDescription: z.string().optional(),
     unitRentSpecial: UnitRentSpecialSchema,
     unitAmenities: z.array(AmenitySchema).optional(),
-    photos: z.array(z.string().url('Photo URL must be a valid URL')).optional(),
+    photos: z.array(z.url({ error: 'Photo URL must be a valid URL' })).optional(),
 
     // MITS compliance fields
     vacancyClass: z.enum(['Occupied', 'Unoccupied', 'Notice', 'Down']).optional(),
@@ -93,7 +93,7 @@ const UnitSchemaBase = z.object({
     feedLastPulled: z.record(z.string(), z.any()).optional(),
     feedLastModified: z.string().optional(),
     updatedAt: z.string().optional(),
-}).passthrough();
+});
 
 // Apply refinements to create the final schema
 export const UnitSchema = UnitSchemaBase
@@ -119,13 +119,13 @@ const mitsExtensions = {
     baths: z.number().min(0).max(10),
     sqft: z.number().int().min(1, 'Square footage is required for MITS compliance'),
     rent: z.number().min(0, 'Rent is required for MITS compliance'),
-    vacancyClass: z.enum(['Occupied', 'Unoccupied', 'Notice', 'Down'], { required_error: 'Vacancy class is required for MITS compliance' }),
+    vacancyClass: z.enum(['Occupied', 'Unoccupied', 'Notice', 'Down'], { message: 'Vacancy class is required for MITS compliance' }),
 };
 
-export const UnitMITSSchema = z.object({
+export const UnitMITSSchema = z.looseObject({
     ...UnitSchemaBase.shape,
     ...mitsExtensions
-}).passthrough()
+})
 .refine((data) => {
     // Cross-field validation: min lease term cannot be greater than max lease term
     if(data.minLeaseTerm !== undefined && data.minLeaseTerm !== null &&

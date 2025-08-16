@@ -23,8 +23,7 @@ import type { VacancyClass } from '../../../src/types';
 
 // MITS-compliant vacancy classification - REQUIRED enum
 const VacancyClassSchema = z.enum(['Occupied', 'Unoccupied', 'Notice', 'Down'], {
-    required_error: 'Vacancy class is required for MITS ILS_Unit.VacancyClass element',
-    invalid_type_error: 'Vacancy class must be one of: Occupied, Unoccupied, Notice, Down (MITS standard values)'
+    message: 'Vacancy class is required for MITS ILS_Unit.VacancyClass element'
 }) satisfies z.ZodSchema<VacancyClass>;
 
 // Enhanced deposit schema for MITS ILSUnit.Deposit element
@@ -89,7 +88,7 @@ export const UnitPublishedSchema = z.object({
 
     // MITS ILSUnit.Identification.UnitID - REQUIRED
     unitID: z.string({
-        required_error: 'Unit ID is required for MITS ILS_Unit.Unit identification'
+        message: 'Unit ID is required for MITS ILS_Unit.Unit identification'
     })
         .min(1, 'Unit ID is required for MITS ILS_Unit.Unit identification')
         .max(255, 'Unit ID must be 255 characters or less for MITS compliance')
@@ -97,7 +96,7 @@ export const UnitPublishedSchema = z.object({
 
     // MITS ILSUnit.Identification.UnitNumber - REQUIRED for display
     unitNumber: z.string({
-        required_error: 'Unit number is required for MITS ILS_Unit.UnitID element'
+        message: 'Unit number is required for MITS ILS_Unit.UnitID element'
     })
         .min(1, 'Unit number is required for MITS ILS_Unit.UnitID element')
         .max(50, 'Unit number must be 50 characters or less for MITS compliance')
@@ -108,14 +107,14 @@ export const UnitPublishedSchema = z.object({
 
     // MITS ILSUnit room configuration - REQUIRED
     beds: z.number({
-        required_error: 'Number of bedrooms is required for MITS ILS_Unit.Room element'
+        message: 'Number of bedrooms is required for MITS ILS_Unit.Room element'
     })
         .int('Number of bedrooms must be a whole number for MITS ILSUnit.UnitBedrooms')
         .min(0, 'Number of bedrooms cannot be negative')
         .max(10, 'Number of bedrooms must be 10 or less for MITS compliance'),
 
     baths: z.number({
-        required_error: 'Number of bathrooms is required for MITS ILS_Unit.Room element'
+        message: 'Number of bathrooms is required for MITS ILS_Unit.Room element'
     })
         .min(0, 'Number of bathrooms cannot be negative for MITS ILSUnit.UnitBathrooms')
         .max(10, 'Number of bathrooms must be 10 or less for MITS compliance')
@@ -130,7 +129,7 @@ export const UnitPublishedSchema = z.object({
 
     // MITS ILSUnit.SquareFeet - REQUIRED for unit size
     sqft: z.number({
-        required_error: 'Square footage is required for MITS ILS_Unit.SquareFeet element'
+        message: 'Square footage is required for MITS ILS_Unit.SquareFeet element'
     })
         .int('Square footage must be a whole number for MITS ILSUnit.SquareFeet')
         .min(1, 'Square footage must be at least 1 for MITS compliance')
@@ -138,7 +137,7 @@ export const UnitPublishedSchema = z.object({
 
     // MITS ILSUnit.UnitRent - REQUIRED for rental information
     rent: z.number({
-        required_error: 'Rent is required for MITS ILS_Unit.MarketRent element'
+        message: 'Rent is required for MITS ILS_Unit.MarketRent element'
     })
         .min(0, 'Rent cannot be negative for MITS ILSUnit.UnitRent')
         .max(50000, 'Rent seems unusually high - please verify')
@@ -218,7 +217,7 @@ export const UnitPublishedSchema = z.object({
         .optional(),
 
     // MITS File elements (photos)
-    photos: z.array(z.string().url('Photo URL must be a valid URL for MITS File element'))
+    photos: z.array(z.url({ error: 'Photo URL must be a valid URL for MITS File element' }))
         .max(20, 'Photos list must have 20 items or less for MITS compliance')
         .optional(),
 
