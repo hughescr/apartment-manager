@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import _ from 'lodash';
 
 /**
  * Draft validation schema for units - permissive schema for work-in-progress saves
@@ -17,7 +18,6 @@ const DepositDraftSchema = z.union([
     })
 ]).optional();
 
-// Helper schema for rent special validation (made optional for draft)
 const UnitRentSpecialDraftSchema = z.object({
     id: z.union([z.string(), z.number()]).optional(),
     title: z.string().min(1, 'Rent special title is required').optional(),
@@ -47,8 +47,30 @@ const dateStringDraft = () => z.string().optional().refine(
 
 export const UnitDraftSchema = z.looseObject({
     // Required fields for identification in draft
-    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens'),
-    unitID: z.string().min(1, 'Unit ID is required').max(255).regex(/^[\w-]+$/, 'Unit ID can only contain letters, numbers, underscores, and hyphens'),
+    buildingID: z.string().min(1, 'Building ID is required').max(255).regex(/^[\w-]+$/, 'Building ID can only contain letters, numbers, underscores, and hyphens').refine((id) => {
+        // Security validation: prevent injection patterns
+        const maliciousPatterns = [
+            /[{}"'$()|*?[\]^]/,  // NoSQL injection characters
+            /[()&|!]/,                       // LDAP injection characters
+            /[\r\n]/,                        // Header injection (CRLF)
+            /\0/,                          // Null bytes
+            /\.\.[/\\]/,                   // Path traversal
+        ];
+
+        return !_.some(maliciousPatterns, pattern => pattern.test(id));
+    }, 'Building ID contains invalid or potentially dangerous characters'),
+    unitID: z.string().min(1, 'Unit ID is required').max(255).regex(/^[\w-]+$/, 'Unit ID can only contain letters, numbers, underscores, and hyphens').refine((id) => {
+        // Security validation: prevent injection patterns
+        const maliciousPatterns = [
+            /[{}"'$()|*?[\]^]/,  // NoSQL injection characters
+            /[()&|!]/,                       // LDAP injection characters
+            /[\r\n]/,                        // Header injection (CRLF)
+            /\0/,                          // Null bytes
+            /\.\.[/\\]/,                   // Path traversal
+        ];
+
+        return !_.some(maliciousPatterns, pattern => pattern.test(id));
+    }, 'Unit ID contains invalid or potentially dangerous characters'),
     unitNumber: z.string().min(1, 'Unit number is required'),
 
     // All other fields are optional for draft state
@@ -82,9 +104,9 @@ export const UnitDraftSchema = z.looseObject({
 
     // Marketing content (optional for draft)
     unitDescription: z.string().optional(),
+    unitAmenities: z.array(AmenityDraftSchema).max(100, 'Too many amenities (max 100)').optional(),
     unitRentSpecial: UnitRentSpecialDraftSchema,
-    unitAmenities: z.array(AmenityDraftSchema).optional(),
-    photos: z.array(z.url({ error: 'Photo URL must be a valid URL' })).optional(),
+    photos: z.array(z.url({ error: 'Photo URL must be a valid URL' })).max(50, 'Too many photos (max 50)').optional(),
 
     // MITS compliance fields (optional for draft)
     vacancyClass: z.enum(['Occupied', 'Unoccupied', 'Notice', 'Down', 'Available']).optional(),

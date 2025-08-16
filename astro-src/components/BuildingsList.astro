@@ -3,6 +3,7 @@
 export interface Props {
     buildings: Array<{
         buildingID: string;
+        buildingName?: string;
         street?: string;
         city?: string;
         state?: string;
@@ -20,7 +21,7 @@ export interface Props {
                class="tab" 
                :class="{ 'tab-active': activeBuildingTab === index }"
                @click="setActiveTab(index, building.buildingID)"
-               x-text="building.buildingID">
+               x-text="building.buildingName || building.buildingID">
             </a>
         </template>
         
@@ -44,6 +45,7 @@ import type { AlpineComponent } from "../types/alpine";
 
 type Building = {
     buildingID: string;
+    buildingName?: string;
     street?: string;
     city?: string;
     state?: string;

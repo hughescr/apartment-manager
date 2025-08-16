@@ -25,7 +25,7 @@ describe('Validation Helper Functions', () => {
     describe('validateForSave - Draft Mode Validation', () => {
         it('should accept minimal building data for save', () => {
             const minimalBuilding = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building'
             };
 
@@ -37,7 +37,7 @@ describe('Validation Helper Functions', () => {
 
         it('should accept minimal unit type data for save', () => {
             const minimalUnitType = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 modelID: 'model-1br',
                 modelName: '1 Bedroom'
             };
@@ -50,7 +50,7 @@ describe('Validation Helper Functions', () => {
 
         it('should accept minimal unit data for save', () => {
             const minimalUnit = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 unitID: 'unit-101',
                 unitNumber: '101'
             };
@@ -69,10 +69,22 @@ describe('Validation Helper Functions', () => {
 
             const result = validateForSave('building', invalidBuilding);
             expect(result.success).toBe(false);
-            expect(result.errors).toHaveLength(1);
+            expect(result.errors).toHaveLength(2); // Both regex and security validations fail
+            // Both errors should be for buildingID field
             expect(result.errors[0].field).toBe('buildingID');
-            expect(result.errors[0].message).toContain('can only contain letters, numbers, underscores, and hyphens');
-            expect(result.errors[0].context).toContain('Draft validation allows incomplete data');
+            expect(result.errors[1].field).toBe('buildingID');
+
+            // Should contain both types of validation errors
+            const errorMessages = _.map(result.errors, 'message');
+            expect(errorMessages).toEqual(expect.arrayContaining([
+                expect.stringContaining('can only contain letters, numbers, underscores, and hyphens'),
+                expect.stringContaining('contains invalid or potentially dangerous characters')
+            ]));
+
+            // All errors should have draft context
+            _.forEach(result.errors, (error) => {
+                expect(error.context).toContain('Draft validation allows incomplete data');
+            });
         });
 
         it('should handle invalid entity type', () => {
@@ -86,7 +98,7 @@ describe('Validation Helper Functions', () => {
 
         it('should allow partial data that would fail MITS validation', () => {
             const partialBuilding = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building',
                 street: '123 Main St'
                 // Missing required MITS fields: city, state, zip, coordinates, contact, etc.
@@ -100,7 +112,7 @@ describe('Validation Helper Functions', () => {
 
     describe('validateForPublish - MITS Compliance Validation', () => {
         const completeBuilding = {
-            buildingID: 'test-building',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             buildingName: 'Test Building',
             street: '123 Main St',
             city: 'Dallas',
@@ -118,7 +130,7 @@ describe('Validation Helper Functions', () => {
         };
 
         const completeUnitType = {
-            buildingID: 'test-building',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             modelID: 'model-1br',
             modelName: '1 Bedroom',
             beds: 1,
@@ -128,7 +140,7 @@ describe('Validation Helper Functions', () => {
         };
 
         const completeUnit = {
-            buildingID: 'test-building',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             unitID: 'unit-101',
             unitNumber: '101',
             beds: 1,
@@ -162,7 +174,7 @@ describe('Validation Helper Functions', () => {
 
         it('should reject incomplete building data with MITS-specific errors', () => {
             const incompleteBuilding = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building'
                 // Missing all MITS required fields
             };
@@ -180,7 +192,7 @@ describe('Validation Helper Functions', () => {
 
         it('should reject incomplete unit type data with MITS-specific errors', () => {
             const incompleteUnitType = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 modelID: 'model-1br',
                 modelName: '1 Bedroom'
                 // Missing beds, baths, sqft, rent
@@ -198,7 +210,7 @@ describe('Validation Helper Functions', () => {
 
         it('should reject incomplete unit data with MITS-specific errors', () => {
             const incompleteUnit = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 unitID: 'unit-101',
                 unitNumber: '101'
                 // Missing beds, baths, sqft, rent, vacancyClass
@@ -228,7 +240,7 @@ describe('Validation Helper Functions', () => {
         it('should return empty array for complete valid data', () => {
             const completeData = {
                 building: {
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     buildingName: 'Test Building',
                     street: '123 Main St',
                     city: 'Dallas',
@@ -245,7 +257,7 @@ describe('Validation Helper Functions', () => {
                     }
                 },
                 unitTypes: [{
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     modelID: 'model-1br',
                     modelName: '1 Bedroom',
                     beds: 1,
@@ -254,7 +266,7 @@ describe('Validation Helper Functions', () => {
                     minRent: 1200
                 }],
                 units: [{
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitID: 'unit-101',
                     unitNumber: '101',
                     beds: 1,
@@ -273,7 +285,7 @@ describe('Validation Helper Functions', () => {
         it('should identify missing building fields with proper display names', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     buildingName: 'Test Building'
                     // Missing required fields
                 },
@@ -298,7 +310,7 @@ describe('Validation Helper Functions', () => {
         it('should identify missing unit type fields with index information', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     buildingName: 'Test Building',
                     street: '123 Main St',
                     city: 'Dallas',
@@ -315,7 +327,7 @@ describe('Validation Helper Functions', () => {
                     }
                 },
                 unitTypes: [{
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     modelID: 'model-1br',
                     modelName: '1 Bedroom'
                     // Missing beds, baths, sqft, rent
@@ -337,7 +349,7 @@ describe('Validation Helper Functions', () => {
         it('should identify missing unit fields with index information', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     buildingName: 'Test Building',
                     street: '123 Main St',
                     city: 'Dallas',
@@ -354,7 +366,7 @@ describe('Validation Helper Functions', () => {
                     }
                 },
                 unitTypes: [{
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     modelID: 'model-1br',
                     modelName: '1 Bedroom',
                     beds: 1,
@@ -363,7 +375,7 @@ describe('Validation Helper Functions', () => {
                     minRent: 1200
                 }],
                 units: [{
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitID: 'unit-101',
                     unitNumber: '101'
                     // Missing beds, baths, sqft, rent, vacancyClass
@@ -385,7 +397,7 @@ describe('Validation Helper Functions', () => {
     describe('canPublishToSite', () => {
         const completeData = {
             building: {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building',
                 street: '123 Main St',
                 city: 'Dallas',
@@ -403,7 +415,7 @@ describe('Validation Helper Functions', () => {
                 // Note: photos will be added dynamically in site-specific tests
             },
             unitTypes: [{
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 modelID: 'model-1br',
                 modelName: '1 Bedroom',
                 beds: 1,
@@ -414,7 +426,7 @@ describe('Validation Helper Functions', () => {
                 maxRent: 1400
             }],
             units: [{
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 unitID: 'unit-101',  // Use simple format without special characters
                 unitNumber: '101',
                 beds: 1,
@@ -511,7 +523,7 @@ describe('Validation Helper Functions', () => {
         it('should prevent publishing when MITS validation fails', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'test-building',
+                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                     buildingName: 'Test Building'
                     // Missing required MITS fields
                 },
@@ -536,7 +548,7 @@ describe('Validation Helper Functions', () => {
                 units: [
                     completeData.units[0], // Has rent
                     {
-                        buildingID: 'test-building',
+                        buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitID: 'unit-102',
                         unitNumber: '102',
                         beds: 1,

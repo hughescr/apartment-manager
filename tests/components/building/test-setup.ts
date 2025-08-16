@@ -96,8 +96,8 @@ export const mockAlpineContext = {
 
 // Test data factory functions
 export const createTestBuildingData = (overrides: Partial<BuildingData> = {}): BuildingData => ({
-    buildingID: 'test-building-123',
-    buildingName: 'Test Apartment Complex',
+    buildingID: 'eEUxh8XdGF1RsxfmwHPpYD', // Short-uuid format
+    buildingName: '123 Test Street', // Auto-generated from street address
     street: '123 Test Street',
     city: 'Test City',
     state: 'TS',
@@ -238,7 +238,7 @@ export const createTestBuildingData = (overrides: Partial<BuildingData> = {}): B
 
 export const createTestUnitTypeData = (overrides: Partial<UnitTypeData> = {}): UnitTypeData => ({
     modelID: 'model-1bd',
-    buildingID: 'test-building-123',
+    buildingID: 'eEUxh8XdGF1RsxfmwHPpYD', // Short-uuid format
     modelName: '1 Bedroom 1 Bath',
     beds: 1,
     baths: 1,
@@ -266,7 +266,7 @@ export const createTestUnitTypeData = (overrides: Partial<UnitTypeData> = {}): U
 
 export const createTestUnitData = (overrides: Partial<UnitData> = {}): UnitData => ({
     unitID: 'unit-test-101',
-    buildingID: 'test-building-123',
+    buildingID: 'eEUxh8XdGF1RsxfmwHPpYD', // Short-uuid format
     modelID: 'model-1bd',
     unitNumber: '101',
     beds: 1,

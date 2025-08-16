@@ -26,9 +26,9 @@ describe('FloorplansUnitsTab Component Logic', () => {
 
         mockBuildingData = createTestBuildingData();
         mockUnitsData = [
-            createTestUnitData({ unitID: 'unit-1', unitNumber: '101', vacancyClass: 'Occupied', modelID: 'model-1bd' }),
-            createTestUnitData({ unitID: 'unit-2', unitNumber: '102', vacancyClass: 'Unoccupied', modelID: 'model-2bd' }),
-            createTestUnitData({ unitID: 'unit-3', unitNumber: '201', vacancyClass: 'Notice', modelID: 'model-1bd' })
+            createTestUnitData({ unitID: 'eEUxh8XdGF1RsxfmwHPpY1', unitNumber: '101', vacancyClass: 'Occupied', modelID: 'model-1bd' }),
+            createTestUnitData({ unitID: 'eEUxh8XdGF1RsxfmwHPpY2', unitNumber: '102', vacancyClass: 'Unoccupied', modelID: 'model-2bd' }),
+            createTestUnitData({ unitID: 'eEUxh8XdGF1RsxfmwHPpY3', unitNumber: '201', vacancyClass: 'Notice', modelID: 'model-1bd' })
         ];
         mockUnitTypesData = [
             createTestUnitTypeData({ modelID: 'model-1bd', modelName: '1 Bed 1 Bath' }),
@@ -232,7 +232,7 @@ describe('FloorplansUnitsTab Component Logic', () => {
 
         it('should handle malformed data', () => {
             const malformedUnit = {
-                unitID: 'test-unit',
+                unitID: 'eEUxh8XdGF1RsxfmwHPpYX',
                 // Missing required fields
                 vacancyClass: 'InvalidStatus'
             };
@@ -246,7 +246,7 @@ describe('FloorplansUnitsTab Component Logic', () => {
         it('should handle large datasets efficiently', () => {
             const largeUnitsArray = _.times(1000, i =>
                 createTestUnitData({
-                    unitID: `unit-${i}`,
+                    unitID: `eEUxh8XdGF1RsxfmwHPp${_.padStart(i.toString(), 2, '0')}`,
                     unitNumber: `${i + 1000}`
                 })
             );

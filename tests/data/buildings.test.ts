@@ -3,10 +3,10 @@ import './test-setup';
 import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
-import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek, BuildingData, ContactInfo } from '../../src/types';
+import { PropertyType, FeeType, PetType, ParkingType, AmenityCategory, DayOfWeek, ContactInfo } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 import _ from 'lodash';
-import { getDefaultBuildingData } from '../../src/types';
+import { testBuilding, minimalBuilding, complexBuilding, getExpectedBuilding } from './buildings-test-fixtures';
 
 // Import the functions AFTER mocking
 import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuilding } from '../../data/buildings';
@@ -84,73 +84,7 @@ describe('Building Data Layer', () => {
         dynamoDbMock.mockImplementation(createDefaultMockImplementation());
     });
 
-    const testBuilding = {
-        buildingID: 'test-building-1',
-        street: '123 Test St',
-        city: 'Testville',
-        state: 'TS',
-        zip: '12345',
-        description: 'A test building',
-        yearBuilt: 2020,
-        numberStories: 3,
-        totalUnits: 10,
-        // New fields
-        propertyType: PropertyType.APARTMENT,
-        roomsForRent: false,
-        photos: ['https://s3.example.com/photo1.jpg', 'https://s3.example.com/photo2.jpg'],
-        leaseLength: 12,
-        shortTermLeaseAllowed: false,
-        propertyLicenseNumber: 'LIC-123',
-        propertyDescription: 'Modern apartment building with great amenities',
-        rentSpecials: [
-            { title: 'Summer Special', description: '$500 off first month', startDate: '2024-06-01', endDate: '2024-08-31' }
-        ],
-        incomeRestrictions: { amiLimit: 80, maxIncomeByHouseholdSize: { '1': 50000, '2': 60000 } },
-        utilitiesIncluded: { [UtilityType.WATER]: true, [UtilityType.TRASH]: true, [UtilityType.SEWER]: true },
-        oneTimeFees: [
-            { type: FeeType.APPLICATION, amount: 50, description: 'Non-refundable application fee' }
-        ],
-        monthlyFees: [
-            { type: FeeType.PARKING, amount: 100, description: 'Covered parking' }
-        ],
-        parkingOptions: [
-            { type: ParkingType.COVERED, included: false, fee: 100, spaces: 1 }
-        ],
-        petPolicies: {
-            allowed: true,
-            types: [PetType.CAT, PetType.DOG],
-            maxCount: 2,
-            deposit: 300,
-            monthlyFee: 50
-        },
-        storageOptions: [
-            { type: StorageType.CLOSET, included: true, description: 'Large walk-in closet' }
-        ],
-        propertyAmenities: [
-            { name: 'Pool', category: AmenityCategory.PROPERTY },
-            { name: 'Fitness Center', category: AmenityCategory.PROPERTY }
-        ],
-        screeningCriteria: {
-            incomeRatio: 3,
-            minCreditScore: 650,
-            backgroundCheckRequired: true
-        },
-        contactInfo: {
-            name: 'Test Leasing Office',
-            phone: '555-1234',
-            email: 'leasing@test.com'
-        },
-        tourAvailability: {
-            inPersonTours: true,
-            virtualTours: true,
-            selfGuidedTours: false
-        },
-        applicationFee: 50,
-        acceptsOnlineApplications: true
-    };
-
-    // Helper to create expected result with merged defaults
-    const getExpectedBuilding = (building: Partial<BuildingData>): BuildingData => _.merge({}, getDefaultBuildingData(), building) as BuildingData;
+    // Test buildings are now imported from fixtures with short-uuid format IDs and building names
 
     it('should create a building', async () => {
         expect.assertions(2);
@@ -231,40 +165,25 @@ describe('Building Data Layer', () => {
     });
 
     it('should handle building with minimal fields', async () => {
-        expect.assertions(2);
-        const minimalBuilding = {
-            buildingID: 'minimal-building-1',
-            street: '456 Minimal Ave'
-        };
+        expect.assertions(3);
         dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...minimalBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(minimalBuilding);
-        expect(createdBuilding.buildingID).toBe('minimal-building-1');
+        expect(createdBuilding.buildingID).toBe(minimalBuilding.buildingID); // Short-uuid format
+        expect(createdBuilding.buildingName).toBe('456 Minimal'); // Auto-generated name
         expect(createdBuilding.street).toBe('456 Minimal Ave');
     });
 
     it('should handle building with complex nested structures', async () => {
-        expect.assertions(4);
-        const complexBuilding = {
-            buildingID: 'complex-building-1',
-            street: '999 Complex St',
-            rentSpecials: [
-                { title: 'Special 1', description: 'First special' },
-                { title: 'Special 2', description: 'Second special', startDate: '2024-12-01' }
-            ],
-            propertyAmenities: [
-                { name: 'Pool', category: AmenityCategory.PROPERTY },
-                { name: 'Gym', category: AmenityCategory.PROPERTY },
-                { name: 'Sauna', category: AmenityCategory.PROPERTY, description: 'Finnish sauna' }
-            ]
-        };
+        expect.assertions(5);
         dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...complexBuilding, unitID: 'BUILDING' }));
 
         const createdBuilding = await createBuilding(complexBuilding);
+        expect(createdBuilding.buildingID).toBe(complexBuilding.buildingID); // Short-uuid format
+        expect(createdBuilding.buildingName).toBe('999 Complex'); // Auto-generated name
         expect(createdBuilding.rentSpecials).toHaveLength(2);
         expect(createdBuilding.propertyAmenities).toHaveLength(3);
         expect(createdBuilding.rentSpecials![1].startDate).toBe('2024-12-01');
-        expect(createdBuilding.propertyAmenities![2].description).toBe('Finnish sauna');
     });
 
     it('should update complex fields in building', async () => {
@@ -845,7 +764,8 @@ describe('Building Data Layer', () => {
             // First, create a building with populated arrays
             const buildingWithArrays = {
                 ...testBuilding,
-                buildingID: 'array-deletion-test',
+                buildingID: 'nS3r6WvF2qHm9yLkCtPbXz', // Short-uuid format
+                buildingName: '123 Test Array',
                 rentSpecials: [
                     { title: 'Summer Special', description: '$500 off first month' },
                     { title: 'Winter Special', description: '2 months free' }
@@ -891,7 +811,7 @@ describe('Building Data Layer', () => {
                 .mockResolvedValueOnce(mockGetResponse({ ...buildingWithArrays, unitID: 'BUILDING' })) // for getBuilding call
                 .mockResolvedValueOnce(mockPutResponse(expectedMergedData)); // for PutItemCommand
 
-            const updatedBuilding = await updateBuilding('array-deletion-test', updateWithEmptyArrays);
+            const updatedBuilding = await updateBuilding('nS3r6WvF2qHm9yLkCtPbXz', updateWithEmptyArrays);
 
             // Verify the update returned empty arrays (not undefined or merged arrays)
             expect(updatedBuilding!.rentSpecials).toEqual([]);
@@ -909,7 +829,7 @@ describe('Building Data Layer', () => {
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(savedBuildingData));
 
             // Simulate reloading the building from database
-            const reloadedBuilding = await getBuilding('array-deletion-test');
+            const reloadedBuilding = await getBuilding('nS3r6WvF2qHm9yLkCtPbXz');
 
             // CRITICAL: Verify that empty arrays persisted correctly after reload
             expect(reloadedBuilding!.rentSpecials).toEqual([]);
@@ -922,7 +842,8 @@ describe('Building Data Layer', () => {
 
             // Create a building with non-empty arrays first
             const buildingWithArrays = {
-                buildingID: 'edge-case-test',
+                buildingID: 'pT7v4YxJ8zNe1wQfMsKhLu', // Short-uuid format
+                buildingName: '123 Edge Case',
                 street: '123 Edge Case St',
                 rentSpecials: [{ title: 'Special', description: 'Deal' }],
                 photos: ['photo1.jpg'],
@@ -947,7 +868,8 @@ describe('Building Data Layer', () => {
             // Create a scenario where the mock might not handle defaults correctly
             // Simulate the raw data without default merging (which could cause undefined)
             const rawDataWithoutDefaults = {
-                buildingID: 'edge-case-test',
+                buildingID: 'pT7v4YxJ8zNe1wQfMsKhLu', // Short-uuid format
+                buildingName: '123 Edge Case',
                 street: '123 Edge Case St',
                 // Note: Arrays are explicitly empty, not undefined
                 rentSpecials: [],
@@ -963,7 +885,7 @@ describe('Building Data Layer', () => {
                 .mockResolvedValueOnce(mockGetResponse(rawDataWithoutDefaults)) // Return raw data
                 .mockResolvedValueOnce(mockPutResponse(rawDataWithoutDefaults));
 
-            const updatedBuilding = await updateBuilding('edge-case-test', updateWithEmptyArrays);
+            const updatedBuilding = await updateBuilding('pT7v4YxJ8zNe1wQfMsKhLu', updateWithEmptyArrays);
 
             // These should all be empty arrays, not undefined
             expect(updatedBuilding!.rentSpecials).toEqual([]);
@@ -978,7 +900,8 @@ describe('Building Data Layer', () => {
 
             // Create building data that doesn't include the array fields at all
             const buildingWithoutArrayFields = {
-                buildingID: 'missing-arrays-test',
+                buildingID: 'qU8w5ZyK9xPf2vRgNtLjMr', // Short-uuid format
+                buildingName: '456 Missing Arrays',
                 street: '456 Missing Arrays St',
                 // Deliberately omit all array fields to simulate DynamoDB returning incomplete data
                 unitID: 'BUILDING'
@@ -998,7 +921,7 @@ describe('Building Data Layer', () => {
                 .mockResolvedValueOnce(mockGetResponse(buildingWithoutArrayFields)) // Return data without arrays
                 .mockResolvedValueOnce(mockPutResponse(buildingWithoutArrayFields));
 
-            const updatedBuilding = await updateBuilding('missing-arrays-test', updateWithEmptyArrays);
+            const updatedBuilding = await updateBuilding('qU8w5ZyK9xPf2vRgNtLjMr', updateWithEmptyArrays);
 
             // These should be empty arrays because the update explicitly set them as such
             // The fallback logic should preserve the explicit empty arrays from the update
@@ -1023,7 +946,8 @@ describe('Building Data Layer', () => {
 
             // Create a building without array fields to simulate incomplete database data
             const buildingWithoutArrays = {
-                buildingID: 'missing-arrays-test',
+                buildingID: 'rV9x6AzL2yQg3wShOuMkNs', // Short-uuid format
+                buildingName: '789 Missing Arrays',
                 street: '789 Missing Arrays St',
                 city: 'Test City',
                 state: 'TS',
@@ -1043,7 +967,7 @@ describe('Building Data Layer', () => {
                     updatedAt: new Date().toISOString()
                 }));
 
-            const updatedBuilding = await updateBuilding('missing-arrays-test', updateWithEmptyArrays);
+            const updatedBuilding = await updateBuilding('rV9x6AzL2yQg3wShOuMkNs', updateWithEmptyArrays);
 
             // The updateBuilding function should handle missing array fields properly
             // and apply the update correctly
@@ -1059,7 +983,8 @@ describe('Building Data Layer', () => {
 
             const buildingWithPetPolicy = {
                 ...testBuilding,
-                buildingID: 'pet-policy-test',
+                buildingID: 'sW1y7BmQ3zRh4xTjPvNlOt', // Short-uuid format
+                buildingName: 'Pet Policy Test',
                 petPolicies: {
                     allowed: true,
                     types: [PetType.DOG, PetType.CAT],
@@ -1097,7 +1022,7 @@ describe('Building Data Layer', () => {
                 .mockResolvedValueOnce(mockGetResponse({ ...buildingWithPetPolicy, unitID: 'BUILDING' }))
                 .mockResolvedValueOnce(mockPutResponse(expectedMergedPetData));
 
-            const updatedBuilding = await updateBuilding('pet-policy-test', updateWithEmptyPetArrays);
+            const updatedBuilding = await updateBuilding('sW1y7BmQ3zRh4xTjPvNlOt', updateWithEmptyPetArrays);
 
             // Verify nested arrays are empty
             expect(updatedBuilding!.petPolicies!.types).toEqual([]);

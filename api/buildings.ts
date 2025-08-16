@@ -6,6 +6,7 @@ import { validateId, sanitizeObject } from './security-validation';
 import { logger } from '@hughescr/logger';
 import { BuildingInput } from './validation/buildingSchema';
 import { validateForSave } from './validation/helpers';
+import { generateBuildingId, generateBuildingName } from '../src/utils/index.js';
 
 // Legacy validation functions removed - now using Zod schemas in ./validation/
 // All validation is now handled by the Zod schemas in ./validation/
@@ -83,6 +84,16 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
 
     // Sanitize object to prevent prototype pollution
     const data = sanitizeObject(rawData);
+
+    // Only auto-generate building ID if not provided
+    if(!data.buildingID) {
+        data.buildingID = generateBuildingId();
+    }
+
+    // Auto-generate building name from address if not provided
+    if(!data.buildingName && data.street) {
+        data.buildingName = generateBuildingName(data.street);
+    }
 
     // Use draft validation for save operations - allows incomplete data
     const validation = validateForSave('building', data);

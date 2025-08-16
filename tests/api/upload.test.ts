@@ -109,7 +109,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'test.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -131,7 +131,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1',
                     contentType: 'image/jpeg'
                 })
@@ -142,8 +142,8 @@ describe('Upload API', () => {
 
             expect(result.statusCode).toBe(200);
             expect(body.uploadUrl).toBe('https://s3.example.com/signed-url');
-            expect(body.key).toBe('buildings/building-1/units/unit-1/test-uuid.jpg');
-            expect(body.publicUrl).toBe('https://test-photos-bucket.s3.amazonaws.com/buildings/building-1/units/unit-1/test-uuid.jpg');
+            expect(body.key).toBe('buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/test-uuid.jpg');
+            expect(body.publicUrl).toBe('https://test-photos-bucket.s3.amazonaws.com/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/test-uuid.jpg');
             expect(mockGetSignedUrl).toHaveBeenCalledTimes(1);
             // getSignedUrl is called with (client, command, options)
             expect(mockGetSignedUrl).toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe('Upload API', () => {
                 const event = createMockEvent({
                     body: JSON.stringify({
                         filename: testCase.filename,
-                        buildingId: 'bldg-1',
+                        buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitId: 'unit-1'
                     })
                 });
@@ -187,7 +187,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -239,7 +239,7 @@ describe('Upload API', () => {
                 const event = createMockEvent({
                     body: JSON.stringify({
                         filename,
-                        buildingId: 'building-1',
+                        buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitId: 'unit-1'
                     })
                 });
@@ -258,7 +258,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'my.vacation.photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -267,7 +267,7 @@ describe('Upload API', () => {
             const body = JSON.parse(result.body!);
 
             expect(result.statusCode).toBe(200);
-            expect(body.key).toBe('buildings/building-1/units/unit-1/test-uuid.jpg');
+            expect(body.key).toBe('buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/test-uuid.jpg');
             expect(body.publicUrl).toContain('test-uuid.jpg');
         });
 
@@ -294,7 +294,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -316,7 +316,7 @@ describe('Upload API', () => {
             s3Mock.mockResolvedValueOnce({});
 
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings/building-1/units/unit-1/uuid-1234.jpg',
+                rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/uuid-1234.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -411,7 +411,7 @@ describe('Upload API', () => {
             s3Mock.mockRejectedValueOnce(new Error('Access Denied'));
 
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings/building-1/units/unit-1/uuid-1234.jpg',
+                rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/uuid-1234.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -480,7 +480,7 @@ describe('Upload API', () => {
                 rawPath: '/api/upload/somefile.jpg',
                 body: JSON.stringify({
                     filename: 'test.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -501,7 +501,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -521,7 +521,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -542,7 +542,7 @@ describe('Upload API', () => {
             const event = createMockEvent({
                 body: JSON.stringify({
                     filename: 'photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1'
                 })
             });
@@ -564,7 +564,7 @@ describe('Upload API', () => {
                 const event = createMockEvent({
                     body: JSON.stringify({
                         filename: 'file\x00.jpg',
-                        buildingId: 'building-1',
+                        buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitId: 'unit-1'
                     })
                 });
@@ -590,7 +590,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename,
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1'
                         })
                     });
@@ -617,7 +617,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename,
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1'
                         })
                     });
@@ -644,7 +644,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename,
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1'
                         })
                     });
@@ -674,7 +674,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename,
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1'
                         })
                     });
@@ -703,7 +703,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename,
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1'
                         })
                     });
@@ -730,7 +730,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename,
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1'
                         })
                     });
@@ -763,7 +763,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename,
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1'
                         })
                     });
@@ -786,7 +786,7 @@ describe('Upload API', () => {
                 const event = createMockEvent({
                     body: JSON.stringify({
                         filename: 'photo.png',
-                        buildingId: 'building-1',
+                        buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitId: 'unit-1',
                         contentType: 'image/jpeg'  // Mismatch with .png
                     })
@@ -824,7 +824,7 @@ describe('Upload API', () => {
                     const event = createMockEvent({
                         body: JSON.stringify({
                             filename: 'photo.jpg',
-                            buildingId: 'building-1',
+                            buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                             unitId: 'unit-1',
                             contentType
                         })
@@ -869,7 +869,7 @@ describe('Upload API', () => {
                 const event = createMockEvent({
                     body: JSON.stringify({
                         filename: 'photo.jpg',
-                        buildingId: 'building-1',
+                        buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitId: '../../etc/passwd'
                     })
                 });
@@ -886,7 +886,7 @@ describe('Upload API', () => {
                 expect.assertions(4);
                 const injectionAttempts = [
                     { buildingId: 'building?query=value', unitId: 'unit-1' },
-                    { buildingId: 'building-1', unitId: 'unit#fragment' }
+                    { buildingId: 'gSPgoPTdFcPqdeCYMBZMzy', unitId: 'unit#fragment' }
                 ];
 
                 for(const attempt of injectionAttempts) {
@@ -916,7 +916,7 @@ describe('Upload API', () => {
             it('should reject deletion with null bytes in key', async () => {
                 expect.assertions(2);
                 const event = createMockEvent({
-                    rawPath: '/api/upload/buildings/building-1/units/unit-1/file\x00.jpg',
+                    rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/file\x00.jpg',
                     requestContext: {
                         ...createMockEvent().requestContext,
                         http: {
@@ -949,7 +949,7 @@ describe('Upload API', () => {
                 s3Mock.mockRejectedValueOnce(notFoundError);
 
                 const event = createMockEvent({
-                    rawPath: '/api/upload/buildings/building-1/units/unit-1/nonexistent.jpg',
+                    rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/nonexistent.jpg',
                     requestContext: {
                         ...createMockEvent().requestContext,
                         http: {
@@ -982,7 +982,7 @@ describe('Upload API', () => {
                 s3Mock.mockRejectedValueOnce(versionError);
 
                 const event = createMockEvent({
-                    rawPath: '/api/upload/buildings/building-1/units/unit-1/versioned.jpg',
+                    rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/versioned.jpg',
                     requestContext: {
                         ...createMockEvent().requestContext,
                         http: {
@@ -1010,7 +1010,7 @@ describe('Upload API', () => {
                     headers: {},  // No Content-Type
                     body: JSON.stringify({
                         filename: 'photo.jpg',
-                        buildingId: 'building-1',
+                        buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitId: 'unit-1'
                     })
                 });
@@ -1027,7 +1027,7 @@ describe('Upload API', () => {
                 // Create a large payload
                 const largePayload = {
                     filename: 'photo.jpg',
-                    buildingId: 'building-1',
+                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                     unitId: 'unit-1',
                     metadata: repeat('x', 1000000)  // 1MB of data
                 };
@@ -1050,7 +1050,7 @@ describe('Upload API', () => {
                 expect.assertions(6);
                 const specialCases = [
                     { buildingId: 'building-1!@#$%', unitId: 'unit-1' },
-                    { buildingId: 'building-1', unitId: 'unit^&*()' },
+                    { buildingId: 'gSPgoPTdFcPqdeCYMBZMzy', unitId: 'unit^&*()' },
                     { buildingId: 'building[1]', unitId: 'unit{1}' }
                 ];
 
@@ -1075,9 +1075,9 @@ describe('Upload API', () => {
             it('should handle empty string values', async () => {
                 expect.assertions(6);
                 const emptyStringCases = [
-                    { filename: '', buildingId: 'building-1', unitId: 'unit-1' },
+                    { filename: '', buildingId: 'gSPgoPTdFcPqdeCYMBZMzy', unitId: 'unit-1' },
                     { filename: 'photo.jpg', buildingId: '', unitId: 'unit-1' },
-                    { filename: 'photo.jpg', buildingId: 'building-1', unitId: '' }
+                    { filename: 'photo.jpg', buildingId: 'gSPgoPTdFcPqdeCYMBZMzy', unitId: '' }
                 ];
 
                 for(const testCase of emptyStringCases) {
@@ -1098,7 +1098,7 @@ describe('Upload API', () => {
                 const event = createMockEvent({
                     body: JSON.stringify({
                         filename: '   ',
-                        buildingId: 'building-1',
+                        buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
                         unitId: 'unit-1'
                     })
                 });

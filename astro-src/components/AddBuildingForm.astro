@@ -10,13 +10,13 @@
      
     <fieldset class="fieldset w-xl relative">
         <div class="indicator w-full">
-            <span class="indicator-item badge" style="z-index:2" x-show="buildingID === ''">Required</span>
+            <span class="indicator-item badge" style="z-index:2" x-show="buildingName === ''">Required</span>
             <label class="floating-label mb-6 w-full">
                 <span>Building Name</span>
                 <input type="text" 
-                       name="buildingID" 
-                       x-model="buildingID" 
-                       placeholder="Building Name" 
+                       name="buildingName" 
+                       x-model="buildingName" 
+                       placeholder="Building Name (auto-generated from address)" 
                        class="input input-xl w-full" 
                        required />
             </label>
@@ -24,7 +24,7 @@
         
         <label class="floating-label mb-2">
             <span>Street</span>
-            <input type="text" name="street" x-model="street" placeholder="Street" class="input w-full"/>
+            <input type="text" name="street" x-model="street" placeholder="Street" class="input w-full" @input="updateBuildingNameFromAddress()"/>
         </label>
         
         <label class="floating-label mb-2">
@@ -151,7 +151,7 @@
 import type { AlpineComponent } from "../types/alpine";
 
 type AddBuildingFormData = AlpineComponent<{
-    buildingID: string;
+    buildingName: string;
     street: string;
     city: string;
     state: string;
@@ -165,12 +165,13 @@ type AddBuildingFormData = AlpineComponent<{
     init(): void;
     addBuilding(): Promise<void>;
     clearForm(): void;
+    updateBuildingNameFromAddress(): void;
 }>;
 
 function addBuildingFormData(): AddBuildingFormData {
     return {
         // Form state
-        buildingID: '',
+        buildingName: '',
         street: '',
         city: '',
         state: '',
@@ -187,9 +188,9 @@ function addBuildingFormData(): AddBuildingFormData {
         },
         
         async addBuilding() {
-            if (!this.buildingID) {
+            if (!this.buildingName) {
                 this.$dispatch('show-toast', { 
-                    message: 'Building ID is required.', 
+                    message: 'Building name is required.', 
                     type: 'error' 
                 });
                 return;
@@ -201,7 +202,7 @@ function addBuildingFormData(): AddBuildingFormData {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        buildingID: this.buildingID,
+                        buildingName: this.buildingName,
                         street: this.street,
                         city: this.city,
                         state: this.state,
@@ -218,13 +219,14 @@ function addBuildingFormData(): AddBuildingFormData {
                 this.saving = false;
                 
                 if (response.ok) {
+                    const result = await response.json();
                     this.$dispatch('show-toast', { 
                         message: 'Building added successfully!', 
                         type: 'success' 
                     });
                     
-                    // Redirect to the new building
-                    window.location.hash = this.buildingID;
+                    // Redirect to the new building using the returned buildingID
+                    window.location.hash = result.buildingID;
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
@@ -244,7 +246,7 @@ function addBuildingFormData(): AddBuildingFormData {
         },
         
         clearForm() {
-            this.buildingID = '';
+            this.buildingName = '';
             this.street = '';
             this.city = '';
             this.state = '';
@@ -253,6 +255,29 @@ function addBuildingFormData(): AddBuildingFormData {
             this.specialtyType = 'market-rate';
             this.propertyWebsite = '';
             this.managementWebsite = '';
+        },
+        
+        updateBuildingNameFromAddress() {
+            if (this.street && !this.buildingName) {
+                // Simple address parsing to extract street number and main street name
+                const streetParts = this.street.trim().split(/\s+/);
+                if (streetParts.length >= 2) {
+                    const streetNumber = streetParts[0];
+                    // Find the main street name (skip directional prefixes and street types)
+                    const streetWords = streetParts.slice(1);
+                    const skipWords = ['n', 'north', 's', 'south', 'e', 'east', 'w', 'west', 'ne', 'nw', 'se', 'sw',
+                                     'st', 'street', 'ave', 'avenue', 'rd', 'road', 'blvd', 'boulevard', 'pkwy', 'parkway',
+                                     'ln', 'lane', 'dr', 'drive', 'ct', 'court', 'pl', 'place', 'way'];
+                    
+                    const mainStreetWords = streetWords.filter(word => 
+                        !skipWords.includes(word.toLowerCase().replace(/[^a-z]/g, ''))
+                    );
+                    
+                    if (mainStreetWords.length > 0) {
+                        this.buildingName = `${streetNumber} ${mainStreetWords.join(' ')}`;
+                    }
+                }
+            }
         },
         
         // Add Alpine magic properties

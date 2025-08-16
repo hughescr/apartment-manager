@@ -11,7 +11,8 @@ import _ from 'lodash';
  * Standard test building with comprehensive data for most test scenarios.
  */
 export const testBuilding = {
-    buildingID: 'test-building-1',
+    buildingID: 'eEUxh8XdGF1RsxfmwHPpYD', // Short-uuid format
+    buildingName: '123 Test',
     street: '123 Test St',
     city: 'Testville',
     state: 'TS',
@@ -79,7 +80,8 @@ export const testBuilding = {
  * Minimal building for testing basic functionality with defaults.
  */
 export const minimalBuilding = {
-    buildingID: 'minimal-building-1',
+    buildingID: 'eL66f2Km4MG8SrtsamWvPU', // Short-uuid format
+    buildingName: '456 Minimal',
     street: '456 Minimal Ave'
 };
 
@@ -87,7 +89,8 @@ export const minimalBuilding = {
  * Building with complex nested structures for testing deep object handling.
  */
 export const complexBuilding = {
-    buildingID: 'complex-building-1',
+    buildingID: 'bfDFDKH11u7AhktrYKYewM', // Short-uuid format
+    buildingName: '999 Complex',
     street: '999 Complex St',
     rentSpecials: [
         { title: 'Special 1', description: 'First special' },
@@ -105,6 +108,8 @@ export const complexBuilding = {
  */
 export const specialCharsBuilding = {
     ...testBuilding,
+    buildingID: 'fG3k9HmQr2X8pLsY6wBnEt', // Short-uuid format
+    buildingName: '123 O\'Brien',
     street: '123 O\'Brien St. #456',
     description: 'Test "building" with <special> & characters',
     propertyDescription: 'Line 1\nLine 2\tTabbed\rCarriage Return',
@@ -119,6 +124,8 @@ export const specialCharsBuilding = {
  */
 export const unicodeBuilding = {
     ...testBuilding,
+    buildingID: 'cR7x2MvQ8uBn4wKgYzHjNp', // Short-uuid format
+    buildingName: '北京市朝阳区建国路123号', // Chinese characters - full address as name
     street: '北京市朝阳区建国路123号', // Chinese characters
     description: 'مبنى سكني فاخر', // Arabic text
     propertyDescription: '🏢 Modern building with 🌳 garden and 🏊 pool! 😊',
@@ -131,7 +138,8 @@ export const unicodeBuilding = {
  * Building with empty values for testing null/undefined/empty handling.
  */
 export const emptyValuesBuilding = {
-    buildingID: 'empty-test',
+    buildingID: 'dP8m5NzR1wTg3vXjKqLcSe', // Short-uuid format
+    buildingName: '', // empty string
     street: '', // empty string
     city: undefined, // undefined (DynamoDB Toolbox doesn't accept null for strings)
     // state is undefined (not included)
@@ -145,6 +153,8 @@ export const emptyValuesBuilding = {
  */
 export const createLargeBuilding = () => ({
     ...testBuilding,
+    buildingID: 'hK9p4QxV7zAy1nFjRmBsWu', // Short-uuid format
+    buildingName: '123 Test',
     propertyDescription: _.repeat('x', 350000), // ~350KB
     photos: _.fill(Array(100), 'https://s3.example.com/very-long-photo-url-that-takes-up-space.jpg')
 });
@@ -154,6 +164,8 @@ export const createLargeBuilding = () => ({
  */
 export const createMaxArrayBuilding = () => ({
     ...testBuilding,
+    buildingID: 'jM2s8PwE6xCb5vLnKtGhRy', // Short-uuid format
+    buildingName: '123 Test',
     photos: _.fill(Array(1000), 'https://s3.example.com/photo.jpg'),
     propertyAmenities: _.fill(Array(500), { name: 'Amenity', category: AmenityCategory.PROPERTY }),
     rentSpecials: _.fill(Array(100), { title: 'Special', description: 'Deal' }),
@@ -165,6 +177,8 @@ export const createMaxArrayBuilding = () => ({
  */
 export const complexPetPolicyBuilding = {
     ...testBuilding,
+    buildingID: 'kN6u1TzH9qDf8sMjYvPcXw', // Short-uuid format
+    buildingName: '123 Test',
     petPolicies: {
         allowed: true,
         types: [PetType.DOG, PetType.CAT, PetType.BIRD, PetType.FISH, PetType.SMALL_ANIMAL],
@@ -183,6 +197,8 @@ export const complexPetPolicyBuilding = {
  */
 export const complexTourBuilding = {
     ...testBuilding,
+    buildingID: 'mQ5t7RvK3xGe2pLhBwNfZa', // Short-uuid format
+    buildingName: '123 Test',
     tourAvailability: {
         selfGuidedTours: true,
         virtualTours: true,

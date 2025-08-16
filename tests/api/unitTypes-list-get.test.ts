@@ -31,7 +31,7 @@ describe('Unit Types API - List and Get', () => {
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(mockDbData));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1' }
+                pathParameters: { buildingID: 'jL4VXugaZgC7QiYKsDjwEJ' }
             });
 
             const result = await list(event);
@@ -52,7 +52,7 @@ describe('Unit Types API - List and Get', () => {
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([]));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1' }
+                pathParameters: { buildingID: 'jL4VXugaZgC7QiYKsDjwEJ' }
             });
 
             const result = await list(event);
@@ -65,7 +65,7 @@ describe('Unit Types API - List and Get', () => {
             dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1' }
+                pathParameters: { buildingID: 'jL4VXugaZgC7QiYKsDjwEJ' }
             });
 
             // The API doesn't have error handling, so errors should propagate
@@ -90,7 +90,7 @@ describe('Unit Types API - List and Get', () => {
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
+                pathParameters: { buildingID: 'jL4VXugaZgC7QiYKsDjwEJ', modelID: 'model-2br' }
             });
 
             const result = await get(event);
@@ -105,7 +105,7 @@ describe('Unit Types API - List and Get', () => {
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'non-existent' }
+                pathParameters: { buildingID: 'jL4VXugaZgC7QiYKsDjwEJ', modelID: 'non-existent' }
             });
 
             const result = await get(event);
@@ -119,7 +119,7 @@ describe('Unit Types API - List and Get', () => {
             dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
+                pathParameters: { buildingID: 'jL4VXugaZgC7QiYKsDjwEJ', modelID: 'model-2br' }
             });
 
             expect(get(event)).rejects.toThrow('Database error');

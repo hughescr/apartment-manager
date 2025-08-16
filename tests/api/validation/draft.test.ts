@@ -25,7 +25,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
     describe('BuildingDraftSchema', () => {
         const minimalBuildingData = {
-            buildingID: 'test-building-1',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             buildingName: 'Test Building'
         };
 
@@ -33,7 +33,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = BuildingDraftSchema.safeParse(minimalBuildingData);
             expect(result.success).toBe(true);
             if(result.success) {
-                expect(result.data.buildingID).toBe('test-building-1');
+                expect(result.data.buildingID).toBe('gSPgoPTdFcPqdeCYMBZMzy');
                 expect(result.data.buildingName).toBe('Test Building');
             }
         });
@@ -82,7 +82,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
         it('should require buildingName to be non-empty', () => {
             const invalidData = {
-                buildingID: 'test-building-1',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: ''
             };
 
@@ -173,7 +173,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
     describe('UnitTypeDraftSchema', () => {
         const minimalUnitTypeData = {
-            buildingID: 'test-building-1',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             modelID: 'model-1br',
             modelName: '1 Bedroom Apartment'
         };
@@ -182,7 +182,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitTypeDraftSchema.safeParse(minimalUnitTypeData);
             expect(result.success).toBe(true);
             if(result.success) {
-                expect(result.data.buildingID).toBe('test-building-1');
+                expect(result.data.buildingID).toBe('gSPgoPTdFcPqdeCYMBZMzy');
                 expect(result.data.modelID).toBe('model-1br');
                 expect(result.data.modelName).toBe('1 Bedroom Apartment');
             }
@@ -309,7 +309,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
     describe('UnitDraftSchema', () => {
         const minimalUnitData = {
-            buildingID: 'test-building-1',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             unitID: 'unit-101',
             unitNumber: '101'
         };
@@ -318,7 +318,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitDraftSchema.safeParse(minimalUnitData);
             expect(result.success).toBe(true);
             if(result.success) {
-                expect(result.data.buildingID).toBe('test-building-1');
+                expect(result.data.buildingID).toBe('gSPgoPTdFcPqdeCYMBZMzy');
                 expect(result.data.unitID).toBe('unit-101');
                 expect(result.data.unitNumber).toBe('101');
             }
@@ -356,7 +356,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
         it('should require unitNumber to be non-empty', () => {
             const invalidData = {
-                buildingID: 'test-building-1',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 unitID: 'unit-101',
                 unitNumber: ''
             };
@@ -487,7 +487,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
             // Step 1: Just the bare minimum
             const step1 = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'My Building'
             };
             expect(BuildingDraftSchema.safeParse(step1).success).toBe(true);

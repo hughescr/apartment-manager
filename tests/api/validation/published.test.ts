@@ -27,7 +27,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
     describe('BuildingPublishedSchema - MITS Requirements', () => {
         const completeValidBuilding: BuildingPublishedInput = {
-            buildingID: 'test-building-1',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             buildingName: 'Test Building',
             street: '123 Main St',
             city: 'Dallas',
@@ -48,7 +48,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = BuildingPublishedSchema.safeParse(completeValidBuilding);
             expect(result.success).toBe(true);
             if(result.success) {
-                expect(result.data.buildingID).toBe('test-building-1');
+                expect(result.data.buildingID).toBe('gSPgoPTdFcPqdeCYMBZMzy');
                 expect(result.data.buildingName).toBe('Test Building');
                 expect(result.data.propertyType).toBe(PropertyType.APARTMENT);
             }
@@ -188,7 +188,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
     describe('UnitTypePublishedSchema - MITS Floorplan Requirements', () => {
         const completeValidUnitType: UnitTypePublishedInput = {
-            buildingID: 'test-building-1',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             modelID: 'model-1br',
             modelName: '1 Bedroom Apartment',
             beds: 1,
@@ -341,7 +341,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
     describe('UnitPublishedSchema - MITS ILS_Unit Requirements', () => {
         const completeValidUnit: UnitPublishedInput = {
-            buildingID: 'test-building-1',
+            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
             unitID: 'unit-101',
             unitNumber: '101',
             beds: 1,
@@ -494,7 +494,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
         it('should enforce strict mode to prevent additional properties', () => {
             const buildingWithExtraFields = {
-                buildingID: 'test-building-1',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building',
                 street: '123 Main St',
                 city: 'Dallas',
@@ -572,7 +572,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         it('should require MITS-compliant room count consistency', () => {
             // Both unit type and unit should have consistent bed/bath requirements
             const unitTypeWithRooms = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 modelID: 'model-1br',
                 modelName: '1 Bedroom',
                 beds: 1,
@@ -583,7 +583,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             expect(UnitTypePublishedSchema.safeParse(unitTypeWithRooms).success).toBe(true);
 
             const unitWithRooms = {
-                buildingID: 'test-building',
+                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
                 unitID: 'unit-101',
                 unitNumber: '101',
                 beds: 1,

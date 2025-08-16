@@ -27,7 +27,7 @@ describe('Unit Types API - Create Basic', () => {
                 modelName: '3 Bedroom',
                 beds: 3,
                 baths: 2.5,
-                buildingID: 'test-building-1'
+                buildingID: '7FV4VRuTr8PEv3xwzPUKau'
             };
             // Mock the check for existing unit type (returns undefined)
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
@@ -35,7 +35,7 @@ describe('Unit Types API - Create Basic', () => {
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...newUnitType, unitID: `MODEL#${newUnitType.modelID}` }));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1' },
+                pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
                 body: JSON.stringify(newUnitType),
                 headers: { 'content-type': 'application/json' }
             });
@@ -54,7 +54,7 @@ describe('Unit Types API - Create Basic', () => {
             };
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1' },
+                pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
                 body: JSON.stringify(invalidData),
                 headers: { 'content-type': 'application/json' }
             });
@@ -70,7 +70,7 @@ describe('Unit Types API - Create Basic', () => {
         it('should handle JSON parsing errors', async () => {
             expect.assertions(2);
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1' },
+                pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
                 body: 'invalid json',
                 headers: { 'content-type': 'application/json' }
             });
@@ -88,7 +88,7 @@ describe('Unit Types API - Create Basic', () => {
                 modelName: 'Existing Model',
                 beds: 2,
                 baths: 2,
-                buildingID: 'test-building-1'
+                buildingID: '7FV4VRuTr8PEv3xwzPUKau'
             };
             // Mock the check for existing unit type (returns an existing item)
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse({
@@ -97,7 +97,7 @@ describe('Unit Types API - Create Basic', () => {
             }));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1' },
+                pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
                 body: JSON.stringify(newUnitType),
                 headers: { 'content-type': 'application/json' }
             });
@@ -116,11 +116,11 @@ describe('Unit Types API - Create Basic', () => {
                     modelName: '   ', // Whitespace only
                     beds: 2,
                     baths: 2,
-                    buildingID: 'test-building-1'
+                    buildingID: '7FV4VRuTr8PEv3xwzPUKau'
                 };
 
                 const event = createMockEvent({
-                    pathParameters: { buildingID: 'test-building-1' },
+                    pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
                     body: JSON.stringify(invalidData),
                     headers: { 'content-type': 'application/json' }
                 });
@@ -139,11 +139,11 @@ describe('Unit Types API - Create Basic', () => {
                     modelName: 'Test Model',
                     beds: 2,
                     baths: 2,
-                    buildingID: 'test-building-1'
+                    buildingID: '7FV4VRuTr8PEv3xwzPUKau'
                 };
 
                 const event = createMockEvent({
-                    pathParameters: { buildingID: 'test-building-1' },
+                    pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
                     body: JSON.stringify(invalidData),
                     headers: { 'content-type': 'application/json' }
                 });
@@ -162,11 +162,11 @@ describe('Unit Types API - Create Basic', () => {
                     modelName: 'Test Model',
                     beds: 11, // > 10
                     baths: 15, // > 10
-                    buildingID: 'test-building-1'
+                    buildingID: '7FV4VRuTr8PEv3xwzPUKau'
                 };
 
                 const event = createMockEvent({
-                    pathParameters: { buildingID: 'test-building-1' },
+                    pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
                     body: JSON.stringify(invalidData),
                     headers: { 'content-type': 'application/json' }
                 });

@@ -11,7 +11,7 @@ export const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {})
     const baseEvent: APIGatewayProxyEventV2 = {
         headers: {},
         isBase64Encoded: false,
-        rawPath: '/api/buildings/test-building-1/unit-types',
+        rawPath: '/api/buildings/o6L6W8KUNhj1sPZCRx4tkw/unit-types',
         rawQueryString: '',
         requestContext: {
             accountId: 'test-account',
@@ -20,7 +20,7 @@ export const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {})
             domainPrefix: 'test',
             http: {
                 method: 'GET',
-                path: '/api/buildings/test-building-1/unit-types',
+                path: '/api/buildings/o6L6W8KUNhj1sPZCRx4tkw/unit-types',
                 protocol: 'HTTP/1.1',
                 sourceIp: '127.0.0.1',
                 userAgent: 'test-agent',
@@ -44,7 +44,7 @@ export const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {})
 };
 
 export const testUnitType = {
-    buildingID: 'test-building-1',
+    buildingID: 'o6L6W8KUNhj1sPZCRx4tkw',
     modelID: 'model-2br',
     modelName: '2 Bedroom Deluxe',
     countAvailable: 5,

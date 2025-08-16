@@ -32,7 +32,7 @@ describe('Unit Types API - Update and Delete', () => {
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...updatedUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
                 body: JSON.stringify(updates),
                 headers: { 'content-type': 'application/json' }
             });
@@ -50,7 +50,7 @@ describe('Unit Types API - Update and Delete', () => {
             // But in our mocked tests, we control the response
             const updates = { modelName: 'Updated Name' };
             const updatedItem = {
-                buildingID: 'test-building-1',
+                buildingID: 'o6L6W8KUNhj1sPZCRx4tkw',
                 modelID: 'non-existent',
                 modelName: 'Updated Name',
                 beds: 1, // These would be required in real DynamoDB
@@ -59,7 +59,7 @@ describe('Unit Types API - Update and Delete', () => {
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...updatedItem, unitID: 'MODEL#non-existent' }));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'non-existent' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'non-existent' },
                 body: JSON.stringify(updates),
                 headers: { 'content-type': 'application/json' }
             });
@@ -86,7 +86,7 @@ describe('Unit Types API - Update and Delete', () => {
             }));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
                 body: JSON.stringify(invalidUpdates),
                 headers: { 'content-type': 'application/json' }
             });
@@ -97,13 +97,13 @@ describe('Unit Types API - Update and Delete', () => {
             const updatedData = JSON.parse(result.body as string);
             // Verify the IDs weren't changed
             expect(updatedData.modelID).toBe('model-2br');
-            expect(updatedData.buildingID).toBe('test-building-1');
+            expect(updatedData.buildingID).toBe('o6L6W8KUNhj1sPZCRx4tkw');
         });
 
         it('should handle JSON parsing errors in update', async () => {
             expect.assertions(2);
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
                 body: 'invalid json {{{',
                 headers: { 'content-type': 'application/json' }
             });
@@ -123,7 +123,7 @@ describe('Unit Types API - Update and Delete', () => {
             };
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
                 body: JSON.stringify(invalidUpdates),
                 headers: { 'content-type': 'application/json' }
             });
@@ -147,7 +147,7 @@ describe('Unit Types API - Update and Delete', () => {
             };
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
                 body: JSON.stringify(invalidUpdates),
                 headers: { 'content-type': 'application/json' }
             });
@@ -169,7 +169,7 @@ describe('Unit Types API - Update and Delete', () => {
             dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
                 body: JSON.stringify({ modelName: 'Updated' }),
                 headers: { 'content-type': 'application/json' }
             });
@@ -192,7 +192,7 @@ describe('Unit Types API - Update and Delete', () => {
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` }));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' },
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
                 body: '{}',
                 headers: { 'content-type': 'application/json' }
             });
@@ -210,7 +210,7 @@ describe('Unit Types API - Update and Delete', () => {
             dynamoDbMock.mockResolvedValueOnce(mockDeleteResponse());
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' }
             });
 
             const result = await del(event);
@@ -225,7 +225,7 @@ describe('Unit Types API - Update and Delete', () => {
             dynamoDbMock.mockRejectedValueOnce(new Error('Database error'));
 
             const event = createMockEvent({
-                pathParameters: { buildingID: 'test-building-1', modelID: 'model-2br' }
+                pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' }
             });
 
             const result = await del(event);

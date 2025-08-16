@@ -641,16 +641,16 @@ describe('Security Validation Tests', () => {
         });
 
         it('should handle negative numbers where not allowed', async () => {
-            const event = createMockEvent('POST', '/api/buildings/test-building/units', {
+            const event = createMockEvent('POST', '/api/buildings/mhvXdrZT4jP5T8vBxuvm75/units', {
                 unitID: 'test-unit',
-                buildingID: 'test-building',
+                buildingID: 'mhvXdrZT4jP5T8vBxuvm75',
                 beds: -1,
                 baths: -5,
                 sqft: -1000,
                 rent: -500,
                 deposit: -1000
             }, {
-                buildingID: 'test-building'
+                buildingID: 'mhvXdrZT4jP5T8vBxuvm75'
             });
 
             const response = await unitsHandler.create(event);
@@ -707,14 +707,14 @@ describe('Security Validation Tests', () => {
             const manyPhotos = _.fill(new Array(1000), 'http://example.com/photo.jpg');
             const manyAmenities = _.fill(new Array(5000), 'Test Amenity');
 
-            const event = createMockEvent('POST', '/api/buildings/test-building/units', {
+            const event = createMockEvent('POST', '/api/buildings/mhvXdrZT4jP5T8vBxuvm75/units', {
                 unitID: 'test-unit',
-                buildingID: 'test-building',
+                buildingID: 'mhvXdrZT4jP5T8vBxuvm75',
                 photos: manyPhotos,
                 amenities: manyAmenities,
                 features: manyAmenities
             }, {
-                buildingID: 'test-building'
+                buildingID: 'mhvXdrZT4jP5T8vBxuvm75'
             });
 
             const response = await unitsHandler.create(event);

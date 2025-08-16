@@ -68,7 +68,7 @@ describe('Building Data Layer - CRUD Operations', () => {
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...minimalBuilding, unitID: 'BUILDING' }));
 
             const createdBuilding = await createBuilding(minimalBuilding);
-            expect(createdBuilding.buildingID).toBe('minimal-building-1');
+            expect(createdBuilding.buildingID).toBe(minimalBuilding.buildingID);
             expect(createdBuilding.street).toBe('456 Minimal Ave');
         });
 

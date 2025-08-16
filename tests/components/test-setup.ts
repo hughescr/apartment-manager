@@ -21,7 +21,7 @@ mock.module('@hughescr/logger', () => ({
 }));
 
 // Mock crypto module for consistent IDs in tests
-const mockRandomUUID = jest.fn().mockReturnValue('test-uuid');
+const mockRandomUUID = jest.fn().mockReturnValue('eEUxh8XdGF1RsxfmwHPpYD');
 mock.module('crypto', () => ({
     randomUUID: mockRandomUUID
 }));

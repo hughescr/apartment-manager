@@ -41,7 +41,6 @@ describe('Building Form Validation', () => {
         it('should validate required basic fields', () => {
             const invalidBuilding = {
                 ...validBuilding,
-                buildingID: '',
                 street: '',
                 city: '',
                 state: '',
@@ -51,7 +50,6 @@ describe('Building Form Validation', () => {
             const result = validateBuildingForm(invalidBuilding);
 
             expect(result.isValid).toBe(false);
-            expect(result.errors.buildingID).toBe('Building ID is required');
             expect(result.errors.street).toBe('Street address is required');
             expect(result.errors.city).toBe('City is required');
             expect(result.errors.state).toBe('State is required');
@@ -219,7 +217,7 @@ describe('Building Form Validation', () => {
 
     describe('validateSingleField', () => {
         it('should validate basic required fields', () => {
-            const requiredFields = ['buildingID', 'street', 'city', 'state'];
+            const requiredFields = ['street', 'city', 'state'];
 
             _.forEach(requiredFields, (fieldName) => {
                 expect(validateSingleField(fieldName, '', validBuilding)).toMatch(/required/);
@@ -354,7 +352,7 @@ describe('Building Form Validation', () => {
     describe('Edge Cases and Error Conditions', () => {
         it('should handle missing required properties gracefully', () => {
             const incompleteBuilding = {
-                buildingID: 'test-id'
+                buildingID: 'eEUxh8XdGF1RsxfmwHPpYD'
                 // Missing other required fields
             } as BuildingData;
 

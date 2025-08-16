@@ -18,7 +18,7 @@ describe('Building Coordinates API', () => {
     });
 
     it('should save latitude, longitude, and coordinatesVerified fields', async () => {
-        const buildingID = 'test-building-123';
+        const buildingID = 'eEUxh8XdGF1RsxfmwHPpYD'; // Short-uuid format
         const updateData = {
             buildingID,
             buildingName: 'Test Building',
@@ -61,7 +61,7 @@ describe('Building Coordinates API', () => {
     });
 
     it('should handle missing coordinates gracefully', async () => {
-        const buildingID = 'test-building-456';
+        const buildingID = 'eL66f2Km4MG8SrtsamWvPU'; // Short-uuid format
         const updateData = {
             buildingID,
             buildingName: 'Test Building 2',
@@ -103,7 +103,7 @@ describe('Building Coordinates API', () => {
     });
 
     it('should preserve other building fields when updating coordinates', async () => {
-        const buildingID = 'test-building-789';
+        const buildingID = 'bfDFDKH11u7AhktrYKYewM'; // Short-uuid format
         const updateData = {
             buildingID,
             buildingName: 'Existing Building',

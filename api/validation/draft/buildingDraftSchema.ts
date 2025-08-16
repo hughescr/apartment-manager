@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PropertyType } from '../../../src/types';
+import _ from 'lodash';
 
 /**
  * Draft validation schema for buildings - permissive schema for work-in-progress saves
@@ -42,8 +43,26 @@ const ScreeningCriteriaDraftSchema = z.object({
 
 export const BuildingDraftSchema = z.looseObject({
     // Required fields for draft - only ID and name
-    buildingID: z.string().min(1).max(255).regex(/^[\w-]+$/, 'buildingID can only contain letters, numbers, underscores, and hyphens'),
-    buildingName: z.string().min(1, 'buildingName is required'),
+    buildingID: z.string().min(1).max(255).regex(/^[\w-]+$/, 'buildingID can only contain letters, numbers, underscores, and hyphens').refine((id) => {
+        // Security validation: prevent injection patterns
+        const maliciousPatterns = [
+            /[{}"'$()|*?[\]^]/,  // NoSQL injection characters
+            /[()&|!]/,                       // LDAP injection characters
+            /[\r\n]/,                        // Header injection (CRLF)
+            /\0/,                          // Null bytes
+            /\.\.[/\\]/,                   // Path traversal
+        ];
+
+        return !_.some(maliciousPatterns, pattern => pattern.test(id));
+    }, 'buildingID contains invalid or potentially dangerous characters'),
+    buildingName: z.string().min(1, 'buildingName is required').transform((name) => {
+        // Sanitize to prevent XSS while preserving content
+        return _.chain(name)
+            .replace(/<script[^>]*>.*?<\/script>/gi, '')
+            .replace(/javascript:/gi, '')
+            .replace(/on\w+\s*=/gi, '')
+            .value();
+    }),
     // All other fields are optional for draft state
     street: z.string().min(1, 'Street address cannot be empty').optional(),
     city: z.string().min(1, 'City cannot be empty').optional(),

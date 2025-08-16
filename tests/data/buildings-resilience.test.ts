@@ -99,7 +99,7 @@ describe('Building Data Layer - Resilience', () => {
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...largeBuilding, unitID: 'BUILDING' }));
 
             const result = await createBuilding(largeBuilding);
-            expect(result.buildingID).toBe(testBuilding.buildingID);
+            expect(result.buildingID).toBe(largeBuilding.buildingID);
         });
 
         it('should handle very long string fields', async () => {

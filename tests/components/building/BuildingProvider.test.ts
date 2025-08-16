@@ -239,7 +239,7 @@ describe('BuildingProvider Component', () => {
 
         it('should handle malformed building data gracefully', () => {
             const malformedBuilding = {
-                buildingID: 'test-123'
+                buildingID: 'eEUxh8XdGF1RsxfmwHPpYD'
                 // Missing most required fields
             } as unknown as BuildingData;
 
@@ -250,7 +250,7 @@ describe('BuildingProvider Component', () => {
                 monthlyFees: malformedBuilding.monthlyFees || []
             };
 
-            expect(processedBuilding.buildingID).toBe('test-123');
+            expect(processedBuilding.buildingID).toBe('eEUxh8XdGF1RsxfmwHPpYD');
             expect(processedBuilding.oneTimeFees).toEqual([]);
             expect(processedBuilding.monthlyFees).toEqual([]);
         });
@@ -271,12 +271,12 @@ describe('BuildingProvider Component', () => {
         it('should handle multiple building configurations efficiently', () => {
             const buildings = [];
             for(let i = 0; i < 5; i++) {
-                buildings.push({ ...mockBuildingData, buildingID: `building-${i}` });
+                buildings.push({ ...mockBuildingData, buildingID: `eEUxh8XdGF1RsxfmwHPpY${i}` });
             }
 
             expect(buildings).toHaveLength(5);
-            expect(buildings[0].buildingID).toBe('building-0');
-            expect(buildings[4].buildingID).toBe('building-4');
+            expect(buildings[0].buildingID).toBe('eEUxh8XdGF1RsxfmwHPpY0');
+            expect(buildings[4].buildingID).toBe('eEUxh8XdGF1RsxfmwHPpY4');
         });
     });
 

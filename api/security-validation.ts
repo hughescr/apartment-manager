@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { isValidBuildingId } from '../src/utils/index.js';
 
 /**
  * Security validation functions for API input sanitization
@@ -28,6 +29,14 @@ const VALID_ZIP_PATTERN = /^\d{5}(?:-\d{4})?$/;
 export function validateId(id: string, fieldName: string): string | null {
     if(!id || !_.isString(id)) {
         return `${fieldName} is required`;
+    }
+
+    // Special validation for building IDs (using short-uuid format)
+    if(_.includes(_.toLower(fieldName), 'building')) {
+        if(!isValidBuildingId(id)) {
+            return `${fieldName} must be a valid 8-character ID`;
+        }
+        return null;
     }
 
     // Check for null bytes
