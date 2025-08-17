@@ -8,24 +8,87 @@
      x-data="addBuildingFormData()"
      x-init="init()">
      
-    <fieldset class="fieldset w-xl relative">
-        <div class="indicator w-full">
-            <span class="indicator-item badge" style="z-index:2" x-show="buildingName === ''">Required</span>
-            <label class="floating-label mb-6 w-full">
-                <span>Building Name</span>
+    <fieldset class="fieldset w-xl">
+        <!-- Autocomplete dropdown using proper DaisyUI structure -->
+        <div class="dropdown w-full" 
+             :class="{ 'dropdown-open': showSuggestions }">
+            <label class="floating-label mb-2 w-full relative">
+                <span>Street</span>
                 <input type="text" 
-                       name="buildingName" 
-                       x-model="buildingName" 
-                       placeholder="Building Name (auto-generated from address)" 
-                       class="input input-xl w-full" 
-                       required />
+                       name="street" 
+                       x-model="street" 
+                       placeholder="Street" 
+                       class="input w-full" 
+                       @input="handleStreetInput($event)"
+                       @keydown="handleKeydown($event)"
+                       @blur="updateBuildingNameFromAddress(); setTimeout(() => hideSuggestions(), 150)"
+                       @focus="street.length >= 3 && suggestions.length > 0 ? showSuggestions = true : null"
+                       :aria-expanded="showSuggestions"
+                       :aria-activedescendant="selectedIndex >= 0 ? `suggestion-${selectedIndex}` : null"
+                       autocomplete="off"
+                       role="combobox"
+                       aria-haspopup="listbox"/>
+                
+                <!-- Status indicators -->
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                    <!-- Geolocation status indicator -->
+                    <div class="tooltip" :data-tip="locationTooltip">
+                        <div class="flex items-center" x-show="locationStatus !== 'unknown'">
+                            <!-- Location granted -->
+                            <svg x-show="locationStatus === 'granted'" class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <!-- Location denied/unavailable -->
+                            <svg x-show="locationStatus === 'denied' || locationStatus === 'unavailable'" class="w-4 h-4 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <!-- Location loading -->
+                            <span x-show="locationStatus === 'loading'" class="loading loading-spinner loading-xs"></span>
+                        </div>
+                    </div>
+                    <!-- Search loading indicator -->
+                    <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+                </div>
             </label>
-        </div>
-        
-        <label class="floating-label mb-2">
-            <span>Street</span>
-            <input type="text" name="street" x-model="street" placeholder="Street" class="input w-full" @input="updateBuildingNameFromAddress()"/>
-        </label>
+            
+            <!-- Autocomplete dropdown using DaisyUI dropdown-content -->
+            <ul class="dropdown-content menu bg-base-100 rounded-box z-50 w-full max-h-60 overflow-y-auto shadow-lg border border-base-300" 
+                x-show="showSuggestions || (!loading && suggestions.length === 0 && street.length >= 3)" 
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                role="listbox" 
+                aria-label="Address suggestions">
+                
+                <template x-for="(suggestion, index) in suggestions" :key="suggestion.displayText + index">
+                    <li>
+                        <a class="text-sm py-2 px-3 cursor-pointer rounded-btn"
+                           :class="{ 'bg-primary text-primary-content': selectedIndex === index }"
+                           :id="`suggestion-${index}`"
+                           :aria-selected="selectedIndex === index"
+                           role="option"
+                           @click="selectSuggestion(suggestion)"
+                           @mouseenter="selectedIndex = index">
+                            <div class="flex-1">
+                                <div class="font-medium" x-text="suggestion.address.street || suggestion.displayText"></div>
+                                <div class="text-xs opacity-70" x-text="suggestion.address.city && suggestion.address.state ? `${suggestion.address.city}, ${suggestion.address.state} ${suggestion.address.postalCode || suggestion.address.postcode || ''}`.trim() : suggestion.address.formatted"></div>
+                            </div>
+                        </a>
+                    </li>
+                </template>
+                
+                <!-- No results message -->
+                <li x-show="!loading && suggestions.length === 0 && street.length >= 3">
+                    <span class="text-xs text-base-content/60 py-2 px-3">
+                        No address suggestions found
+                    </span>
+                </li>
+            </ul>
         
         <label class="floating-label mb-2">
             <span>City</span>
@@ -42,12 +105,28 @@
             <input type="text" name="zip" x-model="zip" placeholder="Zip" class="input w-full"/>
         </label>
         
+        <div class="indicator w-full mt-4">
+            <span class="indicator-item badge" style="z-index:2" x-show="buildingName === ''">Required</span>
+            <label class="floating-label mb-6 w-full">
+                <span>Building Name</span>
+                <input type="text" 
+                       name="buildingName" 
+                       x-model="buildingName" 
+                       placeholder="Building Name (auto-generated from address)" 
+                       class="input input-xl w-full" 
+                       required />
+            </label>
+        </div>
+        
         <label class="floating-label mt-4">
             <span>Description</span>
             <textarea name="description" 
-                      class="textarea w-full" 
-                      placeholder="Description" 
+                      class="textarea w-full h-24" 
+                      placeholder="Brief property description highlighting key features and amenities that attract tenants..." 
                       x-model="description"></textarea>
+            <div class="text-xs text-base-content/60 mt-1">
+                Used as marketing copy on rental listing sites (Apartments.com, Zillow) and in MITS feeds. Plain text only - no HTML or Markdown.
+            </div>
         </label>
         
         <!-- Website Fields Section -->
@@ -150,6 +229,25 @@
 <script>
 import type { AlpineComponent } from "../types/alpine";
 
+interface AddressSuggestion {
+    displayText: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        postcode: string;
+        postalCode?: string;
+        formatted: string;
+    };
+    coordinates?: {
+        lat: number;
+        lng: number;
+    };
+    confidence?: number;
+    source: 'radar' | 'cache';
+    id: string;
+}
+
 type AddBuildingFormData = AlpineComponent<{
     buildingName: string;
     street: string;
@@ -162,10 +260,29 @@ type AddBuildingFormData = AlpineComponent<{
     managementWebsite: string;
     saving: boolean;
     apiURL: string;
+    // Autocomplete state
+    suggestions: AddressSuggestion[];
+    showSuggestions: boolean;
+    loading: boolean;
+    selectedIndex: number;
+    debounceTimer: ReturnType<typeof setTimeout> | null;
+    // Geolocation state
+    userLocation: { lat: number; lon: number } | null;
+    locationStatus: 'unknown' | 'granted' | 'denied' | 'unavailable' | 'loading';
+    locationTooltip: string;
     init(): void;
     addBuilding(): Promise<void>;
     clearForm(): void;
     updateBuildingNameFromAddress(): void;
+    // Autocomplete methods
+    handleStreetInput(event: Event): void;
+    searchAddresses(query: string): Promise<void>;
+    selectSuggestion(suggestion: AddressSuggestion): void;
+    navigateOptions(direction: 'up' | 'down'): void;
+    hideSuggestions(): void;
+    handleKeydown(event: KeyboardEvent): void;
+    // Geolocation methods
+    getUserLocation(): Promise<void>;
 }>;
 
 function addBuildingFormData(): AddBuildingFormData {
@@ -182,10 +299,23 @@ function addBuildingFormData(): AddBuildingFormData {
         managementWebsite: '',
         saving: false,
         apiURL: '',
+        // Autocomplete state
+        suggestions: [],
+        showSuggestions: false,
+        loading: false,
+        selectedIndex: -1,
+        debounceTimer: null,
+        // Geolocation state
+        userLocation: null,
+        locationStatus: 'unknown',
+        locationTooltip: '',
         
         init() {
-            this.apiURL = this.$root.dataset.apiUrl || '';
+            this.apiURL = this.$root.parentElement?.dataset.apiUrl || '';
+            // Request geolocation in the background
+            this.getUserLocation();
         },
+        
         
         async addBuilding() {
             if (!this.buildingName) {
@@ -255,6 +385,16 @@ function addBuildingFormData(): AddBuildingFormData {
             this.specialtyType = 'market-rate';
             this.propertyWebsite = '';
             this.managementWebsite = '';
+            // Clear autocomplete state
+            this.suggestions = [];
+            this.showSuggestions = false;
+            this.loading = false;
+            this.selectedIndex = -1;
+            if(this.debounceTimer) {
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = null;
+            }
+            // Don't clear geolocation state when clearing form
         },
         
         updateBuildingNameFromAddress() {
@@ -280,11 +420,156 @@ function addBuildingFormData(): AddBuildingFormData {
             }
         },
         
+        handleStreetInput(event: Event) {
+            const target = event.target as HTMLInputElement;
+            const query = target.value.trim();
+            
+            // Clear existing timer
+            if(this.debounceTimer) {
+                clearTimeout(this.debounceTimer);
+            }
+            
+            if(query.length < 3) {
+                this.hideSuggestions();
+                return;
+            }
+            
+            // Debounce API calls to 200ms
+            this.debounceTimer = setTimeout(() => {
+                this.searchAddresses(query);
+            }, 200);
+        },
+        
+        
+        async searchAddresses(query: string) {
+            this.loading = true;
+            this.selectedIndex = -1;
+            
+            try {
+                // Build request with optional coordinates
+                const params = new URLSearchParams({ q: query, limit: '5' });
+                if(this.userLocation) {
+                    params.append('lat', this.userLocation.lat.toString());
+                    params.append('lon', this.userLocation.lon.toString());
+                }
+                
+                const response = await fetch(`${this.apiURL}autocomplete/address?${params}`);
+                if(response.ok) {
+                    const data = await response.json();
+                    if(data.success && data.suggestions) {
+                        this.suggestions = data.suggestions;
+                        this.showSuggestions = this.suggestions.length > 0;
+                    } else {
+                        this.hideSuggestions();
+                    }
+                } else {
+                    // Graceful error handling - hide autocomplete but don't break form
+                    this.hideSuggestions();
+                }
+            } catch (error) {
+                // Graceful error handling - autocomplete fails silently
+                this.hideSuggestions();
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        selectSuggestion(suggestion: AddressSuggestion) {
+            // Auto-populate form fields
+            this.street = suggestion.address.street || '';
+            this.city = suggestion.address.city || '';
+            this.state = suggestion.address.state || '';
+            this.zip = suggestion.address.postalCode || suggestion.address.postcode || '';
+            
+            // Update building name from the populated address
+            this.updateBuildingNameFromAddress();
+            
+            this.hideSuggestions();
+        },
+        
+        navigateOptions(direction: 'up' | 'down') {
+            if(!this.showSuggestions || this.suggestions.length === 0) return;
+            
+            if(direction === 'down') {
+                this.selectedIndex = this.selectedIndex < this.suggestions.length - 1 
+                    ? this.selectedIndex + 1 
+                    : 0;
+            } else {
+                this.selectedIndex = this.selectedIndex > 0 
+                    ? this.selectedIndex - 1 
+                    : this.suggestions.length - 1;
+            }
+        },
+        
+        hideSuggestions() {
+            this.showSuggestions = false;
+            this.suggestions = [];
+            this.selectedIndex = -1;
+            this.loading = false;
+        },
+        
+        handleKeydown(event: KeyboardEvent) {
+            if(!this.showSuggestions) return;
+            
+            switch(event.key) {
+                case 'ArrowDown':
+                    event.preventDefault();
+                    this.navigateOptions('down');
+                    break;
+                case 'ArrowUp':
+                    event.preventDefault();
+                    this.navigateOptions('up');
+                    break;
+                case 'Enter':
+                    event.preventDefault();
+                    if(this.selectedIndex >= 0 && this.suggestions[this.selectedIndex]) {
+                        this.selectSuggestion(this.suggestions[this.selectedIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    this.hideSuggestions();
+                    break;
+            }
+        },
+        
+        async getUserLocation() {
+            if(!navigator.geolocation) {
+                this.locationStatus = 'unavailable';
+                this.locationTooltip = 'Geolocation not supported by browser';
+                return;
+            }
+            
+            this.locationStatus = 'loading';
+            this.locationTooltip = 'Getting your location...';
+            
+            try {
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: false,
+                        timeout: 10000,
+                        maximumAge: 300000 // 5 minutes
+                    });
+                });
+                
+                this.userLocation = {
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude
+                };
+                this.locationStatus = 'granted';
+                this.locationTooltip = 'Location enabled - showing nearby results first';
+            } catch (error) {
+                console.log('Geolocation permission denied or unavailable:', error);
+                this.locationStatus = 'denied';
+                this.locationTooltip = 'Location permission denied - showing general results';
+            }
+        },
+        
         // Add Alpine magic properties
         $dispatch: (() => {}) as any,
         $root: null as any,
         $el: null as any,
-        $watch: (() => {}) as any
+        $watch: (() => {}) as any,
+        $nextTick: (() => {}) as any
     } as AddBuildingFormData;
 }
 
@@ -297,3 +582,30 @@ declare global {
 
 window.addBuildingFormData = addBuildingFormData;
 </script>
+
+<style>
+/* Force single column layout and prevent wrapping */
+.dropdown-content.menu {
+    flex-flow: column nowrap !important;
+    width: 100% !important;
+}
+
+/* Compact spacing for autocomplete dropdown */
+.dropdown .menu {
+    padding: 0.25rem;
+}
+
+.dropdown .menu li > a {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    min-height: auto;
+    gap: 0.375rem;
+}
+
+/* Ensure dropdown appears above other content */
+.dropdown-content {
+    z-index: 50;
+}
+</style>

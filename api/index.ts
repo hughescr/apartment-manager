@@ -6,6 +6,7 @@ import * as version from './version';
 import * as credentials from './credentials';
 import * as feed from './feed';
 import * as geocoding from './geocoding';
+import * as autocomplete from './autocomplete';
 import { noop, split, every, startsWith, endsWith, forEach, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
@@ -65,6 +66,15 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
     },
     '/geocoding/cache': {
         DELETE: geocoding.clearCache,
+    },
+    '/autocomplete/address': {
+        GET: autocomplete.addressAutocomplete,
+    },
+    '/autocomplete/status': {
+        GET: autocomplete.status,
+    },
+    '/autocomplete/cache': {
+        DELETE: autocomplete.clearCache,
     },
 };
 

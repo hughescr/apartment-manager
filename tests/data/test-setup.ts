@@ -29,6 +29,9 @@ const mockSSTResource = {
     },
     PhotosBucket: {
         name: 'test-photos-bucket'
+    },
+    RADAR_SECRET_KEY: {
+        value: 'prv_test_mock_radar_key_12345'
     }
 };
 
@@ -185,7 +188,6 @@ interface MockDataClients {
         build: jest.Mock
     }
 }
-
 // Mock data/clients module to use test implementations - need to handle test environment properly
 // Override global require for data/clients in test environment
 if(process.env.BUN_ENV === 'test') {
@@ -282,6 +284,9 @@ if(process.env.BUN_ENV === 'test') {
             };
         }
     };
+
+    // Set up SST Resource mock globally
+    (globalThis as typeof globalThis & { mockSSTResource?: typeof mockSSTResource }).mockSSTResource = mockSSTResource;
 }
 
 // Entity-level mocks for DynamoDB Toolbox v2.x

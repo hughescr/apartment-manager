@@ -63,17 +63,50 @@
 
 ## 📺 CONTINUOUS MONITORING
 
-**Setup tmux processes before coding:**
-1. `bun run tsc --pretty false --watch` (window: "typecheck")
-2. `bun run astro check --watch` (window: "astro-check") 
-3. `bun test --watch` (window: "tests")
+### **Standardized Long-lived Watcher Windows**
 
-**Check tmux output after changes:**
-- `mcp__tmux__get_output({ window_name: "typecheck" })`
-- `mcp__tmux__get_output({ window_name: "astro-check" })`
-- `mcp__tmux__get_output({ window_name: "tests" })`
+**ALWAYS check first with `mcp__tmux__list_workspaces` before starting any watcher process!**
+
+**Standard window names:**
+- `sst-dev` - SST development server (`bun run sst-dev`)
+- `tsc-watch` - TypeScript watcher (`bun run tsc --pretty false --watch`)
+- `astro-watch` - Astro checker (`bun run astro check --watch`)
+- `test-watch` - Test watcher (`bun test --watch`)
+
+**Setup process for agents:**
+1. Use `mcp__tmux__list_workspaces` to check existing windows
+2. If window doesn't exist, start with `mcp__tmux__run_command`
+3. If window exists, proceed to monitoring with `mcp__tmux__get_output`
+
+**Example check:**
+```
+// Check if tsc-watch exists
+list_workspaces() → if "tsc-watch" not found:
+  run_command("bun run tsc --pretty false --watch", "tsc-watch")
+// Always monitor existing window
+get_output({window_name: "tsc-watch"})
+```
+
+**Monitor tmux output after changes:**
+- `mcp__tmux__get_output({ window_name: "sst-dev" })`
+- `mcp__tmux__get_output({ window_name: "tsc-watch" })`
+- `mcp__tmux__get_output({ window_name: "astro-watch" })`
+- `mcp__tmux__get_output({ window_name: "test-watch" })`
 
 **Don't run `tsc`/`astro check`/`bun test` directly.**
+
+### **Tmux Window Cleanup Rules**
+
+**Long-lived watcher windows** (`sst-dev`, `tsc-watch`, `astro-watch`, `test-watch`):
+- ✅ Agents may start these if not running
+- ❌ Agents must NOT kill/close these
+- 🔄 These persist across agent sessions for reuse
+
+**Temporary agent windows** (any other tmux windows agents create):
+- 🧹 Agent creating the window is responsible for cleanup
+- 🛑 Must kill process (`mcp__tmux__send_keys(["C-c"])`) when done
+- 🚪 Must exit shell to allow window to close
+- ❌ Don't leave orphaned tmux windows
 
 ## SUB-AGENT USAGE
 

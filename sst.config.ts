@@ -34,6 +34,7 @@ export default $config({
         });
 
         /* ────────────── Resources ────────────── */
+        await import('./sst/secrets'); // Import secrets to ensure they are created
         const { site } = await import('./sst/astro');
         const { api, uploadApi } = await import('./sst/api');
 
