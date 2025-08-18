@@ -2,7 +2,7 @@
 import '../data/test-setup';
 
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { noop } from 'lodash';
 
 /**
  * Tests for Building Management 5-Tab Structure
@@ -52,7 +52,7 @@ describe('Building Tab Navigation', () => {
             // Simulate Alpine.js component initialization
             const component = {
                 activeSectionTab: 'building-info',
-                init: _.noop
+                init: noop
             };
 
             component.init();

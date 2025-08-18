@@ -2,7 +2,7 @@
 import '../data/test-setup';
 
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { isNumber, isObject } from 'lodash';
 
 type DepositInput = number | { amount: number, refundable?: boolean, partialRefundPercentage?: number } | null | undefined;
 
@@ -22,7 +22,7 @@ describe('Enhanced Deposit Functionality', () => {
 
             // Simulate the conversion logic from the components
             const convertDeposit = (deposit: DepositInput) => {
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return {
                         amount: deposit,
                         refundable: true
@@ -47,7 +47,7 @@ describe('Enhanced Deposit Functionality', () => {
             };
 
             const convertDeposit = (deposit: DepositInput) => {
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return {
                         amount: deposit,
                         refundable: true
@@ -63,7 +63,7 @@ describe('Enhanced Deposit Functionality', () => {
 
         it('should handle null/undefined deposits', () => {
             const convertDeposit = (deposit: DepositInput) => {
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return {
                         amount: deposit,
                         refundable: true
@@ -83,7 +83,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit) {
                     return null;
                 }
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return deposit;
                 }
                 return (deposit as { amount: number }).amount;
@@ -97,7 +97,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit) {
                     return null;
                 }
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return deposit;
                 }
                 return (deposit as { amount: number }).amount;
@@ -112,7 +112,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit) {
                     return null;
                 }
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return deposit;
                 }
                 return (deposit as { amount: number }).amount;
@@ -129,7 +129,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit) {
                     return true;
                 }
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return true;
                 }
                 return (deposit as { refundable?: boolean }).refundable !== false;
@@ -143,7 +143,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit) {
                     return true;
                 }
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return true;
                 }
                 return (deposit as { refundable?: boolean }).refundable !== false;
@@ -161,7 +161,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit) {
                     return true;
                 }
-                if(_.isNumber(deposit)) {
+                if(isNumber(deposit)) {
                     return true;
                 }
                 return (deposit as { refundable?: boolean }).refundable !== false;
@@ -175,7 +175,7 @@ describe('Enhanced Deposit Functionality', () => {
     describe('Partial Refund Percentage', () => {
         it('should return null for number deposits', () => {
             const getPartialRefundPercentage = (deposit: DepositInput) => {
-                if(!deposit || _.isNumber(deposit)) {
+                if(!deposit || isNumber(deposit)) {
                     return null;
                 }
                 return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage || null;
@@ -186,7 +186,7 @@ describe('Enhanced Deposit Functionality', () => {
 
         it('should return percentage from object deposit', () => {
             const getPartialRefundPercentage = (deposit: DepositInput) => {
-                if(!deposit || _.isNumber(deposit)) {
+                if(!deposit || isNumber(deposit)) {
                     return null;
                 }
                 return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage || null;
@@ -198,7 +198,7 @@ describe('Enhanced Deposit Functionality', () => {
 
         it('should return null when percentage is not set', () => {
             const getPartialRefundPercentage = (deposit: DepositInput) => {
-                if(!deposit || _.isNumber(deposit)) {
+                if(!deposit || isNumber(deposit)) {
                     return null;
                 }
                 return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage || null;
@@ -215,11 +215,11 @@ describe('Enhanced Deposit Functionality', () => {
                 const errors: string[] = [];
 
                 if(deposit !== null && deposit !== undefined) {
-                    if(_.isNumber(deposit)) {
+                    if(isNumber(deposit)) {
                         if(deposit < 0) {
                             errors.push('Deposit must be 0 or greater');
                         }
-                    } else if(_.isObject(deposit)) {
+                    } else if(isObject(deposit)) {
                         const depositObj = deposit as { amount?: number, partialRefundPercentage?: number };
                         if(!depositObj.amount || depositObj.amount < 0) {
                             errors.push('Deposit amount is required and must be 0 or greater');

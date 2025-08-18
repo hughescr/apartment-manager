@@ -1,5 +1,5 @@
 import type { VacancyClass } from '../../src/types';
-import _ from 'lodash';
+import { isString, trim } from 'lodash';
 
 /**
  * Domain service for unit status management
@@ -53,12 +53,12 @@ export function validateVacancyClass(vacancyClass: VacancyClass | string | null 
         return { isValid: false, errors };
     }
 
-    if(!_.isString(vacancyClass)) {
+    if(!isString(vacancyClass)) {
         errors.push('Vacancy class must be a string');
         return { isValid: false, errors };
     }
 
-    const trimmedValue = _.trim(vacancyClass);
+    const trimmedValue = trim(vacancyClass);
     if(trimmedValue === '') {
         errors.push('Vacancy class cannot be empty');
         return { isValid: false, errors };

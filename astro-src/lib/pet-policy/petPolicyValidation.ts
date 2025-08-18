@@ -1,5 +1,5 @@
 import type { ExtendedPetPolicy, PetPolicyErrors, PetPolicyValidationResult } from './petPolicyTypes';
-import _ from 'lodash';
+import { filter, isObject, isString, map, trim } from 'lodash';
 
 /**
  * Validates basic pet policy fields
@@ -103,7 +103,7 @@ function validateBreedRestrictions(policy: ExtendedPetPolicy, errors: PetPolicyE
         }
 
         // Check for empty or whitespace-only restrictions
-        const emptyRestrictions = _.filter(policy.breedRestrictions, breed => !_.trim(breed));
+        const emptyRestrictions = filter(policy.breedRestrictions, breed => !trim(breed));
         if(emptyRestrictions.length > 0) {
             errors.breedRestrictions = 'Breed restrictions cannot be empty';
             isValid = false;
@@ -134,7 +134,7 @@ function validateAdvancedPetTypes(policy: ExtendedPetPolicy, errors: PetPolicyEr
         }
 
         // Check for duplicate pet types
-        const petTypeValues = _.map(policy.petTypes, 'type');
+        const petTypeValues = map(policy.petTypes, 'type');
         const duplicatePetTypes = findDuplicates(petTypeValues);
         if(duplicatePetTypes.length > 0) {
             if(!errors.general) {
@@ -238,7 +238,7 @@ function validatePetTypeBreedRestrictions(petType: import('./petPolicyTypes').Pe
             errors.push(`Duplicate breed restrictions: ${duplicates.join(', ')}`);
         }
 
-        const emptyRestrictions = _.filter(petType.breedRestrictions, breed => !_.trim(breed));
+        const emptyRestrictions = filter(petType.breedRestrictions, breed => !trim(breed));
         if(emptyRestrictions.length > 0) {
             errors.push('Breed restrictions cannot be empty');
         }
@@ -285,11 +285,11 @@ function findDuplicates<T>(arr: T[]): T[] {
  * Validates that breed name is valid
  */
 export function validateBreedName(breed: string): boolean {
-    if(!breed || !_.isString(breed)) {
+    if(!breed || !isString(breed)) {
         return false;
     }
 
-    const trimmed = _.trim(breed);
+    const trimmed = trim(breed);
     if(trimmed.length === 0) {
         return false;
     }
@@ -371,7 +371,7 @@ export function validatePetPolicyForm(formData: FormData, required = false): Pet
  */
 function validateNumericFieldValue(fieldName: string, value: unknown): string | null {
     const limits = VALIDATION_LIMITS[fieldName as keyof typeof VALIDATION_LIMITS];
-    if(_.isObject(limits) && 'min' in limits && 'max' in limits) {
+    if(isObject(limits) && 'min' in limits && 'max' in limits) {
         const result = validateNumericInput(value, limits.min, limits.max);
         return result.error || null;
     }

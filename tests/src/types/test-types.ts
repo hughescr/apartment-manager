@@ -5,12 +5,12 @@
 
 // Common test framework imports - re-exported for convenience
 import { describe as bunDescribe, it as bunIt, expect as bunExpect } from 'bun:test';
-import lodash from 'lodash';
+import { times } from 'lodash';
 
 export const describe = bunDescribe;
 export const it = bunIt;
 export const expect = bunExpect;
-export const _ = lodash;
+export { times };
 
 // Complete type and enum imports for all test files
 export type {

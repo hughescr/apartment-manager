@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { compact, filter, isArray, isObject, map, sumBy } from 'lodash';
 import type { TransformerFunction } from '../types.js';
 import type { Fee } from '../../types/index.js';
 import { FeeType } from '../../types/index.js';
@@ -15,15 +15,15 @@ export function transformFees(
     siteId: string
 ): { type: string, amount: number, description?: string, refundable?: boolean }[] {
     // Check if fees is actually an array
-    if(!fees || !_.isArray(fees) || fees.length === 0) {
+    if(!fees || !isArray(fees) || fees.length === 0) {
         return [];
     }
 
     // Filter out null/undefined fees and map valid ones
-    const compactFees = _.compact(fees);
-    const validFees = _.filter(compactFees, (fee): fee is Fee => fee && _.isObject(fee) && !!fee.type);
+    const compactFees = compact(fees);
+    const validFees = filter(compactFees, (fee): fee is Fee => fee && isObject(fee) && !!fee.type);
 
-    return _.map(validFees, fee => ({
+    return map(validFees, fee => ({
         type: transformFeeTypeName(fee.type, siteId),
         amount: Number(fee.amount) || 0,
         description: fee.description,
@@ -132,7 +132,7 @@ export function calculateMoveInCost(
 
     // Add all one-time fees
     if(oneTimeFees) {
-        total += _.sumBy(oneTimeFees, 'amount');
+        total += sumBy(oneTimeFees, 'amount');
     }
 
     return total;
@@ -153,7 +153,7 @@ export function formatFeeList(
     }
 
     const formatter = createPriceFormatter();
-    const feeStrings = _.map(fees, (fee) => {
+    const feeStrings = map(fees, (fee) => {
         const amount = formatter(fee.amount) || '0';
         const refundable = fee.refundable ? ' (refundable)' : '';
         return `${fee.type}: ${amount}${refundable}`;

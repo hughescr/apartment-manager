@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isNumber, isObject, keys, trim } from 'lodash';
 import type { UnitData } from '../../types';
 
 export type ValidationErrors = Record<string, string>;
@@ -28,13 +28,13 @@ export class UnitFormValidator {
         this.validateVacancyDates(unit, errors);
 
         return {
-            isValid: _.keys(errors).length === 0,
+            isValid: keys(errors).length === 0,
             errors
         };
     }
 
     private validateUnitNumber(unit: UnitData, errors: ValidationErrors): void {
-        if(!unit.unitID || _.trim(unit.unitID) === '') {
+        if(!unit.unitID || trim(unit.unitID) === '') {
             errors.unitID = 'Unit number is required';
         }
     }
@@ -44,7 +44,7 @@ export class UnitFormValidator {
         for(const field of numericFields) {
             const value = (unit as UnitData & Record<string, unknown>)[field];
             if(value !== null && value !== undefined && value !== '') {
-                if(_.isNumber(value) && value < 0) {
+                if(isNumber(value) && value < 0) {
                     errors[field] = `${this.getFieldLabel(field)} cannot be negative`;
                 }
             }
@@ -80,7 +80,7 @@ export class UnitFormValidator {
         const value = (unit as UnitData & Record<string, unknown>)[fieldName];
 
         // Required fields
-        if(fieldName === 'unitID' && (!value || _.trim(value as string) === '')) {
+        if(fieldName === 'unitID' && (!value || trim(value as string) === '')) {
             return 'Unit number is required';
         }
 
@@ -88,7 +88,7 @@ export class UnitFormValidator {
         const numericFields = ['beds', 'baths', 'sqft', 'rent', 'maxOccupants', 'perPersonRent', 'minLeaseTerm', 'maxLeaseTerm'];
         if(numericFields.includes(fieldName)) {
             if(value !== null && value !== undefined && value !== '') {
-                if(_.isNumber(value) && value < 0) {
+                if(isNumber(value) && value < 0) {
                     return `${this.getFieldLabel(fieldName)} cannot be negative`;
                 }
             }
@@ -143,10 +143,10 @@ export class UnitFormValidator {
         if(deposit === null || deposit === undefined) {
             return null;
         }
-        if(_.isNumber(deposit)) {
+        if(isNumber(deposit)) {
             return deposit;
         }
-        if(_.isObject(deposit)) {
+        if(isObject(deposit)) {
             return (deposit as { amount?: number }).amount ?? null;
         }
         return null;

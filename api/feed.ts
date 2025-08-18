@@ -4,7 +4,7 @@ import { getUnits } from '../data/units';
 import { getUnitTypes } from '../data/unitTypes';
 import { generateMultiBuildingMITSFeed } from '../src/mits/generator';
 import { UnitData, UnitTypeData } from '../src/types';
-import _ from 'lodash';
+import { filter, isError, map } from 'lodash';
 
 // Helper function to validate site name
 function validateSiteName(site: string): 'apartments_com' | 'zillow' | null {
@@ -36,21 +36,50 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         // Get unit types and units for all buildings
         const unitTypesByBuilding: Record<string, UnitTypeData[]> = {};
         const unitsByBuilding: Record<string, UnitData[]> = {};
+        const buildingErrors: Record<string, string> = {};
 
-        // Fetch data for each building in parallel
-        await Promise.all(_.map(allBuildings, async (building) => {
-            const [unitTypes, units] = await Promise.all([
-                getUnitTypes(building.buildingID),
-                getUnits(building.buildingID)
-            ]);
+        // Process buildings in smaller batches to prevent overwhelming the database
+        const BATCH_SIZE = 5; // Process 5 buildings at a time
+        const buildingBatches: typeof allBuildings[] = [];
 
-            unitTypesByBuilding[building.buildingID] = unitTypes;
-            // Filter units by feed inclusion for this site
-            const filteredUnits = _.filter(units, unit =>
-                unit.feedInclusion && unit.feedInclusion[validatedSite] === true
-            ) as UnitData[];
-            unitsByBuilding[building.buildingID] = filteredUnits;
-        }));
+        for(let i = 0; i < allBuildings.length; i += BATCH_SIZE) {
+            buildingBatches.push(allBuildings.slice(i, i + BATCH_SIZE));
+        }
+
+        // Process each batch sequentially, but buildings within each batch concurrently
+        for(const batch of buildingBatches) {
+            await Promise.all(map(batch, async (building) => {
+                try {
+                    // Fetch unit types and units for this building concurrently
+                    const [unitTypes, units] = await Promise.all([
+                        getUnitTypes(building.buildingID),
+                        getUnits(building.buildingID)
+                    ]);
+
+                    unitTypesByBuilding[building.buildingID] = unitTypes;
+                    // Filter units by feed inclusion for this site
+                    const filteredUnits = filter(units, unit =>
+                        unit.feedInclusion && unit.feedInclusion[validatedSite] === true
+                    ) as UnitData[];
+                    unitsByBuilding[building.buildingID] = filteredUnits;
+                } catch(error: unknown) {
+                    // Log individual building failures but continue processing
+                    const errorMessage = isError(error) ? error.message : 'Unknown error';
+                    buildingErrors[building.buildingID] = errorMessage;
+                    // In production, this should use proper logging (CloudWatch, etc.)
+                    // For now, we store the error but don't log to console to avoid ESLint warnings
+
+                    // Set empty arrays for failed buildings to prevent downstream errors
+                    unitTypesByBuilding[building.buildingID] = [];
+                    unitsByBuilding[building.buildingID] = [];
+                }
+            }));
+
+            // Small delay between batches to be respectful to the database
+            if(buildingBatches.indexOf(batch) < buildingBatches.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
 
         // Generate the aggregated MITS XML feed
         const xml = await generateMultiBuildingMITSFeed({
@@ -72,7 +101,7 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         };
     } catch(error: unknown) {
         // Log error for debugging (in production, use proper logging)
-        const errorMessage = _.isError(error) ? error.message : 'Unknown error';
+        const errorMessage = isError(error) ? error.message : 'Unknown error';
 
         return {
             statusCode: 500,

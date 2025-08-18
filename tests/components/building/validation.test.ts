@@ -2,7 +2,7 @@
 import './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
-import _ from 'lodash';
+import { forEach, repeat } from 'lodash';
 import {
     validateBuildingForm,
     validateSingleField,
@@ -66,7 +66,7 @@ describe('Building Form Validation', () => {
                 { zip: 'ABCDE', shouldBeValid: false }
             ];
 
-            _.forEach(testCases, (testCase) => {
+            forEach(testCases, (testCase) => {
                 const building = {
                     ...validBuilding,
                     zip: testCase.zip
@@ -91,7 +91,7 @@ describe('Building Form Validation', () => {
                 { yearBuilt: new Date().getFullYear() + 2, shouldBeValid: false }
             ];
 
-            _.forEach(testCases, (testCase) => {
+            forEach(testCases, (testCase) => {
                 const building = {
                     ...validBuilding,
                     yearBuilt: testCase.yearBuilt
@@ -132,7 +132,7 @@ describe('Building Form Validation', () => {
                 { amiLimit: 201, shouldBeValid: false }
             ];
 
-            _.forEach(testCases, (testCase) => {
+            forEach(testCases, (testCase) => {
                 const building = {
                     ...validBuilding,
                     incomeRestrictions: {
@@ -199,7 +199,7 @@ describe('Building Form Validation', () => {
                 { amiLimit: '', shouldBeValid: true }
             ];
 
-            _.forEach(testCases, (testCase) => {
+            forEach(testCases, (testCase) => {
                 const building = {
                     ...validBuilding,
                     incomeRestrictions: {
@@ -219,7 +219,7 @@ describe('Building Form Validation', () => {
         it('should validate basic required fields', () => {
             const requiredFields = ['street', 'city', 'state'];
 
-            _.forEach(requiredFields, (fieldName) => {
+            forEach(requiredFields, (fieldName) => {
                 expect(validateSingleField(fieldName, '', validBuilding)).toMatch(/required/);
                 expect(validateSingleField(fieldName, '   ', validBuilding)).toMatch(/required/);
                 expect(validateSingleField(fieldName, null, validBuilding)).toMatch(/required/);
@@ -285,7 +285,7 @@ describe('Building Form Validation', () => {
         it('should return null for valid optional fields', () => {
             const optionalFields = ['yearBuilt', 'amiLimit', 'minCreditScore', 'incomeRatio', 'maxOccupantsPerBedroom'];
 
-            _.forEach(optionalFields, (fieldName) => {
+            forEach(optionalFields, (fieldName) => {
                 expect(validateSingleField(fieldName, null, validBuilding)).toBe(null);
                 expect(validateSingleField(fieldName, undefined, validBuilding)).toBe(null);
             });
@@ -363,7 +363,7 @@ describe('Building Form Validation', () => {
         });
 
         it('should handle extremely long strings', () => {
-            const longString = _.repeat('a', 10000);
+            const longString = repeat('a', 10000);
             const building = {
                 ...validBuilding,
                 description: longString
@@ -431,7 +431,7 @@ describe('Building Form Validation', () => {
                 { field: 'maxOccupantsPerBedroom', value: 2.0, shouldBeValid: true } // Float as integer
             ];
 
-            _.forEach(numericTests, (test) => {
+            forEach(numericTests, (test) => {
                 const result = validateSingleField(test.field, test.value, validBuilding);
 
                 if(test.shouldBeValid) {

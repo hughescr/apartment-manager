@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { every, filter, flow, keys, map, padStart, uniq } from 'lodash';
 import { InheritanceResolver } from '../../../src/mappers/inheritance-resolver';
 import { AmenityCategory, FeeType } from '../../../src/types';
 import type { UnitData } from '../../../src/types';
@@ -39,7 +39,7 @@ describe('InheritanceResolver - Performance Tests', () => {
         it('should handle validation of units with many fields efficiently', () => {
             const unitWithManyFields = createUnitWithManyFields();
 
-            const allFields = _.keys(unitWithManyFields) as (keyof UnitData)[];
+            const allFields = keys(unitWithManyFields) as (keyof UnitData)[];
             const startTime = performance.now();
 
             const result = resolver.validateRequiredFields(unitWithManyFields, allFields);
@@ -131,7 +131,7 @@ describe('InheritanceResolver - Performance Tests', () => {
             // Create 1000 similar units for bulk processing
             const units = Array.from({ length: 1000 }, (_unused, i) => ({
                 buildingID: 'BLDG-001',
-                unitID: `UNIT-${_.padStart(String(i), 4, '0')}`,
+                unitID: `UNIT-${padStart(String(i), 4, '0')}`,
                 unitNumber: String(i + 1),
                 beds: undefined, // Force inheritance
                 baths: undefined, // Force inheritance
@@ -141,15 +141,15 @@ describe('InheritanceResolver - Performance Tests', () => {
 
             const startTime = performance.now();
 
-            const resolvedUnits = _.map(units, unit =>
+            const resolvedUnits = map(units, unit =>
                 resolver.resolveUnitValues(unit, unitTypeData, buildingData)
             );
 
             const endTime = performance.now();
 
             expect(resolvedUnits).toHaveLength(1000);
-            expect(_.every(resolvedUnits, ['beds', 2])).toBe(true);
-            expect(_.every(resolvedUnits, ['baths', 2])).toBe(true);
+            expect(every(resolvedUnits, ['beds', 2])).toBe(true);
+            expect(every(resolvedUnits, ['baths', 2])).toBe(true);
             expect(endTime - startTime).toBeLessThan(1000); // Should complete in < 1 second
         });
 
@@ -186,9 +186,9 @@ describe('InheritanceResolver - Performance Tests', () => {
             const endTime = performance.now();
 
             // Should have deduplicated properly
-            const uniqueNames = _.flow([
-                merged => _.map(merged, 'name'),
-                _.uniq
+            const uniqueNames = flow([
+                merged => map(merged, 'name'),
+                uniq
             ])(merged);
             expect(merged).toHaveLength(uniqueNames.length);
             expect(merged.length).toBeGreaterThan(300); // Should have all unique amenities
@@ -207,7 +207,7 @@ describe('InheritanceResolver - Performance Tests', () => {
                 unitWithMassiveFields[`dynamicField${i}`] = `value${i}`;
             }
 
-            const allFieldNames = _.keys(unitWithMassiveFields);
+            const allFieldNames = keys(unitWithMassiveFields);
             const startTime = performance.now();
 
             const result = resolver.validateRequiredFields(
@@ -233,9 +233,9 @@ describe('InheritanceResolver - Performance Tests', () => {
                 unitID: 'UNIT-001',
                 // Only populate every 10th field
                 ...Object.fromEntries(
-                    _.flow([
-                        (entries: [string, unknown][]) => _.filter(entries, (_, index) => index % 10 === 0),
-                        (entries: [string, unknown][]) => _.map(entries, ([key, value]) => [key, `override_${value}`])
+                    flow([
+                        (entries: [string, unknown][]) => filter(entries, (_, index) => index % 10 === 0),
+                        (entries: [string, unknown][]) => map(entries, ([key, value]) => [key, `override_${value}`])
                     ])(Object.entries(massiveDefaults))
                 )
             };
@@ -246,7 +246,7 @@ describe('InheritanceResolver - Performance Tests', () => {
 
             const endTime = performance.now();
 
-            expect(_.keys(result)).toHaveLength(1001); // unitID + 1000 defaults
+            expect(keys(result)).toHaveLength(1001); // unitID + 1000 defaults
             expect(endTime - startTime).toBeLessThan(100); // Should complete in < 100ms
         });
 
@@ -295,7 +295,7 @@ describe('InheritanceResolver - Performance Tests', () => {
 
             const startTime = performance.now();
 
-            const resolvedSparseUnits = _.map(sparseUnits, unit =>
+            const resolvedSparseUnits = map(sparseUnits, unit =>
                 resolver.resolveUnitValues(unit as UnitData, unitTypeData, buildingData)
             );
 
@@ -303,7 +303,7 @@ describe('InheritanceResolver - Performance Tests', () => {
 
             expect(resolvedSparseUnits).toHaveLength(1000);
             // Most should have inherited beds/baths from model
-            const inheritedBeds = _.filter(resolvedSparseUnits, ['beds', 2]);
+            const inheritedBeds = filter(resolvedSparseUnits, ['beds', 2]);
             expect(inheritedBeds.length).toBeGreaterThan(950); // Most should inherit
             expect(endTime - startTime).toBeLessThan(1500); // Should complete in < 1.5 seconds
         });

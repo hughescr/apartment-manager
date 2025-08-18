@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { constant, forEach, toLower } from 'lodash';
 import { InheritanceResolver } from '../../../src/mappers/inheritance-resolver';
 import { AmenityCategory } from '../../../src/types';
 import type { UnitData, Amenity } from '../../../src/types';
@@ -163,7 +163,7 @@ describe('InheritanceResolver - Security Tests', () => {
         });
 
         it('should handle extremely long property names', () => {
-            const longPropertyName = _.toLower(createVeryLongString(10000));
+            const longPropertyName = toLower(createVeryLongString(10000));
             const unitWithLongProperty = {
                 buildingID: 'BLDG-001',
                 unitID: 'UNIT-001',
@@ -193,10 +193,10 @@ describe('InheritanceResolver - Security Tests', () => {
             const maliciousOverride = {
                 buildingID: 'BLDG-001',
                 unitID: 'UNIT-001',
-                toString: _.constant('malicious override'),
-                valueOf: _.constant('malicious value'),
-                hasOwnProperty: _.constant(true),
-                propertyIsEnumerable: _.constant(true)
+                toString: constant('malicious override'),
+                valueOf: constant('malicious value'),
+                hasOwnProperty: constant(true),
+                propertyIsEnumerable: constant(true)
             };
 
             const resolved = resolver.resolveUnitValues(maliciousOverride as UnitData, unitTypeData, buildingData);
@@ -266,7 +266,7 @@ describe('InheritanceResolver - Security Tests', () => {
             const confusingUnit = {
                 buildingID: 'BLDG-001',
                 unitID: 'UNIT-001',
-                beds: { valueOf: _.constant(2), toString: _.constant('2') }, // Object pretending to be number
+                beds: { valueOf: constant(2), toString: constant('2') }, // Object pretending to be number
                 rent: new String('1500') // String object instead of primitive
             };
 
@@ -277,7 +277,7 @@ describe('InheritanceResolver - Security Tests', () => {
         });
 
         it('should handle function objects in unexpected places', () => {
-            const functionAsProperty = _.constant('I am a function') as (() => string) & { beds: number, baths: number };
+            const functionAsProperty = constant('I am a function') as (() => string) & { beds: number, baths: number };
             functionAsProperty.beds = 2;
             functionAsProperty.baths = 1;
 
@@ -323,7 +323,7 @@ describe('InheritanceResolver - Security Tests', () => {
                 '{{7*7}}' // Angular/Handlebars injection
             ];
 
-            _.forEach(maliciousStrings, (maliciousString) => {
+            forEach(maliciousStrings, (maliciousString) => {
                 const unit: UnitData = {
                     buildingID: 'BLDG-001',
                     unitID: 'UNIT-001',
@@ -345,7 +345,7 @@ describe('InheritanceResolver - Security Tests', () => {
                 'UNION SELECT * FROM sensitive_data --'
             ];
 
-            _.forEach(sqlInjectionPatterns, (pattern) => {
+            forEach(sqlInjectionPatterns, (pattern) => {
                 const unit: UnitData = {
                     buildingID: 'BLDG-001',
                     unitID: pattern,

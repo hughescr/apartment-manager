@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { chain, isArray, isNumber, some } from 'lodash';
 import type { UnitData, UnitTypeData } from '../../types';
 
 export type FieldName = 'beds' | 'baths' | 'sqft' | 'rent' | 'maxOccupants' | 'perPersonRent' |
@@ -36,8 +36,8 @@ export class FieldInheritanceManager {
             return false;
         }
 
-        if(_.isArray(modelField)) {
-            return isEmptyValue && _.some(modelField, f =>
+        if(isArray(modelField)) {
+            return isEmptyValue && some(modelField, f =>
                 unitType[f as keyof UnitTypeData] !== null &&
                 unitType[f as keyof UnitTypeData] !== undefined
             );
@@ -57,8 +57,8 @@ export class FieldInheritanceManager {
             return null;
         }
 
-        if(_.isArray(modelField)) {
-            const values = _(modelField)
+        if(isArray(modelField)) {
+            const values = chain(modelField)
                 .map(f => unitType[f as keyof UnitTypeData])
                 .filter(v => v !== null && v !== undefined)
                 .value();
@@ -101,21 +101,21 @@ export class FieldInheritanceManager {
         if(deposit === null || deposit === undefined) {
             return null;
         }
-        if(_.isNumber(deposit)) {
+        if(isNumber(deposit)) {
             return deposit;
         }
         return deposit.amount ?? null;
     }
 
     isDepositRefundable(deposit: number | Deposit | null): boolean {
-        if(!deposit || _.isNumber(deposit)) {
+        if(!deposit || isNumber(deposit)) {
             return true;
         }
         return deposit.refundable ?? true;
     }
 
     getDepositPartialRefundPercentage(deposit: number | Deposit | null): number | null {
-        if(!deposit || _.isNumber(deposit)) {
+        if(!deposit || isNumber(deposit)) {
             return null;
         }
         return deposit.partialRefundPercentage ?? null;

@@ -8,7 +8,7 @@ import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse,
 
 // Import the functions AFTER mocking
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
-import _ from 'lodash';
+import { fill, repeat } from 'lodash';
 
 describe('Unit Data Layer', () => {
     beforeAll(() => {
@@ -392,7 +392,7 @@ describe('Unit Data Layer', () => {
 
         it('should handle very long unitID', async () => {
             expect.assertions(1);
-            const unitID = _.repeat('u', 1000); // 1000 character unitID
+            const unitID = repeat('u', 1000); // 1000 character unitID
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: `UNIT#${unitID}` }));
 
             const result = await createUnit({ ...testUnit, unitID });
@@ -610,7 +610,7 @@ describe('Unit Data Layer', () => {
 
         it('should handle very large arrays', async () => {
             expect.assertions(2);
-            const largePhotosArray = _.fill(Array(1000), 'https://example.com/photo.jpg');
+            const largePhotosArray = fill(Array(1000), 'https://example.com/photo.jpg');
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
                 ...testUnit,
                 unitID: 'UNIT#test-unit-1',

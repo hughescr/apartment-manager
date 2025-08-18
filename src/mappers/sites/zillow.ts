@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { fill, head, isNumber, isObject, map, sortBy, uniq, zipObject } from 'lodash';
 import type {
     SiteMapper,
     MappedBuilding,
@@ -44,10 +44,10 @@ function getDepositAmount(deposit: number | Deposit | undefined): number | undef
     if(deposit === undefined || deposit === null) {
         return undefined;
     }
-    if(_.isNumber(deposit)) {
+    if(isNumber(deposit)) {
         return deposit;
     }
-    if(_.isObject(deposit) && 'amount' in deposit) {
+    if(isObject(deposit) && 'amount' in deposit) {
         return (deposit as Deposit).amount;
     }
     return undefined;
@@ -122,7 +122,7 @@ export class ZillowMapper implements SiteMapper {
                 ...transformFees(monthly, this.siteId),
                 ...transformFees(deposits, this.siteId)
             ],
-            utilities: _.zipObject(includedUtilities, _.fill(Array(includedUtilities.length), true)),
+            utilities: zipObject(includedUtilities, fill(Array(includedUtilities.length), true)),
             parking: this.transformParking(building),
             petPolicy: this.transformPetPolicy(building),
             amenities: transformAmenities(building.propertyAmenities, this.siteId),
@@ -205,7 +205,7 @@ export class ZillowMapper implements SiteMapper {
             },
             amenities: transformAmenities(allAmenities, this.siteId),
             photos: transformPhotoUrls(allPhotos, this.siteId),
-            rentSpecial: flattened.unitRentSpecial || _.head(building.rentSpecials)
+            rentSpecial: flattened.unitRentSpecial || head(building.rentSpecials)
         };
     }
 
@@ -230,7 +230,7 @@ export class ZillowMapper implements SiteMapper {
      * @private
      */
     private getAllPhotos(flattened: UnitData, building: BuildingData) {
-        return _.uniq([
+        return uniq([
             ...(flattened.photos || []),
             ...(building.photos || [])
         ]);
@@ -351,11 +351,11 @@ export class ZillowMapper implements SiteMapper {
             ParkingType.NONE
         ];
 
-        const sortedOptions = _.sortBy(building.parkingOptions, option =>
+        const sortedOptions = sortBy(building.parkingOptions, option =>
             priorityOrder.indexOf(option.type)
         );
 
-        return _.map(sortedOptions, option => ({
+        return map(sortedOptions, option => ({
             type: parkingTransformer(option.type),
             included: option.included,
             fee: option.fee,
@@ -399,7 +399,7 @@ export class ZillowMapper implements SiteMapper {
 
         return {
             allowed: true,
-            types: policy.types ? _.map(policy.types, (type: PetType) => petTransformer(type)) : undefined,
+            types: policy.types ? map(policy.types, (type: PetType) => petTransformer(type)) : undefined,
             maxCount: policy.maxCount,
             weightLimit: policy.weightLimit,
             deposit: totalPetFees > 0 ? totalPetFees : undefined,

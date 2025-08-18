@@ -3,7 +3,7 @@ import './test-setup';
 import { resetAllMocks } from '../../data/test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
-import _ from 'lodash';
+import { filter, find, forEach, map, noop, omit, some } from 'lodash';
 import {
     validateForSave,
     validateForPublish,
@@ -19,7 +19,7 @@ describe('Validation Helper Functions', () => {
 
     beforeEach(() => {
         // Reset any mock state between tests
-        _.noop();
+        noop();
     });
 
     describe('validateForSave - Draft Mode Validation', () => {
@@ -74,13 +74,13 @@ describe('Validation Helper Functions', () => {
             expect(result.errors[0].field).toBe('buildingID');
 
             // Should contain building ID validation error
-            const errorMessages = _.map(result.errors, 'message');
+            const errorMessages = map(result.errors, 'message');
             expect(errorMessages).toEqual(expect.arrayContaining([
                 expect.stringContaining('must be a valid building ID format')
             ]));
 
             // All errors should have draft context
-            _.forEach(result.errors, (error) => {
+            forEach(result.errors, (error) => {
                 expect(error.context).toContain('Draft validation allows incomplete data');
             });
         });
@@ -182,7 +182,7 @@ describe('Validation Helper Functions', () => {
             expect(result.errors.length).toBeGreaterThan(0);
 
             // Check for MITS context in error messages
-            const hasStreetError = _.some(result.errors, {
+            const hasStreetError = some(result.errors, {
                 field: 'street'
             });
             expect(hasStreetError).toBe(true);
@@ -201,8 +201,8 @@ describe('Validation Helper Functions', () => {
             expect(result.errors.length).toBeGreaterThan(0);
 
             // Should fail due to missing required beds and baths info
-            const hasBedsError = _.some(result.errors, { field: 'beds' });
-            const hasBathsError = _.some(result.errors, { field: 'baths' });
+            const hasBedsError = some(result.errors, { field: 'beds' });
+            const hasBathsError = some(result.errors, { field: 'baths' });
             expect(hasBedsError || hasBathsError).toBe(true);
         });
 
@@ -219,7 +219,7 @@ describe('Validation Helper Functions', () => {
             expect(result.errors.length).toBeGreaterThan(0);
 
             // Check for specific MITS requirements
-            const hasBedsError = _.some(result.errors, {
+            const hasBedsError = some(result.errors, {
                 field: 'beds'
             });
             expect(hasBedsError).toBe(true);
@@ -295,9 +295,9 @@ describe('Validation Helper Functions', () => {
             expect(missingFields.length).toBeGreaterThan(0);
 
             // Check for specific missing fields
-            const missingStreet = _.find(missingFields, { field: 'street', entityType: 'building' });
-            const missingCity = _.find(missingFields, { field: 'city', entityType: 'building' });
-            const missingState = _.find(missingFields, { field: 'state', entityType: 'building' });
+            const missingStreet = find(missingFields, { field: 'street', entityType: 'building' });
+            const missingCity = find(missingFields, { field: 'city', entityType: 'building' });
+            const missingState = find(missingFields, { field: 'state', entityType: 'building' });
 
             expect(missingStreet?.displayName).toBe('Street Address');
             expect(missingCity?.displayName).toBe('City');
@@ -337,10 +337,10 @@ describe('Validation Helper Functions', () => {
             expect(missingFields.length).toBeGreaterThan(0);
 
             // Should have unit type fields with index information
-            const unitTypeFields = _.filter(missingFields, { entityType: 'unitType' });
+            const unitTypeFields = filter(missingFields, { entityType: 'unitType' });
             expect(unitTypeFields.length).toBeGreaterThan(0);
 
-            const bedsField = _.find(unitTypeFields, { field: 'beds' });
+            const bedsField = find(unitTypeFields, { field: 'beds' });
             expect(bedsField?.displayName).toContain('Unit Type #1');
         });
 
@@ -384,10 +384,10 @@ describe('Validation Helper Functions', () => {
             expect(missingFields.length).toBeGreaterThan(0);
 
             // Should have unit fields with index information
-            const unitFields = _.filter(missingFields, { entityType: 'unit' });
+            const unitFields = filter(missingFields, { entityType: 'unit' });
             expect(unitFields.length).toBeGreaterThan(0);
 
-            const rentField = _.find(unitFields, { field: 'rent' });
+            const rentField = find(unitFields, { field: 'rent' });
             expect(rentField?.displayName).toContain('Unit #1');
         });
     });
@@ -464,20 +464,20 @@ describe('Validation Helper Functions', () => {
         it('should prevent publishing to apartments.com without photos', () => {
             const dataWithoutPhotos = {
                 ...completeData,
-                building: _.omit(completeData.building, 'photos')
+                building: omit(completeData.building, 'photos')
             };
 
             const result = canPublishToSite('apartments_com', dataWithoutPhotos);
             expect(result.site).toBe('apartments_com');
             expect(result.canPublish).toBe(false);
 
-            const photoError = _.find(result.errors, {
+            const photoError = find(result.errors, {
                 field: 'building.photos'
             });
             expect(photoError?.message).toContain('At least one building photo is required for Apartments.com');
             expect(photoError?.context).toBe('Apartments.com site requirement');
 
-            const photoMissing = _.find(result.missingFields, {
+            const photoMissing = find(result.missingFields, {
                 field: 'building.photos'
             });
             expect(photoMissing?.displayName).toBe('Building Photos');
@@ -505,13 +505,13 @@ describe('Validation Helper Functions', () => {
             expect(result.site).toBe('zillow');
             expect(result.canPublish).toBe(false);
 
-            const rentError = _.find(result.errors, {
+            const rentError = find(result.errors, {
                 field: 'units.0.rent'
             });
             expect(rentError?.message).toContain('Rent amount is required for all units on Zillow');
             expect(rentError?.context).toBe('Zillow site requirement');
 
-            const rentMissing = _.find(result.missingFields, {
+            const rentMissing = find(result.missingFields, {
                 field: 'units.0.rent'
             });
             expect(rentMissing?.displayName).toBe('Unit #1 Rent');
@@ -534,7 +534,7 @@ describe('Validation Helper Functions', () => {
             expect(result.errors.length).toBeGreaterThan(0);
 
             // Should have MITS compliance errors
-            const mitsError = _.find(result.errors, {
+            const mitsError = find(result.errors, {
                 context: 'MITS 4.1 compliance requirement'
             });
             expect(mitsError).toBeDefined();
@@ -561,12 +561,12 @@ describe('Validation Helper Functions', () => {
             const result = canPublishToSite('zillow', dataWithMultipleUnits);
             expect(result.canPublish).toBe(false);
 
-            const rentError = _.find(result.errors, {
+            const rentError = find(result.errors, {
                 field: 'units.1.rent'
             });
             expect(rentError).toBeDefined();
 
-            const rentMissing = _.find(result.missingFields, {
+            const rentMissing = find(result.missingFields, {
                 field: 'units.1.rent'
             });
             expect(rentMissing?.displayName).toBe('Unit #2 Rent');

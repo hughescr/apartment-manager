@@ -4,7 +4,7 @@ import { resetAllMocks } from '../data/test-setup';
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll, jest } from 'bun:test';
 import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
-import _, { repeat } from 'lodash';
+import { repeat } from 'lodash';
 
 describe('Upload API', () => {
     let handler: APIGatewayProxyHandlerV2;

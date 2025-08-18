@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import _ from 'lodash';
+import { replace } from 'lodash';
 import { PropertyType } from '../../../src/types';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
@@ -201,7 +201,7 @@ export const BuildingPublishedSchema = z.object({
             .refine(
                 (phone) => {
                     // Remove all non-digit characters and check length
-                    const digitsOnly = _.replace(phone, /\D/g, '');
+                    const digitsOnly = replace(phone, /\D/g, '');
                     return digitsOnly.length >= 10;
                 },
                 { message: 'Phone number must contain at least 10 digits for MITS compliance' }

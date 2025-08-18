@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { keys } from 'lodash';
 import {
     PropertyType,
     UtilityType,
@@ -20,7 +20,7 @@ describe('Enumerations', () => {
         expect(PropertyType.TOWNHOME as string).toBe('townhome');
         expect(PropertyType.SINGLE_FAMILY as string).toBe('single-family');
         expect(PropertyType.HOUSE as string).toBe('house');
-        expect(_.keys(PropertyType).length).toBe(5);
+        expect(keys(PropertyType).length).toBe(5);
     });
 
     it('UtilityType should have correct values', () => {
@@ -33,7 +33,7 @@ describe('Enumerations', () => {
         expect(UtilityType.INTERNET as string).toBe('internet');
         expect(UtilityType.HEAT as string).toBe('heat');
         expect(UtilityType.AIR_CONDITIONING as string).toBe('air-conditioning');
-        expect(_.keys(UtilityType).length).toBe(9);
+        expect(keys(UtilityType).length).toBe(9);
     });
 
     it('FeeType should have correct values', () => {
@@ -47,7 +47,7 @@ describe('Enumerations', () => {
         expect(FeeType.MOVE_IN as string).toBe('move-in');
         expect(FeeType.KEY_DEPOSIT as string).toBe('key-deposit');
         expect(FeeType.CLEANING as string).toBe('cleaning');
-        expect(_.keys(FeeType).length).toBe(10);
+        expect(keys(FeeType).length).toBe(10);
     });
 
     it('PetType should have correct values', () => {
@@ -57,7 +57,7 @@ describe('Enumerations', () => {
         expect(PetType.FISH as string).toBe('fish');
         expect(PetType.SMALL_ANIMAL as string).toBe('small-animal');
         expect(PetType.NO_PETS as string).toBe('no-pets');
-        expect(_.keys(PetType).length).toBe(6);
+        expect(keys(PetType).length).toBe(6);
     });
 
     it('ParkingType should have correct values', () => {
@@ -66,7 +66,7 @@ describe('Enumerations', () => {
         expect(ParkingType.UNCOVERED as string).toBe('uncovered');
         expect(ParkingType.STREET as string).toBe('street');
         expect(ParkingType.NONE as string).toBe('none');
-        expect(_.keys(ParkingType).length).toBe(5);
+        expect(keys(ParkingType).length).toBe(5);
     });
 
     it('StorageType should have correct values', () => {
@@ -75,14 +75,14 @@ describe('Enumerations', () => {
         expect(StorageType.GARAGE as string).toBe('garage');
         expect(StorageType.EXTERNAL_UNIT as string).toBe('external-unit');
         expect(StorageType.NONE as string).toBe('none');
-        expect(_.keys(StorageType).length).toBe(5);
+        expect(keys(StorageType).length).toBe(5);
     });
 
     it('AmenityCategory should have correct values', () => {
         expect(AmenityCategory.UNIT as string).toBe('unit');
         expect(AmenityCategory.PROPERTY as string).toBe('property');
         expect(AmenityCategory.COMMUNITY as string).toBe('community');
-        expect(_.keys(AmenityCategory).length).toBe(3);
+        expect(keys(AmenityCategory).length).toBe(3);
     });
 
     it('WebsiteStatus should have correct values', () => {
@@ -90,7 +90,7 @@ describe('Enumerations', () => {
         expect(WebsiteStatus.INACTIVE as string).toBe('inactive');
         expect(WebsiteStatus.PENDING as string).toBe('pending');
         expect(WebsiteStatus.ERROR as string).toBe('error');
-        expect(_.keys(WebsiteStatus).length).toBe(4);
+        expect(keys(WebsiteStatus).length).toBe(4);
     });
 
     it('DayOfWeek should have correct values', () => {
@@ -101,7 +101,7 @@ describe('Enumerations', () => {
         expect(DayOfWeek.FRIDAY as string).toBe('friday');
         expect(DayOfWeek.SATURDAY as string).toBe('saturday');
         expect(DayOfWeek.SUNDAY as string).toBe('sunday');
-        expect(_.keys(DayOfWeek).length).toBe(7);
+        expect(keys(DayOfWeek).length).toBe(7);
     });
 
     it('VacancyClass should have correct values', () => {

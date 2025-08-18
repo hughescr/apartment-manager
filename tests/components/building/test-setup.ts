@@ -3,7 +3,7 @@
  * Uses jest.fn() patterns instead of mock.module() to avoid Bun's global state issues.
  * This file sets up mocking and test data factories for component testing.
  */
-import { mock, jest } from 'bun:test';
+import { jest, spyOn } from 'bun:test';
 import type { BuildingData, UnitData, UnitTypeData } from '../../../astro-src/types';
 import { PropertyType, PetType, FeeType, AmenityCategory, ParkingType, StorageType } from '../../../src/types/index.js';
 
@@ -11,23 +11,27 @@ import { PropertyType, PetType, FeeType, AmenityCategory, ParkingType, StorageTy
 process.env.BUN_ENV = 'test';
 process.env.SST_STAGE = 'test';
 
-// Mock logger
-const mockLogger = {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn()
-};
+// Import the actual logger to spy on it
+import { logger } from '@hughescr/logger';
+import * as crypto from 'crypto';
 
-mock.module('@hughescr/logger', () => ({
-    logger: mockLogger
-}));
+// Create spies on the actual logger methods
+const loggerInfoSpy = spyOn(logger, 'info');
+const loggerWarnSpy = spyOn(logger, 'warn');
+const loggerErrorSpy = spyOn(logger, 'error');
+const loggerDebugSpy = spyOn(logger, 'debug');
+
+// Mock logger implementation (for backward compatibility)
+const mockLogger = {
+    info: loggerInfoSpy,
+    warn: loggerWarnSpy,
+    error: loggerErrorSpy,
+    debug: loggerDebugSpy
+};
 
 // Mock crypto module for consistent IDs in tests
 const mockRandomUUID = jest.fn().mockReturnValue('test-uuid');
-mock.module('crypto', () => ({
-    randomUUID: mockRandomUUID
-}));
+const cryptoSpy = spyOn(crypto, 'randomUUID').mockImplementation(mockRandomUUID);
 
 // Mock fetch globally with proper typing
 export const mockFetch = jest.fn() as jest.Mock;
@@ -81,6 +85,21 @@ export const mockWindow = {
 // Setup global window and confirm mocks
 (global as unknown as { window: typeof mockWindow }).window = mockWindow;
 (global as unknown as { confirm: typeof mockWindow.confirm }).confirm = mockWindow.confirm;
+
+// Mock setTimeout and clearTimeout for tests
+export const mockSetTimeout = jest.fn().mockImplementation((callback: () => void, delay: number) => {
+    return setTimeout(callback, delay);
+});
+export const mockClearTimeout = jest.fn().mockImplementation((id: ReturnType<typeof setTimeout>) => {
+    return clearTimeout(id);
+});
+
+// Add to global window object
+(global as unknown as { window: typeof mockWindow & { setTimeout: typeof mockSetTimeout, clearTimeout: typeof mockClearTimeout } }).window = {
+    ...mockWindow,
+    setTimeout: mockSetTimeout,
+    clearTimeout: mockClearTimeout
+};
 
 // Mock Alpine.js context for tests
 export const mockAlpineContext = {
@@ -315,6 +334,8 @@ const resetAllMocks = () => {
 
     // Reset crypto mock
     mockRandomUUID.mockClear();
+    mockRandomUUID.mockReturnValue('test-uuid');
+    cryptoSpy.mockImplementation(mockRandomUUID);
 
     // Reset window mocks
     mockWindow.createBuildingState.mockClear();
@@ -324,7 +345,15 @@ const resetAllMocks = () => {
 };
 
 // Export additional mocks
-export { mockRandomUUID, mockLogger, resetAllMocks };
+export {
+    mockRandomUUID,
+    mockLogger,
+    loggerInfoSpy,
+    loggerWarnSpy,
+    loggerErrorSpy,
+    loggerDebugSpy,
+    resetAllMocks
+};
 
 // Re-export jest for convenience
 export { jest };

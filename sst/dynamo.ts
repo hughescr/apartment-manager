@@ -27,6 +27,13 @@ const buildingsUnitsTable = new sst.aws.Dynamo('BuildingsUnits', {
         // availableDate: 'string',
     },
     primaryIndex: { hashKey: 'buildingID', rangeKey: 'unitID' },
+    globalIndexes: {
+        // GSI for efficiently querying all buildings (where unitID = 'BUILDING')
+        unitTypeIndex: {
+            hashKey: 'unitID',
+            rangeKey: 'buildingID'
+        }
+    }
 });
 
 export { buildingsUnitsTable };

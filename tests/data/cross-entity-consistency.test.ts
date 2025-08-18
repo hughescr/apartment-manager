@@ -4,7 +4,7 @@ import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { mockQueryResponse, mockGetResponse, mockPutResponse, mockDeleteResponse } from '../helpers/mock-responses';
-import _ from 'lodash';
+import { every, repeat, times } from 'lodash';
 
 // Import the functions AFTER mocking
 import { getBuilding, createBuilding, deleteBuilding } from '../../data/buildings';
@@ -541,7 +541,7 @@ describe('Cross-Entity Consistency Tests', () => {
 
             const unitsByModel = await getUnitsByModelID(testBuilding.buildingID, testUnit.modelID!);
             expect(unitsByModel).toHaveLength(2);
-            expect(_.every(unitsByModel, ['modelID', testUnit.modelID])).toBe(true);
+            expect(every(unitsByModel, ['modelID', testUnit.modelID])).toBe(true);
         });
     });
 
@@ -578,8 +578,8 @@ describe('Cross-Entity Consistency Tests', () => {
             // Create building with maximum data
             const largeBuilding = {
                 ...testBuilding,
-                propertyDescription: _.repeat('x', 350000), // Near 400KB limit
-                photos: _.times(1000, i => `https://s3.example.com/photo-${i}.jpg`)
+                propertyDescription: repeat('x', 350000), // Near 400KB limit
+                photos: times(1000, i => `https://s3.example.com/photo-${i}.jpg`)
             };
 
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...largeBuilding, unitID: 'BUILDING' }));

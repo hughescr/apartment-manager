@@ -1,5 +1,5 @@
 import { logger as baseLogger } from '@hughescr/logger';
-import _ from 'lodash';
+import { trim, toLower, map, replace, split, includes, toUpper, join, filter, sortBy } from 'lodash';
 
 const logger = baseLogger;
 
@@ -77,28 +77,105 @@ interface PhotonResponse {
     type: 'FeatureCollection'
     features: PhotonFeature[]
 }
-
 /**
- * Cache entry for autocomplete results
+ * Cache entry for autocomplete results with access tracking for LRU
  */
 interface CacheEntry {
     suggestions: AddressSuggestion[]
     timestamp: number
+    lastAccessed: number
 }
 
 /**
- * Simple in-memory cache for autocomplete results
- * In production, this could be replaced with Redis or DynamoDB
+ * Enhanced in-memory cache for autocomplete results with TTL and LRU eviction
+ * Features:
+ * - Time-to-live (TTL) expiration
+ * - Maximum size limits with LRU eviction
+ * - Periodic cleanup of expired entries
+ * - Access tracking for LRU ordering
+ * - Memory leak prevention
  */
 class AutocompleteCache {
     private cache = new Map<string, CacheEntry>();
     private readonly ttlMs = 5 * 60 * 1000; // 5 minutes
+    private readonly maxSize = 1000; // Maximum cache entries
+    private cleanupInterval?: ReturnType<typeof setInterval>;
+    private _isDestroyed = false;
+
+    constructor() {
+        // Start periodic cleanup to prevent unbounded memory growth
+        this.startPeriodicCleanup();
+    }
+
+    private startPeriodicCleanup(): void {
+        // Clean up expired entries every 5 minutes
+        this.cleanupInterval = setInterval(() => {
+            if(!this._isDestroyed) {
+                this.cleanupExpiredEntries();
+                this.enforceSizeLimit();
+            }
+        }, 5 * 60 * 1000);
+    }
+
+    private cleanupExpiredEntries(): void {
+        const now = Date.now();
+        let removedCount = 0;
+
+        // Clean expired cache entries
+        for(const [key, entry] of this.cache.entries()) {
+            if(now - entry.timestamp > this.ttlMs) {
+                this.cache.delete(key);
+                removedCount++;
+            }
+        }
+
+        if(removedCount > 0) {
+            logger.debug(`Cleaned up ${removedCount} expired autocomplete cache entries`);
+        }
+        if(removedCount > 0) {
+            logger.debug(`Cleaned up ${removedCount} expired autocomplete cache entries`);
+        }
+    }
+
+    /**
+     * Enforce maximum cache size using LRU eviction
+     */
+    private enforceSizeLimit(): void {
+        if(this.cache.size <= this.maxSize) {
+            return;
+        }
+
+        // Sort entries by last accessed time (oldest first)
+        const sortedEntries = Array.from(this.cache.entries())
+            .sort(([, a], [, b]) => a.lastAccessed - b.lastAccessed);
+
+        // Remove oldest entries until we're under the limit
+        const toRemove = this.cache.size - this.maxSize;
+        let removed = 0;
+
+        for(const [key] of sortedEntries) {
+            if(removed >= toRemove) {
+                break;
+            }
+            this.cache.delete(key);
+            removed++;
+        }
+
+        if(removed > 0) {
+            logger.debug(`LRU evicted ${removed} cache entries (size: ${this.cache.size})`);
+        }
+    }
 
     private createKey(query: string): string {
-        return _.trim(_.toLower(query));
+        return trim(toLower(query));
     }
 
     get(query: string): AddressSuggestion[] | null {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed AutocompleteCache');
+            return null;
+        }
+
         const key = this.createKey(query);
         const entry = this.cache.get(key);
 
@@ -112,16 +189,33 @@ class AutocompleteCache {
             return null;
         }
 
+        // Update last accessed time for LRU
+        entry.lastAccessed = Date.now();
+        this.cache.set(key, entry);
+
         logger.debug(`Cache hit for query: ${key}`);
-        return _.map(entry.suggestions, s => ({ ...s, source: 'cache' as const }));
+        return map(entry.suggestions, s => ({ ...s, source: 'cache' as const }));
     }
 
     set(query: string, suggestions: AddressSuggestion[]): void {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed AutocompleteCache');
+            return;
+        }
+
         const key = this.createKey(query);
+        const now = Date.now();
         this.cache.set(key, {
-            suggestions: _.map(suggestions, s => ({ ...s, source: 'photon' as const })),
-            timestamp: Date.now()
+            suggestions: map(suggestions, s => ({ ...s, source: 'photon' as const })),
+            timestamp: now,
+            lastAccessed: now
         });
+
+        // Check if we need to enforce size limits after adding new entry
+        if(this.cache.size > this.maxSize) {
+            this.enforceSizeLimit();
+        }
+
         logger.debug(`Cached ${suggestions.length} suggestions for query: ${key}`);
     }
 
@@ -133,6 +227,48 @@ class AutocompleteCache {
     size(): number {
         return this.cache.size;
     }
+
+    /**
+     * Get enhanced cache statistics
+     */
+    getStats(): { size: number, maxSize: number, ttlMinutes: number } {
+        return {
+            size: this.cache.size,
+            maxSize: this.maxSize,
+            ttlMinutes: 5
+        };
+    }
+
+    /**
+     * Cleanup method to prevent memory leaks
+     * Clears all timers, maps, and marks instance as destroyed
+     */
+    destroy(): void {
+        if(this._isDestroyed) {
+            return;
+        }
+
+        logger.info('Destroying AutocompleteCache instance');
+
+        // Clear the periodic cleanup interval
+        if(this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = undefined;
+        }
+
+        // Clear all cached data
+        this.clear();
+
+        // Mark as destroyed to prevent further usage
+        this._isDestroyed = true;
+    }
+
+    /**
+     * Check if the cache instance is destroyed
+     */
+    isDestroyed(): boolean {
+        return this._isDestroyed;
+    }
 }
 
 /**
@@ -142,8 +278,14 @@ class AutocompleteCache {
 class RateLimiter {
     private lastRequestTime = 0;
     private readonly minIntervalMs = 300; // 300ms minimum between requests
+    private _isDestroyed = false;
 
     async waitIfNeeded(): Promise<void> {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed RateLimiter');
+            return;
+        }
+
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
 
@@ -155,26 +297,74 @@ class RateLimiter {
 
         this.lastRequestTime = Date.now();
     }
+
+    /**
+     * Reset the rate limiter state
+     */
+    reset(): void {
+        this.lastRequestTime = 0;
+        logger.debug('Rate limiter state reset');
+    }
+
+    /**
+     * Cleanup method to prevent memory leaks
+     */
+    destroy(): void {
+        if(this._isDestroyed) {
+            return;
+        }
+
+        logger.info('Destroying RateLimiter instance');
+        this.reset();
+        this._isDestroyed = true;
+    }
+
+    /**
+     * Check if the rate limiter instance is destroyed
+     */
+    isDestroyed(): boolean {
+        return this._isDestroyed;
+    }
 }
 
 /**
  * Debouncer to prevent excessive API calls during typing
+ * Fixed to properly handle previous promises and prevent memory leaks
  */
 class Debouncer {
     private timeouts = new Map<string, ReturnType<typeof setTimeout>>();
+    private pendingPromises = new Map<string, { resolve: (value: unknown) => void, reject: (error: unknown) => void }>();
     private readonly debounceMs = 200; // 200ms debounce
+    private _isDestroyed = false;
 
     async debounce<T>(key: string, fn: () => Promise<T>): Promise<T> {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed Debouncer');
+            throw new Error('Debouncer instance has been destroyed');
+        }
+
+        // Reject any existing pending promise for this key
+        const existingPending = this.pendingPromises.get(key);
+        if(existingPending) {
+            existingPending.reject(new Error('Debounced call superseded by newer call'));
+        }
+
         // Clear existing timeout for this key
         const existingTimeout = this.timeouts.get(key);
         if(existingTimeout) {
             clearTimeout(existingTimeout);
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise<T>((resolve, reject) => {
+            // Store the resolvers for potential cleanup
+            this.pendingPromises.set(key, { resolve: resolve as (value: unknown) => void, reject });
+
             const timeout = setTimeout(async () => {
                 try {
+                    // Remove from pending promises since we're about to execute
+                    this.pendingPromises.delete(key);
                     this.timeouts.delete(key);
+
                     const result = await fn();
                     resolve(result);
                 } catch(error) {
@@ -184,6 +374,72 @@ class Debouncer {
 
             this.timeouts.set(key, timeout);
         });
+    }
+
+    /**
+     * Clear all pending debounced calls for a specific key
+     */
+    clearKey(key: string): void {
+        const existingTimeout = this.timeouts.get(key);
+        if(existingTimeout) {
+            clearTimeout(existingTimeout);
+            this.timeouts.delete(key);
+        }
+
+        const existingPending = this.pendingPromises.get(key);
+        if(existingPending) {
+            existingPending.reject(new Error('Debounced call cleared'));
+            this.pendingPromises.delete(key);
+        }
+    }
+
+    /**
+     * Clear all pending debounced calls
+     */
+    clearAll(): void {
+        // Clear all timeouts
+        for(const timeout of this.timeouts.values()) {
+            clearTimeout(timeout);
+        }
+        this.timeouts.clear();
+
+        // Reject all pending promises
+        for(const { reject } of this.pendingPromises.values()) {
+            reject(new Error('All debounced calls cleared'));
+        }
+        this.pendingPromises.clear();
+
+        logger.debug('Cleared all debounced calls');
+    }
+
+    /**
+     * Cleanup method to prevent memory leaks
+     */
+    destroy(): void {
+        if(this._isDestroyed) {
+            return;
+        }
+
+        logger.info('Destroying Debouncer instance');
+        this.clearAll();
+        this._isDestroyed = true;
+    }
+
+    /**
+     * Check if the debouncer instance is destroyed
+     */
+    isDestroyed(): boolean {
+        return this._isDestroyed;
+    }
+
+    /**
+     * Get statistics about pending operations
+     */
+    getStats(): { pendingTimeouts: number, pendingPromises: number } {
+        return {
+            pendingTimeouts: this.timeouts.size,
+            pendingPromises: this.pendingPromises.size
+        };
     }
 }
 
@@ -234,14 +490,14 @@ export class PhotonAutocompleteService {
      */
     private preprocessQuery(query: string): string {
         // Remove common punctuation and split on spaces
-        const cleanQuery = _.trim(_.replace(_.replace(query, /,/g, ' '), /\s+/g, ' '));
-        const parts = _.split(cleanQuery, ' ');
-        const processedParts = _.map(parts, (part) => {
-            const lowerPart = _.toLower(part);
+        const cleanQuery = trim(replace(replace(query, /,/g, ' '), /\s+/g, ' '));
+        const parts = split(cleanQuery, ' ');
+        const processedParts = map(parts, (part) => {
+            const lowerPart = toLower(part);
 
             // Handle directional abbreviations (SE, NE, SW, NW)
-            if(_.includes(['se', 'ne', 'sw', 'nw'], lowerPart)) {
-                return _.toUpper(lowerPart);
+            if(includes(['se', 'ne', 'sw', 'nw'], lowerPart)) {
+                return toUpper(lowerPart);
             }
 
             // Handle street type abbreviations
@@ -252,13 +508,13 @@ export class PhotonAutocompleteService {
             return lowerPart;
         });
 
-        return _.join(processedParts, ' ');
+        return join(processedParts, ' ');
     }
 
     async getSuggestions(query: string, limit = 5, userCoordinates?: { lat: number, lon: number }): Promise<AddressSuggestion[]> {
         try {
             // Validate query
-            const trimmedQuery = _.trim(query);
+            const trimmedQuery = trim(query);
             if(!trimmedQuery || trimmedQuery.length < 3) {
                 logger.debug('Query too short for autocomplete', { query: trimmedQuery });
                 return [];
@@ -373,8 +629,8 @@ export class PhotonAutocompleteService {
      * Parse Photon API results into our suggestion format
      */
     private parsePhotonResults(features: PhotonFeature[]): AddressSuggestion[] {
-        const suggestions = _.map(features, (feature, index) => this.parsePhotonFeature(feature, index));
-        return _.filter(suggestions, (suggestion): suggestion is AddressSuggestion => suggestion !== null);
+        const suggestions = map(features, (feature, index) => this.parsePhotonFeature(feature, index));
+        return filter(suggestions, (suggestion): suggestion is AddressSuggestion => suggestion !== null);
     }
 
     /**
@@ -463,7 +719,7 @@ export class PhotonAutocompleteService {
             city,
             state,
             postalCode,
-            formatted: _.join(addressParts, ', ')
+            formatted: join(addressParts, ', ')
         };
     }
 
@@ -492,7 +748,7 @@ export class PhotonAutocompleteService {
      * Sort suggestions by proximity to user location
      */
     private sortByProximity(suggestions: AddressSuggestion[], userCoordinates: { lat: number, lon: number }): AddressSuggestion[] {
-        return _.sortBy(suggestions, (suggestion) => {
+        return sortBy(suggestions, (suggestion) => {
             if(!suggestion.coordinates) {
                 return Number.MAX_SAFE_INTEGER; // Put suggestions without coordinates at the end
             }
@@ -526,7 +782,7 @@ export class PhotonAutocompleteService {
             displayParts.push(addressComponents.state);
         }
 
-        return _.join(displayParts, ', ');
+        return join(displayParts, ', ');
     }
 
     /**
@@ -539,11 +795,8 @@ export class PhotonAutocompleteService {
     /**
      * Get cache statistics
      */
-    getCacheStats(): { size: number, ttlMinutes: number } {
-        return {
-            size: cache.size(),
-            ttlMinutes: 5
-        };
+    getCacheStats(): { size: number, maxSize: number, ttlMinutes: number } {
+        return cache.getStats();
     }
 }
 
@@ -555,5 +808,44 @@ export const photonAutocompleteService = new PhotonAutocompleteService();
  */
 export async function getAddressSuggestions(query: string, limit = 5): Promise<string[]> {
     const suggestions = await photonAutocompleteService.getSuggestions(query, limit);
-    return _.map(suggestions, 'displayText');
+    return map(suggestions, 'displayText');
+}
+
+/**
+ * Cleanup function for all singleton instances in address-autocomplete service
+ * Prevents memory leaks by properly destroying all cached instances
+ */
+export function cleanupAddressAutocompleteService(): void {
+    try {
+        logger.info('Cleaning up address-autocomplete service singleton instances');
+
+        // Destroy all singleton instances
+        cache.destroy();
+        rateLimiter.destroy();
+        debouncer.destroy();
+
+        logger.info('Address autocomplete service cleanup completed successfully');
+    } catch(error) {
+        logger.error('Error during address autocomplete service cleanup', { error });
+    }
+}
+
+/**
+ * Get statistics about all singleton instances
+ */
+export function getAddressAutocompleteServiceStats(): {
+    cache: { size: number, maxSize: number, ttlMinutes: number }
+    debouncer: { pendingTimeouts: number, pendingPromises: number }
+} {
+    return {
+        cache: cache.getStats(),
+        debouncer: debouncer.getStats()
+    };
+}
+
+/**
+ * Check if all singleton instances are properly destroyed
+ */
+export function isAddressAutocompleteServiceDestroyed(): boolean {
+    return cache.isDestroyed() && rateLimiter.isDestroyed() && debouncer.isDestroyed();
 }

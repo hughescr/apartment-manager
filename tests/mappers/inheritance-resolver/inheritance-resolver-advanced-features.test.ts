@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { assign, constant, keys } from 'lodash';
 import { InheritanceResolver } from '../../../src/mappers/inheritance-resolver';
 import { AmenityCategory } from '../../../src/types';
 import type { UnitData } from '../../../src/types';
@@ -52,7 +52,7 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
             const resolved = resolver.resolveUnitValues(unit, unitTypeData, buildingData);
 
             expect((unit as unknown as Record<string, unknown>).hiddenProperty).toBe('hidden');
-            expect(_.keys(resolved)).not.toContain('hiddenProperty');
+            expect(keys(resolved)).not.toContain('hiddenProperty');
         });
     });
 
@@ -145,7 +145,7 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
             }
 
             const complexUnit = new ExtendedUnit();
-            _.assign(complexUnit, {
+            assign(complexUnit, {
                 buildingID: 'BLDG-001',
                 unitID: 'UNIT-001',
                 beds: 2
@@ -164,7 +164,7 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
                 buildingID: 'BLDG-001',
                 unitID: 'UNIT-001',
                 unitDescription: {
-                    toString: _.constant('Custom string representation')
+                    toString: constant('Custom string representation')
                 } as unknown as string
             };
 
@@ -176,8 +176,8 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
 
         it('should handle objects with custom valueOf methods', () => {
             const customRent = {
-                valueOf: _.constant(1500),
-                toString: _.constant('1500')
+                valueOf: constant(1500),
+                toString: constant('1500')
             };
 
             const unitWithCustomValueOf: UnitData = {

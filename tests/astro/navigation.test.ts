@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import _ from 'lodash';
+import { invokeMap } from 'lodash';
 
 interface AlpineJS {
     initTree: (element: Element) => void
@@ -60,7 +60,7 @@ describe('Layout navigation', () => {
 
     it('highlights active route', async () => {
         await render('/uploads');
-        const activeLinks = _.invokeMap(Array.from(document.querySelectorAll('a.active')), 'getAttribute', 'href');
+        const activeLinks = invokeMap(Array.from(document.querySelectorAll('a.active')), 'getAttribute', 'href');
         expect(activeLinks).toEqual(['/uploads', '/uploads']);
     });
 

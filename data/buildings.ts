@@ -1,13 +1,13 @@
 import { BuildingData, getDefaultBuildingData, BuildingDynamoDBItem } from '../src/types';
 import { ApartmentTable, getBuildingEntity, getApartmentTable, Building } from './model';
 
-import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
+import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
 import { PutItemCommand } from 'dynamodb-toolbox/entity/actions/put';
 import { UpdateItemCommand, $set } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
-import _ from 'lodash';
+import { isArray, isError, isObject, isString, map, merge, omit } from 'lodash';
 
 import  { logger } from '@hughescr/logger';
 
@@ -26,22 +26,22 @@ function prepareUpdatesWithArrayReplacement(updates: Partial<BuildingData> & Rec
 
     // Apply $set() to ALL array fields to ensure complete replacement (not partial update)
     for(const field of ARRAY_FIELDS) {
-        if(field in updates && _.isArray(updates[field])) {
+        if(field in updates && isArray(updates[field])) {
             (preparedUpdates as Record<string, unknown>)[field] = $set(updates[field]);
         }
     }
 
     // Handle nested arrays in petPolicies - only wrap empty arrays
-    if(updates.petPolicies && _.isObject(updates.petPolicies)) {
+    if(updates.petPolicies && isObject(updates.petPolicies)) {
         const petPolicies = updates.petPolicies;
         const updatedPetPolicies = { ...petPolicies };
         let hasEmptyArrays = false;
 
-        if('petTypes' in petPolicies && _.isArray(petPolicies.petTypes) && petPolicies.petTypes.length === 0) {
+        if('petTypes' in petPolicies && isArray(petPolicies.petTypes) && petPolicies.petTypes.length === 0) {
             (updatedPetPolicies as Record<string, unknown>).petTypes = $set([]);
             hasEmptyArrays = true;
         }
-        if('breedRestrictions' in petPolicies && _.isArray(petPolicies.breedRestrictions) && petPolicies.breedRestrictions.length === 0) {
+        if('breedRestrictions' in petPolicies && isArray(petPolicies.breedRestrictions) && petPolicies.breedRestrictions.length === 0) {
             (updatedPetPolicies as Record<string, unknown>).breedRestrictions = $set([]);
             hasEmptyArrays = true;
         }
@@ -93,20 +93,25 @@ export async function getBuildings() {
         ? getApartmentTable()
         : ApartmentTable) as typeof ApartmentTable;
 
-    const scanResult = await TableInstance.build(ScanCommand)
+    // Use QueryCommand with GSI to efficiently get all buildings (unitID = 'BUILDING')
+    const queryResult = await TableInstance.build(QueryCommand)
         .entities(BuildingEntity)
-        .options({ consistent: true })
+        .query({
+            index: 'unitTypeIndex',
+            partition: 'BUILDING'
+        })
+        .options({ consistent: false }) // GSI queries cannot be strongly consistent
         .send();
 
-    const buildings = _.map(scanResult.Items, (item) => {
+    const buildings = map(queryResult.Items, (item) => {
         const typedItem = item as unknown as BuildingDynamoDBItem;
-        const rawBuilding = _.omit(typedItem, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+        const rawBuilding = omit(typedItem, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
         // Convert updatedAt from string to Date if present
-        if(typedItem?.updatedAt && _.isString(typedItem.updatedAt)) {
+        if(typedItem?.updatedAt && isString(typedItem.updatedAt)) {
             (rawBuilding as BuildingData & { updatedAt?: Date }).updatedAt = new Date(typedItem.updatedAt);
         }
         // Merge with defaults to ensure all nested structures exist
-        return _.merge({}, getDefaultBuildingData(), rawBuilding);
+        return merge({}, getDefaultBuildingData(), rawBuilding);
     });
     return buildings;
 }
@@ -121,13 +126,13 @@ export async function getBuilding(buildingID: string) {
         return undefined;
     }
 
-    const rawBuilding = _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
+    const rawBuilding = omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
     // Convert updatedAt from string to Date if present
     if(Item?.updatedAt) {
         rawBuilding.updatedAt = new Date(Item.updatedAt as string);
     }
     // Merge with defaults to ensure all nested structures exist
-    return _.merge({}, getDefaultBuildingData(), rawBuilding);
+    return merge({}, getDefaultBuildingData(), rawBuilding);
 }
 
 export async function createBuilding(building: BuildingData) {
@@ -145,13 +150,13 @@ export async function createBuilding(building: BuildingData) {
     if(!Attributes) {
         return building;
     }
-    const rawBuilding = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
+    const rawBuilding = omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
     // Convert updatedAt from string to Date if present
     if((Attributes as Record<string, unknown>).updatedAt) {
         rawBuilding.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
     }
     // Merge with defaults to ensure consistency with getBuilding behavior
-    return _.merge({}, getDefaultBuildingData(), rawBuilding);
+    return merge({}, getDefaultBuildingData(), rawBuilding);
 }
 
 export async function updateBuilding(buildingID: string, updates: Partial<BuildingData>) {
@@ -186,14 +191,14 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
             return undefined;
         }
 
-        const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
+        const result = omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as BuildingData;
         if((Attributes as Record<string, unknown>).updatedAt) {
             result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
         }
         return result;
     } catch(error) {
         // If building doesn't exist (ConditionalCheckFailedException), return undefined
-        if(_.isError(error) && error.message.includes('ConditionalCheckFailedException')) {
+        if(isError(error) && error.message.includes('ConditionalCheckFailedException')) {
             return undefined;
         }
 
@@ -233,7 +238,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
                 .send();
 
             // Return the merged data since PutItemCommand doesn't return the item
-            const result = _.omit(mergedData, ['unitID']) as unknown as BuildingData;
+            const result = omit(mergedData, ['unitID']) as unknown as BuildingData;
             if(mergedData.updatedAt) {
                 result.updatedAt = new Date(mergedData.updatedAt as string);
             }

@@ -3,7 +3,7 @@ import './test-setup';
 import { dynamoDbMock, jest, resetAllMocks } from '../../data/test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
-import _ from 'lodash';
+import { find, isArray, omit } from 'lodash';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { validate } from '../../../api/validate-for-publish';
 import { mockGetResponse, mockQueryResponse } from '../../helpers/mock-responses';
@@ -500,7 +500,7 @@ describe('Validate for Publish API Endpoint', () => {
         });
 
         it('should handle apartments.com site requirements', async () => {
-            const buildingWithoutPhotos = _.omit(completeBuilding, 'photos');
+            const buildingWithoutPhotos = omit(completeBuilding, 'photos');
             // No photos field - will fail apartments.com requirement
 
             // Mock database responses
@@ -525,7 +525,7 @@ describe('Validate for Publish API Endpoint', () => {
             expect(response.siteRequirements[0].canPublish).toBe(false);
             expect(response.summary.canPublishToSites.apartments_com).toBe(false);
 
-            const photoError = _.find(response.siteRequirements[0].errors, {
+            const photoError = find(response.siteRequirements[0].errors, {
                 field: 'building.photos'
             });
             expect(photoError?.message).toContain('At least one building photo is required for Apartments.com');
@@ -568,7 +568,7 @@ describe('Validate for Publish API Endpoint', () => {
             expect(response.siteRequirements[0].canPublish).toBe(false);
             expect(response.summary.canPublishToSites.zillow).toBe(false);
 
-            const rentError = _.find(response.siteRequirements[0].errors, {
+            const rentError = find(response.siteRequirements[0].errors, {
                 field: 'units.0.rent'
             });
             expect(rentError?.message).toContain('Rent amount is required for all units on Zillow');
@@ -770,8 +770,8 @@ describe('Validate for Publish API Endpoint', () => {
             expect(response.validationResults).toHaveProperty('unitTypes');
             expect(response.validationResults).toHaveProperty('units');
             expect(response.validationResults).toHaveProperty('complete');
-            expect(_.isArray(response.missingMITSFields)).toBe(true);
-            expect(_.isArray(response.siteRequirements)).toBe(true);
+            expect(isArray(response.missingMITSFields)).toBe(true);
+            expect(isArray(response.siteRequirements)).toBe(true);
         });
     });
 });

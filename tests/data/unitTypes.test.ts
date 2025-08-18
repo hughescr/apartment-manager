@@ -5,7 +5,7 @@ import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { AmenityCategory } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
-import _ from 'lodash';
+import { every, filter, map, repeat } from 'lodash';
 
 // Import the functions AFTER mocking
 import {
@@ -71,7 +71,7 @@ describe('UnitType Data Layer', () => {
             { ...testUnitType, modelID: 'model-1br', modelName: '1 Bedroom' }
         ];
         // Mock response will include unitID field, but getUnitTypes will omit it
-        const mockResponseData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+        const mockResponseData = map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
         dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockResponseData));
 
         const result = await getUnitTypes(testBuildingID);
@@ -394,7 +394,7 @@ describe('UnitType Data Layer', () => {
         it('should handle very long modelIDs', async () => {
             expect.assertions(2);
             // DynamoDB has a 2048 byte limit for sort keys
-            const longModelID = 'model-' + _.repeat('x', 2000);
+            const longModelID = 'model-' + repeat('x', 2000);
             const longModelUnit = {
                 ...testUnitType,
                 modelID: longModelID
@@ -447,10 +447,10 @@ describe('UnitType Data Layer', () => {
             const result = await getUnitsByModelID(testBuildingID, 'model-2br');
 
             // Should return only units with matching modelID
-            const expectedCount = _.filter(largeUnitSet, { modelID: 'model-2br' }).length;
+            const expectedCount = filter(largeUnitSet, { modelID: 'model-2br' }).length;
             expect(result).toHaveLength(expectedCount);
             expect(result[0].unitID).toBe('unit-0');
-            expect(_.every(result, { modelID: 'model-2br' })).toBeTrue();
+            expect(every(result, { modelID: 'model-2br' })).toBeTrue();
         });
 
         it('should not load all units into memory at once', async () => {

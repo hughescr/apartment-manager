@@ -1,5 +1,5 @@
 import type { UnitTypeData } from '../../../types';
-import _ from 'lodash';
+import { keys, trim } from 'lodash';
 
 export interface ValidationErrors {
     [key: string]: string | undefined
@@ -35,18 +35,18 @@ export class UnitTypeValidationService {
      * Check if validation passed (no errors)
      */
     static isValid(errors: ValidationErrors): boolean {
-        return _.keys(errors).length === 0;
+        return keys(errors).length === 0;
     }
 
     /**
      * Validate required fields
      */
     private static validateRequiredFields(unitType: Partial<UnitTypeData>, errors: ValidationErrors): void {
-        if(!unitType.modelID || _.trim(unitType.modelID) === '') {
+        if(!unitType.modelID || trim(unitType.modelID) === '') {
             errors.modelID = 'Model ID is required';
         }
 
-        if(!unitType.modelName || _.trim(unitType.modelName) === '') {
+        if(!unitType.modelName || trim(unitType.modelName) === '') {
             errors.modelName = 'Model Name is required';
         }
     }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import _ from 'lodash';
+import { trim } from 'lodash';
 import type { VacancyClass } from '../../../src/types';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
@@ -105,7 +105,7 @@ export const UnitPublishedSchema = z.object({
         .min(1, 'Unit number is required for MITS ILS_Unit.UnitID element')
         .max(50, 'Unit number must be 50 characters or less for MITS compliance')
         .refine(
-            number => _.trim(number).length > 0,
+            number => trim(number).length > 0,
             { message: 'Unit number cannot be only whitespace for MITS compliance' }
         ),
 

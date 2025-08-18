@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { every, repeat } from 'lodash';
 import {
     transformPhotoUrls,
     validatePhotoUrls,
@@ -114,7 +114,7 @@ describe('Photo Transformer', () => {
 
             expect(result.valid).toHaveLength(0);
             expect(result.errors).toHaveLength(4);
-            expect(_.every(result.errors, ['error', 'Invalid URL format'])).toBe(true);
+            expect(every(result.errors, ['error', 'Invalid URL format'])).toBe(true);
         });
 
         it('should handle undefined and empty arrays', () => {
@@ -401,7 +401,7 @@ describe('Photo Transformer', () => {
 
     describe('Edge Cases', () => {
         it('should handle very long URLs', () => {
-            const longUrl = 'https://example.com/' + _.repeat('a', 1000) + '.jpg';
+            const longUrl = 'https://example.com/' + repeat('a', 1000) + '.jpg';
             const urls = [longUrl];
 
             const result = validatePhotoUrls(urls);

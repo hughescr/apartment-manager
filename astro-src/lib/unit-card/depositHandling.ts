@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isNumber, isObject, isString } from 'lodash';
 import type { UnitData, Deposit } from '../../types';
 
 export class DepositManager {
@@ -8,7 +8,7 @@ export class DepositManager {
         }
 
         // If deposit is already an object, ensure it has all properties
-        if(_.isObject(unit.deposit) && unit.deposit !== null) {
+        if(isObject(unit.deposit) && unit.deposit !== null) {
             const deposit = unit.deposit as Deposit;
             if(deposit.amount === undefined) {
                 deposit.amount = 0;
@@ -17,7 +17,7 @@ export class DepositManager {
                 deposit.refundable = true;
             }
             // partialRefundPercentage can be undefined
-        } else if(_.isNumber(unit.deposit)) {
+        } else if(isNumber(unit.deposit)) {
             (unit as UnitData & Record<string, unknown>).deposit = {
                 amount: unit.deposit,
                 refundable: true,
@@ -30,20 +30,20 @@ export class DepositManager {
         if(deposit === null || deposit === undefined) {
             return null;
         }
-        if(_.isNumber(deposit)) {
+        if(isNumber(deposit)) {
             return deposit;
         }
         return deposit.amount ?? null;
     }
 
     setDepositAmount(unit: UnitData, value: string | number): void {
-        const numValue = _.isString(value) ? parseFloat(value) : value;
+        const numValue = isString(value) ? parseFloat(value) : value;
 
         if(isNaN(numValue) || numValue === 0) {
             (unit as UnitData & Record<string, unknown>).deposit = undefined;
         } else {
             // Preserve existing deposit structure if it exists
-            if(_.isObject(unit.deposit) && unit.deposit !== null) {
+            if(isObject(unit.deposit) && unit.deposit !== null) {
                 (unit.deposit as Deposit).amount = numValue;
             } else {
                 (unit as UnitData & Record<string, unknown>).deposit = {
@@ -56,14 +56,14 @@ export class DepositManager {
     }
 
     isDepositRefundable(deposit: number | Deposit | null | undefined): boolean {
-        if(!deposit || _.isNumber(deposit)) {
+        if(!deposit || isNumber(deposit)) {
             return true;
         }
         return deposit.refundable ?? true;
     }
 
     setDepositRefundable(unit: UnitData, refundable: boolean): void {
-        if(!unit.deposit || _.isNumber(unit.deposit)) {
+        if(!unit.deposit || isNumber(unit.deposit)) {
             const amount = this.getDepositAmount(unit.deposit);
             (unit as UnitData & Record<string, unknown>).deposit = {
                 amount: amount ?? 0,
@@ -81,16 +81,16 @@ export class DepositManager {
     }
 
     getDepositPartialRefundPercentage(deposit: number | Deposit | null | undefined): number | null {
-        if(!deposit || _.isNumber(deposit)) {
+        if(!deposit || isNumber(deposit)) {
             return null;
         }
         return deposit.partialRefundPercentage ?? null;
     }
 
     setDepositPartialRefundPercentage(unit: UnitData, percentage: string | number): void {
-        const numValue = _.isString(percentage) ? parseFloat(percentage) : percentage;
+        const numValue = isString(percentage) ? parseFloat(percentage) : percentage;
 
-        if(!unit.deposit || _.isNumber(unit.deposit)) {
+        if(!unit.deposit || isNumber(unit.deposit)) {
             const amount = this.getDepositAmount(unit.deposit);
             (unit as UnitData & Record<string, unknown>).deposit = {
                 amount: amount ?? 0,

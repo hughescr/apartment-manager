@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { isObject } from 'lodash';
 import {
     BuildingData,
     UnitTypeData,
@@ -192,8 +192,8 @@ describe('Main Data Interfaces', () => {
                     partialRefundPercentage: 50
                 }
             };
-            expect(_.isObject(unitTypeWithDepositObject.deposit)).toBe(true);
-            if(_.isObject(unitTypeWithDepositObject.deposit)) {
+            expect(isObject(unitTypeWithDepositObject.deposit)).toBe(true);
+            if(isObject(unitTypeWithDepositObject.deposit)) {
                 expect(unitTypeWithDepositObject.deposit.amount).toBe(1200);
                 expect(unitTypeWithDepositObject.deposit.refundable).toBe(false);
                 expect(unitTypeWithDepositObject.deposit.partialRefundPercentage).toBe(50);
@@ -321,8 +321,8 @@ describe('Main Data Interfaces', () => {
                     partialRefundPercentage: 75
                 }
             };
-            expect(_.isObject(unitWithDepositObject.deposit)).toBe(true);
-            if(_.isObject(unitWithDepositObject.deposit)) {
+            expect(isObject(unitWithDepositObject.deposit)).toBe(true);
+            if(isObject(unitWithDepositObject.deposit)) {
                 expect(unitWithDepositObject.deposit.amount).toBe(1500);
                 expect(unitWithDepositObject.deposit.refundable).toBe(true);
             }

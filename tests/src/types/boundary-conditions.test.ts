@@ -10,7 +10,7 @@ import {
     describe,
     it,
     expect,
-    _,
+    times,
     // Types
     UnitData,
     BuildingData,
@@ -118,7 +118,7 @@ describe('Edge Cases and Boundary Conditions', () => {
     });
 
     it('should handle maximum array lengths', () => {
-        const manyAmenities: Amenity[] = _.times(1000, i => ({
+        const manyAmenities: Amenity[] = times(1000, i => ({
             name: `Amenity ${i}`,
             category: AmenityCategory.UNIT
         }));

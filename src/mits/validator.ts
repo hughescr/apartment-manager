@@ -1,5 +1,5 @@
 import type { ValidationOptions } from './schema';
-import _ from 'lodash';
+import { filter, some, startsWith, trim } from 'lodash';
 
 export class MITSValidationError extends Error {
     constructor(message: string) {
@@ -16,13 +16,13 @@ class SimpleXMLParser {
     private maxDepth: number;
 
     constructor(xml: string, maxDepth = 100) {
-        this.xml = _.trim(xml);
+        this.xml = trim(xml);
         this.maxDepth = maxDepth;
     }
 
     parse(): Record<string, unknown> {
         // Check for XML declaration
-        if(!_.startsWith(this.xml, '<?xml')) {
+        if(!startsWith(this.xml, '<?xml')) {
             throw new MITSValidationError('XML declaration is required');
         }
 
@@ -123,16 +123,16 @@ class SimpleXMLParser {
         }
         this.pos++; // Skip >
 
-        if(_.trim(content)) {
-            element._content = _.trim(content);
+        if(trim(content)) {
+            element._content = trim(content);
         }
 
         return element;
     }
 
     private handleChildElement(element: Record<string, unknown>, content: string): string {
-        if(_.trim(content)) {
-            element._content = _.trim(content);
+        if(trim(content)) {
+            element._content = trim(content);
         }
         const child = this.parseElement();
         (element._children as Record<string, unknown>[]).push(child);
@@ -181,7 +181,7 @@ function isValidISODate(dateStr: string): boolean {
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z?$/ // DateTime with milliseconds
     ];
 
-    return _.some(patterns, pattern => pattern.test(dateStr));
+    return some(patterns, pattern => pattern.test(dateStr));
 }
 
 function validateRequiredElements(doc: Record<string, unknown>): void {
@@ -221,7 +221,7 @@ function validateNumericFields(doc: Record<string, unknown>): void {
 
 // Helper function to validate floorplan structure
 function validateFloorplans(doc: Record<string, unknown>): void {
-    const floorplans = _.filter(doc._children as Record<string, unknown>[], { _name: 'Floorplan' });
+    const floorplans = filter(doc._children as Record<string, unknown>[], { _name: 'Floorplan' });
     for(const floorplan of floorplans) {
         if(!hasElement(floorplan, ['Identification', 'FloorplanID'])) {
             throw new MITSValidationError('FloorplanID is required for each Floorplan');
@@ -235,7 +235,7 @@ function validateUnits(doc: Record<string, unknown>): void {
     if(ilsUnit) {
         const units = findElement(ilsUnit, ['Units']);
         if(units) {
-            const unitList = _.filter(units._children as Record<string, unknown>[], { _name: 'Unit' });
+            const unitList = filter(units._children as Record<string, unknown>[], { _name: 'Unit' });
             for(const unit of unitList) {
                 if(!hasElement(unit, ['Identification', 'UnitID'])) {
                     throw new MITSValidationError('UnitID is required for each Unit');

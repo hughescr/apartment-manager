@@ -3,7 +3,7 @@ import '../test-setup';
 
 import { describe, it, expect } from 'bun:test';
 import type { VacancyClass } from '../../../src/types';
-import _ from 'lodash';
+import { forEach, isArray } from 'lodash';
 import {
     VALID_VACANCY_CLASSES,
     isUnitOccupied,
@@ -23,7 +23,7 @@ describe('Unit Status Service', () => {
         });
 
         it('should be readonly array', () => {
-            expect(_.isArray(VALID_VACANCY_CLASSES)).toBe(true);
+            expect(isArray(VALID_VACANCY_CLASSES)).toBe(true);
             // The readonly nature is enforced at TypeScript compile time
             // At runtime, the array is still mutable but readonly in TypeScript
             expect(VALID_VACANCY_CLASSES.length).toBe(4);
@@ -132,7 +132,7 @@ describe('Unit Status Service', () => {
         it('should not provide warnings for other statuses', () => {
             const statusesWithoutWarnings: VacancyClass[] = ['Occupied', 'Unoccupied', 'Notice'];
 
-            _.forEach(statusesWithoutWarnings, (status) => {
+            forEach(statusesWithoutWarnings, (status) => {
                 const result = validateVacancyClass(status);
                 expect(result.isValid).toBe(true);
                 expect(result.warnings).toBeUndefined();
@@ -145,8 +145,8 @@ describe('Unit Status Service', () => {
             const fromStatuses: (VacancyClass | null)[] = [null, 'Occupied', 'Unoccupied', 'Notice', 'Down'];
             const toStatuses: VacancyClass[] = ['Occupied', 'Unoccupied', 'Notice', 'Down'];
 
-            _.forEach(fromStatuses, (fromStatus) => {
-                _.forEach(toStatuses, (toStatus) => {
+            forEach(fromStatuses, (fromStatus) => {
+                forEach(toStatuses, (toStatus) => {
                     const result = validateStatusTransition(fromStatus, toStatus);
                     expect(result.isValid).toBe(true);
                     expect(result.from).toBe(fromStatus);
@@ -185,7 +185,7 @@ describe('Unit Status Service', () => {
                 ['Notice', 'Occupied']
             ];
 
-            _.forEach(routineTransitions, ([from, to]) => {
+            forEach(routineTransitions, ([from, to]) => {
                 const result = validateStatusTransition(from as VacancyClass, to as VacancyClass);
                 expect(result.isValid).toBe(true);
                 expect(result.reason).toBeUndefined();
@@ -210,7 +210,7 @@ describe('Unit Status Service', () => {
                 Down: 'Unit is unavailable due to maintenance or other issues'
             };
 
-            _.forEach(Object.entries(expectedDescriptions), ([status, expectedDescription]) => {
+            forEach(Object.entries(expectedDescriptions), ([status, expectedDescription]) => {
                 const result = getVacancyClassDescription(status as VacancyClass);
                 expect(result).toBe(expectedDescription);
             });
@@ -232,7 +232,7 @@ describe('Unit Status Service', () => {
                 Occupied: 4   // Lowest priority
             };
 
-            _.forEach(Object.entries(expectedPriorities), ([status, expectedPriority]) => {
+            forEach(Object.entries(expectedPriorities), ([status, expectedPriority]) => {
                 const result = getStatusPriority(status as VacancyClass);
                 expect(result).toBe(expectedPriority);
             });
@@ -422,7 +422,7 @@ describe('Unit Status Service', () => {
         it('should have consistent occupied/availability logic', () => {
             const testCases: VacancyClass[] = ['Occupied', 'Unoccupied', 'Notice', 'Down'];
 
-            _.forEach(testCases, (status) => {
+            forEach(testCases, (status) => {
                 const isOccupied = isUnitOccupied(status);
                 const isAvailable = getDefaultAvailabilityStatus(status);
 

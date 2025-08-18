@@ -2,7 +2,7 @@
 import '../test-setup';
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
-import _ from 'lodash';
+import { filter, forEach, groupBy, includes, isArray, keyBy, keys, map, noop, padStart, times } from 'lodash';
 import {
     createTestBuildingData,
     createTestUnitData,
@@ -41,7 +41,7 @@ describe('FloorplansUnitsTab Component Logic', () => {
         ];
     });
 
-    afterEach(_.noop);
+    afterEach(noop);
 
     describe('Data Structure Validation', () => {
         it('should have valid building data structure', () => {
@@ -51,10 +51,10 @@ describe('FloorplansUnitsTab Component Logic', () => {
         });
 
         it('should have valid units data structure', () => {
-            expect(_.isArray(mockUnitsData)).toBe(true);
+            expect(isArray(mockUnitsData)).toBe(true);
             expect(mockUnitsData.length).toBeGreaterThan(0);
 
-            _.forEach(mockUnitsData, (unit) => {
+            forEach(mockUnitsData, (unit) => {
                 expect(unit.unitID).toBeDefined();
                 expect(unit.modelID).toBeDefined();
                 expect(unit.vacancyClass).toBeDefined();
@@ -62,10 +62,10 @@ describe('FloorplansUnitsTab Component Logic', () => {
         });
 
         it('should have valid unit types data structure', () => {
-            expect(_.isArray(mockUnitTypesData)).toBe(true);
+            expect(isArray(mockUnitTypesData)).toBe(true);
             expect(mockUnitTypesData.length).toBeGreaterThan(0);
 
-            _.forEach(mockUnitTypesData, (unitType) => {
+            forEach(mockUnitTypesData, (unitType) => {
                 expect(unitType.modelID).toBeDefined();
                 expect(unitType.modelName).toBeDefined();
                 expect(typeof unitType.beds).toBe('number');
@@ -74,9 +74,9 @@ describe('FloorplansUnitsTab Component Logic', () => {
         });
 
         it('should have valid building amenities structure', () => {
-            expect(_.isArray(mockBuildingAmenities)).toBe(true);
+            expect(isArray(mockBuildingAmenities)).toBe(true);
 
-            _.forEach(mockBuildingAmenities, (amenity) => {
+            forEach(mockBuildingAmenities, (amenity) => {
                 expect(amenity.id).toBeDefined();
                 expect(amenity.name).toBeDefined();
                 expect(amenity.category).toBeDefined();
@@ -107,17 +107,17 @@ describe('FloorplansUnitsTab Component Logic', () => {
                 buildingAmenities: []
             };
 
-            expect(_.isArray(propsWithEmptyArrays.units)).toBe(true);
-            expect(_.isArray(propsWithEmptyArrays.unitTypes)).toBe(true);
-            expect(_.isArray(propsWithEmptyArrays.buildingAmenities)).toBe(true);
+            expect(isArray(propsWithEmptyArrays.units)).toBe(true);
+            expect(isArray(propsWithEmptyArrays.unitTypes)).toBe(true);
+            expect(isArray(propsWithEmptyArrays.buildingAmenities)).toBe(true);
         });
     });
 
     describe('Unit Type and Unit Relationship Logic', () => {
         it('should link units to their unit types correctly', () => {
-            const unitTypeMap = _.keyBy(mockUnitTypesData, 'modelID');
+            const unitTypeMap = keyBy(mockUnitTypesData, 'modelID');
 
-            _.forEach(mockUnitsData, (unit) => {
+            forEach(mockUnitsData, (unit) => {
                 const relatedUnitType = unit.modelID ? unitTypeMap[unit.modelID] : undefined;
                 if(relatedUnitType) {
                     expect(relatedUnitType.modelID).toBe(unit.modelID!);
@@ -126,9 +126,9 @@ describe('FloorplansUnitsTab Component Logic', () => {
         });
 
         it('should identify orphaned units without unit types', () => {
-            const unitTypeIds = _.map(mockUnitTypesData, 'modelID');
-            const orphanedUnits = _.filter(mockUnitsData, unit =>
-                !_.includes(unitTypeIds, unit.modelID)
+            const unitTypeIds = map(mockUnitTypesData, 'modelID');
+            const orphanedUnits = filter(mockUnitsData, unit =>
+                !includes(unitTypeIds, unit.modelID)
             );
 
             // In our test data, all units should have corresponding unit types
@@ -136,19 +136,19 @@ describe('FloorplansUnitsTab Component Logic', () => {
         });
 
         it('should identify unit types without any units', () => {
-            const unitModelIds = _.map(mockUnitsData, 'modelID');
-            const unusedUnitTypes = _.filter(mockUnitTypesData, unitType =>
-                !_.includes(unitModelIds, unitType.modelID)
+            const unitModelIds = map(mockUnitsData, 'modelID');
+            const unusedUnitTypes = filter(mockUnitTypesData, unitType =>
+                !includes(unitModelIds, unitType.modelID)
             );
 
             // This could be valid in real scenarios
-            expect(_.isArray(unusedUnitTypes)).toBe(true);
+            expect(isArray(unusedUnitTypes)).toBe(true);
         });
     });
 
     describe('Data Filtering and Grouping', () => {
         it('should group units by vacancy status', () => {
-            const groupedByStatus = _.groupBy(mockUnitsData, 'vacancyClass');
+            const groupedByStatus = groupBy(mockUnitsData, 'vacancyClass');
 
             expect(groupedByStatus.Occupied).toBeDefined();
             expect(groupedByStatus.Unoccupied).toBeDefined();
@@ -156,18 +156,18 @@ describe('FloorplansUnitsTab Component Logic', () => {
         });
 
         it('should group units by unit type', () => {
-            const groupedByModel = _.groupBy(mockUnitsData, 'modelID');
+            const groupedByModel = groupBy(mockUnitsData, 'modelID');
 
-            _.forEach(mockUnitTypesData, (unitType) => {
+            forEach(mockUnitTypesData, (unitType) => {
                 const unitsOfThisType = groupedByModel[unitType.modelID] || [];
-                expect(_.isArray(unitsOfThisType)).toBe(true);
+                expect(isArray(unitsOfThisType)).toBe(true);
             });
         });
 
         it('should calculate summary statistics', () => {
             const totalUnits = mockUnitsData.length;
-            const occupiedUnits = _.filter(mockUnitsData, { vacancyClass: 'Occupied' }).length;
-            const availableUnits = _.filter(mockUnitsData, { vacancyClass: 'Unoccupied' }).length;
+            const occupiedUnits = filter(mockUnitsData, { vacancyClass: 'Occupied' }).length;
+            const availableUnits = filter(mockUnitsData, { vacancyClass: 'Unoccupied' }).length;
 
             expect(totalUnits).toBe(mockUnitsData.length);
             expect(typeof occupiedUnits).toBe('number');
@@ -197,9 +197,9 @@ describe('FloorplansUnitsTab Component Logic', () => {
 
         it('should handle inheritance between unit types and units', () => {
             const unitType = mockUnitTypesData[0];
-            const unitsOfThisType = _.filter(mockUnitsData, { modelID: unitType.modelID });
+            const unitsOfThisType = filter(mockUnitsData, { modelID: unitType.modelID });
 
-            _.forEach(unitsOfThisType, (unit) => {
+            forEach(unitsOfThisType, (unit) => {
                 // Units should be able to inherit from their unit type
                 expect(unit.modelID).toBe(unitType.modelID);
 
@@ -244,20 +244,20 @@ describe('FloorplansUnitsTab Component Logic', () => {
 
     describe('Performance Considerations', () => {
         it('should handle large datasets efficiently', () => {
-            const largeUnitsArray = _.times(1000, i =>
+            const largeUnitsArray = times(1000, i =>
                 createTestUnitData({
-                    unitID: `eEUxh8XdGF1RsxfmwHPp${_.padStart(i.toString(), 2, '0')}`,
+                    unitID: `eEUxh8XdGF1RsxfmwHPp${padStart(i.toString(), 2, '0')}`,
                     unitNumber: `${i + 1000}`
                 })
             );
 
             // Basic operations should still be performant
             const startTime = Date.now();
-            const grouped = _.groupBy(largeUnitsArray, 'modelID');
+            const grouped = groupBy(largeUnitsArray, 'modelID');
             const endTime = Date.now();
 
             expect(endTime - startTime).toBeLessThan(100); // Should complete quickly
-            expect(_.keys(grouped).length).toBeGreaterThan(0);
+            expect(keys(grouped).length).toBeGreaterThan(0);
         });
     });
 });

@@ -3,7 +3,7 @@ import { getBuilding } from '../data/buildings';
 import { getUnitTypes } from '../data/unitTypes';
 import { getUnits } from '../data/units';
 import { BuildingData, UnitTypeData, UnitData } from '../src/types';
-import _ from 'lodash';
+import { every, filter, isError, isObject, isString, map, omit, pick, replace, sumBy } from 'lodash';
 import { validateId, sanitizeObject } from './security-validation';
 import { logger } from '@hughescr/logger';
 import {
@@ -114,7 +114,7 @@ export const validate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayP
             statusCode: 500,
             body: JSON.stringify({
                 error: 'Internal server error during validation',
-                details: _.isError(error) ? error.message : 'Unknown error'
+                details: isError(error) ? error.message : 'Unknown error'
             })
         };
     }
@@ -154,10 +154,18 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
         }
 
         return data;
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse validation request body', {
+            error: parseError,
+            rawBody: body,
+            context: 'parseValidationRequest'
+        });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' })
+            body: JSON.stringify({
+                error: 'Invalid request body',
+                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
+            })
         };
     }
 }
@@ -228,7 +236,7 @@ async function validateBatchEntities(request: ValidationRequest): Promise<APIGat
         }
     }
 
-    const allSuccess = _.every(validationResults, 'success');
+    const allSuccess = every(validationResults, 'success');
 
     const response = {
         success: allSuccess,
@@ -262,7 +270,7 @@ async function validateBatchEntities(request: ValidationRequest): Promise<APIGat
  * Clean entity data for validation by removing fields not in validation schemas
  */
 function cleanEntityForValidation(entityType: 'building' | 'unitType' | 'unit', entity: unknown): unknown {
-    if(!entity || !_.isObject(entity)) {
+    if(!entity || !isObject(entity)) {
         return entity;
     }
 
@@ -270,7 +278,7 @@ function cleanEntityForValidation(entityType: 'building' | 'unitType' | 'unit', 
 
     if(entityType === 'building') {
         // Remove fields that aren't in the MITS building schema
-        const cleanedBuilding = _.pick(data, [
+        const cleanedBuilding = pick(data, [
             'buildingID', 'buildingName', 'street', 'city', 'state', 'zip',
             'latitude', 'longitude', 'propertyType', 'structureType', 'rentalType',
             'contactInfo', 'yearBuilt', 'totalUnits', 'numberStories', 'description',
@@ -281,10 +289,10 @@ function cleanEntityForValidation(entityType: 'building' | 'unitType' | 'unit', 
         return cleanedBuilding;
     } else if(entityType === 'unitType') {
         // Remove unitID which is for DynamoDB only
-        return _.omit(data, ['unitID']);
+        return omit(data, ['unitID']);
     } else if(entityType === 'unit') {
         // Clean unitID and remove extra fields
-        const cleanedUnit = _.pick(data, [
+        const cleanedUnit = pick(data, [
             'buildingID', 'unitID', 'unitNumber', 'beds', 'baths', 'sqft', 'rent',
             'vacancyClass', 'availableDate', 'vacateDate', 'madeReadyDate', 'modelID',
             'maxOccupants', 'perPersonRent', 'deposit', 'minLeaseTerm', 'maxLeaseTerm',
@@ -292,8 +300,8 @@ function cleanEntityForValidation(entityType: 'building' | 'unitType' | 'unit', 
             'features', 'availableAfter', 'madeReadyOn', 'updatedAt'
         ]);
         // Clean unitID of special characters
-        if(cleanedUnit.unitID && _.isString(cleanedUnit.unitID)) {
-            cleanedUnit.unitID = _.replace(cleanedUnit.unitID as string, /[^\w-]/g, '-');
+        if(cleanedUnit.unitID && isString(cleanedUnit.unitID)) {
+            cleanedUnit.unitID = replace(cleanedUnit.unitID as string, /[^\w-]/g, '-');
         }
         return cleanedUnit;
     }
@@ -323,13 +331,13 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
 
     // Clean data for validation (remove non-MITS fields)
     const cleanBuilding = cleanEntityForValidation('building', building);
-    const cleanUnitTypes = _.map(unitTypes, ut => cleanEntityForValidation('unitType', ut));
-    const cleanUnits = _.map(units, u => cleanEntityForValidation('unit', u));
+    const cleanUnitTypes = map(unitTypes, ut => cleanEntityForValidation('unitType', ut));
+    const cleanUnits = map(units, u => cleanEntityForValidation('unit', u));
 
     // Validate each entity type with cleaned data
     const buildingValidation = validateForPublish('building', cleanBuilding as BuildingData);
-    const unitTypeValidations = _.map(cleanUnitTypes, ut => validateForPublish('unitType', ut as UnitTypeData));
-    const unitValidations = _.map(cleanUnits, u => validateForPublish('unit', u as UnitData));
+    const unitTypeValidations = map(cleanUnitTypes, ut => validateForPublish('unitType', ut as UnitTypeData));
+    const unitValidations = map(cleanUnits, u => validateForPublish('unit', u as UnitData));
 
     // Get missing MITS fields for complete validation using cleaned data
     const missingMITSFields = getMissingMITSFields({
@@ -356,9 +364,9 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
 
     // Calculate summary statistics
     const allValidations = [buildingValidation, ...unitTypeValidations, ...unitValidations];
-    const entitiesWithErrors = _.filter(allValidations, { success: false }).length;
-    const totalErrors = _.sumBy(allValidations, 'errors.length');
-    const canPublish = _.every(allValidations, 'success');
+    const entitiesWithErrors = filter(allValidations, { success: false }).length;
+    const totalErrors = sumBy(allValidations, 'errors.length');
+    const canPublish = every(allValidations, 'success');
 
     const response: BatchValidationResponse = {
         success: canPublish,
@@ -371,7 +379,7 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
             complete: {
                 success: canPublish,
                 errors: missingMITSFields.length > 0 ?
-                    _.map(missingMITSFields, field => ({
+                    map(missingMITSFields, field => ({
                         field: field.field,
                         message: field.description,
                         context: `MITS requirement for ${field.entityType}`

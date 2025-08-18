@@ -1,5 +1,5 @@
 import shortUUID from 'short-uuid';
-import _ from 'lodash';
+import { isString } from 'lodash';
 
 const translator = shortUUID();
 
@@ -18,7 +18,7 @@ export function generateBuildingId(): string {
  * @returns {boolean} True if the ID is valid
  */
 export function isValidBuildingId(id: string): boolean {
-    if(!id || !_.isString(id)) {
+    if(!id || !isString(id)) {
         return false;
     }
 

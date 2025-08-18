@@ -5,7 +5,7 @@
 
 import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek, BuildingData } from '../../src/types';
 import { getDefaultBuildingData } from '../../src/types';
-import _ from 'lodash';
+import { fill, merge, repeat } from 'lodash';
 
 /**
  * Standard test building with comprehensive data for most test scenarios.
@@ -155,8 +155,8 @@ export const createLargeBuilding = () => ({
     ...testBuilding,
     buildingID: 'hK9p4QxV7zAy1nFjRmBsWu', // Short-uuid format
     buildingName: '123 Test',
-    propertyDescription: _.repeat('x', 350000), // ~350KB
-    photos: _.fill(Array(100), 'https://s3.example.com/very-long-photo-url-that-takes-up-space.jpg')
+    propertyDescription: repeat('x', 350000), // ~350KB
+    photos: fill(Array(100), 'https://s3.example.com/very-long-photo-url-that-takes-up-space.jpg')
 });
 
 /**
@@ -166,10 +166,10 @@ export const createMaxArrayBuilding = () => ({
     ...testBuilding,
     buildingID: 'jM2s8PwE6xCb5vLnKtGhRy', // Short-uuid format
     buildingName: '123 Test',
-    photos: _.fill(Array(1000), 'https://s3.example.com/photo.jpg'),
-    propertyAmenities: _.fill(Array(500), { name: 'Amenity', category: AmenityCategory.PROPERTY }),
-    rentSpecials: _.fill(Array(100), { title: 'Special', description: 'Deal' }),
-    oneTimeFees: _.fill(Array(50), { type: FeeType.APPLICATION, amount: 50 })
+    photos: fill(Array(1000), 'https://s3.example.com/photo.jpg'),
+    propertyAmenities: fill(Array(500), { name: 'Amenity', category: AmenityCategory.PROPERTY }),
+    rentSpecials: fill(Array(100), { title: 'Special', description: 'Deal' }),
+    oneTimeFees: fill(Array(50), { type: FeeType.APPLICATION, amount: 50 })
 });
 
 /**
@@ -220,4 +220,4 @@ export const complexTourBuilding = {
  * Helper to create expected result with merged defaults.
  */
 export const getExpectedBuilding = (building: Partial<BuildingData>): BuildingData =>
-    _.merge({}, getDefaultBuildingData(), building) as BuildingData;
+    merge({}, getDefaultBuildingData(), building) as BuildingData;

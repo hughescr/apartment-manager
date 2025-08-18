@@ -22,7 +22,7 @@ import * as unitsHandler from '../../api/units';
 import { handler as uploadHandler } from '../../api/upload';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { dynamoDbMock, resetAllMocks } from '../data/test-setup';
-import _ from 'lodash';
+import { chain, fill, isObject, repeat, startsWith } from 'lodash';
 // Type for DynamoDB item with optional properties
 type DynamoItem = Record<string, unknown> & {
     buildingID?: string
@@ -31,10 +31,10 @@ type DynamoItem = Record<string, unknown> & {
 
 // Helper function to determine entity type based on unitID
 function getEntityType(unitID: string): string {
-    if(_.startsWith(unitID, 'UNIT#') || (unitID !== 'BUILDING' && !_.startsWith(unitID, 'MODEL#'))) {
+    if(startsWith(unitID, 'UNIT#') || (unitID !== 'BUILDING' && !startsWith(unitID, 'MODEL#'))) {
         return 'Unit';
     }
-    if(_.startsWith(unitID, 'MODEL#')) {
+    if(startsWith(unitID, 'MODEL#')) {
         return 'UnitType';
     }
     return 'Building';
@@ -86,7 +86,7 @@ function handleUpdateCommand(cmd: { input?: Record<string, unknown> }) {
 // Helper function to handle DynamoDB command routing
 function createDynamoDbMockImplementation() {
     return (command: unknown) => {
-        if(!command || !_.isObject(command)) {
+        if(!command || !isObject(command)) {
             return Promise.resolve({});
         }
         const cmd = command as { constructor?: { name: string }, input?: Record<string, unknown> };
@@ -299,7 +299,7 @@ describe('Security Validation Tests', () => {
                 const response = await (uploadHandler as (event: APIGatewayProxyEventV2) => Promise<unknown>)(event);
 
                 // Should return 403 Forbidden for invalid paths
-                if(response && _.isObject(response) && 'statusCode' in response) {
+                if(response && isObject(response) && 'statusCode' in response) {
                     expect((response as { statusCode: number }).statusCode).toBe(403);
                     if('body' in response && response.body) {
                         expect(JSON.parse(response.body as string)).toHaveProperty('error', 'Forbidden');
@@ -326,7 +326,7 @@ describe('Security Validation Tests', () => {
 
                 const response = await (uploadHandler as (event: APIGatewayProxyEventV2) => Promise<unknown>)(event);
 
-                if(response && _.isObject(response) && 'statusCode' in response && (response as { statusCode: number }).statusCode === 200) {
+                if(response && isObject(response) && 'statusCode' in response && (response as { statusCode: number }).statusCode === 200) {
                     if('body' in response && response.body) {
                         const result = JSON.parse(response.body as string);
                         // Ensure the generated key doesn't contain path traversal
@@ -596,7 +596,7 @@ describe('Security Validation Tests', () => {
 
                 const response = await (uploadHandler as (event: APIGatewayProxyEventV2) => Promise<unknown>)(event);
 
-                if(response && _.isObject(response) && 'statusCode' in response && (response as { statusCode: number }).statusCode === 200) {
+                if(response && isObject(response) && 'statusCode' in response && (response as { statusCode: number }).statusCode === 200) {
                     if('body' in response && response.body) {
                         const result = JSON.parse(response.body as string);
                         // Ensure null bytes are handled safely
@@ -670,13 +670,13 @@ describe('Security Validation Tests', () => {
 
     describe('Input Size Limit Validation (DoS Prevention)', () => {
         it('should reject extremely large string inputs', async () => {
-            const largeString = _.repeat('A', 10000); // 10KB string
-            const veryLargeString = _.repeat('B', 1000000); // 1MB string
+            const largeString = repeat('A', 10000); // 10KB string
+            const veryLargeString = repeat('B', 1000000); // 1MB string
 
             const payloads = [
                 { description: largeString },
                 { buildingName: veryLargeString },
-                { notes: _.repeat('C', 5000000) }, // 5MB
+                { notes: repeat('C', 5000000) }, // 5MB
             ];
 
             for(const payload of payloads) {
@@ -704,8 +704,8 @@ describe('Security Validation Tests', () => {
         });
 
         it('should handle arrays with excessive elements', async () => {
-            const manyPhotos = _.fill(new Array(1000), 'http://example.com/photo.jpg');
-            const manyAmenities = _.fill(new Array(5000), 'Test Amenity');
+            const manyPhotos = fill(new Array(1000), 'http://example.com/photo.jpg');
+            const manyAmenities = fill(new Array(5000), 'Test Amenity');
 
             const event = createMockEvent('POST', '/api/buildings/mhvXdrZT4jP5T8vBxuvm75/units', {
                 unitID: 'test-unit',
@@ -812,9 +812,9 @@ describe('Security Validation Tests', () => {
                     const error = JSON.parse(response.body!);
                     // Check for any URL validation error (property name might vary)
                     expect(error.errors).toSatisfy((errors: Record<string, unknown>) => {
-                        return _(errors).keys().some(key =>
+                        return chain(errors).keys().some(key =>
                             key.includes('propertyWebsite') || key.includes('website')
-                        );
+                        ).value();
                     });
                 } else if(response.statusCode === 201 && response.body) {
                     // If accepted, the URL should be sanitized or the malicious parts removed

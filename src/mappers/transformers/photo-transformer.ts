@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { endsWith, last, replace, some, split, startCase, take, toLower, trim } from 'lodash';
 import type { TransformerFunction } from '../types.js';
 
 /**
@@ -54,9 +54,9 @@ export function validatePhotoUrls(
             }
 
             // Check for common image extensions
-            const pathname = _.toLower(parsed.pathname);
+            const pathname = toLower(parsed.pathname);
             const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-            const hasValidExtension = _.some(validExtensions, ext => _.endsWith(pathname, ext));
+            const hasValidExtension = some(validExtensions, ext => endsWith(pathname, ext));
 
             if(!hasValidExtension) {
                 errors.push({
@@ -90,7 +90,7 @@ export function sortPhotosByType(photos: string[]): string[] {
     const other: string[] = [];
 
     for(const photo of photos) {
-        const lower = _.toLower(photo);
+        const lower = toLower(photo);
         if(lower.includes('exterior') || lower.includes('building') || lower.includes('outside')) {
             exterior.push(photo);
         } else if(lower.includes('interior') || lower.includes('room') || lower.includes('kitchen') ||
@@ -113,20 +113,20 @@ export function sortPhotosByType(photos: string[]): string[] {
 export function generatePhotoCaption(url: string, unitNumber?: string): string {
     try {
         const parsed = new URL(url);
-        const filename = _.last(_.split(parsed.pathname, '/')) || '';
-        const nameWithoutExt = _.replace(filename, /\.[^/.]+$/, '');
+        const filename = last(split(parsed.pathname, '/')) || '';
+        const nameWithoutExt = replace(filename, /\.[^/.]+$/, '');
 
         // Clean up common separators
-        const cleaned = _.trim(
-            _.replace(
-                _.replace(nameWithoutExt, /[-_]/g, ' '),
+        const cleaned = trim(
+            replace(
+                replace(nameWithoutExt, /[-_]/g, ' '),
                 /\s+/g,
                 ' '
             )
         );
 
         // Capitalize words
-        const capitalized = _.startCase(cleaned);
+        const capitalized = startCase(cleaned);
 
         // Add unit number if provided
         if(unitNumber) {
@@ -152,7 +152,7 @@ export function limitPhotos(photos: string[], limit: number): string[] {
 
     // Try to maintain a good mix of photos
     const sorted = sortPhotosByType(photos);
-    return _.take(sorted, limit);
+    return take(sorted, limit);
 }
 
 /**

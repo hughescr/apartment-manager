@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import _ from 'lodash';
+import { trim } from 'lodash';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
 /**
@@ -47,7 +47,7 @@ export const UnitTypeDraftSchema = z.looseObject({
     modelID: z.string().min(1, 'Model ID is required').max(255).regex(/^[\w-]+$/, 'Model ID can only contain letters, numbers, underscores, and hyphens'),
 
     // All other fields are optional for draft state
-    modelName: z.string().transform(val => _.trim(val)).refine(val => val.length > 0, { message: 'Model name cannot be empty' }).optional(),
+    modelName: z.string().transform(val => trim(val)).refine(val => val.length > 0, { message: 'Model name cannot be empty' }).optional(),
 
     // Required room configuration (optional for draft state)
     beds: z.number().int().min(0).max(10, 'Number of beds must be between 0 and 10').optional(),

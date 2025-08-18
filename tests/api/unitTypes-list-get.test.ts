@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { createMockEvent, testUnitType, dynamoDbMock, jest, resetAllMocks } from './unitTypes-test-setup';
 import { mockQueryResponse, mockGetResponse } from '../helpers/mock-responses';
-import _ from 'lodash';
+import { isArray, map } from 'lodash';
 
 // Import API functions directly - they will use the mocked DynamoDB client from test-setup
 import { list, get } from '../../api/unitTypes';
@@ -27,7 +27,7 @@ describe('Unit Types API - List and Get', () => {
                 { ...testUnitType, modelID: 'model-1br', modelName: '1 Bedroom' }
             ];
             // Mock DynamoDB query response with proper unitID format
-            const mockDbData = _.map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
+            const mockDbData = map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(mockDbData));
 
             const event = createMockEvent({
@@ -40,7 +40,7 @@ describe('Unit Types API - List and Get', () => {
 
             // The data layer should return the unit types (empty array if mocking isn't working correctly)
             const responseData = JSON.parse(result.body as string);
-            expect(_.isArray(responseData)).toBe(true);
+            expect(isArray(responseData)).toBe(true);
 
             // Since DynamoDB Toolbox mocking is complex, just verify basic API behavior
             // The API should return an array even if empty due to mocking limitations
@@ -74,7 +74,7 @@ describe('Unit Types API - List and Get', () => {
                 const result = await list(event);
                 // If it succeeds instead of throwing, it means fallback mock is being used
                 expect(result.statusCode).toBe(200);
-                expect(_.isArray(JSON.parse(result.body as string))).toBe(true);
+                expect(isArray(JSON.parse(result.body as string))).toBe(true);
             } catch(error) {
                 // If it throws as expected, verify the error
                 expect(error).toBeInstanceOf(Error);

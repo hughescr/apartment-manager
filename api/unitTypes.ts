@@ -1,10 +1,11 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getUnitTypes, getUnitType, createUnitType, updateUnitType, deleteUnitType } from '../data/unitTypes';
 import { UnitTypeData } from '../src/types/index';
-import _ from 'lodash';
+import { forEach, keys, trim } from 'lodash';
 import { validateId, sanitizeObject } from './security-validation';
 import { UnitTypeInput } from './validation/unitTypeSchema';
 import { validateForSave } from './validation/helpers';
+import { logger } from '@hughescr/logger';
 
 // Legacy validation functions removed - now using Zod schemas in ./validation/
 
@@ -23,7 +24,12 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse unit type creation request body', {
+            error: parseError,
+            context: 'unit type creation request parsing',
+            httpMethod: evt.requestContext.http.method
+        });
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Invalid request body' }),
@@ -34,7 +40,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     const validation = validateForSave('unitType', data);
     if(!validation.success) {
         const errors: Record<string, string> = {};
-        _.forEach(validation.errors, (err) => {
+        forEach(validation.errors, (err) => {
             errors[err.field] = err.message;
         });
         return {
@@ -47,14 +53,14 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
 
     // Additional validation: ensure required fields for creation are provided
     const errors: Record<string, string> = {};
-    if(!unitTypeData.buildingID || _.trim(unitTypeData.buildingID) === '') {
+    if(!unitTypeData.buildingID || trim(unitTypeData.buildingID) === '') {
         errors.buildingID = 'Building ID is required for creation';
     }
-    if(!unitTypeData.modelID || _.trim(unitTypeData.modelID) === '') {
+    if(!unitTypeData.modelID || trim(unitTypeData.modelID) === '') {
         errors.modelID = 'Model ID is required for creation';
     }
 
-    if(_.keys(errors).length > 0) {
+    if(keys(errors).length > 0) {
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Validation failed', errors }),
@@ -86,7 +92,14 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse unit type update request body', {
+            error: parseError,
+            context: 'unit type update request parsing',
+            httpMethod: evt.requestContext.http.method,
+            buildingID,
+            modelID
+        });
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Invalid request body' }),
@@ -105,7 +118,7 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     const validation = validateForSave('unitType', dataWithIds);
     if(!validation.success) {
         const errors: Record<string, string> = {};
-        _.forEach(validation.errors, (err) => {
+        forEach(validation.errors, (err) => {
             errors[err.field] = err.message;
         });
         return {

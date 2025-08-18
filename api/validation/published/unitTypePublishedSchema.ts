@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import _ from 'lodash';
+import { trim } from 'lodash';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
 /**
@@ -81,7 +81,7 @@ export const UnitTypePublishedSchema = z.object({
         .min(1, 'Model name is required for MITS Floorplan.Identification.Name element')
         .max(100, 'Model name must be 100 characters or less for MITS compliance')
         .refine(
-            name => _.trim(name).length > 0,
+            name => trim(name).length > 0,
             { message: 'Model name cannot be only whitespace for MITS compliance' }
         ),
 

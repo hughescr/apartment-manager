@@ -5,7 +5,7 @@ import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 import { PropertyType, FeeType, PetType, ParkingType, AmenityCategory, DayOfWeek, ContactInfo } from '../../src/types';
 import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
-import _ from 'lodash';
+import { fill, repeat } from 'lodash';
 import { testBuilding, minimalBuilding, complexBuilding, getExpectedBuilding } from './buildings-test-fixtures';
 
 // Import the functions AFTER mocking
@@ -259,11 +259,11 @@ describe('Building Data Layer', () => {
         it('should handle building with maximum allowed item size (near 400KB)', async () => {
             expect.assertions(1);
             // Create a building with very large data
-            const largeDescription = _.repeat('x', 350000); // ~350KB
+            const largeDescription = repeat('x', 350000); // ~350KB
             const largeBuilding = {
                 ...testBuilding,
                 propertyDescription: largeDescription,
-                photos: _.fill(Array(100), 'https://s3.example.com/very-long-photo-url-that-takes-up-space.jpg')
+                photos: fill(Array(100), 'https://s3.example.com/very-long-photo-url-that-takes-up-space.jpg')
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...largeBuilding, unitID: 'BUILDING' }));
 
@@ -275,12 +275,12 @@ describe('Building Data Layer', () => {
             expect.assertions(3);
             const longStringBuilding = {
                 ...testBuilding,
-                description: _.repeat('A', 10000),
-                propertyDescription: _.repeat('B', 50000),
-                street: '123 ' + _.repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
+                description: repeat('A', 10000),
+                propertyDescription: repeat('B', 50000),
+                street: '123 ' + repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
                 contactInfo: {
                     ...testBuilding.contactInfo,
-                    website: 'https://' + _.repeat('subdomain.', 50) + 'example.com/path/to/very/deep/page'
+                    website: 'https://' + repeat('subdomain.', 50) + 'example.com/path/to/very/deep/page'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...longStringBuilding, unitID: 'BUILDING' }));
@@ -295,10 +295,10 @@ describe('Building Data Layer', () => {
             expect.assertions(4);
             const maxArrayBuilding = {
                 ...testBuilding,
-                photos: _.fill(Array(1000), 'https://s3.example.com/photo.jpg'),
-                propertyAmenities: _.fill(Array(500), { name: 'Amenity', category: AmenityCategory.PROPERTY }),
-                rentSpecials: _.fill(Array(100), { title: 'Special', description: 'Deal' }),
-                oneTimeFees: _.fill(Array(50), { type: FeeType.APPLICATION, amount: 50 })
+                photos: fill(Array(1000), 'https://s3.example.com/photo.jpg'),
+                propertyAmenities: fill(Array(500), { name: 'Amenity', category: AmenityCategory.PROPERTY }),
+                rentSpecials: fill(Array(100), { title: 'Special', description: 'Deal' }),
+                oneTimeFees: fill(Array(50), { type: FeeType.APPLICATION, amount: 50 })
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...maxArrayBuilding, unitID: 'BUILDING' }));
 

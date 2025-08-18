@@ -39,7 +39,7 @@ interface UnitTypeWithUpdate extends UnitTypeData {
 interface UnitWithUpdate extends UnitData {
     updatedAt: Date
 }
-import _ from 'lodash';
+import { chain, filter, isNumber, isString, map, max, maxBy, replace, split, toLower } from 'lodash';
 import type {
     MITSPhysicalProperty as _MITSPhysicalProperty,
     MITSFeedOptions,
@@ -64,11 +64,11 @@ function escapeXML(str: string | undefined | null): string {
         return '';
     }
     let result = str.toString();
-    result = _.replace(result, /&/g, '&amp;');
-    result = _.replace(result, /</g, '&lt;');
-    result = _.replace(result, />/g, '&gt;');
-    result = _.replace(result, /"/g, '&quot;');
-    result = _.replace(result, /'/g, '&apos;');
+    result = replace(result, /&/g, '&amp;');
+    result = replace(result, /</g, '&lt;');
+    result = replace(result, />/g, '&gt;');
+    result = replace(result, /"/g, '&quot;');
+    result = replace(result, /'/g, '&apos;');
     return result;
 }
 
@@ -77,7 +77,7 @@ function formatDate(date: Date | string | undefined): string {
     if(!date) {
         return new Date().toISOString();
     }
-    if(_.isString(date)) {
+    if(isString(date)) {
         // If already ISO format, return as-is
         if(date.match(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})?Z?)?$/)) {
             return date.includes('T') ? date : `${date}T00:00:00Z`;
@@ -118,7 +118,7 @@ function mapSpecialtyTypeToRentalType(building: BuildingData): string {
     const enhancedBuilding = building as EnhancedBuildingData;
     const specialtyType = enhancedBuilding.specialtyType;
 
-    switch(_.toLower(specialtyType)) {
+    switch(toLower(specialtyType)) {
         case 'senior':
             return 'Senior';
         case 'student':
@@ -135,7 +135,7 @@ function extractDepositAmount(deposit: number | EnhancedDeposit | undefined): nu
     if(deposit === undefined || deposit === null) {
         return undefined;
     }
-    if(_.isNumber(deposit)) {
+    if(isNumber(deposit)) {
         return deposit;
     }
     return deposit.amount;
@@ -143,7 +143,7 @@ function extractDepositAmount(deposit: number | EnhancedDeposit | undefined): nu
 
 // Check if deposit is refundable (enhanced deposits only)
 function isDepositRefundable(deposit: number | EnhancedDeposit | undefined): boolean | undefined {
-    if(deposit === undefined || deposit === null || _.isNumber(deposit)) {
+    if(deposit === undefined || deposit === null || isNumber(deposit)) {
         return undefined;
     }
     return deposit.refundable;
@@ -330,7 +330,7 @@ function generateUnitAvailabilityXML(unit: UnitData): string {
     const enhancedUnit = unit as EnhancedUnitData;
 
     // Use new vacancy date fields with fallbacks
-    const vacateDate = enhancedUnit.vacateDate || unit.availableDate || _.split(new Date().toISOString(), 'T')[0];
+    const vacateDate = enhancedUnit.vacateDate || unit.availableDate || split(new Date().toISOString(), 'T')[0];
     const madeReadyDate = enhancedUnit.madeReadyDate || unit.availableDate || vacateDate;
     const availableDate = unit.availableDate || madeReadyDate;
 
@@ -543,7 +543,7 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     }
 
     // Filter units for the specified site and vacancy class
-    const siteUnits = _.filter(units, (unit) => {
+    const siteUnits = filter(units, (unit) => {
         // Check if unit is included in feed for this site
         const includedInFeed = unit.feedInclusion && unit.feedInclusion[siteName] === true;
         if(!includedInFeed) {
@@ -571,15 +571,15 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     }
 
     // Check unitTypes updatedAt
-    const unitTypesWithUpdates = _.filter(unitTypes, (ut): ut is UnitTypeWithUpdate => 'updatedAt' in ut && ut.updatedAt != null);
-    const mostRecentUnitType = _.maxBy(unitTypesWithUpdates, 'updatedAt');
+    const unitTypesWithUpdates = filter(unitTypes, (ut): ut is UnitTypeWithUpdate => 'updatedAt' in ut && ut.updatedAt != null);
+    const mostRecentUnitType = maxBy(unitTypesWithUpdates, 'updatedAt');
     if(mostRecentUnitType && (!mostRecentUpdate || mostRecentUnitType.updatedAt > mostRecentUpdate)) {
         mostRecentUpdate = mostRecentUnitType.updatedAt;
     }
 
     // Check units updatedAt
-    const unitsWithUpdates = _.filter(siteUnits, (unit): unit is UnitWithUpdate => 'updatedAt' in unit && unit.updatedAt != null);
-    const mostRecentUnit = _.maxBy(unitsWithUpdates, 'updatedAt');
+    const unitsWithUpdates = filter(siteUnits, (unit): unit is UnitWithUpdate => 'updatedAt' in unit && unit.updatedAt != null);
+    const mostRecentUnit = maxBy(unitsWithUpdates, 'updatedAt');
     if(mostRecentUnit && (!mostRecentUpdate || mostRecentUnit.updatedAt > mostRecentUpdate)) {
         mostRecentUpdate = mostRecentUnit.updatedAt;
     }
@@ -650,20 +650,26 @@ function findMostRecentUpdate(buildings: BuildingData[], unitTypesByBuilding: Re
     const allDatesWithUpdates: Date[] = [];
 
     // Collect all updatedAt dates from buildings
-    const buildingsWithUpdates = _.filter(buildings, 'updatedAt');
-    allDatesWithUpdates.push(..._.map(buildingsWithUpdates, 'updatedAt') as Date[]);
+    const buildingsWithUpdates = filter(buildings, 'updatedAt');
+    allDatesWithUpdates.push(...map(buildingsWithUpdates, 'updatedAt') as Date[]);
 
     // Collect all updatedAt dates from unit types
-    const allUnitTypes = _(unitTypesByBuilding).values().flatten().value();
-    const allUnitTypesWithUpdates = _.filter(allUnitTypes, (ut): ut is UnitTypeWithUpdate => 'updatedAt' in ut && ut.updatedAt != null);
-    allDatesWithUpdates.push(..._.map(allUnitTypesWithUpdates, 'updatedAt'));
+    const allUnitTypesWithUpdates = chain(unitTypesByBuilding)
+        .values()
+        .flatten()
+        .filter((ut): ut is UnitTypeWithUpdate => 'updatedAt' in ut && ut.updatedAt != null)
+        .value();
+    allDatesWithUpdates.push(...map(allUnitTypesWithUpdates, 'updatedAt'));
 
     // Collect all updatedAt dates from units
-    const allUnits = _(unitsByBuilding).values().flatten().value();
-    const allUnitsWithUpdates = _.filter(allUnits, (unit): unit is UnitWithUpdate => 'updatedAt' in unit && unit.updatedAt != null);
-    allDatesWithUpdates.push(..._.map(allUnitsWithUpdates, 'updatedAt'));
+    const allUnitsWithUpdates = chain(unitsByBuilding)
+        .values()
+        .flatten()
+        .filter((unit): unit is UnitWithUpdate => 'updatedAt' in unit && unit.updatedAt != null)
+        .value();
+    allDatesWithUpdates.push(...map(allUnitsWithUpdates, 'updatedAt'));
 
-    return allDatesWithUpdates.length > 0 ? _.max(allDatesWithUpdates) : undefined;
+    return allDatesWithUpdates.length > 0 ? max(allDatesWithUpdates) : undefined;
 }
 
 // Generate MITS feed for multiple buildings

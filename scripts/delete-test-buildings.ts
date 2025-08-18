@@ -5,7 +5,7 @@
 
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 import { getBuildingEntity } from '../data/model';
-import _ from 'lodash';
+import { isError } from 'lodash';
 import { logger } from '@hughescr/logger';
 
 async function deleteTestBuildings() {
@@ -27,7 +27,7 @@ async function deleteTestBuildings() {
 
             logger.info(`✅ Successfully deleted ${buildingID}`);
         } catch(error) {
-            if(_.isError(error) && error.message.includes('ConditionalCheckFailedException')) {
+            if(isError(error) && error.message.includes('ConditionalCheckFailedException')) {
                 logger.info(`ℹ️  Building ${buildingID} not found (already deleted or never existed)`);
             } else {
                 logger.error(`❌ Error deleting ${buildingID}:`, error);

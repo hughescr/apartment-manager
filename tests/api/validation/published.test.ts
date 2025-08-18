@@ -3,7 +3,7 @@ import './test-setup';
 import { resetAllMocks } from '../../data/test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
-import _ from 'lodash';
+import { find, noop, omit } from 'lodash';
 import {
     BuildingPublishedSchema,
     UnitTypePublishedSchema,
@@ -22,7 +22,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
     beforeEach(() => {
         // Reset any mock state between tests
-        _.noop();
+        noop();
     });
 
     describe('BuildingPublishedSchema - MITS Requirements', () => {
@@ -55,34 +55,34 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require buildingID for MITS Property_ID identification', () => {
-            const missingBuildingId = _.omit(completeValidBuilding, 'buildingID');
+            const missingBuildingId = omit(completeValidBuilding, 'buildingID');
             const result = BuildingPublishedSchema.safeParse(missingBuildingId);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('buildingID'));
+                const error = find(result.error.issues, issue => issue.path.includes('buildingID'));
                 expect(error?.message).toContain('Building ID is required for MITS Property_ID identification');
             }
         });
 
         it('should require buildingName for MITS MarketingName element', () => {
-            const missingName = _.omit(completeValidBuilding, 'buildingName');
+            const missingName = omit(completeValidBuilding, 'buildingName');
             const result = BuildingPublishedSchema.safeParse(missingName);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('buildingName'));
+                const error = find(result.error.issues, issue => issue.path.includes('buildingName'));
                 expect(error?.message).toContain('Building name is required for MITS MarketingName element');
             }
         });
 
         it('should require complete address for MITS Address element', () => {
-            const missingAddress = _.omit(completeValidBuilding, ['street', 'city', 'state', 'zip']);
+            const missingAddress = omit(completeValidBuilding, ['street', 'city', 'state', 'zip']);
             const result = BuildingPublishedSchema.safeParse(missingAddress);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const streetError = _.find(result.error.issues, issue => issue.path.includes('street'));
-                const cityError = _.find(result.error.issues, issue => issue.path.includes('city'));
-                const stateError = _.find(result.error.issues, issue => issue.path.includes('state'));
-                const zipError = _.find(result.error.issues, issue => issue.path.includes('zip'));
+                const streetError = find(result.error.issues, issue => issue.path.includes('street'));
+                const cityError = find(result.error.issues, issue => issue.path.includes('city'));
+                const stateError = find(result.error.issues, issue => issue.path.includes('state'));
+                const zipError = find(result.error.issues, issue => issue.path.includes('zip'));
 
                 expect(streetError?.message).toContain('Street address is required for MITS Address element');
                 expect(cityError?.message).toContain('City is required for MITS Address element');
@@ -92,12 +92,12 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require coordinates for MITS Location element', () => {
-            const missingCoords = _.omit(completeValidBuilding, ['latitude', 'longitude']);
+            const missingCoords = omit(completeValidBuilding, ['latitude', 'longitude']);
             const result = BuildingPublishedSchema.safeParse(missingCoords);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const latError = _.find(result.error.issues, issue => issue.path.includes('latitude'));
-                const lngError = _.find(result.error.issues, issue => issue.path.includes('longitude'));
+                const latError = find(result.error.issues, issue => issue.path.includes('latitude'));
+                const lngError = find(result.error.issues, issue => issue.path.includes('longitude'));
 
                 expect(latError?.message).toContain('Latitude must be between -90 and 90 degrees for MITS Location element');
                 expect(lngError?.message).toContain('Longitude must be between -180 and 180 degrees for MITS Location element');
@@ -105,13 +105,13 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require property classification fields for MITS compliance', () => {
-            const missingClassification = _.omit(completeValidBuilding, ['propertyType', 'structureType', 'rentalType']);
+            const missingClassification = omit(completeValidBuilding, ['propertyType', 'structureType', 'rentalType']);
             const result = BuildingPublishedSchema.safeParse(missingClassification);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const propertyTypeError = _.find(result.error.issues, issue => issue.path.includes('propertyType'));
-                const structureTypeError = _.find(result.error.issues, issue => issue.path.includes('structureType'));
-                const rentalTypeError = _.find(result.error.issues, issue => issue.path.includes('rentalType'));
+                const propertyTypeError = find(result.error.issues, issue => issue.path.includes('propertyType'));
+                const structureTypeError = find(result.error.issues, issue => issue.path.includes('structureType'));
+                const rentalTypeError = find(result.error.issues, issue => issue.path.includes('rentalType'));
 
                 expect(propertyTypeError?.message).toContain('Property type is required for MITS Information.PropertyType classification');
                 expect(structureTypeError?.message).toContain('Structure type is required for MITS Information.StructureType element');
@@ -120,11 +120,11 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require both email and phone in contactInfo for MITS Information elements', () => {
-            const missingContact = _.omit(completeValidBuilding, 'contactInfo');
+            const missingContact = omit(completeValidBuilding, 'contactInfo');
             const result = BuildingPublishedSchema.safeParse(missingContact);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const contactError = _.find(result.error.issues, issue => issue.path.includes('contactInfo'));
+                const contactError = find(result.error.issues, issue => issue.path.includes('contactInfo'));
                 expect(contactError?.message).toContain('Both email and phone are required in contactInfo for MITS');
             }
         });
@@ -134,7 +134,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = BuildingPublishedSchema.safeParse(invalidState);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const stateError = _.find(result.error.issues, issue => issue.path.includes('state'));
+                const stateError = find(result.error.issues, issue => issue.path.includes('state'));
                 expect(stateError?.message).toContain('State must be 2 uppercase letters for MITS compliance');
             }
         });
@@ -148,7 +148,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = BuildingPublishedSchema.safeParse(invalidCoords);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const coordError = _.find(result.error.issues, issue => issue.path.includes('coordinates'));
+                const coordError = find(result.error.issues, issue => issue.path.includes('coordinates'));
                 expect(coordError?.message).toContain('Building coordinates appear to be invalid');
             }
         });
@@ -164,7 +164,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = BuildingPublishedSchema.safeParse(invalidEmail);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const emailError = _.find(result.error.issues, issue => issue.path.includes('email'));
+                const emailError = find(result.error.issues, issue => issue.path.includes('email'));
                 expect(emailError?.message).toContain('Valid email address is required for MITS compliance');
             }
         });
@@ -180,7 +180,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = BuildingPublishedSchema.safeParse(invalidPhone);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const phoneError = _.find(result.error.issues, issue => issue.path.includes('phone'));
+                const phoneError = find(result.error.issues, issue => issue.path.includes('phone'));
                 expect(phoneError?.message).toContain('Phone number must contain at least 10 digits for MITS compliance');
             }
         });
@@ -210,32 +210,32 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require modelID for MITS Floorplan.Identification.FloorplanID', () => {
-            const missingModelId = _.omit(completeValidUnitType, 'modelID');
+            const missingModelId = omit(completeValidUnitType, 'modelID');
             const result = UnitTypePublishedSchema.safeParse(missingModelId);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('modelID'));
+                const error = find(result.error.issues, issue => issue.path.includes('modelID'));
                 expect(error?.message).toContain('Model ID is required for MITS Floorplan.Identification.FloorplanID');
             }
         });
 
         it('should require modelName for MITS Floorplan.Identification.Name element', () => {
-            const missingName = _.omit(completeValidUnitType, 'modelName');
+            const missingName = omit(completeValidUnitType, 'modelName');
             const result = UnitTypePublishedSchema.safeParse(missingName);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('modelName'));
+                const error = find(result.error.issues, issue => issue.path.includes('modelName'));
                 expect(error?.message).toContain('Model name is required for MITS Floorplan.Identification.Name element');
             }
         });
 
         it('should require beds and baths for MITS Room elements', () => {
-            const missingRooms = _.omit(completeValidUnitType, ['beds', 'baths']);
+            const missingRooms = omit(completeValidUnitType, ['beds', 'baths']);
             const result = UnitTypePublishedSchema.safeParse(missingRooms);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const bedsError = _.find(result.error.issues, issue => issue.path.includes('beds'));
-                const bathsError = _.find(result.error.issues, issue => issue.path.includes('baths'));
+                const bedsError = find(result.error.issues, issue => issue.path.includes('beds'));
+                const bathsError = find(result.error.issues, issue => issue.path.includes('baths'));
 
                 expect(bedsError?.message).toContain('Number of bedrooms cannot be negative');
                 expect(bathsError?.message).toContain('Number of bathrooms cannot be negative for MITS Room element');
@@ -243,21 +243,21 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require at least one square footage value for MITS SquareFeet element', () => {
-            const noSqft = _.omit(completeValidUnitType, ['minSqft', 'maxSqft']);
+            const noSqft = omit(completeValidUnitType, ['minSqft', 'maxSqft']);
             const result = UnitTypePublishedSchema.safeParse(noSqft);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const sqftError = _.find(result.error.issues, issue => issue.path.includes('sqft'));
+                const sqftError = find(result.error.issues, issue => issue.path.includes('sqft'));
                 expect(sqftError?.message).toContain('At least one square footage value (minSqft or maxSqft) is required for MITS Floorplan.SquareFeet element');
             }
         });
 
         it('should require at least one rent value for MITS MarketRent element', () => {
-            const noRent = _.omit(completeValidUnitType, ['minRent', 'maxRent']);
+            const noRent = omit(completeValidUnitType, ['minRent', 'maxRent']);
             const result = UnitTypePublishedSchema.safeParse(noRent);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const rentError = _.find(result.error.issues, issue => issue.path.includes('rent'));
+                const rentError = find(result.error.issues, issue => issue.path.includes('rent'));
                 expect(rentError?.message).toContain('At least one rent value (minRent or maxRent) is required for MITS Floorplan.MarketRent element');
             }
         });
@@ -271,7 +271,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = UnitTypePublishedSchema.safeParse(invalidSqft);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const sqftError = _.find(result.error.issues, issue =>
+                const sqftError = find(result.error.issues, issue =>
                     issue.path.includes('maxSqft') && issue.message.includes('Minimum square footage cannot be greater than maximum square footage')
                 );
                 expect(sqftError).toBeDefined();
@@ -287,7 +287,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = UnitTypePublishedSchema.safeParse(invalidRent);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const rentError = _.find(result.error.issues, issue =>
+                const rentError = find(result.error.issues, issue =>
                     issue.path.includes('maxRent') && issue.message.includes('Minimum rent cannot be greater than maximum rent')
                 );
                 expect(rentError).toBeDefined();
@@ -302,7 +302,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = UnitTypePublishedSchema.safeParse(invalidBaths);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const bathsError = _.find(result.error.issues, issue =>
+                const bathsError = find(result.error.issues, issue =>
                     issue.path.includes('baths') && issue.message.includes('Number of bathrooms must be in 0.5 increments')
                 );
                 expect(bathsError).toBeDefined();
@@ -319,21 +319,21 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should allow single square footage value', () => {
-            const onlyMinSqft = _.omit(completeValidUnitType, 'maxSqft');
+            const onlyMinSqft = omit(completeValidUnitType, 'maxSqft');
             const result = UnitTypePublishedSchema.safeParse(onlyMinSqft);
             expect(result.success).toBe(true);
 
-            const onlyMaxSqft = _.omit(completeValidUnitType, 'minSqft');
+            const onlyMaxSqft = omit(completeValidUnitType, 'minSqft');
             const result2 = UnitTypePublishedSchema.safeParse(onlyMaxSqft);
             expect(result2.success).toBe(true);
         });
 
         it('should allow single rent value', () => {
-            const onlyMinRent = _.omit(completeValidUnitType, 'maxRent');
+            const onlyMinRent = omit(completeValidUnitType, 'maxRent');
             const result = UnitTypePublishedSchema.safeParse(onlyMinRent);
             expect(result.success).toBe(true);
 
-            const onlyMaxRent = _.omit(completeValidUnitType, 'minRent');
+            const onlyMaxRent = omit(completeValidUnitType, 'minRent');
             const result2 = UnitTypePublishedSchema.safeParse(onlyMaxRent);
             expect(result2.success).toBe(true);
         });
@@ -362,33 +362,33 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require unitID for MITS ILS_Unit.Unit identification', () => {
-            const missingUnitId = _.omit(completeValidUnit, 'unitID');
+            const missingUnitId = omit(completeValidUnit, 'unitID');
             const result = UnitPublishedSchema.safeParse(missingUnitId);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('unitID'));
+                const error = find(result.error.issues, issue => issue.path.includes('unitID'));
                 expect(error?.message).toContain('Unit ID is required for MITS ILS_Unit.Unit identification');
             }
         });
 
         it('should require unitNumber for MITS ILS_Unit.UnitID element', () => {
-            const missingNumber = _.omit(completeValidUnit, 'unitNumber');
+            const missingNumber = omit(completeValidUnit, 'unitNumber');
             const result = UnitPublishedSchema.safeParse(missingNumber);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('unitNumber'));
+                const error = find(result.error.issues, issue => issue.path.includes('unitNumber'));
                 expect(error?.message).toContain('Unit number is required for MITS ILS_Unit.UnitID element');
             }
         });
 
         it('should require beds, baths, sqft for MITS Room and SquareFeet elements', () => {
-            const missingRequired = _.omit(completeValidUnit, ['beds', 'baths', 'sqft']);
+            const missingRequired = omit(completeValidUnit, ['beds', 'baths', 'sqft']);
             const result = UnitPublishedSchema.safeParse(missingRequired);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const bedsError = _.find(result.error.issues, issue => issue.path.includes('beds'));
-                const bathsError = _.find(result.error.issues, issue => issue.path.includes('baths'));
-                const sqftError = _.find(result.error.issues, issue => issue.path.includes('sqft'));
+                const bedsError = find(result.error.issues, issue => issue.path.includes('beds'));
+                const bathsError = find(result.error.issues, issue => issue.path.includes('baths'));
+                const sqftError = find(result.error.issues, issue => issue.path.includes('sqft'));
 
                 expect(bedsError?.message).toContain('Number of bedrooms is required for MITS ILS_Unit.Room element');
                 expect(bathsError?.message).toContain('Number of bathrooms is required for MITS ILS_Unit.Room element');
@@ -397,21 +397,21 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         });
 
         it('should require rent for MITS ILS_Unit.MarketRent element', () => {
-            const missingRent = _.omit(completeValidUnit, 'rent');
+            const missingRent = omit(completeValidUnit, 'rent');
             const result = UnitPublishedSchema.safeParse(missingRent);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('rent'));
+                const error = find(result.error.issues, issue => issue.path.includes('rent'));
                 expect(error?.message).toContain('Rent is required for MITS ILS_Unit.MarketRent element');
             }
         });
 
         it('should require vacancyClass for MITS ILS_Unit.VacancyClass element', () => {
-            const missingVacancy = _.omit(completeValidUnit, 'vacancyClass');
+            const missingVacancy = omit(completeValidUnit, 'vacancyClass');
             const result = UnitPublishedSchema.safeParse(missingVacancy);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const error = _.find(result.error.issues, issue => issue.path.includes('vacancyClass'));
+                const error = find(result.error.issues, issue => issue.path.includes('vacancyClass'));
                 expect(error?.message).toContain('Vacancy class is required for MITS ILS_Unit.VacancyClass element');
             }
         });
@@ -437,7 +437,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = UnitPublishedSchema.safeParse(invalidBaths);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const bathsError = _.find(result.error.issues, issue =>
+                const bathsError = find(result.error.issues, issue =>
                     issue.path.includes('baths') && issue.message.includes('Number of bathrooms must be in 0.5 increments')
                 );
                 expect(bathsError).toBeDefined();
@@ -455,10 +455,10 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = UnitPublishedSchema.safeParse(extremeValues);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const bedsError = _.find(result.error.issues, issue =>
+                const bedsError = find(result.error.issues, issue =>
                     issue.path.includes('beds') && issue.message.includes('Number of bedrooms must be 10 or less')
                 );
-                const bathsError = _.find(result.error.issues, issue =>
+                const bathsError = find(result.error.issues, issue =>
                     issue.path.includes('baths') && issue.message.includes('Number of bathrooms must be 10 or less')
                 );
                 expect(bedsError).toBeDefined();
@@ -516,7 +516,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             const result = BuildingPublishedSchema.safeParse(buildingWithExtraFields);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const extraFieldError = _.find(result.error.issues, { code: 'unrecognized_keys' });
+                const extraFieldError = find(result.error.issues, { code: 'unrecognized_keys' });
                 expect(extraFieldError).toBeDefined();
             }
         });

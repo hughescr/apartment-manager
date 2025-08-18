@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { fill, forEach, repeat } from 'lodash';
 import { AmenityCategory, FeeType, PropertyType } from '../../../src/types';
 import type { UnitData, UnitTypeData, BuildingData, Amenity } from '../../../src/types';
 
@@ -131,14 +131,14 @@ export function createLargeAmenitySet(count: number): Amenity[] {
 
 export function createSparseArray<T>(length: number, items: { index: number, value: T }[]): (T | undefined)[] {
     const array = new Array<T | undefined>(length);
-    _.forEach(items, ({ index, value }) => {
+    forEach(items, ({ index, value }) => {
         array[index] = value;
     });
     return array;
 }
 
 export function createVeryLongString(length: number): string {
-    return _.repeat('A', length);
+    return repeat('A', length);
 }
 
 // Performance testing helpers
@@ -170,7 +170,7 @@ export function createUnitWithManyFields(): UnitData {
         minLeaseTerm: 6,
         maxLeaseTerm: 24,
         unitDescription: 'Test description',
-        photos: _.fill(Array(100), 'https://example.com/photo.jpg')
+        photos: fill(Array(100), 'https://example.com/photo.jpg')
     };
 }
 

@@ -20,7 +20,7 @@
  * ```
  */
 
-import _ from 'lodash';
+import { forEach, map } from 'lodash';
 import {
     BuildingPublishedSchema,
     type BuildingPublishedInput,
@@ -64,8 +64,8 @@ export function validateForMITSPublication(data: {
 }) {
     const results = {
         building: BuildingPublishedSchema.safeParse(data.building),
-        unitTypes: _.map(data.unitTypes, ut => UnitTypePublishedSchema.safeParse(ut)),
-        units: _.map(data.units, u => UnitPublishedSchema.safeParse(u)),
+        unitTypes: map(data.unitTypes, ut => UnitTypePublishedSchema.safeParse(ut)),
+        units: map(data.units, u => UnitPublishedSchema.safeParse(u)),
         isValid: true,
         errors: [] as {
             type: 'building' | 'unitType' | 'unit'
@@ -79,7 +79,7 @@ export function validateForMITSPublication(data: {
         results.isValid = false;
         results.errors.push({
             type: 'building',
-            issues: _.map(results.building.error.issues, issue => ({
+            issues: map(results.building.error.issues, issue => ({
                 path: issue.path.join('.'),
                 message: issue.message
             }))
@@ -87,13 +87,13 @@ export function validateForMITSPublication(data: {
     }
 
     // Check unit type validations
-    _.forEach(results.unitTypes, (result, index) => {
+    forEach(results.unitTypes, (result, index) => {
         if(!result.success) {
             results.isValid = false;
             results.errors.push({
                 type: 'unitType',
                 index,
-                issues: _.map(result.error.issues, issue => ({
+                issues: map(result.error.issues, issue => ({
                     path: issue.path.join('.'),
                     message: issue.message
                 }))
@@ -102,13 +102,13 @@ export function validateForMITSPublication(data: {
     });
 
     // Check unit validations
-    _.forEach(results.units, (result, index) => {
+    forEach(results.units, (result, index) => {
         if(!result.success) {
             results.isValid = false;
             results.errors.push({
                 type: 'unit',
                 index,
-                issues: _.map(result.error.issues, issue => ({
+                issues: map(result.error.issues, issue => ({
                     path: issue.path.join('.'),
                     message: issue.message
                 }))

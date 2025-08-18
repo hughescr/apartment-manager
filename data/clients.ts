@@ -2,7 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { S3Client } from '@aws-sdk/client-s3';
 import { SSMClient } from '@aws-sdk/client-ssm';
-import _ from 'lodash';
+import { isString } from 'lodash';
 
 // Client instances - lazily initialized
 let _dynamoClient: DynamoDBDocumentClient | null = null;
@@ -28,7 +28,7 @@ function createMockItemResponse(item: Record<string, unknown>, unitID: string) {
 
 function handleMockPutCommand(cmd: { input?: Record<string, unknown> }) {
     const item = cmd.input?.Item || cmd.input || {};
-    const unitID = _.isString((item as Record<string, unknown>).unitID)
+    const unitID = isString((item as Record<string, unknown>).unitID)
         ? (item as Record<string, unknown>).unitID as string
         : 'BUILDING';
     return Promise.resolve({
@@ -40,9 +40,9 @@ function handleMockUpdateCommand(cmd: { input?: Record<string, unknown> }) {
     const updates = cmd.input?.Item || cmd.input || {};
     const key = cmd.input?.Key || {};
     let unitID = 'BUILDING';
-    if(_.isString((key as Record<string, unknown>).unitID)) {
+    if(isString((key as Record<string, unknown>).unitID)) {
         unitID = (key as Record<string, unknown>).unitID as string;
-    } else if(_.isString((updates as Record<string, unknown>).unitID)) {
+    } else if(isString((updates as Record<string, unknown>).unitID)) {
         unitID = (updates as Record<string, unknown>).unitID as string;
     }
     return Promise.resolve({
@@ -115,7 +115,14 @@ export function getDynamoClient(injectedClient?: DynamoDBDocumentClient): Dynamo
     }
 
     if(!_dynamoClient) {
-        const client = new DynamoDBClient({});
+        const client = new DynamoDBClient({
+            maxAttempts: 4,
+            retryMode: 'adaptive',
+            requestHandler: {
+                requestTimeout: 30000,
+                connectionTimeout: 5000
+            }
+        });
         _dynamoClient = DynamoDBDocumentClient.from(client, {
             marshallOptions: {
                 removeUndefinedValues: true,
@@ -145,7 +152,14 @@ export function getS3Client(injectedClient?: S3Client): S3Client {
     }
 
     if(!_s3Client) {
-        _s3Client = new S3Client({});
+        _s3Client = new S3Client({
+            maxAttempts: 4,
+            retryMode: 'adaptive',
+            requestHandler: {
+                requestTimeout: 60000,
+                connectionTimeout: 5000
+            }
+        });
     }
     return _s3Client;
 }
@@ -222,7 +236,15 @@ export function getSSMClient(injectedClient?: SSMClient): SSMClient {
     }
 
     if(!_ssmClient) {
-        _ssmClient = new SSMClient({ region: 'us-west-2' });
+        _ssmClient = new SSMClient({
+            region: 'us-west-2',
+            maxAttempts: 4,
+            retryMode: 'adaptive',
+            requestHandler: {
+                requestTimeout: 30000,
+                connectionTimeout: 5000
+            }
+        });
     }
     return _ssmClient;
 }

@@ -5,7 +5,7 @@ import type {
     PetPolicyStateWithMagic,
     PetCostSummary
 } from './petPolicyTypes';
-import _ from 'lodash';
+import { find, map } from 'lodash';
 import {
     PET_TYPE_OPTIONS,
     COMMON_BREED_RESTRICTIONS
@@ -331,8 +331,8 @@ function petPolicyStateObject(modelName: string): any {
             const parts: string[] = [];
 
             if(policy.types?.length) {
-                const typeLabels = _.map(policy.types, (type: PetType) => {
-                    const option = _.find(PET_TYPE_OPTIONS, { value: type });
+                const typeLabels = map(policy.types, (type: PetType) => {
+                    const option = find(PET_TYPE_OPTIONS, { value: type });
                     return option?.label || type;
                 });
                 parts.push(`Allowed: ${typeLabels.join(', ')}`);

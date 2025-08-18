@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 import { FeeType, AmenityCategory, PetType, RentSpecial } from '../../src/types';
-import _ from 'lodash';
+import { compact, filter } from 'lodash';
 import {
     dynamoDbMock,
     setupBuildingsTests,
@@ -472,8 +472,8 @@ describe('Building Data Layer - Array Operations', () => {
                 ...testBuilding,
                 buildingID: 'null-items-test',
                 // These would be filtered out by the data layer validation
-                photos: _.compact(['valid.jpg']), // Remove any nulls
-                rentSpecials: _.filter([
+                photos: compact(['valid.jpg']), // Remove any nulls
+                rentSpecials: filter([
                     { title: 'Valid Special', description: 'Good deal' }
                 ], special => special.title && special.description) as RentSpecial[] // Filter out invalid items
             };

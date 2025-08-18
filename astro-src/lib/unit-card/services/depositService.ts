@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import type { Deposit } from '../../../types';
 import type { UnitCardState } from '../unitCardState';
 import { DepositManager } from '../depositHandling';

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { find, forEach, map, noop, repeat, times } from 'lodash';
 import { ZillowMapper } from '../../../src/mappers/sites/zillow';
 import {
     basicBuilding,
@@ -26,7 +26,7 @@ describe('ZillowMapper', () => {
         mockFieldMappings = {};
         mockTransformers = {
             get: () => undefined,
-            register: _.noop
+            register: noop
         };
     });
 
@@ -85,7 +85,7 @@ describe('ZillowMapper', () => {
             expect(result.fees!.length).toBeGreaterThan(0);
 
             // Zillow doesn't use currency symbols
-            const appFee = _.find(result.fees, fee => fee.type.includes('Application'));
+            const appFee = find(result.fees, fee => fee.type.includes('Application'));
             expect(appFee).toBeDefined();
             expect(String(appFee!.amount)).not.toMatch(/^\$/);
         });
@@ -189,8 +189,8 @@ describe('ZillowMapper', () => {
             const result = mapper.mapUnitType(unitTypeWithAmenities, basicBuilding);
 
             expect(result.amenities).toBeDefined();
-            expect(_.map(result.amenities, 'name')).toContain('Air conditioning'); // Zillow uses lowercase
-            expect(_.map(result.amenities, 'name')).toContain('In unit laundry'); // Different terminology
+            expect(map(result.amenities, 'name')).toContain('Air conditioning'); // Zillow uses lowercase
+            expect(map(result.amenities, 'name')).toContain('In unit laundry'); // Different terminology
         });
     });
 
@@ -258,10 +258,10 @@ describe('ZillowMapper', () => {
             const result = mapper.mapUnit(context);
 
             // Zillow includes all amenities in the unit listing
-            expect(_.map(result.amenities, 'name')).toContain('Balcony/deck/patio'); // Transformed name
-            expect(_.map(result.amenities, 'name')).toContain('Dishwasher');
-            expect(_.map(result.amenities, 'name')).toContain('Fitness center');
-            expect(_.map(result.amenities, 'name')).toContain('Pets allowed'); // Transformed name
+            expect(map(result.amenities, 'name')).toContain('Balcony/deck/patio'); // Transformed name
+            expect(map(result.amenities, 'name')).toContain('Dishwasher');
+            expect(map(result.amenities, 'name')).toContain('Fitness center');
+            expect(map(result.amenities, 'name')).toContain('Pets allowed'); // Transformed name
         });
 
         it('should use proper date formatting for Zillow', () => {
@@ -404,9 +404,9 @@ describe('ZillowMapper', () => {
 
             const amenities = mapper.mapBuilding(buildingWithAmenities).amenities;
 
-            expect(_.map(amenities, 'name')).toContain('Pool'); // Simplified
-            expect(_.map(amenities, 'name')).toContain('Air conditioning'); // Lowercase
-            expect(_.map(amenities, 'name')).toContain('Pets allowed'); // Different term
+            expect(map(amenities, 'name')).toContain('Pool'); // Simplified
+            expect(map(amenities, 'name')).toContain('Air conditioning'); // Lowercase
+            expect(map(amenities, 'name')).toContain('Pets allowed'); // Different term
         });
 
         it('should format data for Zillow API requirements', () => {
@@ -414,7 +414,7 @@ describe('ZillowMapper', () => {
 
             // Check that the result matches Zillow's expected format
             expect(result.fees).toBeDefined();
-            _.forEach(result.fees, (fee) => {
+            forEach(result.fees, (fee) => {
                 // No currency symbols in amounts
                 expect(String(fee.amount)).not.toContain('$');
             });
@@ -458,7 +458,7 @@ describe('ZillowMapper', () => {
         });
 
         it('should handle very long addresses', () => {
-            const longAddress = _.repeat('A', 200);
+            const longAddress = repeat('A', 200);
             const buildingLongAddress: BuildingData = {
                 ...basicBuilding,
                 street: longAddress
@@ -537,7 +537,7 @@ describe('ZillowMapper', () => {
 
         // Extremely long descriptions exceeding limits
         it('should handle descriptions exceeding 10000 characters', () => {
-            const veryLongDesc = _.repeat('Lorem ipsum dolor sit amet. ', 400); // ~11200 chars
+            const veryLongDesc = repeat('Lorem ipsum dolor sit amet. ', 400); // ~11200 chars
             const buildingLongDesc: BuildingData = {
                 ...basicBuilding,
                 propertyDescription: veryLongDesc
@@ -608,7 +608,7 @@ describe('ZillowMapper', () => {
 
         // Extremely large arrays
         it('should handle extremely large amenity arrays', () => {
-            const manyAmenities = _.times(150, i => ({
+            const manyAmenities = times(150, i => ({
                 name: `Amenity ${i}`,
                 category: AmenityCategory.PROPERTY
             }));
@@ -625,7 +625,7 @@ describe('ZillowMapper', () => {
         });
 
         it('should handle extremely large photo arrays', () => {
-            const manyPhotos = _.times(200, i => `https://example.com/photo${i}.jpg`);
+            const manyPhotos = times(200, i => `https://example.com/photo${i}.jpg`);
 
             const context = _createContext(
                 { ...basicUnit, photos: manyPhotos.slice(0, 100) },
@@ -813,8 +813,8 @@ describe('ZillowMapper', () => {
             expect(result.description).toBe('🏠 Élégant château with café ☕');
             expect(result.address.street).toBe('123 Główna ulica');
             // Amenity names are preserved as-is when no transformation mapping exists
-            expect(_.map(result.amenities, 'name')).toContain('游泳池 (Swimming Pool)');
-            expect(_.map(result.amenities, 'name')).toContain('Sauna & Spa™');
+            expect(map(result.amenities, 'name')).toContain('游泳池 (Swimming Pool)');
+            expect(map(result.amenities, 'name')).toContain('Sauna & Spa™');
         });
     });
 

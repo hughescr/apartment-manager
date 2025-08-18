@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { replace } from 'lodash';
 
 export class BuildingFormatters {
     static formatCurrency(amount: number | null | undefined): string {
@@ -127,7 +127,7 @@ export class BuildingFormatters {
         }
 
         // Remove all non-digits
-        const digits = _.replace(phone, /\D/g, '');
+        const digits = replace(phone, /\D/g, '');
 
         // Format as phone number
         if(digits.length === 10) {

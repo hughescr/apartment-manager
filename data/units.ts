@@ -8,7 +8,7 @@ import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
 import { logger } from '@hughescr/logger';
-import _ from 'lodash';
+import { assign, isObject, isString, keys, map, mapValues, omit, pickBy, replace } from 'lodash';
 
 // This type is no longer used as we switched to Record<string, unknown> for DynamoDB compatibility
 
@@ -16,13 +16,13 @@ import _ from 'lodash';
 function prepareFeedDataForDB(feedLastPulled?: Partial<Record<string, { timestamp: Date, ipAddress?: string }>>, feedLastModified?: Date): { feedLastPulled?: Record<string, unknown>, feedLastModified?: string } {
     const result: { feedLastPulled?: Record<string, unknown>, feedLastModified?: string } = {};
 
-    if(feedLastPulled && _.keys(feedLastPulled).length > 0) {
-        const filteredPulled = _.pickBy(feedLastPulled, value => value !== undefined);
-        const cleanedPulled = _.mapValues(filteredPulled, pullData => ({
+    if(feedLastPulled && keys(feedLastPulled).length > 0) {
+        const filteredPulled = pickBy(feedLastPulled, value => value !== undefined);
+        const cleanedPulled = mapValues(filteredPulled, pullData => ({
             timestamp: pullData.timestamp.toISOString(),
             ...(pullData.ipAddress && { ipAddress: pullData.ipAddress })
         }));
-        if(_.keys(cleanedPulled).length > 0) {
+        if(keys(cleanedPulled).length > 0) {
             result.feedLastPulled = cleanedPulled;
         }
     }
@@ -69,21 +69,21 @@ function convertRawItemToUnitData(rawItem: Record<string, unknown>): UnitData {
     };
 
     // Convert feedLastPulled timestamps from strings to Date objects
-    if(rawItem.feedLastPulled && _.isObject(rawItem.feedLastPulled)) {
+    if(rawItem.feedLastPulled && isObject(rawItem.feedLastPulled)) {
         const feedLastPulled = rawItem.feedLastPulled as Record<string, { timestamp: string, ipAddress?: string }>;
-        result.feedLastPulled = _.mapValues(feedLastPulled, pullData => ({
+        result.feedLastPulled = mapValues(feedLastPulled, pullData => ({
             ...pullData,
             timestamp: new Date(pullData.timestamp)
         }));
     }
 
     // Convert feedLastModified from string to Date object
-    if(rawItem.feedLastModified && _.isString(rawItem.feedLastModified)) {
+    if(rawItem.feedLastModified && isString(rawItem.feedLastModified)) {
         result.feedLastModified = new Date(rawItem.feedLastModified);
     }
 
     // Convert updatedAt from string to Date object
-    if(rawItem.updatedAt && _.isString(rawItem.updatedAt)) {
+    if(rawItem.updatedAt && isString(rawItem.updatedAt)) {
         result.updatedAt = new Date(rawItem.updatedAt);
     }
 
@@ -98,10 +98,10 @@ export async function getUnits(buildingID: string) {
     .send();
 
     // Remove the UNIT# prefix from unitID and convert date strings back to Date objects
-    return _.map(Items, (item) => {
+    return map(Items, (item) => {
         const rawItem: Record<string, unknown> = {
-            ..._.omit(item, ['created', 'modified', '_et', '_ct', '_md']),
-            unitID: _.replace(item.unitID || '', /^UNIT#/, '') || item.unitID
+            ...omit(item, ['created', 'modified', '_et', '_ct', '_md']),
+            unitID: replace(item.unitID || '', /^UNIT#/, '') || item.unitID
         };
 
         const cleanedItem = convertRawItemToUnitData(rawItem);
@@ -120,8 +120,8 @@ export async function getUnit(buildingID: string, unitID: string) {
     }
     // Remove the UNIT# prefix from unitID and convert date strings back to Date objects
     const rawItem: Record<string, unknown> = {
-        ..._.omit(Item, ['created', 'modified', '_et', '_ct', '_md']),
-        unitID: _.replace(Item.unitID || '', /^UNIT#/, '') || Item.unitID
+        ...omit(Item, ['created', 'modified', '_et', '_ct', '_md']),
+        unitID: replace(Item.unitID || '', /^UNIT#/, '') || Item.unitID
     };
 
     return convertRawItemToUnitData(rawItem);
@@ -139,23 +139,23 @@ export async function createUnit(unit: UnitData) {
     };
 
     // Only add fields that have values to avoid partial record issues
-    if(feedInclusion && _.keys(feedInclusion).length > 0) {
-        const cleanedInclusion = _.pickBy(feedInclusion, value => value !== undefined);
-        if(_.keys(cleanedInclusion).length > 0) {
+    if(feedInclusion && keys(feedInclusion).length > 0) {
+        const cleanedInclusion = pickBy(feedInclusion, value => value !== undefined);
+        if(keys(cleanedInclusion).length > 0) {
             unitForDB.feedInclusion = cleanedInclusion;
         }
     }
 
-    if(manualReferences && _.keys(manualReferences).length > 0) {
-        const cleanedReferences = _.pickBy(manualReferences, value => value !== undefined);
-        if(_.keys(cleanedReferences).length > 0) {
+    if(manualReferences && keys(manualReferences).length > 0) {
+        const cleanedReferences = pickBy(manualReferences, value => value !== undefined);
+        if(keys(cleanedReferences).length > 0) {
             unitForDB.manualReferences = cleanedReferences;
         }
     }
 
     // Add prepared feed data
     const feedData = prepareFeedDataForDB(feedLastPulled, feedLastModified);
-    _.assign(unitForDB, feedData);
+    assign(unitForDB, feedData);
 
     const UnitEntity = getUnitEntity() as typeof Unit;
     const { Attributes } = await UnitEntity.build(PutItemCommand)
@@ -176,8 +176,8 @@ export async function createUnit(unit: UnitData) {
     }
     // Remove the UNIT# prefix from unitID and convert date strings back to Date objects
     const rawItem: Record<string, unknown> = {
-        ..._.omit(Attributes as Record<string, unknown>, ['created', 'modified', '_et', '_ct', '_md']),
-        unitID: _.replace((Attributes as Record<string, unknown>)?.unitID as string || '', /^UNIT#/, '') || (Attributes as Record<string, unknown>)?.unitID as string
+        ...omit(Attributes as Record<string, unknown>, ['created', 'modified', '_et', '_ct', '_md']),
+        unitID: replace((Attributes as Record<string, unknown>)?.unitID as string || '', /^UNIT#/, '') || (Attributes as Record<string, unknown>)?.unitID as string
     };
 
     return convertRawItemToUnitData(rawItem);
@@ -195,23 +195,23 @@ function prepareUnitDataForDB(updates: Partial<UnitData>, buildingID: string, un
     };
 
     // Only add fields that have values to avoid partial record issues
-    if(feedInclusion && _.keys(feedInclusion).length > 0) {
-        const cleanedInclusion = _.pickBy(feedInclusion, value => value !== undefined);
-        if(_.keys(cleanedInclusion).length > 0) {
+    if(feedInclusion && keys(feedInclusion).length > 0) {
+        const cleanedInclusion = pickBy(feedInclusion, value => value !== undefined);
+        if(keys(cleanedInclusion).length > 0) {
             updatesForDB.feedInclusion = cleanedInclusion;
         }
     }
 
-    if(manualReferences && _.keys(manualReferences).length > 0) {
-        const cleanedReferences = _.pickBy(manualReferences, value => value !== undefined);
-        if(_.keys(cleanedReferences).length > 0) {
+    if(manualReferences && keys(manualReferences).length > 0) {
+        const cleanedReferences = pickBy(manualReferences, value => value !== undefined);
+        if(keys(cleanedReferences).length > 0) {
             updatesForDB.manualReferences = cleanedReferences;
         }
     }
 
     // Add prepared feed data
     const feedData = prepareFeedDataForDB(feedLastPulled, feedLastModified);
-    _.assign(updatesForDB, feedData);
+    assign(updatesForDB, feedData);
 
     return updatesForDB;
 }
@@ -231,8 +231,8 @@ async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Prom
 
     // Remove the UNIT# prefix from unitID and convert date strings back to Date objects
     const rawItem: Record<string, unknown> = {
-        ..._.omit(Attributes as Record<string, unknown>, ['created', 'modified', '_et', '_ct', '_md']),
-        unitID: _.replace((Attributes as Record<string, unknown>)?.unitID as string || '', /^UNIT#/, '') || (Attributes as Record<string, unknown>)?.unitID as string
+        ...omit(Attributes as Record<string, unknown>, ['created', 'modified', '_et', '_ct', '_md']),
+        unitID: replace((Attributes as Record<string, unknown>)?.unitID as string || '', /^UNIT#/, '') || (Attributes as Record<string, unknown>)?.unitID as string
     };
 
     return convertRawItemToUnitData(rawItem);
@@ -264,22 +264,22 @@ async function fallbackToPutItemCommand(
     };
 
     // Add conditional fields to merged data
-    if(feedInclusion && _.keys(feedInclusion).length > 0) {
-        const cleanedInclusion = _.pickBy(feedInclusion, value => value !== undefined);
-        if(_.keys(cleanedInclusion).length > 0) {
+    if(feedInclusion && keys(feedInclusion).length > 0) {
+        const cleanedInclusion = pickBy(feedInclusion, value => value !== undefined);
+        if(keys(cleanedInclusion).length > 0) {
             mergedData.feedInclusion = cleanedInclusion;
         }
     }
 
-    if(manualReferences && _.keys(manualReferences).length > 0) {
-        const cleanedReferences = _.pickBy(manualReferences, value => value !== undefined);
-        if(_.keys(cleanedReferences).length > 0) {
+    if(manualReferences && keys(manualReferences).length > 0) {
+        const cleanedReferences = pickBy(manualReferences, value => value !== undefined);
+        if(keys(cleanedReferences).length > 0) {
             mergedData.manualReferences = cleanedReferences;
         }
     }
 
     const feedData = prepareFeedDataForDB(feedLastPulled, feedLastModified);
-    _.assign(mergedData, feedData);
+    assign(mergedData, feedData);
 
     // Use PutItemCommand as fallback for more reliable data persistence
     const UnitEntity = getUnitEntity() as typeof Unit;
@@ -290,8 +290,8 @@ async function fallbackToPutItemCommand(
 
     // Return the merged data since PutItemCommand doesn't return the item
     const rawItem: Record<string, unknown> = {
-        ..._.omit(mergedData, ['created', 'modified', '_et', '_ct', '_md']),
-        unitID: _.replace(mergedData.unitID as string || '', /^UNIT#/, '') || mergedData.unitID as string
+        ...omit(mergedData, ['created', 'modified', '_et', '_ct', '_md']),
+        unitID: replace(mergedData.unitID as string || '', /^UNIT#/, '') || mergedData.unitID as string
     };
 
     return convertRawItemToUnitData(rawItem);

@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isError } from 'lodash';
 import type { UnitData } from '../../types';
 
 export interface SaveResult {
@@ -41,7 +41,7 @@ export class UnitApiClient {
         } catch(error) {
             return {
                 success: false,
-                error: _.isError(error) ? error.message : 'Network error occurred'
+                error: isError(error) ? error.message : 'Network error occurred'
             };
         }
     }
@@ -66,7 +66,7 @@ export class UnitApiClient {
         } catch(error) {
             return {
                 success: false,
-                error: _.isError(error) ? error.message : 'Network error occurred'
+                error: isError(error) ? error.message : 'Network error occurred'
             };
         }
     }
@@ -97,7 +97,7 @@ export class UnitApiClient {
         } catch(error) {
             return {
                 success: false,
-                error: _.isError(error) ? error.message : 'Network error occurred'
+                error: isError(error) ? error.message : 'Network error occurred'
             };
         }
     }

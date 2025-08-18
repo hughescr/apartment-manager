@@ -1,7 +1,7 @@
 import type { VacancyClass } from '../../src/types';
 import { updateUnit } from '../units';
 import { logger } from '@hughescr/logger';
-import _ from 'lodash';
+import { filter, isArray, isError, trim } from 'lodash';
 
 /**
  * Domain service for bulk operations on units
@@ -53,7 +53,7 @@ export async function performBulkStatusUpdate(params: BulkStatusUpdateParams): P
             result.processedUnits++;
             logger.debug(`Updated unit ${unitID} status to ${vacancyClass}`);
         } catch(error) {
-            const errorMessage = `Failed to update unit ${unitID}: ${_.isError(error) ? error.message : 'Unknown error'}`;
+            const errorMessage = `Failed to update unit ${unitID}: ${isError(error) ? error.message : 'Unknown error'}`;
             result.errors.push(errorMessage);
             logger.error(errorMessage, { error, unitID, buildingID });
         }
@@ -108,7 +108,7 @@ export async function performBulkRentUpdate(params: BulkRentUpdateParams): Promi
                 value
             });
         } catch(error) {
-            const errorMessage = `Failed to update unit ${unitID} rent: ${_.isError(error) ? error.message : 'Unknown error'}`;
+            const errorMessage = `Failed to update unit ${unitID} rent: ${isError(error) ? error.message : 'Unknown error'}`;
             result.errors.push(errorMessage);
             logger.error(errorMessage, { error, unitID, buildingID });
         }
@@ -154,11 +154,11 @@ export function validateBulkOperationParams(
 ): { isValid: boolean, errors: string[] } {
     const errors: string[] = [];
 
-    if(!buildingID || _.trim(buildingID) === '') {
+    if(!buildingID || trim(buildingID) === '') {
         errors.push('Building ID is required');
     }
 
-    if(!unitIDs || !_.isArray(unitIDs) || unitIDs.length === 0) {
+    if(!unitIDs || !isArray(unitIDs) || unitIDs.length === 0) {
         errors.push('At least one unit ID is required');
     } else {
         if(unitIDs.length > 100) {
@@ -166,8 +166,8 @@ export function validateBulkOperationParams(
         }
 
         // Check for empty or invalid unit IDs
-        const invalidUnits = _.filter(unitIDs, (unitID) => {
-            if(!unitID || _.trim(unitID) === '') {
+        const invalidUnits = filter(unitIDs, (unitID) => {
+            if(!unitID || trim(unitID) === '') {
                 return true;
             }
             // Check for valid ID format (alphanumeric, dash, underscore only)
@@ -195,7 +195,7 @@ export function validateBulkStatusParams(vacancyClass: VacancyClass | ''): { isV
     const errors: string[] = [];
     const validStatuses: VacancyClass[] = ['Occupied', 'Unoccupied', 'Notice', 'Down'];
 
-    if(!vacancyClass || _.trim(vacancyClass) === '') {
+    if(!vacancyClass || trim(vacancyClass) === '') {
         errors.push('Vacancy class is required');
     } else if(!validStatuses.includes(vacancyClass as VacancyClass)) {
         errors.push(`Invalid vacancy class. Must be one of: ${validStatuses.join(', ')}`);

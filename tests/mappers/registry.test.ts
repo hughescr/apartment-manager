@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import _ from 'lodash';
+import { forEach } from 'lodash';
 import { MapperRegistry, getMapperRegistry, resetMapperRegistry } from '../../src/mappers/registry';
 import type { SiteMapper, MappedBuilding, MappedUnitType, MappedUnit } from '../../src/mappers/types';
 import type { BuildingData } from '../../src/types/index.js';
@@ -651,7 +651,7 @@ describe('MapperRegistry', () => {
                 '🇺🇸🇬🇧🇨🇦'
             ];
 
-            _.forEach(unicodeIds, (id, index) => {
+            forEach(unicodeIds, (id, index) => {
                 const mapper: SiteMapper = {
                     ...mockApartmentsMapper,
                     siteId: id,
@@ -660,7 +660,7 @@ describe('MapperRegistry', () => {
                 registry.register(mapper);
             });
 
-            _.forEach(unicodeIds, (id) => {
+            forEach(unicodeIds, (id) => {
                 expect(registry.has(id)).toBe(true);
                 expect(registry.get(id)).toBeDefined();
             });

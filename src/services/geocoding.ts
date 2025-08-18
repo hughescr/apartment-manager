@@ -1,5 +1,5 @@
 import { logger as baseLogger } from '@hughescr/logger';
-import _ from 'lodash';
+import { join, toLower, trim } from 'lodash';
 
 const logger = baseLogger;
 
@@ -70,7 +70,7 @@ class GeocodingCache {
         if(state) {
             parts.push(state);
         }
-        return _.trim(_.toLower(_.join(parts, ', ')));
+        return trim(toLower(join(parts, ', ')));
     }
 
     get(address: string, city?: string, state?: string): GeocodingResult | null {
@@ -227,19 +227,19 @@ export class GeocodingService {
     private buildQuery(address: string, city?: string, state?: string): string {
         const parts: string[] = [];
 
-        if(address && _.trim(address)) {
-            parts.push(_.trim(address));
+        if(address && trim(address)) {
+            parts.push(trim(address));
         }
 
-        if(city && _.trim(city)) {
-            parts.push(_.trim(city));
+        if(city && trim(city)) {
+            parts.push(trim(city));
         }
 
-        if(state && _.trim(state)) {
-            parts.push(_.trim(state));
+        if(state && trim(state)) {
+            parts.push(trim(state));
         }
 
-        return _.join(parts, ', ');
+        return join(parts, ', ');
     }
 
     /**

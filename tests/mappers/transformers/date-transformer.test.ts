@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Mocking Date constructor requires any */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import _ from 'lodash';
+import { forEach, map, noop, repeat, split } from 'lodash';
 import {
     createDateFormatter,
     parseDateToISO,
@@ -260,11 +260,11 @@ describe('Date Transformer', () => {
 
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowISO = _.split(tomorrow.toISOString(), 'T')[0];
+            const tomorrowISO = split(tomorrow.toISOString(), 'T')[0];
 
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayISO = _.split(yesterday.toISOString(), 'T')[0];
+            const yesterdayISO = split(yesterday.toISOString(), 'T')[0];
 
             expect(daysUntil(tomorrowISO)).toBe(1);
             expect(daysUntil(yesterdayISO)).toBe(-1);
@@ -308,7 +308,7 @@ describe('Date Transformer', () => {
             expect(formatter([] as unknown as string)).toBeUndefined();
 
             // Function
-            expect(formatter(_.noop as unknown as string)).toBeUndefined();
+            expect(formatter(noop as unknown as string)).toBeUndefined();
         });
 
         it('should handle malformed date strings', () => {
@@ -358,7 +358,7 @@ describe('Date Transformer', () => {
                 createDateFormatter({} as unknown as string)
             ];
 
-            _.forEach(formatters, (formatter) => {
+            forEach(formatters, (formatter) => {
                 // Should return original value for unknown formats
                 expect(formatter('2024-03-15')).toBe('2024-03-15');
             });
@@ -367,7 +367,7 @@ describe('Date Transformer', () => {
         // Memory and performance edge cases
         it('should handle very long date strings', () => {
             const formatter = createDateFormatter('MM/DD/YYYY');
-            const longString = '2024-03-15' + _.repeat('x', 10000);
+            const longString = '2024-03-15' + repeat('x', 10000);
 
             expect(formatter(longString)).toBeUndefined();
         });
@@ -443,14 +443,14 @@ describe('Date Transformer', () => {
                 const d = new Date('2024-01-01');
                 d.setDate(d.getDate() + i);
                 const isoString = d.toISOString();
-                return _.split(isoString, 'T')[0];
+                return split(isoString, 'T')[0];
             });
 
             const formatter = createDateFormatter('MM/DD/YYYY');
-            const results = _.map(dates, d => formatter(d));
+            const results = map(dates, d => formatter(d));
 
             // All should be formatted correctly
-            _.forEach(results, (result) => {
+            forEach(results, (result) => {
                 expect(result).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
             });
         });

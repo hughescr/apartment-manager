@@ -2,7 +2,7 @@
 import '../data/test-setup';
 
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { isArray } from 'lodash';
 
 // Type definitions for test objects
 interface Amenity {
@@ -538,7 +538,7 @@ describe('Amenity Inheritance System', () => {
 
                 getEffectiveAmenities(): Amenity[] {
                     try {
-                        if(_.isArray(this.buildingAmenities)) {
+                        if(isArray(this.buildingAmenities)) {
                             return this.buildingAmenities;
                         }
                         return [];

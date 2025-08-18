@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { includes, isArray, isNumber, isString, replace, startsWith, toLower } from 'lodash';
 import { isValidBuildingId } from '../src/utils/index.js';
 
 /**
@@ -27,12 +27,12 @@ const VALID_ZIP_PATTERN = /^\d{5}(?:-\d{4})?$/;
  * Validates an ID field (buildingID, unitID, modelID) for security issues
  */
 export function validateId(id: string, fieldName: string): string | null {
-    if(!id || !_.isString(id)) {
+    if(!id || !isString(id)) {
         return `${fieldName} is required`;
     }
 
     // Special validation for building IDs (using short-uuid format)
-    if(_.includes(_.toLower(fieldName), 'building')) {
+    if(includes(toLower(fieldName), 'building')) {
         if(!isValidBuildingId(id)) {
             return `${fieldName} must be a valid building ID`;
         }
@@ -71,7 +71,7 @@ export function validateId(id: string, fieldName: string): string | null {
  * Sanitizes HTML to prevent XSS attacks
  */
 export function sanitizeHtml(text: string): string {
-    if(!text || !_.isString(text)) {
+    if(!text || !isString(text)) {
         return text;
     }
 
@@ -82,36 +82,36 @@ export function sanitizeHtml(text: string): string {
     let cdataIndex = 0;
 
     // Extract and replace CDATA sections with placeholders
-    let processedText = _.replace(text, /<!\[CDATA\[([\s\S]*?)\]\]>/g, (match) => {
+    let processedText = replace(text, /<!\[CDATA\[([\s\S]*?)\]\]>/g, (match) => {
         cdataSections[cdataIndex] = match;
         return `${cdataPlaceholder}${cdataIndex++}`;
     });
 
     // Only remove dangerous tags and attributes, preserve other content
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         // Remove script tags and their content
         /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         // Remove other dangerous tags but keep their content
         /<\s*(iframe|embed|object|applet|form|input|button|textarea|select|option|optgroup|fieldset|label|output|keygen|datalist|script|style|link|meta|base)\b[^>]*>/gi, '');
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         /<\/\s*(iframe|embed|object|applet|form|input|button|textarea|select|option|optgroup|fieldset|label|output|keygen|datalist|script|style|link|meta|base)\s*>/gi, '');
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         // Remove event handlers
         /on\w+\s*=\s*["'][^"']*["']/gi, '');
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         /on\w+\s*=\s*[^\s>]*/gi, '');
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         // Remove javascript: protocol
         /javascript:/gi, '');
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         // Remove data: protocol in certain contexts
         /data:text\/html/gi, '');
-    processedText = _.replace(processedText,
+    processedText = replace(processedText,
         /vbscript:/gi, '');
 
     // Restore CDATA sections
-    processedText = _.replace(processedText, new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (_, index) => {
+    processedText = replace(processedText, new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (_, index) => {
         return cdataSections[parseInt(index)] || '';
     });
 
@@ -129,7 +129,7 @@ export function validateTextField(text: string | undefined, fieldName: string, r
         };
     }
 
-    if(!_.isString(text)) {
+    if(!isString(text)) {
         return {
             value: undefined,
             error: `${fieldName} must be a string`
@@ -157,7 +157,7 @@ export function validateTextField(text: string | undefined, fieldName: string, r
  * Validates a path for path traversal attempts
  */
 export function validatePath(path: string): boolean {
-    if(!path || !_.isString(path)) {
+    if(!path || !isString(path)) {
         return false;
     }
 
@@ -181,8 +181,8 @@ export function validatePath(path: string): boolean {
     }
 
     // Check both original and decoded paths for absolute paths
-    if(_.startsWith(path, '/') || path.match(/^[a-z]:\\/i) ||
-      _.startsWith(decodedPath, '/') || decodedPath.match(/^[a-z]:\\/i)) {
+    if(startsWith(path, '/') || path.match(/^[a-z]:\\/i) ||
+      startsWith(decodedPath, '/') || decodedPath.match(/^[a-z]:\\/i)) {
         return false;
     }
 
@@ -204,7 +204,7 @@ export function validateNumericValue(value: number | undefined, fieldName: strin
         return null;
     }
 
-    if(!_.isNumber(value) || !Number.isFinite(value)) {
+    if(!isNumber(value) || !Number.isFinite(value)) {
         return `${fieldName} must be a valid number`;
     }
 
@@ -227,7 +227,7 @@ export function validateNumericValue(value: number | undefined, fieldName: strin
  * Validates array size to prevent DoS
  */
 export function validateArraySize(array: unknown[], fieldName: string, maxSize = 100): string | null {
-    if(!_.isArray(array)) {
+    if(!isArray(array)) {
         return null;
     }
 

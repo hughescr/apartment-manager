@@ -1,12 +1,13 @@
 // Import test setup first to ensure proper mocking
 import '../../data/test-setup';
 
-import { describe, it, expect, beforeEach, afterEach, jest } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, afterAll, jest } from 'bun:test';
 import { GeocodingService } from '../../../src/services/geocoding';
 
 // Mock fetch for testing
 const mockFetch = jest.fn() as jest.Mock & typeof fetch;
 mockFetch.preconnect = jest.fn();
+const originalFetch = global.fetch;
 global.fetch = mockFetch;
 
 // Mock setTimeout to eliminate delays
@@ -50,14 +51,19 @@ describe('GeocodingService', () => {
     });
 
     afterEach(() => {
-        // Restore original functions
+        // Restore original functions (but keep fetch mocked for test isolation)
         global.setTimeout = originalSetTimeout;
         global.Date.now = originalDateNow;
 
-        // Clear mocks but keep fetch in place
+        // Clear mocks
         mockFetch.mockClear();
         mockSetTimeout.mockClear();
         mockDateNow.mockClear();
+    });
+
+    afterAll(() => {
+        // Restore global.fetch after all tests are complete to prevent test pollution
+        global.fetch = originalFetch;
     });
 
     describe('geocode', () => {

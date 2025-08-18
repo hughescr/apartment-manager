@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isError, trim } from 'lodash';
 import type { UnitData, Amenity } from '../../../types';
 import type { UnitCardState } from '../unitCardState';
 import { UnitApiClient, type SaveResult } from '../apiOperations';
@@ -51,7 +51,7 @@ export class ApiService {
                 this.handleSaveError(result.error || 'Failed to save unit');
             }
         } catch(error) {
-            const errorMessage = _.isError(error) ? error.message : 'Network error. Please try again.';
+            const errorMessage = isError(error) ? error.message : 'Network error. Please try again.';
             this.handleSaveError(errorMessage);
         } finally {
             this.state.saving = false;
@@ -96,7 +96,7 @@ export class ApiService {
                 }
             }
         } catch(error) {
-            const errorMessage = _.isError(error) ? error.message : 'Network error during delete';
+            const errorMessage = isError(error) ? error.message : 'Network error during delete';
 
             if(this.state.events) {
                 this.state.events.unitDeleteError(this.state.unit.unitID, errorMessage);
@@ -135,7 +135,7 @@ export class ApiService {
 
             return result;
         } catch(error) {
-            const errorMessage = _.isError(error) ? error.message : 'Network error occurred';
+            const errorMessage = isError(error) ? error.message : 'Network error occurred';
             return { success: false, error: errorMessage };
         }
     }
@@ -177,7 +177,7 @@ export class ApiService {
         }
 
         // Fallback: basic validation
-        if(!this.state.unit?.unitID || _.trim(this.state.unit.unitID) === '') {
+        if(!this.state.unit?.unitID || trim(this.state.unit.unitID) === '') {
             this.state.errors.unitID = 'Unit number is required';
             return false;
         }

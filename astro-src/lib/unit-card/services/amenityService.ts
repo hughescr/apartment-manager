@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { filter, some } from 'lodash';
 import type { Amenity } from '../../../types';
 import type { UnitCardState } from '../unitCardState';
 import { AmenityInheritanceManager, type AmenityInheritanceSource } from '../amenityInheritance';
@@ -159,7 +159,7 @@ export class AmenityService {
         }
 
         // Check if amenity already exists
-        const exists = _.some(this.state.unit.unitAmenities,
+        const exists = some(this.state.unit.unitAmenities,
             { category: amenity.category, name: amenity.name }
         );
 
@@ -181,7 +181,7 @@ export class AmenityService {
             return;
         }
 
-        this.state.unit.unitAmenities = _.filter(this.state.unit.unitAmenities,
+        this.state.unit.unitAmenities = filter(this.state.unit.unitAmenities,
             a => !(a.category === amenity.category && a.name === amenity.name)
         );
 
@@ -225,7 +225,7 @@ export class AmenityService {
 
         // Check if this amenity exists in the inherited amenities
         const inheritedAmenities = this.getInheritedAmenities();
-        return _.some(inheritedAmenities,
+        return some(inheritedAmenities,
             { category: amenity.category, name: amenity.name }
         );
     }

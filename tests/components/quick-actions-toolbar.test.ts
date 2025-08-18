@@ -2,7 +2,7 @@
 import '../data/test-setup';
 
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { filter, forEach, map } from 'lodash';
 
 /**
  * Tests for Quick Actions Toolbar
@@ -56,7 +56,7 @@ describe('Quick Actions Toolbar', () => {
 
             // Selection methods
             selectAllVisible() {
-                this.selectedUnits = new Set(_.map(this.filteredUnits, 'unitID'));
+                this.selectedUnits = new Set(map(this.filteredUnits, 'unitID'));
             },
 
             selectNone() {
@@ -87,7 +87,7 @@ describe('Quick Actions Toolbar', () => {
                     await new Promise(resolve => setTimeout(resolve, 100));
 
                     // Update units
-                    _.forEach(this.filteredUnits, (unit) => {
+                    forEach(this.filteredUnits, (unit) => {
                         if(unitIDs.includes(unit.unitID)) {
                             unit.vacancyClass = newStatus;
                         }
@@ -116,7 +116,7 @@ describe('Quick Actions Toolbar', () => {
                     await new Promise(resolve => setTimeout(resolve, 100));
 
                     // Update units
-                    _.forEach(this.filteredUnits, (unit) => {
+                    forEach(this.filteredUnits, (unit) => {
                         if(unitIDs.includes(unit.unitID)) {
                             if(updateType === 'absolute') {
                                 unit.rent = value;
@@ -174,7 +174,7 @@ describe('Quick Actions Toolbar', () => {
 
         it('should handle selection with filtered units', () => {
             // Filter to only occupied and unoccupied units
-            mockComponent.filteredUnits = _.filter(mockComponent.filteredUnits,
+            mockComponent.filteredUnits = filter(mockComponent.filteredUnits,
                 unit => ['Occupied', 'Unoccupied'].includes(unit.vacancyClass)
             );
 

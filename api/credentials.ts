@@ -6,7 +6,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { storeCredential, getCredential, deleteCredential, listCredentials, hasCredential, SiteCredentials } from '../data/credentials';
 import { logger } from '@hughescr/logger';
-import { map, keys } from 'lodash';
+import { map, keys, isError } from 'lodash';
 
 /**
  * List all sites with stored credentials
@@ -82,12 +82,18 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
         let credentials: SiteCredentials;
         try {
             credentials = JSON.parse(event.body);
-        } catch{
+        } catch(parseError) {
+            logger.warn('Failed to parse credentials request body', {
+                error: parseError,
+                context: 'store credentials request parsing',
+                httpMethod: event.requestContext.http.method
+            });
             return {
                 statusCode: 400,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    error: 'Invalid JSON in request body'
+                    error: 'Invalid JSON in request body',
+                    details: isError(parseError) ? parseError.message : 'Invalid JSON format'
                 })
             };
         }

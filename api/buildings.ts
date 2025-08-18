@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuilding } from '../data/buildings';
 import { BuildingData } from '../src/types';
-import _ from 'lodash';
+import { forEach, isArray, isError, isString } from 'lodash';
 import { validateId, sanitizeObject } from './security-validation';
 import { logger } from '@hughescr/logger';
 import { BuildingInput } from './validation/buildingSchema';
@@ -21,17 +21,23 @@ function parseJsonStringFields(data: Record<string, unknown>): void {
         'oneTimeFees', 'monthlyFees', 'parkingOptions', 'storageOptions', 'photos'
     ];
 
-    arrayFields.forEach((field) => {
-        if(field in data && _.isString(data[field])) {
+    forEach(arrayFields, (field) => {
+        if(field in data && isString(data[field])) {
             try {
                 const parsed = JSON.parse(data[field] as string);
                 // Only replace if it successfully parses to an array
-                if(_.isArray(parsed)) {
+                if(isArray(parsed)) {
                     data[field] = parsed;
                 }
-            } catch{
+            } catch(parseError) {
                 // If parsing fails, leave the field as-is
                 // The validation layer will catch invalid data
+                logger.debug('Failed to parse JSON string field', {
+                    field,
+                    value: data[field],
+                    error: parseError,
+                    context: 'parseJsonStringFields'
+                });
             }
         }
     });
@@ -42,12 +48,20 @@ function parseAndValidateInput(rawBody: string): { success: true, data: Building
     let rawData;
     try {
         rawData = JSON.parse(rawBody || '{}');
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse building request body', {
+            error: parseError,
+            context: 'parseAndValidateInput',
+            rawBody
+        });
         return {
             success: false,
             response: {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'Invalid request body' }),
+                body: JSON.stringify({
+                    error: 'Invalid request body',
+                    details: isError(parseError) ? parseError.message : 'Invalid JSON format'
+                }),
             }
         };
     }
@@ -62,7 +76,7 @@ function parseAndValidateInput(rawBody: string): { success: true, data: Building
     const validation = validateForSave('building', data);
     if(!validation.success) {
         const errors: Record<string, string> = {};
-        _.forEach(validation.errors, (err) => {
+        forEach(validation.errors, (err) => {
             errors[err.field] = err.message;
         });
         return {
@@ -104,10 +118,18 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse building creation request body', {
+            error: parseError,
+            context: 'building creation request parsing',
+            httpMethod: evt.requestContext.http.method
+        });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
+            body: JSON.stringify({
+                error: 'Invalid request body',
+                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
+            }),
         };
     }
 
@@ -131,7 +153,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     const validation = validateForSave('building', data);
     if(!validation.success) {
         const errors: Record<string, string> = {};
-        _.forEach(validation.errors, (err) => {
+        forEach(validation.errors, (err) => {
             errors[err.field] = err.message;
         });
         return {
@@ -189,7 +211,7 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
             statusCode: 500,
             body: JSON.stringify({
                 error: 'Internal server error during update',
-                details: _.isError(error) ? error.message : 'Unknown error'
+                details: isError(error) ? error.message : 'Unknown error'
             })
         };
     }

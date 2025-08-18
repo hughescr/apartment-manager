@@ -1,7 +1,7 @@
 import type { PetPolicy } from '../../../src/types';
 import { PetType } from '../../../src/types';
 import type { ExtendedPetPolicy, PetCostSummary, PetTypePolicy } from './petPolicyTypes';
-import _ from 'lodash';
+import { map, toUpper, trim } from 'lodash';
 
 /**
  * Creates a default pet policy structure
@@ -112,7 +112,7 @@ export function addBreedRestriction(policy: ExtendedPetPolicy, breed: string): b
         policy.breedRestrictions = [];
     }
 
-    const trimmedBreed = _.trim(breed);
+    const trimmedBreed = trim(breed);
     if(trimmedBreed && !policy.breedRestrictions.includes(trimmedBreed)) {
         policy.breedRestrictions.push(trimmedBreed);
         return true;
@@ -162,7 +162,7 @@ export function addBreedRestrictionToPetType(
         petTypePolicy.breedRestrictions = [];
     }
 
-    const trimmedBreed = _.trim(breed);
+    const trimmedBreed = trim(breed);
     if(trimmedBreed && !petTypePolicy.breedRestrictions.includes(trimmedBreed)) {
         petTypePolicy.breedRestrictions.push(trimmedBreed);
         return true;
@@ -195,7 +195,7 @@ export function getAdvancedPetTypesSummary(policy: ExtendedPetPolicy): string {
         return 'No advanced pet types configured';
     }
 
-    const typeNames = _.map(petTypes, p => _.toUpper(p.type.charAt(0)) + p.type.slice(1));
+    const typeNames = map(petTypes, p => toUpper(p.type.charAt(0)) + p.type.slice(1));
     return `${typeNames.join(', ')} (${petTypes.length} type${petTypes.length > 1 ? 's' : ''})`;
 }
 

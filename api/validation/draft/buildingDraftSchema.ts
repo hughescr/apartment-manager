@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { PropertyType } from '../../../src/types';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
-import _ from 'lodash';
+import { chain } from 'lodash';
 
 /**
  * Draft validation schema for buildings - permissive schema for work-in-progress saves
@@ -124,7 +124,7 @@ export const BuildingDraftSchema = z.looseObject({
     }, 'buildingID must be a valid building ID format'),
     buildingName: z.string().min(1, 'buildingName is required').transform((name) => {
         // Sanitize to prevent XSS while preserving content
-        return _.chain(name)
+        return chain(name)
             .replace(/<script[^>]*>.*?<\/script>/gi, '')
             .replace(/javascript:/gi, '')
             .replace(/on\w+\s*=/gi, '')

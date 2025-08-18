@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isString } from 'lodash';
 import { DateTime } from 'luxon';
 import type { TransformerFunction } from '../types.js';
 
@@ -14,7 +14,7 @@ export function createDateFormatter(format: string): TransformerFunction<string 
         }
 
         // Ensure value is a string
-        if(!_.isString(value)) {
+        if(!isString(value)) {
             return undefined;
         }
 
@@ -49,7 +49,7 @@ export function parseDateToISO(value: string | undefined): string | undefined {
     }
 
     // Ensure value is a string
-    if(!_.isString(value)) {
+    if(!isString(value)) {
         return undefined;
     }
 
@@ -79,7 +79,7 @@ function parseDateToDateTime(value: unknown): DateTime | null {
     ];
 
     // Type safety check
-    if(!_.isString(value)) {
+    if(!isString(value)) {
         return null;
     }
 

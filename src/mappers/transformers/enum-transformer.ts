@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { find, map } from 'lodash';
 import type { EnumMapping, SiteSpecificValue, TransformerFunction } from '../types.js';
 import {
     PropertyType,
@@ -311,7 +311,7 @@ export function createEnumTransformer<T extends string>(
     const mappings = customMappings || defaultEnumMappings[enumType] as EnumMapping<T>[];
 
     return (value: T): string => {
-        const mapping = _.find(mappings, ['internal', value]);
+        const mapping = find(mappings, ['internal', value]);
         if(!mapping) {
             // Return the original value if no mapping found
             return value;
@@ -363,5 +363,5 @@ export function transformEnumArray<T extends string>(
     customMappings?: EnumMapping<T>[]
 ): string[] {
     const transformer = createEnumTransformer(enumType, siteId, customMappings);
-    return _.map(values, (value: T) => transformer(value));
+    return map(values, (value: T) => transformer(value));
 }

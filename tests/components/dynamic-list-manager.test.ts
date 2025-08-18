@@ -2,7 +2,7 @@
 import './test-setup';
 
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { filter, find, map } from 'lodash';
 
 describe('DynamicListManager Component', () => {
     const mockProps = {
@@ -35,18 +35,18 @@ describe('DynamicListManager Component', () => {
         // Test the Alpine.js data structure that would be generated
         const expectedFields = ['title', 'description', 'startDate', 'endDate'];
 
-        expect(_.map(mockProps.fields, 'name')).toEqual(expectedFields);
+        expect(map(mockProps.fields, 'name')).toEqual(expectedFields);
         expect(mockProps.name).toBe('rentSpecials');
     });
 
     it('should handle required fields correctly', () => {
-        const requiredFields = _.filter(mockProps.fields, 'required');
+        const requiredFields = filter(mockProps.fields, 'required');
         expect(requiredFields.length).toBe(1);
         expect(requiredFields[0].name).toBe('title');
     });
 
     it('should support different field types', () => {
-        const fieldTypes = _.map(mockProps.fields, 'type');
+        const fieldTypes = map(mockProps.fields, 'type');
         expect(fieldTypes).toContain('text');
         expect(fieldTypes).toContain('textarea');
         expect(fieldTypes).toContain('date');
@@ -118,19 +118,19 @@ describe('DynamicListManager Parking Options', () => {
     };
 
     it('should support select field type', () => {
-        const selectField = _.find(parkingProps.fields, { type: 'select' });
+        const selectField = find(parkingProps.fields, { type: 'select' });
         expect(selectField).toBeTruthy();
         expect(selectField?.options?.length).toBe(5);
     });
 
     it('should support toggle field type', () => {
-        const toggleField = _.find(parkingProps.fields, { type: 'toggle' });
+        const toggleField = find(parkingProps.fields, { type: 'toggle' });
         expect(toggleField).toBeTruthy();
         expect(toggleField?.name).toBe('included');
     });
 
     it('should support conditional field disable', () => {
-        const feeField = _.find(parkingProps.fields, { name: 'fee' });
+        const feeField = find(parkingProps.fields, { name: 'fee' });
         expect(feeField?.disabled).toBe('parking.included');
     });
 });

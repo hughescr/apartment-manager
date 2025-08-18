@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { isArray, map, repeat, split } from 'lodash';
 import {
     createAmenityNameTransformer,
     filterAmenitiesByCategory,
@@ -80,7 +80,7 @@ describe('Amenity Transformer', () => {
             const unitAmenities = filterAmenitiesByCategory(testAmenities, AmenityCategory.UNIT);
 
             expect(unitAmenities).toHaveLength(3);
-            expect(_.map(unitAmenities, 'name')).toEqual([
+            expect(map(unitAmenities, 'name')).toEqual([
                 'Air Conditioning',
                 'Dishwasher',
                 'Hardwood Floors'
@@ -91,7 +91,7 @@ describe('Amenity Transformer', () => {
             const propertyAmenities = filterAmenitiesByCategory(testAmenities, AmenityCategory.PROPERTY);
 
             expect(propertyAmenities).toHaveLength(2);
-            expect(_.map(propertyAmenities, 'name')).toEqual([
+            expect(map(propertyAmenities, 'name')).toEqual([
                 'Swimming Pool',
                 'Fitness Center'
             ]);
@@ -101,7 +101,7 @@ describe('Amenity Transformer', () => {
             const communityAmenities = filterAmenitiesByCategory(testAmenities, AmenityCategory.COMMUNITY);
 
             expect(communityAmenities).toHaveLength(2);
-            expect(_.map(communityAmenities, 'name')).toEqual([
+            expect(map(communityAmenities, 'name')).toEqual([
                 'Pet Friendly',
                 'Concierge'
             ]);
@@ -153,7 +153,7 @@ describe('Amenity Transformer', () => {
         it('should handle unknown sites', () => {
             const result = transformAmenities(testAmenities, 'unknown_site');
 
-            const expected: MappedAmenity[] = _.map(testAmenities, amenity => ({
+            const expected: MappedAmenity[] = map(testAmenities, amenity => ({
                 name: amenity.name,
                 category: amenity.category as string
             } as MappedAmenity));
@@ -207,7 +207,7 @@ describe('Amenity Transformer', () => {
             const merged = mergeAmenities(source1, source2);
 
             expect(merged).toHaveLength(4);
-            expect(_.map(merged, 'name').sort()).toEqual([
+            expect(map(merged, 'name').sort()).toEqual([
                 'Air Conditioning',
                 'Dishwasher',
                 'Fitness Center',
@@ -258,7 +258,7 @@ describe('Amenity Transformer', () => {
 
             const merged = mergeAmenities(source1, source2);
 
-            expect(_.map(merged, 'name')).toEqual(['C', 'A', 'B']);
+            expect(map(merged, 'name')).toEqual(['C', 'A', 'B']);
         });
     });
 
@@ -310,7 +310,7 @@ describe('Amenity Transformer', () => {
             const result = parseAmenityString(amenityString);
 
             expect(result).toHaveLength(3);
-            expect(_.map(result, 'name')).toEqual([
+            expect(map(result, 'name')).toEqual([
                 'Air Conditioning',
                 'Swimming Pool',
                 'Fitness Center'
@@ -322,7 +322,7 @@ describe('Amenity Transformer', () => {
             const result = parseAmenityString(amenityString);
 
             expect(result).toHaveLength(2);
-            expect(_.map(result, 'name')).toEqual(['Air Conditioning', 'Swimming Pool']);
+            expect(map(result, 'name')).toEqual(['Air Conditioning', 'Swimming Pool']);
         });
 
         it('should handle undefined and empty strings', () => {
@@ -452,12 +452,12 @@ describe('Amenity Transformer', () => {
             // Should handle gracefully, filtering out invalid entries
             const result = transformAmenities(malformedAmenities, 'apartments_com');
             expect(result).toBeDefined();
-            expect(_.isArray(result)).toBe(true);
+            expect(isArray(result)).toBe(true);
         });
 
         // Memory and performance edge cases
         it('should handle extremely long amenity names', () => {
-            const longName = _.repeat('A', 10000);
+            const longName = repeat('A', 10000);
             const longAmenity: Amenity[] = [
                 { name: longName, category: AmenityCategory.UNIT }
             ];
@@ -495,7 +495,7 @@ describe('Amenity Transformer', () => {
             };
 
             // Use the wrapped transformer indirectly
-            const result = _.map(amenities, a => wrappedTransformer(a.name));
+            const result = map(amenities, a => wrappedTransformer(a.name));
             expect(result).toEqual(['First', 'Second']);
             expect(amenities).toHaveLength(3); // Modified during iteration
         });
@@ -562,7 +562,7 @@ describe('Amenity Transformer', () => {
 
             const result = amenityListToString(manyAmenities, 'apartments_com');
             expect(result.length).toBeGreaterThan(0);
-            expect(_.split(result, ', ')).toHaveLength(1000);
+            expect(split(result, ', ')).toHaveLength(1000);
 
             // Amenities with commas in names
             const commaAmenities: Amenity[] = [

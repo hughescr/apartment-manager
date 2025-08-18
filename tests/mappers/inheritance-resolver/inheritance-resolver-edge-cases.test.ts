@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { constant, isArray, map } from 'lodash';
 import { InheritanceResolver } from '../../../src/mappers/inheritance-resolver';
 import { AmenityCategory } from '../../../src/types';
 import type { UnitData, Amenity } from '../../../src/types';
@@ -103,7 +103,7 @@ describe('InheritanceResolver - Edge Cases', () => {
             const merged = resolver.mergeAmenities(emptyAmenities, nullAmenities, undefinedAmenities);
 
             expect(merged).toEqual([]);
-            expect(_.isArray(merged)).toBe(true);
+            expect(isArray(merged)).toBe(true);
         });
     });
 
@@ -169,8 +169,8 @@ describe('InheritanceResolver - Edge Cases', () => {
 
             // Map-based deduplication should handle sparse arrays
             expect(merged).toHaveLength(2);
-            expect(_.map(merged, 'name')).toContain('First');
-            expect(_.map(merged, 'name')).toContain('Third');
+            expect(map(merged, 'name')).toContain('First');
+            expect(map(merged, 'name')).toContain('Third');
         });
     });
 
@@ -242,7 +242,7 @@ describe('InheritanceResolver - Edge Cases', () => {
 
     describe('Function Properties', () => {
         it('should handle function values in fields', () => {
-            const testFunction = _.constant('test value');
+            const testFunction = constant('test value');
             const unitWithFunction: UnitData = {
                 buildingID: 'BLDG-001',
                 unitID: 'UNIT-001',
@@ -257,7 +257,7 @@ describe('InheritanceResolver - Edge Cases', () => {
 
         it('should handle constructor functions', () => {
             class CustomDescription {
-                toString = _.constant('Custom Description');
+                toString = constant('Custom Description');
             }
 
             const unitWithConstructor: UnitData = {

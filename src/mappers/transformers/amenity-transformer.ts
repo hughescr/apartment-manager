@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { chain, every, filter, groupBy, includes, isObject, isString, map, trim } from 'lodash';
 import type { TransformerFunction, MappedAmenity } from '../types.js';
 import type { Amenity } from '../../types/index.js';
 import { AmenityCategory } from '../../types/index.js';
@@ -54,7 +54,7 @@ export function createAmenityNameTransformer(
     const mappings = amenityNameMappings[siteId] || {};
 
     return (name: string): string => {
-        if(!_.isString(name)) {
+        if(!isString(name)) {
             throw new TypeError(`Expected string, got ${typeof name}`);
         }
         return mappings[name] || name;
@@ -71,7 +71,7 @@ export function filterAmenitiesByCategory(
     amenities: Amenity[],
     category: AmenityCategory
 ): Amenity[] {
-    return _.filter(amenities, ['category', category]);
+    return filter(amenities, ['category', category]);
 }
 
 /**
@@ -103,8 +103,8 @@ export function transformAmenities(
         siteId
     );
 
-    return _(filtered)
-        .filter(amenity => amenity && _.isObject(amenity) && _.isString(amenity.name))
+    return chain(filtered)
+        .filter(amenity => amenity && isObject(amenity) && isString(amenity.name))
         .map(amenity => ({
             name: transformer(amenity.name),
             category: categoryTransformer(amenity.category) || 'other'
@@ -120,7 +120,7 @@ export function transformAmenities(
 export function groupAmenitiesByCategory(
     amenities: Amenity[]
 ): Record<AmenityCategory, Amenity[]> {
-    const grouped = _.groupBy(amenities, 'category');
+    const grouped = groupBy(amenities, 'category');
 
     // Ensure all categories are present
     return {
@@ -161,7 +161,7 @@ export function amenityListToString(
     siteId: string
 ): string {
     const mappedAmenities = transformAmenities(amenities, siteId);
-    return _.map(mappedAmenities, 'name').join(', ');
+    return map(mappedAmenities, 'name').join(', ');
 }
 
 /**
@@ -178,8 +178,9 @@ export function parseAmenityString(
         return [];
     }
 
-    const names = _.map(_.split(amenityString, ','), name => _.trim(name));
-    return _(names)
+    return chain(amenityString)
+        .split(',')
+        .map(name => trim(name))
         .map(name => (name ? { name, category: defaultCategory } : undefined))
         .compact()
         .value();
@@ -199,8 +200,8 @@ export function hasAmenities(
         return requiredAmenities.length === 0;
     }
 
-    const amenityNames = _.map(amenities, 'name');
-    return _.every(requiredAmenities, required =>
-        _.includes(amenityNames, required)
+    const amenityNames = map(amenities, 'name');
+    return every(requiredAmenities, required =>
+        includes(amenityNames, required)
     );
 }

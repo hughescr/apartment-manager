@@ -10,7 +10,7 @@ import {
     mockPutResponse,
     mockUpdateResponse
 } from '../helpers/mock-responses';
-import _ from 'lodash';
+import { chain, every, fill, filter, forEach, keys, map, repeat, times } from 'lodash';
 
 // Import data layer functions AFTER mocking
 import { getBuildings, getBuilding, createBuilding, updateBuilding } from '../../data/buildings';
@@ -36,12 +36,12 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(4);
 
             // Create 500 buildings with large data (~2KB each = ~1MB total)
-            const largeBuildings = _.times(500, i => ({
+            const largeBuildings = times(500, i => ({
                 buildingID: `building-${i}`,
                 unitID: 'BUILDING',
                 street: `${i} Performance Test Street`,
-                description: _.repeat('x', 1500), // ~1.5KB of data
-                photos: _.fill(Array(20), 'https://s3.example.com/photo.jpg')
+                description: repeat('x', 1500), // ~1.5KB of data
+                photos: fill(Array(20), 'https://s3.example.com/photo.jpg')
             }));
 
             // Mock paginated responses with LastEvaluatedKey
@@ -70,12 +70,12 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(4);
 
             // Create 1000 units with large data (~1KB each = ~1MB total)
-            const largeUnits = _.times(1000, i => ({
+            const largeUnits = times(1000, i => ({
                 buildingID: 'test-building',
                 unitID: `UNIT#unit-${i}`,
                 unitNumber: `${i}`,
-                description: _.repeat('y', 800), // ~800 bytes
-                unitAmenities: _.fill(Array(10), { name: 'Amenity', category: 'UNIT' })
+                description: repeat('y', 800), // ~800 bytes
+                unitAmenities: fill(Array(10), { name: 'Amenity', category: 'UNIT' })
             }));
 
             // Mock paginated query response
@@ -103,7 +103,7 @@ describe('Data Layer Performance Tests', () => {
             const pageSize = 100;
             const totalItems = 250;
 
-            const allBuildings = _.times(totalItems, i => ({
+            const allBuildings = times(totalItems, i => ({
                 buildingID: `paginated-${i}`,
                 unitID: 'BUILDING',
                 street: `${i} Paginated Street`
@@ -186,7 +186,7 @@ describe('Data Layer Performance Tests', () => {
         it('should handle throttling during batch write operations', async () => {
             expect.assertions(4);
 
-            const buildings = _.times(25, i => ({
+            const buildings = times(25, i => ({
                 buildingID: `batch-${i}`,
                 street: `${i} Batch Street`
             }));
@@ -210,11 +210,11 @@ describe('Data Layer Performance Tests', () => {
 
             // Process buildings one by one
             const results = await Promise.allSettled(
-                _.map(buildings, b => createBuilding(b))
+                map(buildings, b => createBuilding(b))
             );
 
-            const successful = _.filter(results, { status: 'fulfilled' });
-            const failed = _.filter(results, { status: 'rejected' });
+            const successful = filter(results, { status: 'fulfilled' });
+            const failed = filter(results, { status: 'rejected' });
 
             expect(successful).toHaveLength(10);
             expect(failed).toHaveLength(15);
@@ -228,7 +228,7 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(3);
 
             // DynamoDB BatchGetItem has a limit of 100 keys
-            const keys = _.times(150, i => ({
+            const keys = times(150, i => ({
                 buildingID: `batch-get-${i}`,
                 unitID: 'BUILDING'
             }));
@@ -237,21 +237,21 @@ describe('Data Layer Performance Tests', () => {
             // This test documents what batch operations would look like
 
             // Simulate individual gets (current behavior)
-            const mockResponses = _.map(keys.slice(0, 5), key =>
+            const mockResponses = map(keys.slice(0, 5), key =>
                 mockGetResponse({ ...key, street: 'Test Street' })
             );
 
-            _.forEach(mockResponses, (response) => {
+            forEach(mockResponses, (response) => {
                 dynamoDbMock.mockResolvedValueOnce(response);
             });
 
             // Get first 5 buildings individually
             const results = await Promise.all(
-                _.map(keys.slice(0, 5), key => getBuilding(key.buildingID))
+                map(keys.slice(0, 5), key => getBuilding(key.buildingID))
             );
 
             expect(results).toHaveLength(5);
-            expect(_.every(results, r => r !== undefined)).toBe(true);
+            expect(every(results, r => r !== undefined)).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(5); // Individual calls, not batched
         });
 
@@ -305,7 +305,7 @@ describe('Data Layer Performance Tests', () => {
 
             // Cannot query by occupied status without GSI
             // Would need to filter in memory
-            const occupiedUnits = _.filter(units, { occupied: true });
+            const occupiedUnits = filter(units, { occupied: true });
             expect(occupiedUnits).toHaveLength(1);
         });
 
@@ -313,7 +313,7 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(3);
 
             // Create 1000 units, only 50 are available
-            const allUnits = _.times(1000, i => ({
+            const allUnits = times(1000, i => ({
                 buildingID: 'large-building',
                 unitID: `UNIT#${i}`,
                 unitNumber: `${i}`,
@@ -329,7 +329,7 @@ describe('Data Layer Performance Tests', () => {
 
             // Filter in memory (inefficient without GSI)
             // const filterStart = performance.now(); // Reserved for performance logging
-            const availableUnits = _.filter(units, u => !u.occupied);
+            const availableUnits = filter(units, u => !u.occupied);
             // const _filterTime = performance.now() - filterStart; // Reserved for performance logging
 
             expect(units).toHaveLength(1000);
@@ -345,7 +345,7 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(4);
 
             // Query with partition key is efficient
-            const mockUnits = _.times(10, i => ({
+            const mockUnits = times(10, i => ({
                 buildingID: 'building-1',
                 unitID: `UNIT#${i}`
             }));
@@ -369,7 +369,7 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(3);
 
             // Scan reads all items across all partitions
-            const allBuildings = _.times(100, i => ({
+            const allBuildings = times(100, i => ({
                 buildingID: `building-${i}`,
                 unitID: 'BUILDING',
                 state: i % 10 === 0 ? 'CA' : 'NY', // 10 in CA, 90 in NY
@@ -377,7 +377,7 @@ describe('Data Layer Performance Tests', () => {
             }));
 
             dynamoDbMock.mockResolvedValueOnce({
-                Items: _.map(allBuildings, b => ({
+                Items: map(allBuildings, b => ({
                     ...b,
                     _ct: new Date().toISOString(),
                     _md: new Date().toISOString()
@@ -391,7 +391,7 @@ describe('Data Layer Performance Tests', () => {
             expect(buildings).toHaveLength(100);
 
             // Would need to filter in memory for state
-            const caBuildings = _.filter(buildings, { state: 'CA' });
+            const caBuildings = filter(buildings, { state: 'CA' });
             expect(caBuildings).toHaveLength(10);
 
             // Scan examined all 100 items to find 10
@@ -403,11 +403,11 @@ describe('Data Layer Performance Tests', () => {
         it('should handle concurrent queries to different partitions', async () => {
             expect.assertions(4);
 
-            const buildingIds = _.times(10, i => `building-${i}`);
+            const buildingIds = times(10, i => `building-${i}`);
 
             // Mock responses for each building
-            _.forEach(buildingIds, (id) => {
-                const units = _.times(5, j => ({
+            forEach(buildingIds, (id) => {
+                const units = times(5, j => ({
                     buildingID: id,
                     unitID: `UNIT#${j}`
                 }));
@@ -418,13 +418,13 @@ describe('Data Layer Performance Tests', () => {
 
             // Execute queries in parallel
             const results = await Promise.all(
-                _.map(buildingIds, id => getUnits(id))
+                map(buildingIds, id => getUnits(id))
             );
 
             const duration = performance.now() - startTime;
 
             expect(results).toHaveLength(10);
-            expect(_.every(results, { length: 5 })).toBe(true);
+            expect(every(results, { length: 5 })).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(10);
 
             // Parallel execution should be faster than sequential
@@ -439,7 +439,7 @@ describe('Data Layer Performance Tests', () => {
             // Mock different operation types
             dynamoDbMock
                 .mockResolvedValueOnce(mockGetResponse({ buildingID: buildingId, unitID: 'BUILDING' }))
-                .mockResolvedValueOnce(mockQueryResponse(_.times(3, i => ({
+                .mockResolvedValueOnce(mockQueryResponse(times(3, i => ({
                     buildingID: buildingId,
                     unitID: `UNIT#${i}`
                 }))))
@@ -472,13 +472,13 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(4);
 
             // Create items near DynamoDB's 400KB limit
-            const largeDescription = _.repeat('x', 350000); // ~350KB
+            const largeDescription = repeat('x', 350000); // ~350KB
             const largeBuilding = {
                 buildingID: 'huge-building',
                 unitID: 'BUILDING',
                 description: largeDescription,
-                propertyDescription: _.repeat('y', 40000), // ~40KB
-                photos: _.fill(Array(100), 'https://example.com/photo.jpg')
+                propertyDescription: repeat('y', 40000), // ~40KB
+                photos: fill(Array(100), 'https://example.com/photo.jpg')
             };
 
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(largeBuilding));
@@ -500,7 +500,7 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(3);
 
             // Create 5000 small units
-            const manyUnits = _.times(5000, i => ({
+            const manyUnits = times(5000, i => ({
                 buildingID: 'mega-building',
                 unitID: `UNIT#${i}`,
                 unitNumber: `${i}`,
@@ -532,7 +532,7 @@ describe('Data Layer Performance Tests', () => {
             const requestCount = 100;
 
             // Mock all responses
-            _.times(requestCount, (i) => {
+            times(requestCount, (i) => {
                 dynamoDbMock.mockResolvedValueOnce(
                     mockGetResponse({ buildingID: `rapid-${i}`, unitID: 'BUILDING' })
                 );
@@ -549,7 +549,7 @@ describe('Data Layer Performance Tests', () => {
             // const _duration = performance.now() - startTime; // Reserved for performance logging
 
             expect(results).toHaveLength(requestCount);
-            expect(_.every(results, r => r !== undefined)).toBe(true);
+            expect(every(results, r => r !== undefined)).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(requestCount);
         });
 
@@ -559,7 +559,7 @@ describe('Data Layer Performance Tests', () => {
             const burstSize = 50;
 
             // Mock all responses
-            _.times(burstSize, (i) => {
+            times(burstSize, (i) => {
                 dynamoDbMock.mockResolvedValueOnce(
                     mockGetResponse({ buildingID: `burst-${i}`, unitID: 'BUILDING' })
                 );
@@ -569,13 +569,13 @@ describe('Data Layer Performance Tests', () => {
 
             // Burst of parallel requests
             const results = await Promise.all(
-                _.times(burstSize, i => getBuilding(`burst-${i}`))
+                times(burstSize, i => getBuilding(`burst-${i}`))
             );
 
             const duration = performance.now() - startTime;
 
             expect(results).toHaveLength(burstSize);
-            expect(_.every(results, r => r !== undefined)).toBe(true);
+            expect(every(results, r => r !== undefined)).toBe(true);
             expect(dynamoDbMock).toHaveBeenCalledTimes(burstSize);
 
             // Parallel should be faster than sequential
@@ -590,7 +590,7 @@ describe('Data Layer Performance Tests', () => {
             const operationCount = 100;
 
             // Mock fast responses
-            _.times(operationCount, (i) => {
+            times(operationCount, (i) => {
                 dynamoDbMock.mockResolvedValueOnce(
                     mockGetResponse({ buildingID: `throughput-${i}`, unitID: 'BUILDING' })
                 );
@@ -599,7 +599,7 @@ describe('Data Layer Performance Tests', () => {
             const startTime = performance.now();
 
             const results = await Promise.all(
-                _.times(operationCount, i => getBuilding(`throughput-${i}`))
+                times(operationCount, i => getBuilding(`throughput-${i}`))
             );
 
             const duration = performance.now() - startTime;
@@ -640,7 +640,7 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(4);
 
             // Mock same building fetched multiple times
-            _.times(5, () => {
+            times(5, () => {
                 dynamoDbMock.mockResolvedValueOnce(
                     mockGetResponse({ buildingID: 'cached-building', unitID: 'BUILDING', street: '123 Cache St' })
                 );
@@ -648,17 +648,17 @@ describe('Data Layer Performance Tests', () => {
 
             // Fetch same building 5 times
             const results = await Promise.all(
-                _.times(5, () => getBuilding('cached-building'))
+                times(5, () => getBuilding('cached-building'))
             );
 
             expect(results).toHaveLength(5);
-            expect(_.every(results, r => r?.street === '123 Cache St')).toBe(true);
+            expect(every(results, r => r?.street === '123 Cache St')).toBe(true);
 
             // Without caching, each request hits DynamoDB
             expect(dynamoDbMock).toHaveBeenCalledTimes(5);
 
             // Document inefficiency - 5 identical requests
-            expect(_(results).map('buildingID').uniq().size()).toBe(1);
+            expect(chain(results).map('buildingID').uniq().size().value()).toBe(1);
         });
 
         it('should show potential memory savings with caching', async () => {
@@ -668,12 +668,12 @@ describe('Data Layer Performance Tests', () => {
             const largeItem = {
                 buildingID: 'large-cached',
                 unitID: 'BUILDING',
-                description: _.repeat('z', 100000), // 100KB
-                photos: _.fill(Array(200), 'https://example.com/photo.jpg')
+                description: repeat('z', 100000), // 100KB
+                photos: fill(Array(200), 'https://example.com/photo.jpg')
             };
 
             // Mock 10 fetches of same large item
-            _.times(10, () => {
+            times(10, () => {
                 dynamoDbMock.mockResolvedValueOnce(mockGetResponse(largeItem));
             });
 
@@ -700,10 +700,10 @@ describe('Data Layer Performance Tests', () => {
                 buildingID: 'projection-test',
                 unitID: 'BUILDING',
                 street: '123 Main St',
-                description: _.repeat('x', 50000), // 50KB
-                propertyDescription: _.repeat('y', 50000), // 50KB
-                photos: _.fill(Array(500), 'https://example.com/photo.jpg'),
-                propertyAmenities: _.fill(Array(100), { name: 'Amenity', category: 'PROPERTY' })
+                description: repeat('x', 50000), // 50KB
+                propertyDescription: repeat('y', 50000), // 50KB
+                photos: fill(Array(500), 'https://example.com/photo.jpg'),
+                propertyAmenities: fill(Array(100), { name: 'Amenity', category: 'PROPERTY' })
             };
 
             // Current implementation fetches all attributes
@@ -727,7 +727,7 @@ describe('Data Layer Performance Tests', () => {
             expect.assertions(3);
 
             // 1000 units, only 10 have special offers
-            const units = _.times(1000, i => ({
+            const units = times(1000, i => ({
                 buildingID: 'sparse-test',
                 unitID: `UNIT#${i}`,
                 unitNumber: `${i}`,
@@ -735,7 +735,7 @@ describe('Data Layer Performance Tests', () => {
             }));
 
             dynamoDbMock.mockResolvedValueOnce({
-                Items: _.map(units, u => ({
+                Items: map(units, u => ({
                     ...u,
                     _et: 'Unit',
                     _ct: new Date().toISOString(),
@@ -747,7 +747,7 @@ describe('Data Layer Performance Tests', () => {
             const allUnits = await getUnits('sparse-test');
 
             // Must scan all 1000 to find 10 with specials
-            const unitsWithSpecials = _.filter(allUnits, 'unitRentSpecial');
+            const unitsWithSpecials = filter(allUnits, 'unitRentSpecial');
 
             expect(allUnits).toHaveLength(1000);
             expect(unitsWithSpecials).toHaveLength(10);
@@ -765,9 +765,9 @@ describe('Data Layer Performance Tests', () => {
             const largeBuilding = {
                 buildingID: 'write-amp-test',
                 unitID: 'BUILDING',
-                description: _.repeat('a', 300000), // 300KB
-                photos: _.fill(Array(200), 'https://example.com/photo.jpg'),
-                propertyAmenities: _.fill(Array(100), { name: 'Amenity' })
+                description: repeat('a', 300000), // 300KB
+                photos: fill(Array(200), 'https://example.com/photo.jpg'),
+                propertyAmenities: fill(Array(100), { name: 'Amenity' })
             };
 
             // Update just one small field
@@ -793,7 +793,7 @@ describe('Data Layer Performance Tests', () => {
             let updateCount = 0;
 
             // Simulate 100 small updates
-            _.times(100, (i) => {
+            times(100, (i) => {
                 dynamoDbMock.mockResolvedValueOnce(
                     mockUpdateResponse({
                         buildingID: buildingId,
@@ -866,7 +866,7 @@ describe('Data Layer Performance Tests', () => {
             };
 
             // Document findings
-            expect(_.keys(performanceIssues).length).toBe(9);
+            expect(keys(performanceIssues).length).toBe(9);
 
             // Verify current implementation limitations
             expect(performanceIssues.pagination).toContain('Not implemented');

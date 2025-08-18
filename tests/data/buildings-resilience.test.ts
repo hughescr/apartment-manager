@@ -14,7 +14,7 @@ import {
     mockUpdateResponse
 } from './buildings-test-setup';
 import { testBuilding, createLargeBuilding, createMaxArrayBuilding } from './buildings-test-fixtures';
-import _ from 'lodash';
+import { repeat } from 'lodash';
 
 // Import the functions AFTER mocking
 import { getBuildings, getBuilding, createBuilding, updateBuilding } from '../../data/buildings';
@@ -106,12 +106,12 @@ describe('Building Data Layer - Resilience', () => {
             expect.assertions(3);
             const longStringBuilding = {
                 ...testBuilding,
-                description: _.repeat('A', 10000),
-                propertyDescription: _.repeat('B', 50000),
-                street: '123 ' + _.repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
+                description: repeat('A', 10000),
+                propertyDescription: repeat('B', 50000),
+                street: '123 ' + repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
                 contactInfo: {
                     ...testBuilding.contactInfo,
-                    website: 'https://' + _.repeat('subdomain.', 50) + 'example.com/path/to/very/deep/page'
+                    website: 'https://' + repeat('subdomain.', 50) + 'example.com/path/to/very/deep/page'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...longStringBuilding, unitID: 'BUILDING' }));

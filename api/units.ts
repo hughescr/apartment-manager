@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../data/units';
 import { UnitData, VacancyClass } from '../src/types/index';
-import _ from 'lodash';
+import { forEach, keys, pick, trim, isError } from 'lodash';
 import { validateId, sanitizeObject } from './security-validation';
 import {
     performBulkStatusUpdate,
@@ -12,6 +12,7 @@ import {
 } from '../data/services/bulk-operations';
 import { UnitInput } from './validation/unitSchema';
 import { validateForSave } from './validation/helpers';
+import { logger } from '@hughescr/logger';
 
 // mapZodErrors removed - now using new validation system
 
@@ -75,10 +76,19 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse unit creation request body', {
+            error: parseError,
+            context: 'unit creation request parsing',
+            httpMethod: evt.requestContext.http.method,
+            buildingID: urlBuildingID
+        });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
+            body: JSON.stringify({
+                error: 'Invalid request body',
+                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
+            }),
         };
     }
 
@@ -86,7 +96,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     const validation = validateForSave('unit', data);
     if(!validation.success) {
         const errors: Record<string, string> = {};
-        _.forEach(validation.errors, (err) => {
+        forEach(validation.errors, (err) => {
             errors[err.field] = err.message;
         });
         return {
@@ -99,7 +109,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     const unitData = { ...validation.data as UnitInput, buildingID: urlBuildingID } as UnitInput;
 
     // Additional validation: ensure unitID is provided for creation
-    if(!unitData.unitID || _.trim(unitData.unitID) === '') {
+    if(!unitData.unitID || trim(unitData.unitID) === '') {
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -114,7 +124,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         statusCode: 201,
         body: JSON.stringify({
             ...unitData,
-            ..._.pick(newUnit, ['created', 'modified'])
+            ...pick(newUnit, ['created', 'modified'])
         })
     };
 };
@@ -134,10 +144,20 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse unit update request body', {
+            error: parseError,
+            context: 'unit update request parsing',
+            httpMethod: evt.requestContext.http.method,
+            buildingID,
+            unitID
+        });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
+            body: JSON.stringify({
+                error: 'Invalid request body',
+                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
+            }),
         };
     }
 
@@ -145,7 +165,7 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     const validation = validateForSave('unit', data);
     if(!validation.success) {
         const errors: Record<string, string> = {};
-        _.forEach(validation.errors, (err) => {
+        forEach(validation.errors, (err) => {
             errors[err.field] = err.message;
         });
         return {
@@ -223,10 +243,18 @@ function parseBulkRequestBody(body: string | null): StatusUpdateData | APIGatewa
     try {
         const rawData = JSON.parse(body || '{}');
         return sanitizeObject(rawData) as StatusUpdateData;
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse bulk status update request body', {
+            error: parseError,
+            context: 'parseBulkRequestBody',
+            rawBody: body
+        });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
+            body: JSON.stringify({
+                error: 'Invalid request body',
+                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
+            }),
         };
     }
 }
@@ -254,7 +282,7 @@ function validateBulkStatusOperation(buildingID: string, data: StatusUpdateData)
         }
     }
 
-    if(_.keys(errors).length > 0) {
+    if(keys(errors).length > 0) {
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -293,11 +321,20 @@ async function executeBulkStatusUpdate(buildingID: string, data: StatusUpdateDat
             };
         }
     } catch(error) {
-        // eslint-disable-next-line no-console -- Logging errors to CloudWatch for debugging bulk operations
-        console.error('Bulk status update error:', error);
+        logger.error('Bulk status update error', {
+            error,
+            context: 'executeBulkStatusUpdate',
+            buildingID,
+            unitCount: data.unitIDs?.length || 0,
+            vacancyClass: data.vacancyClass,
+            operationType: 'status_update'
+        });
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Failed to update units' }),
+            body: JSON.stringify({
+                error: 'Failed to update units',
+                details: isError(error) ? error.message : 'Unknown error during bulk status update'
+            }),
         };
     }
 }
@@ -340,10 +377,18 @@ function parseRentRequestBody(body: string | null): RentUpdateData | APIGatewayP
     try {
         const rawData = JSON.parse(body || '{}');
         return sanitizeObject(rawData) as RentUpdateData;
-    } catch{
+    } catch(parseError) {
+        logger.warn('Failed to parse bulk rent update request body', {
+            error: parseError,
+            context: 'parseRentRequestBody',
+            rawBody: body
+        });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
+            body: JSON.stringify({
+                error: 'Invalid request body',
+                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
+            }),
         };
     }
 }
@@ -376,7 +421,7 @@ function validateBulkRentOperation(buildingID: string, data: RentUpdateData): AP
         }
     }
 
-    if(_.keys(errors).length > 0) {
+    if(keys(errors).length > 0) {
         return {
             statusCode: 400,
             body: JSON.stringify({
@@ -416,11 +461,21 @@ async function executeBulkRentUpdate(buildingID: string, data: RentUpdateData): 
             };
         }
     } catch(error) {
-        // eslint-disable-next-line no-console -- Logging errors to CloudWatch for debugging bulk operations
-        console.error('Bulk rent update error:', error);
+        logger.error('Bulk rent update error', {
+            error,
+            context: 'executeBulkRentUpdate',
+            buildingID,
+            unitCount: data.unitIDs?.length || 0,
+            updateType: data.updateType,
+            value: data.value,
+            operationType: 'rent_update'
+        });
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Failed to update unit rents' }),
+            body: JSON.stringify({
+                error: 'Failed to update unit rents',
+                details: isError(error) ? error.message : 'Unknown error during bulk rent update'
+            }),
         };
     }
 };

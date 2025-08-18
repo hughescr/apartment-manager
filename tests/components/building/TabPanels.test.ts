@@ -4,7 +4,7 @@ import './test-setup';
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 // Component logic testing - no render needed
 // import TabPanels from '../../../astro-src/components/building/TabPanels.astro';
-import _ from 'lodash';
+import { chain, filter, forEach, map } from 'lodash';
 import {
     jest,
     resetAllMocks
@@ -44,7 +44,7 @@ describe('TabPanels Component Logic', () => {
                 units: 'Units management content will be displayed here.'
             };
 
-            _.forEach(defaultContent, (content) => {
+            forEach(defaultContent, (content) => {
                 expect(content).toBeTruthy();
                 expect(typeof content).toBe('string');
                 expect(content.length).toBeGreaterThan(0);
@@ -60,7 +60,7 @@ describe('TabPanels Component Logic', () => {
                 units: 'Units'
             };
 
-            _(tabTitles).values().forEach((title) => {
+            chain(tabTitles).values().forEach((title) => {
                 expect(title).toBeTruthy();
                 expect(typeof title).toBe('string');
             });
@@ -73,7 +73,7 @@ describe('TabPanels Component Logic', () => {
             const activeSectionTab = 'building-info';
             const tabs = ['building-info', 'floorplans-units', 'pricing-policies', 'marketing', 'units'];
 
-            _.forEach(tabs, (tab) => {
+            forEach(tabs, (tab) => {
                 const isVisible = activeSectionTab === tab;
                 if(tab === 'building-info') {
                     expect(isVisible).toBe(true);
@@ -86,7 +86,7 @@ describe('TabPanels Component Logic', () => {
         it('should generate correct Alpine.js show directives', () => {
             const tabs = ['building-info', 'floorplans-units', 'pricing-policies', 'marketing', 'units'];
 
-            const showDirectives = _.map(tabs, tab => `x-show="activeSectionTab === '${tab}'"`);
+            const showDirectives = map(tabs, tab => `x-show="activeSectionTab === '${tab}'"`);
 
             expect(showDirectives).toHaveLength(5);
             expect(showDirectives[0]).toBe('x-show="activeSectionTab === \'building-info\'"');
@@ -151,7 +151,7 @@ describe('TabPanels Component Logic', () => {
                 'units'
             ];
 
-            _.forEach(slots, (slot) => {
+            forEach(slots, (slot) => {
                 expect(typeof slot).toBe('string');
                 expect(slot.length).toBeGreaterThan(0);
             });
@@ -210,7 +210,7 @@ describe('TabPanels Component Logic', () => {
             const stateVar = 'activeSectionTab';
             const tabs = ['building-info', 'units', 'marketing'];
 
-            _.forEach(tabs, (tab) => {
+            forEach(tabs, (tab) => {
                 const condition = `${stateVar} === '${tab}'`;
                 expect(condition).toContain(stateVar);
                 expect(condition).toContain(tab);
@@ -250,7 +250,7 @@ describe('TabPanels Component Logic', () => {
                 complex: 'Complex Alpine.js content will be displayed here.'
             };
 
-            _(_contentTypes).values().forEach((_desc) => {
+            chain(_contentTypes).values().forEach((_desc) => {
                 expect(_desc).toBeTruthy();
                 expect(_desc.length).toBeGreaterThan(15);
             });
@@ -262,7 +262,7 @@ describe('TabPanels Component Logic', () => {
             const tabs = ['building-info', 'units', 'marketing'];
 
             // Simulate tab switching
-            _.forEach(tabs, (tab) => {
+            forEach(tabs, (tab) => {
                 currentTab = tab;
                 expect(currentTab).toBe(tab);
             });
@@ -289,7 +289,7 @@ describe('TabPanels Component Logic', () => {
                 marketing: 'Marketing content will be displayed here.'
             };
 
-            _(_descriptions).values().forEach((_type) => {
+            chain(_descriptions).values().forEach((_type) => {
                 expect(_type).toBeTruthy();
                 expect(_type.length).toBeGreaterThan(0);
             });
@@ -413,14 +413,14 @@ describe('TabPanels Component Logic', () => {
                 'units'
             ];
 
-            _.forEach(supportedTabs, (tab) => {
+            forEach(supportedTabs, (tab) => {
                 expect(typeof tab).toBe('string');
                 expect(tab.length).toBeGreaterThan(0); // Has valid tab name
             });
 
             // Check that we have both kebab-case and single word tabs
-            const kebabCaseTabs = _.filter(supportedTabs, tab => tab.includes('-'));
-            const singleWordTabs = _.filter(supportedTabs, tab => !tab.includes('-'));
+            const kebabCaseTabs = filter(supportedTabs, tab => tab.includes('-'));
+            const singleWordTabs = filter(supportedTabs, tab => !tab.includes('-'));
             expect(kebabCaseTabs.length).toBeGreaterThan(0);
             expect(singleWordTabs.length).toBeGreaterThan(0);
         });

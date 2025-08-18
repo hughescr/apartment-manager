@@ -21,6 +21,19 @@ export const ApartmentTable = new Table({
         type: 'string',
     },
     documentClient: db,
+    indexes: {
+        unitTypeIndex: {
+            type: 'global',
+            partitionKey: {
+                name: 'unitID',
+                type: 'string',
+            },
+            sortKey: {
+                name: 'buildingID',
+                type: 'string',
+            },
+        },
+    },
 });
 
 // Function to get a fresh table instance with current client (for tests)
@@ -51,6 +64,19 @@ export const getApartmentTable = () => {
             type: 'string',
         },
         documentClient: getDynamoClient(),
+        indexes: {
+            unitTypeIndex: {
+                type: 'global',
+                partitionKey: {
+                    name: 'unitID',
+                    type: 'string',
+                },
+                sortKey: {
+                    name: 'buildingID',
+                    type: 'string',
+                },
+            },
+        },
     });
 };
 

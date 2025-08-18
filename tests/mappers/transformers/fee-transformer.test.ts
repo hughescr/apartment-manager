@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { find, forEach, map, reduce, repeat, some } from 'lodash';
 import {
     transformFees,
     categorizeFees,
@@ -114,12 +114,12 @@ describe('Fee Transformer', () => {
             expect(result.deposits).toHaveLength(3);
             expect(result.monthly).toHaveLength(2);
 
-            expect(_.map(result.oneTime, 'type')).toEqual([
+            expect(map(result.oneTime, 'type')).toEqual([
                 FeeType.APPLICATION,
                 FeeType.ADMIN
             ]);
 
-            expect(_.map(result.deposits, 'type')).toEqual([
+            expect(map(result.deposits, 'type')).toEqual([
                 FeeType.SECURITY_DEPOSIT,
                 FeeType.PET_DEPOSIT,
                 FeeType.KEY_DEPOSIT
@@ -267,7 +267,7 @@ describe('Fee Transformer', () => {
             const merged = mergeFees(source1, source2);
 
             expect(merged).toHaveLength(4);
-            expect(_.map(merged, 'type').sort()).toEqual([
+            expect(map(merged, 'type').sort()).toEqual([
                 FeeType.ADMIN,
                 FeeType.APPLICATION,
                 FeeType.PET_FEE,
@@ -334,7 +334,7 @@ describe('Fee Transformer', () => {
 
             const merged = mergeFees(source1, source2);
 
-            expect(_.map(merged, 'type')).toEqual([
+            expect(map(merged, 'type')).toEqual([
                 FeeType.PET_FEE,
                 FeeType.APPLICATION,
                 FeeType.ADMIN
@@ -344,7 +344,7 @@ describe('Fee Transformer', () => {
 
     describe('createConditionalFeeAdder', () => {
         it('should add fee when condition is met', () => {
-            const condition = (fees: Fee[]) => _.some(fees, ['type', FeeType.PET_DEPOSIT]);
+            const condition = (fees: Fee[]) => some(fees, ['type', FeeType.PET_DEPOSIT]);
             const petFee: Fee = { type: FeeType.PET_FEE, amount: 25, refundable: false };
 
             const transformer = createConditionalFeeAdder(condition, petFee);
@@ -361,7 +361,7 @@ describe('Fee Transformer', () => {
         });
 
         it('should not add fee when condition is not met', () => {
-            const condition = (fees: Fee[]) => _.some(fees, ['type', FeeType.PET_DEPOSIT]);
+            const condition = (fees: Fee[]) => some(fees, ['type', FeeType.PET_DEPOSIT]);
             const petFee: Fee = { type: FeeType.PET_FEE, amount: 25, refundable: false };
 
             const transformer = createConditionalFeeAdder(condition, petFee);
@@ -374,7 +374,7 @@ describe('Fee Transformer', () => {
             const result = transformer(feesWithoutPetDeposit);
 
             expect(result).toHaveLength(2);
-            expect(_.find(result, ['type', FeeType.PET_FEE])).toBeUndefined();
+            expect(find(result, ['type', FeeType.PET_FEE])).toBeUndefined();
         });
 
         it('should handle empty fees array', () => {
@@ -391,7 +391,7 @@ describe('Fee Transformer', () => {
 
         it('should work with complex conditions', () => {
             const condition = (fees: Fee[]) => {
-                const totalAmount = _.reduce(fees, (sum, fee) => sum + fee.amount, 0);
+                const totalAmount = reduce(fees, (sum, fee) => sum + fee.amount, 0);
                 return totalAmount > 1000;
             };
             const discountFee: Fee = { type: FeeType.ADMIN, amount: -50, description: 'High deposit discount', refundable: false };
@@ -496,7 +496,7 @@ describe('Fee Transformer', () => {
             const result = transformFees(extremeFees, 'apartments_com');
             expect(result).toHaveLength(4);
             // Check that extreme amounts are handled correctly as numbers
-            _.forEach(result, (fee) => {
+            forEach(result, (fee) => {
                 expect(typeof fee.amount).toBe('number');
             });
         });
@@ -545,7 +545,7 @@ describe('Fee Transformer', () => {
             expect(formatFeeList(fees, '')).toBe('application: $50');
 
             // Very long separator
-            const longSeparator = _.repeat(' | ', 100);
+            const longSeparator = repeat(' | ', 100);
             expect(formatFeeList(fees, longSeparator)).toBe('application: $50');
 
             // Special characters in separator
@@ -618,7 +618,7 @@ describe('Fee Transformer', () => {
 
         // Memory and performance edge cases
         it('should handle very long fee descriptions', () => {
-            const longDesc = _.repeat('A', 10000);
+            const longDesc = repeat('A', 10000);
             const longFee: Fee[] = [
                 { type: FeeType.APPLICATION, amount: 50, description: longDesc, refundable: false }
             ];
@@ -674,7 +674,7 @@ describe('Fee Transformer', () => {
             ];
 
             // All should complete successfully
-            _.forEach(results, (result) => {
+            forEach(results, (result) => {
                 expect(result).toHaveLength(100);
             });
         });

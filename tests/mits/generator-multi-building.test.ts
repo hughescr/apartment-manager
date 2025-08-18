@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { filter } from 'lodash';
 import { generateMultiBuildingMITSFeed } from '../../src/mits/generator';
 import {
     createMockBuilding,
@@ -37,7 +37,7 @@ describe('MITS Multi-Building Generator', () => {
                     'test-building-2': unitTypes2
                 },
                 unitsByBuilding: {
-                    'test-building-1': _.filter(mockUnits, u => u.feedInclusion?.apartments_com) as UnitData[],
+                    'test-building-1': filter(mockUnits, u => u.feedInclusion?.apartments_com) as UnitData[],
                     'test-building-2': units2
                 },
                 siteName: 'apartments_com'

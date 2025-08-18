@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 import { PropertyType, PetType, ParkingType, BuildingData } from '../../src/types';
-import _ from 'lodash';
+import { repeat } from 'lodash';
 import {
     dynamoDbMock,
     setupBuildingsTests,
@@ -195,9 +195,9 @@ describe('Building Data Layer - Data Validation', () => {
             expect.assertions(3);
             const reasonableStringsBuilding = {
                 ...testBuilding,
-                buildingID: _.repeat('a', 100), // 100 characters
-                description: _.repeat('b', 1000), // 1KB
-                propertyDescription: _.repeat('c', 10000) // 10KB
+                buildingID: repeat('a', 100), // 100 characters
+                description: repeat('b', 1000), // 1KB
+                propertyDescription: repeat('c', 10000) // 10KB
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...reasonableStringsBuilding, unitID: 'BUILDING' }));
 

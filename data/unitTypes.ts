@@ -8,7 +8,7 @@ import { UpdateItemCommand } from 'dynamodb-toolbox/entity/actions/update';
 import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
 import { logger } from '@hughescr/logger';
-import _ from 'lodash';
+import { filter, isString, map, omit, replace } from 'lodash';
 
 export async function getUnitTypes(buildingID: string) {
     const UnitTypeEntity = getUnitTypeEntity() as typeof UnitType;
@@ -23,11 +23,11 @@ export async function getUnitTypes(buildingID: string) {
         })
         .options({ consistent: true })
         .send();
-    return _.map(Items, (item) => {
+    return map(Items, (item) => {
         const typedItem = item as unknown as UnitTypeDynamoDBItem;
-        const result = _.omit(typedItem, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
+        const result = omit(typedItem, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
         // Convert updatedAt from string to Date if present
-        if(typedItem?.updatedAt && _.isString(typedItem.updatedAt)) {
+        if(typedItem?.updatedAt && isString(typedItem.updatedAt)) {
             (result as UnitTypeData & { updatedAt?: Date }).updatedAt = new Date(typedItem.updatedAt);
         }
         return result;
@@ -43,7 +43,7 @@ export async function getUnitType(buildingID: string, modelID: string) {
     if(!Item) {
         return undefined;
     }
-    const result = _.omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
+    const result = omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
     // Convert updatedAt from string to Date if present
     if(Item?.updatedAt) {
         result.updatedAt = new Date(Item.updatedAt as string);
@@ -70,7 +70,7 @@ export async function createUnitType(unitType: UnitTypeData) {
     if(!Attributes) {
         return unitType;
     }
-    const result = _.omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
+    const result = omit(Attributes as Record<string, unknown>, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
     if((Attributes as Record<string, unknown>).updatedAt) {
         result.updatedAt = new Date((Attributes as Record<string, unknown>).updatedAt as string);
     }
@@ -91,7 +91,7 @@ function prepareUnitTypeDataForDB(updates: Partial<UnitTypeData>, buildingID: st
 
 // Helper function to convert database item to UnitTypeData
 function convertItemToUnitTypeData(item: Record<string, unknown>): UnitTypeData {
-    const result = _.omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
+    const result = omit(item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as unknown as UnitTypeData;
     if(item.updatedAt) {
         result.updatedAt = new Date(item.updatedAt as string);
     }
@@ -189,10 +189,10 @@ export async function getUnitsByModelID(buildingID: string, modelID: string) {
         .entities(Unit)
         .query({ partition: buildingID })
         .send();
-    const filteredItems = _.filter(Items, ['modelID', modelID]);
+    const filteredItems = filter(Items, ['modelID', modelID]);
     // Remove the UNIT# prefix from unitID and omit metadata fields
-    return _.map(filteredItems, item => ({
-        ..._.omit(item, ['created', 'modified', '_et', '_ct', '_md']),
-        unitID: _.replace(item.unitID || '', /^UNIT#/, '') || item.unitID
+    return map(filteredItems, item => ({
+        ...omit(item, ['created', 'modified', '_et', '_ct', '_md']),
+        unitID: replace(item.unitID || '', /^UNIT#/, '') || item.unitID
     })) as UnitData[];
 }

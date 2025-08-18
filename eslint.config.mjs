@@ -7,7 +7,7 @@ export default
 [
     {
         name: 'ignores',
-        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts'],
+        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts', 'convert-lodash.ts', 'scripts/migrate-building-names.ts'],
     },
     defaultConfig.configs.recommended,
     ...tseslint.configs.recommended,

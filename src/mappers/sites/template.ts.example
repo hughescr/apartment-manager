@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { merge } from 'lodash';
 import type {
     SiteMapper,
     MappedBuilding,
@@ -54,7 +54,7 @@ export class TemplateSiteMapper implements SiteMapper {
     private readonly fieldMappings: FieldMappingConfig;
 
     constructor(customFieldMappings?: Partial<FieldMappingConfig>) {
-        this.fieldMappings = _.merge({}, fieldMappingsV2, customFieldMappings);
+        this.fieldMappings = merge({}, fieldMappingsV2, customFieldMappings);
     }
 
     /**

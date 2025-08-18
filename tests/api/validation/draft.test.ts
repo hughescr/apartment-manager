@@ -3,7 +3,7 @@ import './test-setup';
 import { resetAllMocks } from '../../data/test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
-import _ from 'lodash';
+import { find, noop } from 'lodash';
 import {
     BuildingDraftSchema,
     UnitTypeDraftSchema,
@@ -20,7 +20,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
     beforeEach(() => {
         // Reset any mock state between tests
-        _.noop();
+        noop();
     });
 
     describe('BuildingDraftSchema', () => {
@@ -75,7 +75,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = BuildingDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const idError = _.find(result.error.issues, issue => issue.path.includes('buildingID'));
+                const idError = find(result.error.issues, issue => issue.path.includes('buildingID'));
                 expect(idError?.message).toContain('must be a valid building ID format');
             }
         });
@@ -89,7 +89,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = BuildingDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const nameError = _.find(result.error.issues, issue => issue.path.includes('buildingName'));
+                const nameError = find(result.error.issues, issue => issue.path.includes('buildingName'));
                 expect(nameError?.message).toContain('buildingName is required');
             }
         });
@@ -134,7 +134,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = BuildingDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const emailError = _.find(result.error.issues, issue => issue.path.includes('email'));
+                const emailError = find(result.error.issues, issue => issue.path.includes('email'));
                 expect(emailError?.message).toContain('Invalid email address format');
             }
         });
@@ -148,7 +148,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = BuildingDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const zipError = _.find(result.error.issues, issue => issue.path.includes('zip'));
+                const zipError = find(result.error.issues, issue => issue.path.includes('zip'));
                 expect(zipError?.message).toContain('ZIP code must be in format 12345 or 12345-6789');
             }
         });
@@ -163,8 +163,8 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = BuildingDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const latError = _.find(result.error.issues, issue => issue.path.includes('latitude'));
-                const lngError = _.find(result.error.issues, issue => issue.path.includes('longitude'));
+                const latError = find(result.error.issues, issue => issue.path.includes('latitude'));
+                const lngError = find(result.error.issues, issue => issue.path.includes('longitude'));
                 expect(latError?.message).toContain('Latitude must be between -90 and 90');
                 expect(lngError?.message).toContain('Longitude must be between -180 and 180');
             }
@@ -211,8 +211,8 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitTypeDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const buildingIdError = _.find(result.error.issues, issue => issue.path.includes('buildingID'));
-                const modelIdError = _.find(result.error.issues, issue => issue.path.includes('modelID'));
+                const buildingIdError = find(result.error.issues, issue => issue.path.includes('buildingID'));
+                const modelIdError = find(result.error.issues, issue => issue.path.includes('modelID'));
                 expect(buildingIdError?.message).toContain('must be a valid building ID format');
                 expect(modelIdError?.message).toContain('can only contain letters, numbers, underscores, and hyphens');
             }
@@ -254,7 +254,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitTypeDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const rentError = _.find(result.error.issues, issue =>
+                const rentError = find(result.error.issues, issue =>
                     issue.path.includes('maxRent') && issue.message.includes('Min rent cannot be greater than max rent')
                 );
                 expect(rentError).toBeDefined();
@@ -271,7 +271,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitTypeDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const sqftError = _.find(result.error.issues, issue =>
+                const sqftError = find(result.error.issues, issue =>
                     issue.path.includes('maxSqft') && issue.message.includes('Min square footage cannot be greater than max square footage')
                 );
                 expect(sqftError).toBeDefined();
@@ -288,7 +288,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitTypeDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const leaseError = _.find(result.error.issues, issue =>
+                const leaseError = find(result.error.issues, issue =>
                     issue.path.includes('maxLeaseTerm') && issue.message.includes('Min lease term cannot be greater than max lease term')
                 );
                 expect(leaseError).toBeDefined();
@@ -347,8 +347,8 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const buildingIdError = _.find(result.error.issues, issue => issue.path.includes('buildingID'));
-                const unitIdError = _.find(result.error.issues, issue => issue.path.includes('unitID'));
+                const buildingIdError = find(result.error.issues, issue => issue.path.includes('buildingID'));
+                const unitIdError = find(result.error.issues, issue => issue.path.includes('unitID'));
                 expect(buildingIdError?.message).toContain('must be a valid building ID format');
                 expect(unitIdError?.message).toContain('can only contain letters, numbers, underscores, and hyphens');
             }
@@ -364,7 +364,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const numberError = _.find(result.error.issues, issue => issue.path.includes('unitNumber'));
+                const numberError = find(result.error.issues, issue => issue.path.includes('unitNumber'));
                 expect(numberError?.message).toContain('Unit number is required');
             }
         });
@@ -405,9 +405,9 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const rentError = _.find(result.error.issues, issue => issue.path.includes('rent'));
-                const sqftError = _.find(result.error.issues, issue => issue.path.includes('sqft'));
-                const bedsError = _.find(result.error.issues, issue => issue.path.includes('beds'));
+                const rentError = find(result.error.issues, issue => issue.path.includes('rent'));
+                const sqftError = find(result.error.issues, issue => issue.path.includes('sqft'));
+                const bedsError = find(result.error.issues, issue => issue.path.includes('beds'));
                 expect(rentError?.message).toContain('cannot be negative');
                 expect(sqftError?.message).toContain('cannot be negative');
                 expect(bedsError?.message).toContain('Number of beds must be between 0 and 10');
@@ -423,7 +423,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const result = UnitDraftSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
             if(!result.success) {
-                const dateError = _.find(result.error.issues, issue => issue.path.includes('dateAvailable'));
+                const dateError = find(result.error.issues, issue => issue.path.includes('dateAvailable'));
                 expect(dateError?.message).toContain('Invalid date format');
             }
         });

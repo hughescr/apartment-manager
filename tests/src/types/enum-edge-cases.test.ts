@@ -6,7 +6,7 @@
  * that were previously part of the larger edge-cases.test.ts file.
  */
 
-import _ from 'lodash';
+import { repeat, times } from 'lodash';
 import {
     describe,
     it,
@@ -146,7 +146,7 @@ describe('Enum Edge Cases', () => {
         });
 
         it('should accept very large enum arrays', () => {
-            const manyTypes = _.times(10000, () => PetType.DOG);
+            const manyTypes = times(10000, () => PetType.DOG);
             const policy: PetPolicy = {
                 allowed: true,
                 types: manyTypes
@@ -238,7 +238,7 @@ describe('Enum Edge Cases', () => {
         });
 
         it('should handle very long enum string values', () => {
-            const longString = _.repeat('a', 10000);
+            const longString = repeat('a', 10000);
             const amenity: Amenity = {
                 name: 'Test',
                 category: longString as AmenityCategory

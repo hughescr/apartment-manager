@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { radarService, getUserLocation, type RadarAutocompleteResult } from '../src/services/radar-service';
 import { logger as baseLogger } from '@hughescr/logger';
-import _ from 'lodash';
+import { chain, map, split, trim } from 'lodash';
 
 const logger = baseLogger;
 
@@ -101,7 +101,7 @@ function getClientIP(event: { headers?: Record<string, string | undefined> }): s
         const value = headers[header];
         if(value) {
             // X-Forwarded-For can contain multiple IPs, take the first one
-            const ip = _.trim(_.split(value, ',')[0]);
+            const ip = trim(split(value, ',')[0]);
             if(ip && ip !== '127.0.0.1' && ip !== '::1') {
                 logger.debug(`Client IP found in ${header}: ${ip}`);
                 return ip;
@@ -124,9 +124,10 @@ function convertRadarToAddressSuggestion(radarResult: RadarAutocompleteResult): 
             city: radarResult.components.city,
             state: radarResult.components.state,
             postalCode: radarResult.components.postalCode,
-            formatted: _([radarResult.components.street, radarResult.components.city, radarResult.components.state, radarResult.components.postalCode])
+            formatted: chain([radarResult.components.street, radarResult.components.city, radarResult.components.state, radarResult.components.postalCode])
                 .compact()
                 .join(', ')
+                .value()
         },
         coordinates: radarResult.coordinates
             ? {
@@ -170,7 +171,7 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
         const lonParam = queryParams.lon;
 
         // Validate query parameter
-        if(!query || !_.trim(query)) {
+        if(!query || !trim(query)) {
             return {
                 statusCode: 400,
                 headers: createHeaders(),
@@ -181,7 +182,7 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
             };
         }
 
-        const trimmedQuery = _.trim(query);
+        const trimmedQuery = trim(query);
 
         // Validate query length
         if(trimmedQuery.length < 3) {
@@ -252,7 +253,7 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
         });
 
         // Convert Radar results to backward-compatible format
-        const suggestions = _.map(radarResults, convertRadarToAddressSuggestion);
+        const suggestions = map(radarResults, convertRadarToAddressSuggestion);
 
         const response: AutocompleteResponse = {
             success: true,

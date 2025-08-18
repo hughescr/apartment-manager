@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { replace, trim } from 'lodash';
 import type { TransformerFunction } from '../types.js';
 
 /**
@@ -40,7 +40,7 @@ export function parseCurrency(value: string | undefined): number | undefined {
     }
 
     // Remove currency symbols and commas
-    const cleaned = _.trim(_.replace(value, /[$,]/g, ''));
+    const cleaned = trim(replace(value, /[$,]/g, ''));
 
     // Try to parse
     const parsed = parseFloat(cleaned);

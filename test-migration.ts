@@ -2,6 +2,7 @@
  * Test the migration logic without requiring AWS resources
  */
 import { generateBuildingName } from './src/utils/index.js';
+import { forEach } from 'lodash';
 import {
     completeBuilding,
     minimalBuilding,
@@ -22,7 +23,7 @@ interface TestBuilding {
 }
 
 function testBuildingNameGeneration() {
-    console.log('🧪 Testing building name generation logic...\n');
+    // Testing building name generation logic
 
     const testBuildings: TestBuilding[] = [
         completeBuilding,
@@ -42,16 +43,12 @@ function testBuildingNameGeneration() {
     let successfulGeneration = 0;
     let fallbackUsed = 0;
 
-    console.log('📋 Test Results:');
-    console.log('================\n');
-
-    testBuildings.forEach((building) => {
+    forEach(testBuildings, (building) => {
         processed++;
 
         // Check if building already has a name
         if(building.buildingName) {
             withExistingNames++;
-            console.log(`✅ ${building.buildingID}: Already has name "${building.buildingName}"`);
             return;
         }
 
@@ -68,23 +65,9 @@ function testBuildingNameGeneration() {
         } else {
             successfulGeneration++;
         }
-
-        console.log(`🏷️  ${building.buildingID}:`);
-        console.log(`    Street: "${building.street || 'N/A'}"`);
-        console.log(`    Generated: "${generatedName}"`);
-        console.log('');
     });
 
-    console.log('\n📊 Summary:');
-    console.log(`   Total buildings processed: ${processed}`);
-    console.log(`   Already had names: ${withExistingNames}`);
-    console.log(`   Successful generation from street: ${successfulGeneration}`);
-    console.log(`   Used fallback (building ID): ${fallbackUsed}`);
-
     // Test edge cases
-    console.log('\n🔍 Testing edge cases:');
-    console.log('=====================\n');
-
     const edgeCases = [
         { street: '1260 NW Naito Pkwy', expected: '1260 Naito' },
         { street: '1399 California St', expected: '1399 California' },
@@ -101,20 +84,16 @@ function testBuildingNameGeneration() {
     let edgeCasesPassed = 0;
     let edgeCasesFailed = 0;
 
-    edgeCases.forEach(({ street, expected }) => {
+    forEach(edgeCases, ({ street, expected }) => {
         const result = generateBuildingName(street);
         const passed = result === expected;
 
         if(passed) {
             edgeCasesPassed++;
-            console.log(`✅ "${street}" → "${result}"`);
         } else {
             edgeCasesFailed++;
-            console.log(`❌ "${street}" → "${result}" (expected "${expected}")`);
         }
     });
-
-    console.log(`\n🧪 Edge cases: ${edgeCasesPassed} passed, ${edgeCasesFailed} failed`);
 
     return {
         processed,
@@ -130,7 +109,7 @@ function testBuildingNameGeneration() {
 const results = testBuildingNameGeneration();
 
 if(results.edgeCasesFailed === 0) {
-    console.log('\n🎉 All tests passed! Migration logic is working correctly.');
+    // All tests passed - migration logic working correctly
 } else {
-    console.log('\n⚠️  Some edge cases failed. Review the building name generation logic.');
+    // Some edge cases failed - review needed
 }

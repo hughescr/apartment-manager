@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { geocodingService, GeocodingResult } from '../src/services/geocoding';
 import { logger as baseLogger } from '@hughescr/logger';
-import _ from 'lodash';
+import { trim } from 'lodash';
 
 const logger = baseLogger;
 
@@ -83,7 +83,7 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         // Validate required fields
-        if(!requestData.address || !_.trim(requestData.address)) {
+        if(!requestData.address || !trim(requestData.address)) {
             return {
                 statusCode: 400,
                 headers: createHeaders(),
@@ -102,9 +102,9 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
 
         // Perform geocoding
         const result = await geocodingService.geocode(
-            _.trim(requestData.address),
-            requestData.city ? _.trim(requestData.city) : undefined,
-            requestData.state ? _.trim(requestData.state) : undefined
+            trim(requestData.address),
+            requestData.city ? trim(requestData.city) : undefined,
+            requestData.state ? trim(requestData.state) : undefined
         );
 
         const response: GeocodingResponse = {

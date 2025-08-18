@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { find, forEach, keys, map, noop, repeat, times } from 'lodash';
 import { ApartmentsComMapper } from '../../../src/mappers/sites/apartments-com';
 import {
     basicBuilding,
@@ -26,7 +26,7 @@ describe('ApartmentsComMapper', () => {
         mockFieldMappings = {};
         mockTransformers = {
             get: () => undefined,
-            register: _.noop
+            register: noop
         };
     });
 
@@ -85,7 +85,7 @@ describe('ApartmentsComMapper', () => {
             expect(result.fees!.length).toBeGreaterThan(0);
 
             // Check that fees are transformed correctly
-            const appFee = _.find(result.fees, fee => fee.type.includes('Application'));
+            const appFee = find(result.fees, fee => fee.type.includes('Application'));
             expect(appFee).toBeDefined();
             expect(appFee!.amount).toBe(75);
         });
@@ -103,7 +103,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(buildingWithUtils);
 
             expect(result.utilities).toBeDefined();
-            expect(_.keys(result.utilities!)).toHaveLength(3);
+            expect(keys(result.utilities!)).toHaveLength(3);
         });
 
         it('should transform parking options', () => {
@@ -232,8 +232,8 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnitType(unitTypeWithAmenities, basicBuilding);
 
             expect(result.amenities).toBeDefined();
-            expect(_.map(result.amenities, 'name')).toContain('A/C');
-            expect(_.map(result.amenities, 'name')).toContain('Dishwasher');
+            expect(map(result.amenities, 'name')).toContain('A/C');
+            expect(map(result.amenities, 'name')).toContain('Dishwasher');
         });
 
         it('should default photos to empty array', () => {
@@ -304,9 +304,9 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnit(context);
 
             // Should only include unit-category amenities for units
-            expect(_.map(result.amenities, 'name')).toContain('Wood Floors');
-            expect(_.map(result.amenities, 'name')).toContain('A/C');
-            expect(_.map(result.amenities, 'name')).not.toContain('Pool'); // Property amenity filtered out
+            expect(map(result.amenities, 'name')).toContain('Wood Floors');
+            expect(map(result.amenities, 'name')).toContain('A/C');
+            expect(map(result.amenities, 'name')).not.toContain('Pool'); // Property amenity filtered out
         });
 
         it('should format available date', () => {
@@ -371,10 +371,10 @@ describe('ApartmentsComMapper', () => {
 
                 expect(result.isValid).toBe(false);
                 expect(result.errors).toHaveLength(4);
-                expect(_.map(result.errors, 'field')).toContain('street');
-                expect(_.map(result.errors, 'field')).toContain('city');
-                expect(_.map(result.errors, 'field')).toContain('state');
-                expect(_.map(result.errors, 'field')).toContain('zip');
+                expect(map(result.errors, 'field')).toContain('street');
+                expect(map(result.errors, 'field')).toContain('city');
+                expect(map(result.errors, 'field')).toContain('state');
+                expect(map(result.errors, 'field')).toContain('zip');
             });
 
             it('should validate partial missing fields', () => {
@@ -414,9 +414,9 @@ describe('ApartmentsComMapper', () => {
 
                 expect(result.isValid).toBe(false);
                 expect(result.errors).toHaveLength(3);
-                expect(_.map(result.errors, 'field')).toContain('modelName');
-                expect(_.map(result.errors, 'field')).toContain('beds');
-                expect(_.map(result.errors, 'field')).toContain('baths');
+                expect(map(result.errors, 'field')).toContain('modelName');
+                expect(map(result.errors, 'field')).toContain('beds');
+                expect(map(result.errors, 'field')).toContain('baths');
             });
 
             it('should accept zero values for beds/baths', () => {
@@ -531,7 +531,7 @@ describe('ApartmentsComMapper', () => {
         });
 
         it('should handle very long descriptions', () => {
-            const longDescription = _.repeat('A', 5000);
+            const longDescription = repeat('A', 5000);
             const buildingLongDesc: BuildingData = {
                 ...basicBuilding,
                 propertyDescription: longDescription
@@ -630,7 +630,7 @@ describe('ApartmentsComMapper', () => {
 
         // Extremely long descriptions exceeding API limits
         it('should handle descriptions exceeding 10000 characters', () => {
-            const veryLongDesc = _.repeat('Lorem ipsum dolor sit amet. ', 400); // ~11200 chars
+            const veryLongDesc = repeat('Lorem ipsum dolor sit amet. ', 400); // ~11200 chars
             const unitLongDesc: UnitData = {
                 ...basicUnit,
                 unitDescription: veryLongDesc
@@ -658,7 +658,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(maliciousBuilding);
 
             expect(result.description).toBe(maliciousContent);
-            expect(_.map(result.amenities, 'name')).toContain('<b>Bold Amenity</b>');
+            expect(map(result.amenities, 'name')).toContain('<b>Bold Amenity</b>');
         });
 
         // Invalid date formats
@@ -671,7 +671,7 @@ describe('ApartmentsComMapper', () => {
                 { input: '', expected: undefined }
             ];
 
-            _.forEach(invalidDates, ({ input, expected }) => {
+            forEach(invalidDates, ({ input, expected }) => {
                 const unitInvalidDate: UnitData = {
                     ...basicUnit,
                     availableDate: input
@@ -713,7 +713,7 @@ describe('ApartmentsComMapper', () => {
 
         // Extremely large arrays
         it('should handle extremely large amenity arrays', () => {
-            const manyAmenities = _.times(200, (i) => {
+            const manyAmenities = times(200, (i) => {
                 let category: AmenityCategory;
                 if(i % 3 === 0) {
                     category = AmenityCategory.UNIT;
@@ -740,7 +740,7 @@ describe('ApartmentsComMapper', () => {
         });
 
         it('should handle extremely large photo arrays', () => {
-            const manyPhotos = _.times(150, i => `https://example.com/photo${i}.jpg`);
+            const manyPhotos = times(150, i => `https://example.com/photo${i}.jpg`);
 
             const buildingManyPhotos: BuildingData = {
                 ...basicBuilding,
@@ -764,7 +764,7 @@ describe('ApartmentsComMapper', () => {
                 'invalid-phone'
             ];
 
-            _.forEach(phoneFormats, (phone) => {
+            forEach(phoneFormats, (phone) => {
                 const buildingWithPhone: BuildingData = {
                     ...basicBuilding,
                     contactInfo: { phone, email: 'test@example.com' }
@@ -859,10 +859,10 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnit(context);
 
             // Should filter to only unit amenities for units
-            expect(_.map(result.amenities, 'name')).toContain('Wood Floors');
-            expect(_.map(result.amenities, 'name')).toContain('Balcony');
-            expect(_.map(result.amenities, 'name')).toContain('Dishwasher');
-            expect(_.map(result.amenities, 'name')).not.toContain('Pool'); // Property amenity
+            expect(map(result.amenities, 'name')).toContain('Wood Floors');
+            expect(map(result.amenities, 'name')).toContain('Balcony');
+            expect(map(result.amenities, 'name')).toContain('Dishwasher');
+            expect(map(result.amenities, 'name')).not.toContain('Pool'); // Property amenity
         });
 
         // Reserved keywords in Apartments.com system
@@ -880,7 +880,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapBuilding(reservedBuilding);
 
             expect(result.description).toBe('null undefined false true delete');
-            expect(_.map(result.amenities, 'name')).toContain('SELECT * FROM');
+            expect(map(result.amenities, 'name')).toContain('SELECT * FROM');
         });
 
         // Timezone edge cases

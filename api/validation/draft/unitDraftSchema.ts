@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import _ from 'lodash';
+import { some } from 'lodash';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
 
 /**
@@ -62,7 +62,7 @@ export const UnitDraftSchema = z.looseObject({
             /\.\.[/\\]/,                   // Path traversal
         ];
 
-        return !_.some(maliciousPatterns, pattern => pattern.test(id));
+        return !some(maliciousPatterns, pattern => pattern.test(id));
     }, 'Unit ID contains invalid or potentially dangerous characters'),
     unitNumber: z.string().min(1, 'Unit number is required'),
 

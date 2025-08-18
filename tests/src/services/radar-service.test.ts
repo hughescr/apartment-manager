@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { every, startsWith } from 'lodash';
 
 // Verification tests for the Radar service integration
 describe('Radar Service Integration Verification', () => {
@@ -71,6 +71,6 @@ describe('Implementation Summary', () => {
         ];
 
         expect(completedRequirements.length).toBe(12);
-        expect(_.every(completedRequirements, req => _.startsWith(req, '✅'))).toBe(true);
+        expect(every(completedRequirements, req => startsWith(req, '✅'))).toBe(true);
     });
 });

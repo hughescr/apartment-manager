@@ -4,7 +4,7 @@ import './test-setup';
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 // Component logic testing - no render needed
 // import TabNavigator from '../../../astro-src/components/building/TabNavigator.astro';
-import _ from 'lodash';
+import { filter, find, forEach, keys, map } from 'lodash';
 import { TAB_CONFIGS, type TabConfig } from '../../../astro-src/lib/building/types';
 import {
     jest,
@@ -30,12 +30,12 @@ describe('TabNavigator Component Logic', () => {
             ];
 
             // TAB_CONFIGS is an array, extract the actual tab keys
-            const actualTabKeys = _.map(TAB_CONFIGS, 'key');
+            const actualTabKeys = map(TAB_CONFIGS, 'key');
             expect(actualTabKeys).toEqual(expect.arrayContaining(expectedTabs));
         });
 
         it('should have proper tab configuration structure', () => {
-            _.forEach(TAB_CONFIGS, (tab) => {
+            forEach(TAB_CONFIGS, (tab) => {
                 expect(tab).toHaveProperty('key');
                 expect(tab).toHaveProperty('label');
                 expect(typeof tab.key).toBe('string');
@@ -45,18 +45,18 @@ describe('TabNavigator Component Logic', () => {
         });
 
         it('should have mobile labels for specific tabs', () => {
-            const tabsWithMobileLabels = _.filter(TAB_CONFIGS, 'mobileLabel');
+            const tabsWithMobileLabels = filter(TAB_CONFIGS, 'mobileLabel');
             expect(tabsWithMobileLabels.length).toBeGreaterThan(0);
 
             // Check specific mobile labels
-            const floorplansTab = _.find(TAB_CONFIGS, { key: 'floorplans-units' });
-            const pricingTab = _.find(TAB_CONFIGS, { key: 'pricing-policies' });
+            const floorplansTab = find(TAB_CONFIGS, { key: 'floorplans-units' });
+            const pricingTab = find(TAB_CONFIGS, { key: 'pricing-policies' });
             expect(floorplansTab?.mobileLabel).toBe('Floorplans');
             expect(pricingTab?.mobileLabel).toBe('Pricing');
         });
 
         it('should handle tabs without mobile labels', () => {
-            const tabsWithoutMobileLabels = _.filter(TAB_CONFIGS, tab => !tab.mobileLabel);
+            const tabsWithoutMobileLabels = filter(TAB_CONFIGS, tab => !tab.mobileLabel);
             expect(tabsWithoutMobileLabels.length).toBeGreaterThan(0);
         });
     });
@@ -66,7 +66,7 @@ describe('TabNavigator Component Logic', () => {
             // Test active tab logic
             const activeSectionTab = 'building-info';
 
-            _.forEach(TAB_CONFIGS, (tab) => {
+            forEach(TAB_CONFIGS, (tab) => {
                 const isActive = activeSectionTab === tab.key;
                 expect(typeof isActive).toBe('boolean');
 
@@ -96,7 +96,7 @@ describe('TabNavigator Component Logic', () => {
         it('should provide tab display names', () => {
             // Test getTabDisplayName logic
             const getTabDisplayName = (tabKey: string) => {
-                const tab = _.find(TAB_CONFIGS, { key: tabKey });
+                const tab = find(TAB_CONFIGS, { key: tabKey });
                 return tab ? tab.label : 'Building Info';
             };
 
@@ -136,8 +136,8 @@ describe('TabNavigator Component Logic', () => {
                 return tab.label;
             };
 
-            const floorplansTab = _.find(TAB_CONFIGS, { key: 'floorplans-units' });
-            const buildingInfoTab = _.find(TAB_CONFIGS, { key: 'building-info' });
+            const floorplansTab = find(TAB_CONFIGS, { key: 'floorplans-units' });
+            const buildingInfoTab = find(TAB_CONFIGS, { key: 'building-info' });
 
             if(floorplansTab) {
                 expect(getResponsiveLabel(floorplansTab, true)).toBe('Floorplans');
@@ -236,7 +236,7 @@ describe('TabNavigator Component Logic', () => {
 
         it('should provide clear button labeling', () => {
             // Test button text clarity
-            _.forEach(TAB_CONFIGS, (tab) => {
+            forEach(TAB_CONFIGS, (tab) => {
                 expect(tab.label).toBeTruthy();
                 expect(typeof tab.label).toBe('string');
                 expect(tab.label.length).toBeGreaterThan(0);
@@ -249,11 +249,11 @@ describe('TabNavigator Component Logic', () => {
             // Test click handler logic
             const clickHandlers: Record<string, string> = {};
 
-            _.forEach(TAB_CONFIGS, (tab) => {
+            forEach(TAB_CONFIGS, (tab) => {
                 clickHandlers[tab.key] = `activeSectionTab = '${tab.key}'`;
             });
 
-            expect(_.keys(clickHandlers)).toHaveLength(TAB_CONFIGS.length);
+            expect(keys(clickHandlers)).toHaveLength(TAB_CONFIGS.length);
             expect(clickHandlers['building-info']).toContain('building-info');
         });
 
@@ -278,7 +278,7 @@ describe('TabNavigator Component Logic', () => {
         it('should handle missing tab configurations', () => {
             // Test graceful degradation
             const getTabSafely = (tabKey: string) => {
-                return _.find(TAB_CONFIGS, { key: tabKey }) || { key: tabKey, label: 'Unknown Tab' };
+                return find(TAB_CONFIGS, { key: tabKey }) || { key: tabKey, label: 'Unknown Tab' };
             };
 
             const validTab = getTabSafely('building-info');
@@ -291,7 +291,7 @@ describe('TabNavigator Component Logic', () => {
         it('should handle undefined active tab state', () => {
             // Test undefined state handling
             const getTabDisplayName = (tabKey: string | undefined) => {
-                const tab = tabKey ? _.find(TAB_CONFIGS, { key: tabKey }) : undefined;
+                const tab = tabKey ? find(TAB_CONFIGS, { key: tabKey }) : undefined;
                 if(!tab) {
                     return 'Building Info'; // Default
                 }
@@ -343,7 +343,7 @@ describe('TabNavigator Component Logic', () => {
         it('should handle rapid tab switching', () => {
             // Test performance with rapid changes
             let activeSectionTab = 'building-info';
-            const tabKeys = _.map(TAB_CONFIGS, 'key');
+            const tabKeys = map(TAB_CONFIGS, 'key');
 
             // Simulate rapid tab switching
             for(let i = 0; i < 10; i++) {

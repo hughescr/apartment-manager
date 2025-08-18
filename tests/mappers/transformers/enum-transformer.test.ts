@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Testing edge cases with invalid types */
 import { describe, it, expect } from 'bun:test';
-import _ from 'lodash';
+import { values } from 'lodash';
 import {
     createEnumTransformer,
     createReverseEnumTransformer,
@@ -310,7 +310,7 @@ describe('Enum Transformer', () => {
 
             // Result should be PropertyType | undefined
             if(result) {
-                expect(_.values(PropertyType)).toContain(result);
+                expect(values(PropertyType)).toContain(result);
             }
         });
     });

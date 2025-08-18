@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isNumber, isObject, map } from 'lodash';
 import type {
     SiteMapper,
     MappedBuilding,
@@ -44,10 +44,10 @@ function getDepositAmount(deposit: number | Deposit | undefined): number | undef
     if(deposit === undefined || deposit === null) {
         return undefined;
     }
-    if(_.isNumber(deposit)) {
+    if(isNumber(deposit)) {
         return deposit;
     }
-    if(_.isObject(deposit) && 'amount' in deposit) {
+    if(isObject(deposit) && 'amount' in deposit) {
         return (deposit as Deposit).amount;
     }
     return undefined;
@@ -287,7 +287,7 @@ export class ApartmentsComMapper implements SiteMapper {
             this.siteId
         );
 
-        return _.map(building.parkingOptions, option => ({
+        return map(building.parkingOptions, option => ({
             type: parkingTransformer(option.type),
             included: option.included,
             fee: option.fee,
@@ -328,7 +328,7 @@ export class ApartmentsComMapper implements SiteMapper {
 
         return {
             allowed: true,
-            types: policy.types ? _.map(policy.types, (type: PetType) => petTransformer(type)) : undefined,
+            types: policy.types ? map(policy.types, (type: PetType) => petTransformer(type)) : undefined,
             maxCount: policy.maxCount,
             weightLimit: policy.weightLimit,
             deposit: policy.deposit,

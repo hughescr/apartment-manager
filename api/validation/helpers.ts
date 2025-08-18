@@ -7,7 +7,7 @@
  */
 
 import { z } from 'zod';
-import _ from 'lodash';
+import { flatMap, forEach, includes, isArray, isEmpty, isNumber, isPlainObject, isString, last, map, omit, replace, split, startCase } from 'lodash';
 import { sanitizeHtml, validateArraySize, validateNumericValue } from '../security-validation';
 
 // Import draft schemas (permissive)
@@ -111,7 +111,7 @@ export function validateForSave(
     }
 
     // Handle empty update bodies - allow them to pass through after entity type validation
-    if(_.isEmpty(data) || (_.isPlainObject(data) && _.isEmpty(data as Record<string, unknown>))) {
+    if(isEmpty(data) || (isPlainObject(data) && isEmpty(data as Record<string, unknown>))) {
         return {
             success: true,
             data: {},
@@ -142,7 +142,7 @@ export function validateForSave(
     }
 
     // Transform Zod errors to user-friendly format
-    const errors = _.map(result.error.issues, (issue): ValidationError => ({
+    const errors = map(result.error.issues, (issue): ValidationError => ({
         field: issue.path.join('.'),
         message: issue.message,
         code: issue.code,
@@ -206,7 +206,7 @@ export function validateForPublish(
     }
 
     // Transform Zod errors with MITS context
-    const errors = _.map(result.error.issues, (issue): ValidationError => {
+    const errors = map(result.error.issues, (issue): ValidationError => {
         const fieldPath = issue.path.join('.');
         const mitsContext = errorMessages[fieldPath] || 'Required for MITS 4.1 compliance';
 
@@ -241,8 +241,8 @@ export function getMissingMITSFields(data: {
     const validation = validateForMITSPublication(data);
 
     if(!validation.isValid) {
-        const fields = _.flatMap(validation.errors, error =>
-            _.map(error.issues, issue => ({
+        const fields = flatMap(validation.errors, error =>
+            map(error.issues, issue => ({
                 field: issue.path,
                 displayName: formatFieldDisplayName(issue.path),
                 description: issue.message,
@@ -253,7 +253,7 @@ export function getMissingMITSFields(data: {
             }))
         );
 
-        _.forEach(fields, (field) => {
+        forEach(fields, (field) => {
             // Add index information for unit types and units
             if(field.index !== undefined) {
                 field.displayName += ` (${field.entityType === 'unitType' ? 'Unit Type' : 'Unit'} #${field.index + 1})`;
@@ -279,27 +279,27 @@ function cleanDataForMITSValidation(data: {
     } {
     // Remove non-MITS fields that might be present in the data
     // Building: Remove database-specific and non-MITS fields
-    const cleanBuilding = _.omit(data.building as Record<string, unknown>, [
+    const cleanBuilding = omit(data.building as Record<string, unknown>, [
         'photos', 'unitID', 'notes', 'roomsForRent', 'shortTermLeaseAllowed',
         'screeningCriteria', 'tourAvailability', 'incomeRestrictions',
         '_et', '_ct', '_md' // DynamoDB Toolbox metadata
     ]);
 
     // Unit Types: Remove database-specific fields
-    const cleanUnitTypes = _.map(data.unitTypes, ut => _.omit(ut as Record<string, unknown>, [
+    const cleanUnitTypes = map(data.unitTypes, ut => omit(ut as Record<string, unknown>, [
         'unitID', '_et', '_ct', '_md'
     ]));
 
     // Units: Remove non-MITS fields and clean unitID
-    const cleanUnits = _.map(data.units, (u) => {
+    const cleanUnits = map(data.units, (u) => {
         const unit = u as Record<string, unknown>;
         // Remove non-MITS fields
-        const cleanedUnit = _.omit(unit, [
+        const cleanedUnit = omit(unit, [
             'occupied', 'unitRentSpecial', 'notes', '_et', '_ct', '_md'
         ]);
         // Ensure unitID doesn't have special characters for MITS validation
-        if(cleanedUnit.unitID && _.isString(cleanedUnit.unitID)) {
-            cleanedUnit.unitID = _.replace(cleanedUnit.unitID, /[^\w-]/g, '-');
+        if(cleanedUnit.unitID && isString(cleanedUnit.unitID)) {
+            cleanedUnit.unitID = replace(cleanedUnit.unitID, /[^\w-]/g, '-');
         }
         return cleanedUnit;
     });
@@ -357,8 +357,8 @@ export function canPublishToSite(
         canPublish: canPublishToSiteResult,
         missingFields: [...missingFields, ...siteSpecificMissing],
         errors: [
-            ..._.flatMap(mitsValidation.errors, error =>
-                _.map(error.issues, issue => ({
+            ...flatMap(mitsValidation.errors, error =>
+                map(error.issues, issue => ({
                     field: issue.path,
                     message: issue.message,
                     context: 'MITS 4.1 compliance requirement'
@@ -393,7 +393,7 @@ function formatFieldDisplayName(fieldPath: string): string {
         unitNumber: 'Unit Number'
     };
 
-    return fieldMappings[fieldPath] || _.startCase(_.last(_.split(fieldPath, '.')) || fieldPath);
+    return fieldMappings[fieldPath] || startCase(last(split(fieldPath, '.')) || fieldPath);
 }
 
 /**
@@ -442,7 +442,7 @@ function validateApartmentsComRequirements(data: {
 
     // Apartments.com requires at least one photo for buildings
     const building = data.building as { photos?: unknown[] };
-    if(!building?.photos || !_.isArray(building.photos) || building.photos.length === 0) {
+    if(!building?.photos || !isArray(building.photos) || building.photos.length === 0) {
         errors.push({
             field: 'building.photos',
             message: 'At least one building photo is required for Apartments.com',
@@ -464,7 +464,7 @@ function getApartmentsComMissingFields(data: {
     const missing: MissingMITSField[] = [];
 
     const building = data.building as { photos?: unknown[] };
-    if(!building?.photos || !_.isArray(building.photos) || building.photos.length === 0) {
+    if(!building?.photos || !isArray(building.photos) || building.photos.length === 0) {
         missing.push({
             field: 'building.photos',
             displayName: 'Building Photos',
@@ -488,7 +488,7 @@ function validateZillowRequirements(data: {
     const errors: ValidationError[] = [];
 
     // Zillow requires rent information for all units
-    _.forEach(data.units, (unit, index) => {
+    forEach(data.units, (unit, index) => {
         const typedUnit = unit as { rent?: number };
         if(!typedUnit?.rent || typedUnit.rent <= 0) {
             errors.push({
@@ -512,7 +512,7 @@ function getZillowMissingFields(data: {
 }): MissingMITSField[] {
     const missing: MissingMITSField[] = [];
 
-    _.forEach(data.units, (unit, index) => {
+    forEach(data.units, (unit, index) => {
         const typedUnit = unit as { rent?: number };
         if(!typedUnit?.rent || typedUnit.rent <= 0) {
             missing.push({
@@ -534,14 +534,14 @@ function getZillowMissingFields(data: {
 function performSecurityValidations(data: unknown, entityType: string): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    if(!_.isPlainObject(data)) {
+    if(!isPlainObject(data)) {
         return errors;
     }
 
     const obj = data as Record<string, unknown>;
 
     // Validate array sizes to prevent DoS attacks
-    if(obj.photos && _.isArray(obj.photos)) {
+    if(obj.photos && isArray(obj.photos)) {
         const arrayError = validateArraySize(obj.photos, 'photos', 50);
         if(arrayError) {
             errors.push({
@@ -552,7 +552,7 @@ function performSecurityValidations(data: unknown, entityType: string): Validati
         }
     }
 
-    if(obj.amenities && _.isArray(obj.amenities)) {
+    if(obj.amenities && isArray(obj.amenities)) {
         const arrayError = validateArraySize(obj.amenities, 'amenities', 100);
         if(arrayError) {
             errors.push({
@@ -563,7 +563,7 @@ function performSecurityValidations(data: unknown, entityType: string): Validati
         }
     }
 
-    if(obj.features && _.isArray(obj.features)) {
+    if(obj.features && isArray(obj.features)) {
         const arrayError = validateArraySize(obj.features, 'features', 100);
         if(arrayError) {
             errors.push({
@@ -590,11 +590,11 @@ function performSecurityValidations(data: unknown, entityType: string): Validati
 
     // Validate negative numbers for fields that shouldn't be negative
     const nonNegativeFields = ['beds', 'baths', 'sqft', 'rent', 'deposit', 'minRent', 'maxRent'];
-    _.forEach(nonNegativeFields, (field) => {
-        if(obj[field] !== undefined && _.isNumber(obj[field]) && (obj[field] as number) < 0) {
+    forEach(nonNegativeFields, (field) => {
+        if(obj[field] !== undefined && isNumber(obj[field]) && (obj[field] as number) < 0) {
             errors.push({
                 field,
-                message: `${_.startCase(field)} cannot be negative`,
+                message: `${startCase(field)} cannot be negative`,
                 code: 'NEGATIVE_VALUE'
             });
         }
@@ -607,7 +607,7 @@ function performSecurityValidations(data: unknown, entityType: string): Validati
  * Sanitizes data to prevent XSS and other injection attacks
  */
 function sanitizeDataForSecurity(data: unknown): unknown {
-    if(!_.isPlainObject(data)) {
+    if(!isPlainObject(data)) {
         return data;
     }
 
@@ -620,13 +620,13 @@ function sanitizeDataForSecurity(data: unknown): unknown {
         'modelName', 'unitNumber', 'notes'
     ];
 
-    _.forEach(obj, (value, key) => {
-        if(_.includes(textFields, key) && _.isString(value)) {
+    forEach(obj, (value, key) => {
+        if(includes(textFields, key) && isString(value)) {
             sanitized[key] = sanitizeHtml(value);
-        } else if(_.isArray(value)) {
+        } else if(isArray(value)) {
             // Sanitize array elements if they're strings
-            sanitized[key] = _.map(value, item =>
-                (_.isString(item) ? sanitizeHtml(item) : item)
+            sanitized[key] = map(value, item =>
+                (isString(item) ? sanitizeHtml(item) : item)
             );
         } else {
             sanitized[key] = value;

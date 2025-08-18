@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { filter, isString, replace, split, trim } from 'lodash';
 
 /**
  * Generates a building name from a street address
@@ -12,17 +12,17 @@ import _ from 'lodash';
  * @returns {string} A shortened building name
  */
 export function generateBuildingName(streetAddress: string): string {
-    if(!streetAddress || !_.isString(streetAddress)) {
+    if(!streetAddress || !isString(streetAddress)) {
         return '';
     }
 
-    const trimmed = _.trim(streetAddress);
+    const trimmed = trim(streetAddress);
     if(!trimmed) {
         return '';
     }
 
     // Simple regex-based parsing since parse-address doesn't work well for our use case
-    const parts = _.split(trimmed, /\s+/);
+    const parts = split(trimmed, /\s+/);
     if(parts.length < 1) {
         return trimmed; // Not enough parts to parse
     }
@@ -44,11 +44,11 @@ export function generateBuildingName(streetAddress: string): string {
 
     // Remove common compass directions (case insensitive)
     const compassDirections = /^(?:[nsew]|north|south|east|west|ne|northeast|nw|northwest|se|southeast|sw|southwest)$/i;
-    const filteredParts = _.filter(remainingParts, part => !compassDirections.test(part));
+    const filteredParts = filter(remainingParts, part => !compassDirections.test(part));
 
     // Remove common street types (case insensitive)
     const streetTypes = /^(?:st|street|ave|avenue|rd|road|blvd|boulevard|pkwy|parkway|ln|lane|dr|drive|ct|court|pl|place|way|cir|circle|ter|terrace)$/i;
-    const finalParts = _.filter(filteredParts, part => !streetTypes.test(part));
+    const finalParts = filter(filteredParts, part => !streetTypes.test(part));
 
     // Build result based on what we have
     if(streetNumber && finalParts.length > 0) {
@@ -71,9 +71,9 @@ export function generateBuildingName(streetAddress: string): string {
  * @returns {string} The normalized building name
  */
 export function normalizeBuildingName(name: string): string {
-    if(!name || !_.isString(name)) {
+    if(!name || !isString(name)) {
         return '';
     }
 
-    return _.replace(_.trim(name), /\s+/g, ' ');
+    return replace(trim(name), /\s+/g, ' ');
 }

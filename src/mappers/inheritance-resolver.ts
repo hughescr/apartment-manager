@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { defaults, isArray, isString, trim } from 'lodash';
 import type { InheritanceResolver as IInheritanceResolver } from './types.js';
 import type {
     UnitData,
@@ -207,8 +207,8 @@ export class InheritanceResolver implements IInheritanceResolver {
         for(const field of requiredFields) {
             const value = unit[field];
             if(value === undefined || value === null ||
-              (_.isString(value) && _.trim(value) === '') ||
-              (_.isArray(value) && value.length === 0)) {
+              (isString(value) && trim(value) === '') ||
+              (isArray(value) && value.length === 0)) {
                 missingFields.push(field);
             }
         }
@@ -227,9 +227,9 @@ export class InheritanceResolver implements IInheritanceResolver {
      */
     applyDefaults<T extends Partial<UnitData>>(
         unit: T,
-        defaults: Partial<T>
+        defaultValues: Partial<T>
     ): T {
-        return _.defaults({}, unit, defaults) as T;
+        return defaults({}, unit, defaultValues) as T;
     }
 }
 

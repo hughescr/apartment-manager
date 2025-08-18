@@ -3,7 +3,7 @@
  * This approach allows proper test isolation by avoiding permanent global state.
  */
 import { jest } from 'bun:test';
-import _ from 'lodash';
+import { assign, filter, isArray, isNumber, isObject, isString, map, some } from 'lodash';
 import { resetClients } from '../../data/clients';
 
 // Set test environment
@@ -222,7 +222,7 @@ if(process.env.BUN_ENV === 'test') {
                 build: jest.fn().mockImplementation((_CommandClass) => {
                     const commandBuilder = {
                         entities: jest.fn().mockImplementation((...entities) => {
-                            tableContext.entities = _.map(entities, entity => ({ name: entity.name }));
+                            tableContext.entities = map(entities, entity => ({ name: entity.name }));
                             return commandBuilder;
                         }),
                         query: jest.fn().mockReturnThis(),
@@ -231,7 +231,7 @@ if(process.env.BUN_ENV === 'test') {
                             // Create a QueryCommand-like object that preserves the constructor name
                             const QueryCommand = class QueryCommand {
                                 constructor(input: unknown) {
-                                    _.assign(this, input);
+                                    assign(this, input);
                                 }
                             };
 
@@ -252,8 +252,8 @@ if(process.env.BUN_ENV === 'test') {
 
                             // Filter by entity type if entities were specified
                             if(tableContext.entities.length > 0 && rawResponse.Items) {
-                                const allowedEntityTypes = _.map(tableContext.entities, 'name');
-                                const filteredItems = _.filter(rawResponse.Items, (item: Record<string, unknown>) => {
+                                const allowedEntityTypes = map(tableContext.entities, 'name');
+                                const filteredItems = filter(rawResponse.Items, (item: Record<string, unknown>) => {
                                     return allowedEntityTypes.includes(item._et as string);
                                 });
 
@@ -300,21 +300,21 @@ const validateRequiredFields = (itemData: Record<string, unknown>) => {
 };
 
 const validateNumericTypes = (itemData: Record<string, unknown>) => {
-    if('yearBuilt' in itemData && _.isString(itemData.yearBuilt)) {
+    if('yearBuilt' in itemData && isString(itemData.yearBuilt)) {
         throw new Error('Right side of assignment cannot be destructured');
     }
 };
 
 const validateBooleanTypes = (itemData: Record<string, unknown>) => {
-    if('roomsForRent' in itemData && _.isNumber(itemData.roomsForRent)) {
+    if('roomsForRent' in itemData && isNumber(itemData.roomsForRent)) {
         throw new Error('Right side of assignment cannot be destructured');
     }
 };
 
 // Helper function to check if a value is a DynamoDB Toolbox operator (like $set([]))
 const isDynamoDBOperator = (value: unknown): boolean => {
-    return _.isObject(value) && value !== null &&
-      _.some(Object.getOwnPropertySymbols(value), sym => sym.toString().includes('$'));
+    return isObject(value) && value !== null &&
+      some(Object.getOwnPropertySymbols(value), sym => sym.toString().includes('$'));
 };
 
 const validateArrayTypes = (itemData: Record<string, unknown>) => {
@@ -327,20 +327,20 @@ const validateArrayTypes = (itemData: Record<string, unknown>) => {
         const fieldValue = itemData[field];
         if(field in itemData && fieldValue !== null && fieldValue !== undefined) {
             // Allow arrays or DynamoDB Toolbox operators (like $set([]))
-            if(!_.isArray(fieldValue) && !isDynamoDBOperator(fieldValue)) {
+            if(!isArray(fieldValue) && !isDynamoDBOperator(fieldValue)) {
                 throw new Error(`${field} must be an array`);
             }
         }
     }
 
     // Handle nested arrays in petPolicies
-    if('petPolicies' in itemData && _.isObject(itemData.petPolicies)) {
+    if('petPolicies' in itemData && isObject(itemData.petPolicies)) {
         const petPolicies = itemData.petPolicies as Record<string, unknown>;
         const nestedArrayFields = ['petTypes', 'types', 'breedRestrictions'];
         for(const field of nestedArrayFields) {
             const fieldValue = petPolicies[field];
             if(field in petPolicies && fieldValue !== null && fieldValue !== undefined) {
-                if(!_.isArray(fieldValue) && !isDynamoDBOperator(fieldValue)) {
+                if(!isArray(fieldValue) && !isDynamoDBOperator(fieldValue)) {
                     throw new Error(`petPolicies.${field} must be an array`);
                 }
             }
@@ -377,7 +377,7 @@ const createEntityMock = (entityName: string) => {
         query: jest.fn().mockReturnThis(),
         entities: jest.fn().mockImplementation((...entities) => {
             // Store the entities for filtering during send()
-            commandContext.entities = _.map(entities, entity => ({
+            commandContext.entities = map(entities, entity => ({
                 name: entity.name || entity.entityName || entityName || 'Unknown'
             }));
             return mockCommandBuilder;
@@ -386,7 +386,7 @@ const createEntityMock = (entityName: string) => {
             // Create a QueryCommand-like object that preserves the constructor name
             const QueryCommand = class QueryCommand {
                 constructor(input: unknown) {
-                    _.assign(this, input);
+                    assign(this, input);
                 }
             };
 
@@ -407,8 +407,8 @@ const createEntityMock = (entityName: string) => {
 
             // If entities were specified, filter the response
             if(commandContext.entities.length > 0 && rawResponse.Items) {
-                const allowedEntityTypes = _.map(commandContext.entities, 'name');
-                const filteredItems = _.filter(rawResponse.Items, (item: Record<string, unknown>) => {
+                const allowedEntityTypes = map(commandContext.entities, 'name');
+                const filteredItems = filter(rawResponse.Items, (item: Record<string, unknown>) => {
                     return allowedEntityTypes.includes(item._et as string);
                 });
 
@@ -525,7 +525,7 @@ const createMockDataClients = () => ({
 
                 const commandBuilder = {
                     entities: jest.fn().mockImplementation((...entities) => {
-                        commandContext.entities = _.map(entities, entity => ({
+                        commandContext.entities = map(entities, entity => ({
                             name: entity.name || entity.entityName || 'Unknown'
                         }));
                         return commandBuilder;
@@ -536,7 +536,7 @@ const createMockDataClients = () => ({
                         // Create a QueryCommand-like object that preserves the constructor name
                         const QueryCommand = class QueryCommand {
                             constructor(input: unknown) {
-                                _.assign(this, input);
+                                assign(this, input);
                             }
                         };
 
@@ -557,9 +557,9 @@ const createMockDataClients = () => ({
 
                         // Filter by entity type if entities were specified
                         if(commandContext.entities.length > 0 && rawResponse.Items) {
-                            const allowedEntityTypes = _.map(commandContext.entities, 'name');
+                            const allowedEntityTypes = map(commandContext.entities, 'name');
 
-                            const filteredItems = _.filter(rawResponse.Items, (item: Record<string, unknown>) => {
+                            const filteredItems = filter(rawResponse.Items, (item: Record<string, unknown>) => {
                                 // Handle cross-contamination: if entity filtering expects UnitType but we have Unit items,
                                 // or if we have the correct entity type, allow it through
                                 const itemType = item._et as string;
@@ -576,7 +576,7 @@ const createMockDataClients = () => ({
                             // check if this is a cross-contamination issue and return the raw response
                             if(rawResponse.Items.length > 0 && filteredItems.length === 0) {
                                 // Check if we're looking for Unit entities but got Unit items
-                                const hasUnitItems = _.some(rawResponse.Items, { _et: 'Unit' });
+                                const hasUnitItems = some(rawResponse.Items, { _et: 'Unit' });
                                 const lookingForUnit = allowedEntityTypes.includes('Unit');
 
                                 if(hasUnitItems && !lookingForUnit) {

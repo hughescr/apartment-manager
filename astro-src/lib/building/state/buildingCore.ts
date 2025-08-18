@@ -21,6 +21,7 @@ export interface BuildingCoreState {
 export class BuildingCore {
     private apiService: BuildingApiService | null = null;
     private suspendWatcher = false; // Flag to temporarily disable change detection
+    private initTimeoutId: ReturnType<typeof setTimeout> | null = null; // Timeout ID for cleanup
 
     constructor(private state: BuildingCoreState & AlpineMagicProperties) {}
 
@@ -63,15 +64,16 @@ export class BuildingCore {
                 this.state.$dispatch('building:updated', { building: value });
             }
         }, { deep: true });
-
         // Mark initial setup as complete after a short delay to allow for data loading
         this.state.$nextTick(() => {
-            setTimeout(() => {
+            this.initTimeoutId = (typeof window !== 'undefined' ? window.setTimeout : setTimeout)(() => {
                 initialSetupComplete = true;
                 // If original hasn't been set yet but building has data, set it now
                 if(!this.state.original && this.state.building) {
                     this.state.original = JSON.parse(JSON.stringify(this.state.building));
                 }
+                // Clear the timeout ID since it's completed
+                this.initTimeoutId = null;
             }, 100);
         });
     }
@@ -282,5 +284,17 @@ export class BuildingCore {
         }
 
         this.state.building.rentSpecials.splice(index, 1);
+    }
+
+    /**
+     * Cleanup method to prevent memory leaks
+     * Should be called when the component is destroyed
+     */
+    destroy(): void {
+        // Clear any pending initialization timeout
+        if(this.initTimeoutId !== null) {
+            (typeof window !== 'undefined' ? window.clearTimeout : clearTimeout)(this.initTimeoutId);
+            this.initTimeoutId = null;
+        }
     }
 }

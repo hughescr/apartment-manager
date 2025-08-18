@@ -2,7 +2,7 @@
  * Domain service for rent calculations
  * Encapsulates business logic for rent-related computations
  */
-import _ from 'lodash';
+import { map } from 'lodash';
 
 export interface RentCalculationOptions {
     currentRent: number
@@ -39,7 +39,7 @@ export function calculateRentScenarios(currentRent: number, percentageChanges: n
     newRent: number
     difference: number
 }[] {
-    return _.map(percentageChanges, (percentage) => {
+    return map(percentageChanges, (percentage) => {
         const newRent = calculateRent({
             currentRent,
             updateType: 'percentage',

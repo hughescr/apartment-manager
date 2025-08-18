@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { filter, forEach, map } from 'lodash';
 import type { BuildingData, UnitTypeData } from '../../../types';
 import type { ExtendedUnitData } from '../types';
 
@@ -57,7 +57,7 @@ export class BuildingDataParser {
             const units = JSON.parse(unitsData) as ExtendedUnitData[];
 
             // Initialize extended properties for each unit
-            return _.map(units, unit => ({
+            return map(units, unit => ({
                 ...unit,
                 lastUpdated: unit.lastUpdated || new Date().toISOString(),
                 status: unit.status || this.getUnitStatus(unit),
@@ -157,8 +157,8 @@ export class BuildingDataParser {
 
     static initializeUnitTimestamps(units: ExtendedUnitData[]): void {
         const now = new Date().toISOString();
-        const unitsWithoutTimestamp = _.filter(units, unit => !unit.lastUpdated);
-        _.forEach(unitsWithoutTimestamp, (unit) => {
+        const unitsWithoutTimestamp = filter(units, unit => !unit.lastUpdated);
+        forEach(unitsWithoutTimestamp, (unit) => {
             unit.lastUpdated = now;
         });
     }
@@ -169,7 +169,7 @@ export class BuildingDataParser {
 
     static serializeUnitsData(units: ExtendedUnitData[]): string {
         // Remove runtime-only properties before serialization
-        const cleanUnits = _.map(units, (unit) => {
+        const cleanUnits = map(units, (unit) => {
             const { editingRent: _editingRent, savingField: _savingField, ...cleanUnit } = unit;
             return cleanUnit;
         });

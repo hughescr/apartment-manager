@@ -1,5 +1,5 @@
 import type { UnitTypeData } from '../../../types';
-import _ from 'lodash';
+import { filter } from 'lodash';
 
 /**
  * Unit type form API service
@@ -13,7 +13,7 @@ export class UnitTypeApiService {
         try {
             // Clean up null values before sending
             const dataToSend = Object.fromEntries(
-                _.filter(Object.entries(unitType), ([_, v]) => v !== null && v !== '')
+                filter(Object.entries(unitType), ([_, v]) => v !== null && v !== '')
             );
 
             const response = await fetch(apiURL + 'buildings/' + buildingID + '/unit-types', {

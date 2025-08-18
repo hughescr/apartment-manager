@@ -1,6 +1,6 @@
 import { logger as baseLogger } from '@hughescr/logger';
 import { Resource } from 'sst';
-import _ from 'lodash';
+import { forEach, map, startsWith, toLower, trim, chain } from 'lodash';
 
 const logger = baseLogger;
 
@@ -136,33 +136,151 @@ interface RadarForwardGeocodeResponse {
 }
 
 /**
- * Cache entry for autocomplete results
+ * Cache entry for autocomplete results with access tracking for LRU
  */
 interface AutocompleteCacheEntry {
     results: RadarAutocompleteResult[]
     timestamp: number
+    lastAccessed: number
 }
 
 /**
- * Cache entry for IP geocoding results
+ * Cache entry for IP geocoding results with access tracking for LRU
  */
 interface IPCacheEntry {
     result: GeolocationResult
     timestamp: number
+    lastAccessed: number
 }
 
 /**
- * Simple in-memory cache for Radar results
- * In production, this could be replaced with Redis or DynamoDB
+ * Enhanced in-memory cache for Radar results with TTL and LRU eviction
+ * Features:
+ * - Time-to-live (TTL) expiration
+ * - Maximum size limits with LRU eviction
+ * - Periodic cleanup of expired entries
+ * - Access tracking for LRU ordering
+ * - Memory leak prevention
  */
 class RadarCache {
     private autocompleteCache = new Map<string, AutocompleteCacheEntry>();
     private ipCache = new Map<string, IPCacheEntry>();
     private readonly autocompleteTtlMs = 5 * 60 * 1000; // 5 minutes
     private readonly ipTtlMs = 60 * 60 * 1000; // 1 hour
+    private readonly maxAutocompleteSize = 500; // Maximum autocomplete entries
+    private readonly maxIPSize = 1000; // Maximum IP cache entries
+    private cleanupInterval?: ReturnType<typeof setInterval>;
+    private _isDestroyed = false;
+
+    constructor() {
+        // Start periodic cleanup to prevent unbounded memory growth
+        this.startPeriodicCleanup();
+    }
+
+    private startPeriodicCleanup(): void {
+        // Clean up expired entries every 5 minutes
+        this.cleanupInterval = setInterval(() => {
+            if(!this._isDestroyed) {
+                this.cleanupExpiredEntries();
+                this.enforceSizeLimits();
+            }
+        }, 5 * 60 * 1000);
+    }
+
+    private cleanupExpiredEntries(): void {
+        const now = Date.now();
+        let removedAutocomplete = 0;
+        let removedIP = 0;
+
+        // Clean expired autocomplete entries
+        for(const [key, entry] of this.autocompleteCache.entries()) {
+            if(now - entry.timestamp > this.autocompleteTtlMs) {
+                this.autocompleteCache.delete(key);
+                removedAutocomplete++;
+            }
+        }
+
+        // Clean expired IP entries
+        for(const [key, entry] of this.ipCache.entries()) {
+            if(now - entry.timestamp > this.ipTtlMs) {
+                this.ipCache.delete(key);
+                removedIP++;
+            }
+        }
+
+        if(removedAutocomplete > 0 || removedIP > 0) {
+            logger.debug(`Cleaned up expired cache entries: ${removedAutocomplete} autocomplete, ${removedIP} IP`);
+        }
+    }
+
+    /**
+     * Enforce maximum cache size limits using LRU eviction
+     */
+    private enforceSizeLimits(): void {
+        this.enforceAutocompleteSize();
+        this.enforceIPSize();
+    }
+
+    /**
+     * Enforce autocomplete cache size limit using LRU eviction
+     */
+    private enforceAutocompleteSize(): void {
+        if(this.autocompleteCache.size <= this.maxAutocompleteSize) {
+            return;
+        }
+
+        // Sort entries by last accessed time (oldest first)
+        const sortedEntries = Array.from(this.autocompleteCache.entries())
+            .sort(([, a], [, b]) => a.lastAccessed - b.lastAccessed);
+
+        // Remove oldest entries until we're under the limit
+        const toRemove = this.autocompleteCache.size - this.maxAutocompleteSize;
+        let removed = 0;
+
+        for(const [key] of sortedEntries) {
+            if(removed >= toRemove) {
+                break;
+            }
+            this.autocompleteCache.delete(key);
+            removed++;
+        }
+
+        if(removed > 0) {
+            logger.debug(`LRU evicted ${removed} autocomplete entries (size: ${this.autocompleteCache.size})`);
+        }
+    }
+
+    /**
+     * Enforce IP cache size limit using LRU eviction
+     */
+    private enforceIPSize(): void {
+        if(this.ipCache.size <= this.maxIPSize) {
+            return;
+        }
+
+        // Sort entries by last accessed time (oldest first)
+        const sortedEntries = Array.from(this.ipCache.entries())
+            .sort(([, a], [, b]) => a.lastAccessed - b.lastAccessed);
+
+        // Remove oldest entries until we're under the limit
+        const toRemove = this.ipCache.size - this.maxIPSize;
+        let removed = 0;
+
+        for(const [key] of sortedEntries) {
+            if(removed >= toRemove) {
+                break;
+            }
+            this.ipCache.delete(key);
+            removed++;
+        }
+
+        if(removed > 0) {
+            logger.debug(`LRU evicted ${removed} IP entries (size: ${this.ipCache.size})`);
+        }
+    }
 
     private createAutocompleteKey(query: string, coordinates?: { lat: number, lon: number }): string {
-        const baseKey = _.trim(_.toLower(query));
+        const baseKey = trim(toLower(query));
         if(coordinates) {
             return `${baseKey}:${coordinates.lat.toFixed(4)},${coordinates.lon.toFixed(4)}`;
         }
@@ -170,6 +288,11 @@ class RadarCache {
     }
 
     getAutocomplete(query: string, coordinates?: { lat: number, lon: number }): RadarAutocompleteResult[] | null {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed RadarCache');
+            return null;
+        }
+
         const key = this.createAutocompleteKey(query, coordinates);
         const entry = this.autocompleteCache.get(key);
 
@@ -183,20 +306,42 @@ class RadarCache {
             return null;
         }
 
+        // Update last accessed time for LRU
+        entry.lastAccessed = Date.now();
+        this.autocompleteCache.set(key, entry);
+
         logger.debug(`Autocomplete cache hit for query: ${key}`);
-        return _.map(entry.results, r => ({ ...r, source: 'cache' as const }));
+        return map(entry.results, r => ({ ...r, source: 'cache' as const }));
     }
 
     setAutocomplete(query: string, results: RadarAutocompleteResult[], coordinates?: { lat: number, lon: number }): void {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed RadarCache');
+            return;
+        }
+
         const key = this.createAutocompleteKey(query, coordinates);
+        const now = Date.now();
         this.autocompleteCache.set(key, {
-            results: _.map(results, r => ({ ...r, source: 'radar' as const })),
-            timestamp: Date.now()
+            results: map(results, r => ({ ...r, source: 'radar' as const })),
+            timestamp: now,
+            lastAccessed: now
         });
+
+        // Check if we need to enforce size limits after adding new entry
+        if(this.autocompleteCache.size > this.maxAutocompleteSize) {
+            this.enforceAutocompleteSize();
+        }
+
         logger.debug(`Cached ${results.length} autocomplete results for query: ${key}`);
     }
 
     getIP(clientIP: string): GeolocationResult | null {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed RadarCache');
+            return null;
+        }
+
         const entry = this.ipCache.get(clientIP);
 
         if(!entry) {
@@ -209,15 +354,32 @@ class RadarCache {
             return null;
         }
 
+        // Update last accessed time for LRU
+        entry.lastAccessed = Date.now();
+        this.ipCache.set(clientIP, entry);
+
         logger.debug(`IP cache hit for: ${clientIP}`);
         return entry.result;
     }
 
     setIP(clientIP: string, result: GeolocationResult): void {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed RadarCache');
+            return;
+        }
+
+        const now = Date.now();
         this.ipCache.set(clientIP, {
             result,
-            timestamp: Date.now()
+            timestamp: now,
+            lastAccessed: now
         });
+
+        // Check if we need to enforce size limits after adding new entry
+        if(this.ipCache.size > this.maxIPSize) {
+            this.enforceIPSize();
+        }
+
         logger.debug(`Cached IP geocoding result for: ${clientIP}`);
     }
 
@@ -227,10 +389,50 @@ class RadarCache {
         logger.info('Radar cache cleared');
     }
 
-    getStats(): { autocompleteSize: number, ipSize: number, autocompleteTtlMinutes: number, ipTtlMinutes: number } {
+    /**
+     * Cleanup method to prevent memory leaks
+     * Clears all timers, maps, and marks instance as destroyed
+     */
+    destroy(): void {
+        if(this._isDestroyed) {
+            return;
+        }
+
+        logger.info('Destroying RadarCache instance');
+
+        // Clear the periodic cleanup interval
+        if(this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = undefined;
+        }
+
+        // Clear all cached data
+        this.clear();
+
+        // Mark as destroyed to prevent further usage
+        this._isDestroyed = true;
+    }
+
+    /**
+     * Check if the cache instance is destroyed
+     */
+    isDestroyed(): boolean {
+        return this._isDestroyed;
+    }
+
+    getStats(): {
+        autocompleteSize: number
+        ipSize: number
+        maxAutocompleteSize: number
+        maxIPSize: number
+        autocompleteTtlMinutes: number
+        ipTtlMinutes: number
+    } {
         return {
             autocompleteSize: this.autocompleteCache.size,
             ipSize: this.ipCache.size,
+            maxAutocompleteSize: this.maxAutocompleteSize,
+            maxIPSize: this.maxIPSize,
             autocompleteTtlMinutes: 5,
             ipTtlMinutes: 60
         };
@@ -244,8 +446,14 @@ class RadarCache {
 class RateLimiter {
     private lastRequestTime = 0;
     private readonly minIntervalMs = 100; // Conservative 100ms between requests
+    private _isDestroyed = false;
 
     async waitIfNeeded(): Promise<void> {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed RateLimiter');
+            return;
+        }
+
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
 
@@ -257,26 +465,74 @@ class RateLimiter {
 
         this.lastRequestTime = Date.now();
     }
+
+    /**
+     * Reset the rate limiter state
+     */
+    reset(): void {
+        this.lastRequestTime = 0;
+        logger.debug('Rate limiter state reset');
+    }
+
+    /**
+     * Cleanup method to prevent memory leaks
+     */
+    destroy(): void {
+        if(this._isDestroyed) {
+            return;
+        }
+
+        logger.info('Destroying RateLimiter instance');
+        this.reset();
+        this._isDestroyed = true;
+    }
+
+    /**
+     * Check if the rate limiter instance is destroyed
+     */
+    isDestroyed(): boolean {
+        return this._isDestroyed;
+    }
 }
 
 /**
  * Debouncer to prevent excessive API calls during typing
+ * Fixed to properly handle previous promises and prevent memory leaks
  */
 class Debouncer {
     private timeouts = new Map<string, ReturnType<typeof setTimeout>>();
+    private pendingPromises = new Map<string, { resolve: (value: unknown) => void, reject: (error: unknown) => void }>();
     private readonly debounceMs = 200; // 200ms debounce
+    private _isDestroyed = false;
 
     async debounce<T>(key: string, fn: () => Promise<T>): Promise<T> {
+        if(this._isDestroyed) {
+            logger.warn('Attempting to use destroyed Debouncer');
+            throw new Error('Debouncer instance has been destroyed');
+        }
+
+        // Reject any existing pending promise for this key
+        const existingPending = this.pendingPromises.get(key);
+        if(existingPending) {
+            existingPending.reject(new Error('Debounced call superseded by newer call'));
+        }
+
         // Clear existing timeout for this key
         const existingTimeout = this.timeouts.get(key);
         if(existingTimeout) {
             clearTimeout(existingTimeout);
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise<T>((resolve, reject) => {
+            // Store the resolvers for potential cleanup
+            this.pendingPromises.set(key, { resolve: resolve as (value: unknown) => void, reject });
+
             const timeout = setTimeout(async () => {
                 try {
+                    // Remove from pending promises since we're about to execute
+                    this.pendingPromises.delete(key);
                     this.timeouts.delete(key);
+
                     const result = await fn();
                     resolve(result);
                 } catch(error) {
@@ -286,6 +542,72 @@ class Debouncer {
 
             this.timeouts.set(key, timeout);
         });
+    }
+
+    /**
+     * Clear all pending debounced calls for a specific key
+     */
+    clearKey(key: string): void {
+        const existingTimeout = this.timeouts.get(key);
+        if(existingTimeout) {
+            clearTimeout(existingTimeout);
+            this.timeouts.delete(key);
+        }
+
+        const existingPending = this.pendingPromises.get(key);
+        if(existingPending) {
+            existingPending.reject(new Error('Debounced call cleared'));
+            this.pendingPromises.delete(key);
+        }
+    }
+
+    /**
+     * Clear all pending debounced calls
+     */
+    clearAll(): void {
+        // Clear all timeouts
+        for(const timeout of this.timeouts.values()) {
+            clearTimeout(timeout);
+        }
+        this.timeouts.clear();
+
+        // Reject all pending promises
+        for(const { reject } of this.pendingPromises.values()) {
+            reject(new Error('All debounced calls cleared'));
+        }
+        this.pendingPromises.clear();
+
+        logger.debug('Cleared all debounced calls');
+    }
+
+    /**
+     * Cleanup method to prevent memory leaks
+     */
+    destroy(): void {
+        if(this._isDestroyed) {
+            return;
+        }
+
+        logger.info('Destroying Debouncer instance');
+        this.clearAll();
+        this._isDestroyed = true;
+    }
+
+    /**
+     * Check if the debouncer instance is destroyed
+     */
+    isDestroyed(): boolean {
+        return this._isDestroyed;
+    }
+
+    /**
+     * Get statistics about pending operations
+     */
+    getStats(): { pendingTimeouts: number, pendingPromises: number } {
+        return {
+            pendingTimeouts: this.timeouts.size,
+            pendingPromises: this.pendingPromises.size
+        };
     }
 }
 
@@ -324,7 +646,7 @@ export class RadarService {
     private createAuthHeader(): string {
         const apiKey = this.getApiKey();
         // Radar API keys come with prj_ prefix already, use as-is
-        if(_.startsWith(apiKey, 'prj_live_') || _.startsWith(apiKey, 'prj_test_')) {
+        if(startsWith(apiKey, 'prj_live_') || startsWith(apiKey, 'prj_test_')) {
             return apiKey;
         }
         // Fallback for keys without prefix (shouldn't happen with Radar)
@@ -338,7 +660,7 @@ export class RadarService {
         await rateLimiter.waitIfNeeded();
 
         const url = new URL(`${this.baseUrl}${endpoint}`);
-        _.forEach(params, (value, key) => {
+        forEach(params, (value, key) => {
             if(value) {
                 url.searchParams.set(key, value);
             }
@@ -430,7 +752,7 @@ export class RadarService {
     async autocompleteAddress(options: RadarAutocompleteOptions): Promise<RadarAutocompleteResult[]> {
         try {
             // Validate query
-            const trimmedQuery = _.trim(options.query);
+            const trimmedQuery = trim(options.query);
             if(!trimmedQuery || trimmedQuery.length < 3) {
                 logger.debug('Query too short for autocomplete', { query: trimmedQuery });
                 return [];
@@ -517,7 +839,7 @@ export class RadarService {
      */
     async geocodeAddress(address: string): Promise<{ lat: number, lon: number } | null> {
         try {
-            const trimmedAddress = _.trim(address);
+            const trimmedAddress = trim(address);
             if(!trimmedAddress) {
                 logger.warn('Empty address provided for geocoding');
                 return null;
@@ -589,7 +911,8 @@ export class RadarService {
      * Parse Radar autocomplete results into our standard format
      */
     private parseAutocompleteResults(addresses: RadarAutocompleteResponse['addresses']): RadarAutocompleteResult[] {
-        return _(addresses)
+        return chain(addresses)
+            .sortBy('confidence')
             .map((address, index) => this.parseAutocompleteAddress(address, index))
             .compact()
             .value();
@@ -653,7 +976,14 @@ export class RadarService {
     /**
      * Get cache statistics
      */
-    getCacheStats(): { autocompleteSize: number, ipSize: number, autocompleteTtlMinutes: number, ipTtlMinutes: number } {
+    getCacheStats(): {
+        autocompleteSize: number
+        ipSize: number
+        maxAutocompleteSize: number
+        maxIPSize: number
+        autocompleteTtlMinutes: number
+        ipTtlMinutes: number
+    } {
         return cache.getStats();
     }
 }
@@ -702,4 +1032,43 @@ export async function getUserLocation(
     // Fall back to default location
     logger.info('Using default fallback location (San Francisco)');
     return radarService.getDefaultLocation();
+}
+
+/**
+ * Cleanup function for all singleton instances in radar-service
+ * Prevents memory leaks by properly destroying all cached instances
+ */
+export function cleanupRadarService(): void {
+    try {
+        logger.info('Cleaning up radar-service singleton instances');
+
+        // Destroy all singleton instances
+        cache.destroy();
+        rateLimiter.destroy();
+        debouncer.destroy();
+
+        logger.info('Radar service cleanup completed successfully');
+    } catch(error) {
+        logger.error('Error during radar service cleanup', { error });
+    }
+}
+
+/**
+ * Get statistics about all singleton instances
+ */
+export function getRadarServiceStats(): {
+    cache: { autocompleteSize: number, ipSize: number, autocompleteTtlMinutes: number, ipTtlMinutes: number }
+    debouncer: { pendingTimeouts: number, pendingPromises: number }
+} {
+    return {
+        cache: cache.getStats(),
+        debouncer: debouncer.getStats()
+    };
+}
+
+/**
+ * Check if all singleton instances are properly destroyed
+ */
+export function isRadarServiceDestroyed(): boolean {
+    return cache.isDestroyed() && rateLimiter.isDestroyed() && debouncer.isDestroyed();
 }

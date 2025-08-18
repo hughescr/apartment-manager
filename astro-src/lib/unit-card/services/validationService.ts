@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { keys } from 'lodash';
 // All required types are imported from other modules
 import type { UnitCardState } from '../unitCardState';
 import { UnitFormValidator, type ValidationErrors, type ValidationResult } from '../formValidation';
@@ -66,7 +66,7 @@ export class ValidationService {
      * Check if there are any validation errors
      */
     hasErrors(): boolean {
-        return _.keys(this.state.errors).length > 0;
+        return keys(this.state.errors).length > 0;
     }
 
     /**

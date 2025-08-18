@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { find, map } from 'lodash';
 import { InheritanceResolver } from '../../../src/mappers/inheritance-resolver';
 import { AmenityCategory, FeeType } from '../../../src/types';
 import type { UnitData, UnitTypeData, Amenity, Fee } from '../../../src/types';
@@ -148,14 +148,14 @@ describe('InheritanceResolver - Core Functionality', () => {
             const merged = resolver.mergeAmenities(unitAmenities, modelAmenities, buildingAmenities);
 
             expect(merged).toHaveLength(5);
-            expect(_.map(merged, 'name')).toContain('Air Conditioning');
-            expect(_.map(merged, 'name')).toContain('Hardwood Floors');
-            expect(_.map(merged, 'name')).toContain('Dishwasher');
-            expect(_.map(merged, 'name')).toContain('Swimming Pool');
-            expect(_.map(merged, 'name')).toContain('Fitness Center');
+            expect(map(merged, 'name')).toContain('Air Conditioning');
+            expect(map(merged, 'name')).toContain('Hardwood Floors');
+            expect(map(merged, 'name')).toContain('Dishwasher');
+            expect(map(merged, 'name')).toContain('Swimming Pool');
+            expect(map(merged, 'name')).toContain('Fitness Center');
 
             // Check that unit category takes precedence
-            const airConditioning = _.find(merged, ['name', 'Air Conditioning']);
+            const airConditioning = find(merged, ['name', 'Air Conditioning']);
             expect(airConditioning?.category).toBe(AmenityCategory.UNIT);
         });
 
@@ -191,7 +191,7 @@ describe('InheritanceResolver - Core Functionality', () => {
 
             const merged = resolver.mergeAmenities(unitAmenities, modelAmenities, buildingAmenities);
 
-            expect(_.map(merged, 'name')).toEqual(['First', 'Second', 'Third', 'Fourth']);
+            expect(map(merged, 'name')).toEqual(['First', 'Second', 'Third', 'Fourth']);
         });
     });
 
@@ -213,10 +213,10 @@ describe('InheritanceResolver - Core Functionality', () => {
             const resolved = resolver.resolveFees(unitFees, buildingOneTime, buildingMonthly);
 
             expect(resolved).toHaveLength(4);
-            expect(_.map(resolved, 'type')).toContain(FeeType.APPLICATION);
-            expect(_.map(resolved, 'type')).toContain(FeeType.SECURITY_DEPOSIT);
-            expect(_.map(resolved, 'type')).toContain(FeeType.PARKING);
-            expect(_.map(resolved, 'type')).toContain(FeeType.PET_DEPOSIT);
+            expect(map(resolved, 'type')).toContain(FeeType.APPLICATION);
+            expect(map(resolved, 'type')).toContain(FeeType.SECURITY_DEPOSIT);
+            expect(map(resolved, 'type')).toContain(FeeType.PARKING);
+            expect(map(resolved, 'type')).toContain(FeeType.PET_DEPOSIT);
         });
 
         it('should override building fees with unit fees of same type', () => {

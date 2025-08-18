@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import _ from 'lodash';
+import { filter } from 'lodash';
 import { generateMITSFeed } from '../../src/mits/generator';
 import {
     createMockBuilding,
@@ -88,7 +88,7 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             });
 
             // Count how many units should be included (all except Down)
-            const includedUnits = _.filter(mockUnitsWithVacancyClass, u => u.vacancyClass !== 'Down');
+            const includedUnits = filter(mockUnitsWithVacancyClass, u => u.vacancyClass !== 'Down');
             expect(includedUnits).toHaveLength(3);
 
             // Verify XML contains VacancyClass for each included unit
