@@ -229,6 +229,7 @@ export interface BuildingData {
     specialtyType?: string // e.g., "senior", "student", "affordable"
     specialtySubType?: string // e.g., "55+", "62+", "graduate"
     propertyDescription?: string // detailed marketing description
+    propertyHighlights?: { id: number | string, highlight: string }[] // key property highlights for marketing
     rentSpecials?: RentSpecial[]
     incomeRestrictions?: IncomeRestriction
     utilitiesIncluded?: Partial<Record<UtilityType, boolean>>
@@ -379,6 +380,7 @@ export const getDefaultBuildingData = (): Partial<BuildingData> => ({
     parkingOptions: [],
     storageOptions: [],
     propertyAmenities: [],
+    propertyHighlights: [],
     utilitiesIncluded: {
         [UtilityType.WATER]: false,
         [UtilityType.SEWER]: false,

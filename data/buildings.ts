@@ -14,7 +14,7 @@ import  { logger } from '@hughescr/logger';
 // Array fields that require complete replacement (not partial update)
 const ARRAY_FIELDS = [
     'photos', 'rentSpecials', 'oneTimeFees', 'monthlyFees',
-    'parkingOptions', 'storageOptions', 'propertyAmenities'
+    'parkingOptions', 'storageOptions', 'propertyAmenities', 'propertyHighlights'
 ] as const;
 
 /**
@@ -24,10 +24,10 @@ const ARRAY_FIELDS = [
 function prepareUpdatesWithArrayReplacement(updates: Partial<BuildingData> & Record<string, unknown>): Record<string, unknown> {
     const preparedUpdates = { ...updates };
 
-    // Apply $set() ONLY to EMPTY array fields to ensure they persist
+    // Apply $set() to ALL array fields to ensure complete replacement (not partial update)
     for(const field of ARRAY_FIELDS) {
-        if(field in updates && _.isArray(updates[field]) && updates[field].length === 0) {
-            (preparedUpdates as Record<string, unknown>)[field] = $set([]);
+        if(field in updates && _.isArray(updates[field])) {
+            (preparedUpdates as Record<string, unknown>)[field] = $set(updates[field]);
         }
     }
 
@@ -59,26 +59,10 @@ function prepareUpdatesWithArrayReplacement(updates: Partial<BuildingData> & Rec
  */
 function handleArrayFieldOverwrites(mergedData: Record<string, unknown>, updates: Partial<BuildingData>): void {
     // Handle array fields explicitly - if they exist in updates, use them as-is (including empty arrays)
-    if('photos' in updates && updates.photos !== undefined) {
-        mergedData.photos = updates.photos;
-    }
-    if('rentSpecials' in updates && updates.rentSpecials !== undefined) {
-        mergedData.rentSpecials = updates.rentSpecials;
-    }
-    if('oneTimeFees' in updates && updates.oneTimeFees !== undefined) {
-        mergedData.oneTimeFees = updates.oneTimeFees;
-    }
-    if('monthlyFees' in updates && updates.monthlyFees !== undefined) {
-        mergedData.monthlyFees = updates.monthlyFees;
-    }
-    if('parkingOptions' in updates && updates.parkingOptions !== undefined) {
-        mergedData.parkingOptions = updates.parkingOptions;
-    }
-    if('storageOptions' in updates && updates.storageOptions !== undefined) {
-        mergedData.storageOptions = updates.storageOptions;
-    }
-    if('propertyAmenities' in updates && updates.propertyAmenities !== undefined) {
-        mergedData.propertyAmenities = updates.propertyAmenities;
+    for(const field of ARRAY_FIELDS) {
+        if(field in updates && (updates as Record<string, unknown>)[field] !== undefined) {
+            mergedData[field] = (updates as Record<string, unknown>)[field];
+        }
     }
 }
 

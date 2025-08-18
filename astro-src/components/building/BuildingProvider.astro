@@ -52,6 +52,10 @@ if (!building.screeningCriteria) {
 if (!building.contactInfo) building.contactInfo = {};
 if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {};
 
+// Tour availability - ensure nested objects exist
+if (!building.tourAvailability) building.tourAvailability = {};
+if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {};
+
 // Income restrictions - initialize with sensible defaults
 if (!building.incomeRestrictions) {
     building.incomeRestrictions = {

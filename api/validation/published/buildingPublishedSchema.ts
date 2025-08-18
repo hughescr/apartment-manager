@@ -19,6 +19,88 @@ import { isValidBuildingId } from '../../../src/utils/building-id.js';
  */
 
 // Contact info schema removed - now defined inline with proper required_error
+// Enhanced complex structure schemas for published validation
+const PetTypePolicyPublishedSchema = z.object({
+    type: z.string().min(1, 'Pet type is required'),
+    weightLimit: z.number().min(0).optional(),
+    countLimit: z.number().int().min(0).optional(),
+    fee: z.number().min(0).optional(),
+    deposit: z.number().min(0).optional(),
+    breedRestrictions: z.array(z.string()).optional(),
+});
+
+const PetPolicyPublishedSchema = z.object({
+    allowed: z.boolean(),
+    types: z.array(z.string()).optional(),
+    maxCount: z.number().int().min(0).optional(),
+    weightLimit: z.number().min(0).optional(),
+    breedRestrictions: z.array(z.string()).optional(),
+    deposit: z.number().min(0).optional(),
+    monthlyFee: z.number().min(0).optional(),
+    oneTimeFee: z.number().min(0).optional(),
+    notes: z.string().optional(),
+    petTypes: z.array(PetTypePolicyPublishedSchema).optional(),
+});
+
+const FeePublishedSchema = z.object({
+    type: z.string().min(1, 'Fee type is required'),
+    amount: z.number().min(0, 'Fee amount cannot be negative'),
+    description: z.string().optional(),
+    refundable: z.boolean().optional(),
+});
+
+const ParkingOptionPublishedSchema = z.object({
+    type: z.string().min(1, 'Parking type is required'),
+    included: z.boolean(),
+    fee: z.number().min(0).optional(),
+    spaces: z.number().int().min(0).optional(),
+    description: z.string().optional(),
+});
+
+const StorageOptionPublishedSchema = z.object({
+    type: z.string().min(1, 'Storage type is required'),
+    included: z.boolean(),
+    fee: z.number().min(0).optional(),
+    dimensions: z.string().optional(),
+    description: z.string().optional(),
+});
+
+const AmenityPublishedSchema = z.object({
+    name: z.string().min(1, 'Amenity name is required'),
+    category: z.string().min(1, 'Amenity category is required'),
+    description: z.string().optional(),
+});
+
+const RentSpecialPublishedSchema = z.object({
+    id: z.union([z.string(), z.number()]).optional(),
+    title: z.string().min(1, 'Rent special title is required'),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    description: z.string().optional(),
+}).refine(data => !(data.startDate && data.endDate && new Date(data.startDate) > new Date(data.endDate)), {
+    message: 'Start date must be before end date',
+    path: ['endDate'],
+});
+
+const ScreeningCriteriaPublishedSchema = z.object({
+    minCreditScore: z.number().int().min(300).max(850).optional(),
+    incomeRatio: z.number().min(0).max(10).optional(),
+    maxOccupantsPerBedroom: z.number().int().min(0).max(5).optional(),
+    backgroundCheckRequired: z.boolean().optional(),
+    evictionHistory: z.string().optional(),
+    criminalHistory: z.string().optional(),
+    references: z.string().optional(),
+    employmentVerification: z.boolean().optional(),
+    rentalHistory: z.string().optional(),
+    notes: z.string().optional(),
+}).partial();
+
+const IncomeRestrictionsPublishedSchema = z.object({
+    amiLimit: z.number().min(0).max(200).optional(),
+    maxIncomeByHouseholdSize: z.record(z.string(), z.number()).optional(),
+}).partial();
+
+// Contact info schema removed - now defined inline with proper required_error
 
 /**
  * STRICT MITS 4.1 Building Publication Schema
@@ -101,11 +183,11 @@ export const BuildingPublishedSchema = z.object({
         message: 'Structure type is required for MITS Information.StructureType element'
     }),
 
-    // MITS ILS_Identification.RentalType - REQUIRED
+    // Frontend uses specialtyType, but MITS requires rentalType
+    specialtyType: z.enum(['market-rate', 'affordable', 'student', 'senior']).optional(),
     rentalType: z.enum(['Market Rate', 'Affordable', 'Student', 'Senior'], {
         message: 'Rental type is required for MITS ILS_Identification.RentalType element'
     }),
-
     // MITS Information contact requirements - REQUIRED
     contactInfo: z.object({
         name: z.string().optional(),
@@ -128,6 +210,10 @@ export const BuildingPublishedSchema = z.object({
         // Optional fields that enhance MITS compliance
         propertyWebsite: z.url({ error: 'Property website must be a valid URL' }).optional(),
         managementWebsite: z.url({ error: 'Management website must be a valid URL' }).optional(),
+        officeHours: z.record(z.string(), z.object({
+            open: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
+            close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
+        })).optional(),
     }, {
         message: 'Both email and phone are required in contactInfo for MITS'
     })
@@ -138,6 +224,18 @@ export const BuildingPublishedSchema = z.object({
                 path: ['contactInfo']
             }
         ),
+
+    // MITS Tour availability with required boolean fields
+    tourAvailability: z.object({
+        selfGuidedTours: z.boolean().optional(),
+        virtualTours: z.boolean().optional(),
+        inPersonTours: z.boolean().optional(),
+        tourSchedulingUrl: z.url({ error: 'Tour scheduling URL must be a valid URL' }).optional(),
+        tourHours: z.record(z.string(), z.object({
+            open: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
+            close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
+        })).optional(),
+    }).optional(),
 
     // RECOMMENDED fields that enhance MITS compliance and listing quality
     yearBuilt: z.number()
@@ -165,6 +263,13 @@ export const BuildingPublishedSchema = z.object({
         .max(2000, 'Marketing description must be 2000 characters or less for MITS compliance')
         .optional(),
 
+    propertyHighlights: z.array(z.object({
+        id: z.union([z.string(), z.number()]),
+        highlight: z.string().min(1, 'Highlight text cannot be empty')
+    }))
+        .max(10, 'Maximum 10 property highlights allowed for MITS compliance')
+        .optional(),
+
     // MITS allows various additional fields that are optional but recommended
     applicationFee: z.number()
         .min(0, 'Application fee cannot be negative')
@@ -179,15 +284,22 @@ export const BuildingPublishedSchema = z.object({
 
     acceptsOnlineApplications: z.boolean().optional(),
 
-    // Complex structures that support MITS elements but are optional
-    petPolicies: z.any().optional(), // MITS Policy.Pet element
-    parkingOptions: z.array(z.any()).optional(),
-    storageOptions: z.array(z.any()).optional(),
-    propertyAmenities: z.array(z.any()).optional(), // MITS Amenity elements
-    oneTimeFees: z.array(z.any()).optional(),
-    monthlyFees: z.array(z.any()).optional(),
+    // Complex structures that support MITS elements - now with proper validation
+    petPolicies: PetPolicyPublishedSchema.optional(), // MITS Policy.Pet element
+    parkingOptions: z.array(ParkingOptionPublishedSchema).optional(),
+    storageOptions: z.array(StorageOptionPublishedSchema).optional(),
+    propertyAmenities: z.array(AmenityPublishedSchema).optional(), // MITS Amenity elements
+    oneTimeFees: z.array(FeePublishedSchema).optional(),
+    monthlyFees: z.array(FeePublishedSchema).optional(),
     utilitiesIncluded: z.record(z.string(), z.boolean()).optional(),
-    rentSpecials: z.array(z.any()).optional(),
+    rentSpecials: z.array(RentSpecialPublishedSchema).optional(),
+    notes: z.string().optional(),
+
+    // MITS screening criteria (optional but recommended)
+    screeningCriteria: ScreeningCriteriaPublishedSchema.optional(),
+
+    // MITS income restrictions (optional but recommended for affordable housing)
+    incomeRestrictions: IncomeRestrictionsPublishedSchema.optional(),
 
     // Metadata
     updatedAt: z.string().optional(),

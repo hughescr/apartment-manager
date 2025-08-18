@@ -11,10 +11,21 @@ const ContactInfoSchema = z.object({
     phone: z.string().regex(/^[\d\s\-().+]+$/, 'Invalid phone number format').optional(),
     propertyWebsite: websiteUrl('Website').optional(),
     managementWebsite: websiteUrl('Management website').optional(),
+    officeHours: z.record(z.string(), z.object({
+        open: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
+        close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
+    })).optional(),
 }).partial();
 
 const TourAvailabilitySchema = z.object({
+    selfGuidedTours: z.boolean().optional(),
+    virtualTours: z.boolean().optional(),
+    inPersonTours: z.boolean().optional(),
     tourSchedulingUrl: websiteUrl('Tour scheduling URL').optional(),
+    tourHours: z.record(z.string(), z.object({
+        open: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
+        close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
+    })).optional(),
 }).partial();
 
 const RentSpecialSchema = z.object({
@@ -37,7 +48,66 @@ const ScreeningCriteriaSchema = z.object({
     minCreditScore: z.number().int().min(300).max(850).optional(),
     incomeRatio: z.number().min(0).max(10).optional(),
     maxOccupantsPerBedroom: z.number().int().min(0).max(5).optional(),
+    backgroundCheckRequired: z.boolean().optional(),
+    evictionHistory: z.string().optional(),
+    criminalHistory: z.string().optional(),
+    references: z.string().optional(),
+    employmentVerification: z.boolean().optional(),
+    rentalHistory: z.string().optional(),
+    notes: z.string().optional(),
 }).partial();
+
+// Enhanced complex structure schemas
+const PetTypePolicySchema = z.object({
+    type: z.string().min(1, 'Pet type is required'),
+    weightLimit: z.number().min(0).optional(),
+    countLimit: z.number().int().min(0).optional(),
+    fee: z.number().min(0).optional(),
+    deposit: z.number().min(0).optional(),
+    breedRestrictions: z.array(z.string()).optional(),
+}).partial();
+
+const PetPolicySchema = z.object({
+    allowed: z.boolean(),
+    types: z.array(z.string()).optional(),
+    maxCount: z.number().int().min(0).optional(),
+    weightLimit: z.number().min(0).optional(),
+    breedRestrictions: z.array(z.string()).optional(),
+    deposit: z.number().min(0).optional(),
+    monthlyFee: z.number().min(0).optional(),
+    oneTimeFee: z.number().min(0).optional(),
+    notes: z.string().optional(),
+    petTypes: z.array(PetTypePolicySchema).optional(),
+}).partial();
+
+const FeeSchema = z.object({
+    type: z.string().min(1, 'Fee type is required'),
+    amount: z.number().min(0, 'Fee amount cannot be negative'),
+    description: z.string().optional(),
+    refundable: z.boolean().optional(),
+});
+
+const ParkingOptionSchema = z.object({
+    type: z.string().min(1, 'Parking type is required'),
+    included: z.boolean(),
+    fee: z.number().min(0).optional(),
+    spaces: z.number().int().min(0).optional(),
+    description: z.string().optional(),
+});
+
+const StorageOptionSchema = z.object({
+    type: z.string().min(1, 'Storage type is required'),
+    included: z.boolean(),
+    fee: z.number().min(0).optional(),
+    dimensions: z.string().optional(),
+    description: z.string().optional(),
+});
+
+const AmenitySchema = z.object({
+    name: z.string().min(1, 'Amenity name is required'),
+    category: z.string().min(1, 'Amenity category is required'),
+    description: z.string().optional(),
+});
 
 export const BuildingSchema = z.looseObject({
     buildingID: z.string().min(1).max(255).refine((id) => {
@@ -73,23 +143,28 @@ export const BuildingSchema = z.looseObject({
 
     // MITS Structure types
     structureType: z.enum(['Apartment', 'Condo', 'Townhouse', 'Single Family', 'House']).optional(),
-    rentalType: z.enum(['Market Rate', 'Affordable', 'Student', 'Senior']).optional(),
+    // Field removed - use specialtyType instead (converted to rentalType by MITS generator)
 
     // Additional property features for MITS
     roomsForRent: z.boolean().optional(),
     shortTermLeaseAllowed: z.boolean().optional(),
-    specialtyType: z.string().optional(),
+    specialtyType: z.enum(['market-rate', 'affordable', 'student', 'senior']).optional(),
     specialtySubType: z.string().optional(),
 
     // Complex data structures
-    petPolicies: z.any().optional(), // Complex pet policy structure
-    parkingOptions: z.array(z.any()).optional(),
-    storageOptions: z.array(z.any()).optional(),
-    propertyAmenities: z.array(z.any()).optional(),
-    oneTimeFees: z.array(z.any()).optional(),
-    monthlyFees: z.array(z.any()).optional(),
+    // Complex data structures - now with proper validation
+    petPolicies: PetPolicySchema.optional(),
+    parkingOptions: z.array(ParkingOptionSchema).optional(),
+    storageOptions: z.array(StorageOptionSchema).optional(),
+    propertyAmenities: z.array(AmenitySchema).optional(),
+    propertyHighlights: z.array(z.object({
+        id: z.union([z.string(), z.number()]),
+        highlight: z.string().min(1, 'Highlight text cannot be empty')
+    })).optional(),
+    oneTimeFees: z.array(FeeSchema).optional(),
+    monthlyFees: z.array(FeeSchema).optional(),
     utilitiesIncluded: z.record(z.string(), z.boolean()).optional(),
-
+    notes: z.string().optional(),
     // Timestamps
     updatedAt: z.string().optional(),
 });
@@ -112,7 +187,7 @@ export const BuildingMITSSchema = BuildingSchema.extend({
     // Property classification required
     propertyType: z.enum(PropertyType, { error: 'Property type is required for MITS compliance' }),
     structureType: z.enum(['Apartment', 'Condo', 'Townhouse', 'Single Family', 'House'], { message: 'Structure type is required for MITS compliance' }),
-    rentalType: z.enum(['Market Rate', 'Affordable', 'Student', 'Senior'], { message: 'Rental type is required for MITS compliance' }),
+    // rentalType removed - use specialtyType instead (converted by MITS generator)
 
     // Contact info required for listings
     contactInfo: ContactInfoSchema.extend({

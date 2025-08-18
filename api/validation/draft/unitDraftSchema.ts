@@ -109,7 +109,10 @@ export const UnitDraftSchema = z.looseObject({
     // Feed management (optional for draft)
     feedInclusion: z.record(z.string(), z.boolean()).optional(),
     manualReferences: z.record(z.string(), z.string()).optional(),
-    feedLastPulled: z.record(z.string(), z.any()).optional(),
+    feedLastPulled: z.record(z.string(), z.object({
+        timestamp: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/, 'Invalid ISO 8601 datetime format'),
+        ipAddress: z.string().regex(/^(?:(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})$/, 'Invalid IP address format').optional(),
+    })).optional(),
     feedLastModified: z.string().optional(),
     updatedAt: z.string().optional(),
 })

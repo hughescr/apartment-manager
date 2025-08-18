@@ -136,12 +136,35 @@ const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => (
             <span x-show="errors.totalUnits" class="label-text-alt text-error" x-text="errors.totalUnits"></span>
         </div>
         
-        <BaseTextarea
-            name="description"
-            label="Basic Description"
-            xModel="building.description"
-            placeholder="Brief description of the property"
-            rows={3}
-        />
+        <div class="form-control">
+            <BaseTextarea
+                name="description"
+                label="Basic Description"
+                xModel="building.description"
+                placeholder="e.g., Modern 24-unit apartment complex with covered parking, built in 2020. Features energy-efficient appliances and central air conditioning."
+                rows={4}
+                maxlength={1000}
+            />
+            
+            <!-- Character Counter -->
+            <div class="label">
+                <div class="label-text-alt text-base-content/60">
+                    <div class="flex flex-col gap-1 text-sm">
+                        <div class="font-medium">Administrative Summary (Internal Use)</div>
+                        <ul class="list-disc list-inside space-y-0.5 text-xs leading-relaxed">
+                            <li><strong>Purpose:</strong> Brief summary for internal property management</li>
+                            <li><strong>Format:</strong> Plain text only (no HTML or Markdown)</li>
+                            <li><strong>MITS Integration:</strong> Appears as "ShortDescription" in property feeds</li>
+                            <li><strong>Content:</strong> Key features, year built, unit count, notable amenities</li>
+                        </ul>
+                    </div>
+                </div>
+                <span class="label-text-alt" :class="{ 'text-warning': (building.description || '').length > 900, 'text-error': (building.description || '').length > 1000 }">
+                    <span x-text="(building.description || '').length">0</span>/1000 characters
+                </span>
+            </div>
+            
+            <span x-show="errors.description" class="label-text-alt text-error" x-text="errors.description"></span>
+        </div>
     </div>
 </div>

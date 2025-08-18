@@ -11,6 +11,32 @@ import { generateBuildingId, generateBuildingName } from '../src/utils/index.js'
 // Legacy validation functions removed - now using Zod schemas in ./validation/
 // All validation is now handled by the Zod schemas in ./validation/
 
+/**
+ * Parse JSON strings for array fields that may come from form submissions
+ * Form inputs with JSON.stringify() create nested JSON strings that need parsing
+ */
+function parseJsonStringFields(data: Record<string, unknown>): void {
+    const arrayFields = [
+        'propertyHighlights', 'propertyAmenities', 'rentSpecials',
+        'oneTimeFees', 'monthlyFees', 'parkingOptions', 'storageOptions', 'photos'
+    ];
+
+    arrayFields.forEach((field) => {
+        if(field in data && _.isString(data[field])) {
+            try {
+                const parsed = JSON.parse(data[field] as string);
+                // Only replace if it successfully parses to an array
+                if(_.isArray(parsed)) {
+                    data[field] = parsed;
+                }
+            } catch{
+                // If parsing fails, leave the field as-is
+                // The validation layer will catch invalid data
+            }
+        }
+    });
+}
+
 // Helper function to handle parsing and initial validation
 function parseAndValidateInput(rawBody: string): { success: true, data: BuildingInput } | { success: false, response: APIGatewayProxyStructuredResultV2 } {
     let rawData;
@@ -28,6 +54,9 @@ function parseAndValidateInput(rawBody: string): { success: true, data: Building
 
     // Sanitize object to prevent prototype pollution
     const data = sanitizeObject(rawData);
+
+    // Parse JSON strings for array fields (handles form submissions with hidden inputs)
+    parseJsonStringFields(data);
 
     // Use draft validation for save operations - allows incomplete data
     const validation = validateForSave('building', data);
@@ -84,6 +113,9 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
 
     // Sanitize object to prevent prototype pollution
     const data = sanitizeObject(rawData);
+
+    // Parse JSON strings for array fields (handles form submissions with hidden inputs)
+    parseJsonStringFields(data);
 
     // Only auto-generate building ID if not provided
     if(!data.buildingID) {

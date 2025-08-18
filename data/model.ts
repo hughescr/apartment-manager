@@ -93,6 +93,7 @@ const buildingSchema = item({
     petPolicies: any().optional(),
     storageOptions: list(any()).optional(),
     propertyAmenities: list(any()).optional(),
+    propertyHighlights: list(any()).optional(),
     screeningCriteria: any().optional(),
     contactInfo: any().optional(),
     tourAvailability: any().optional(),
