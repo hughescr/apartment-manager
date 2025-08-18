@@ -3,6 +3,7 @@ export interface AlpineMagicProperties {
     $el: HTMLElement
     $watch<T>(property: string, callback: (value: T, oldValue: T) => void, options?: { deep?: boolean }): void
     $dispatch(event: string, detail?: unknown): void
+    $nextTick(callback: () => void): void
 }
 
 // Extend the component type with Alpine magic properties

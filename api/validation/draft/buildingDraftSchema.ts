@@ -13,6 +13,7 @@ import _ from 'lodash';
 const websiteUrl = (field: string) => z.url({ error: `${field} must start with http:// or https://` }).optional();
 
 const ContactInfoDraftSchema = z.object({
+    name: z.string().optional(),
     email: z.email({ error: 'Invalid email address format' }).optional(),
     phone: z.string().regex(/^[\d\s\-().+]+$/, 'Invalid phone number format').optional(),
     propertyWebsite: websiteUrl('Website'),
@@ -32,7 +33,10 @@ const RentSpecialDraftSchema = z.object({
 }).optional();
 
 const IncomeRestrictionsDraftSchema = z.object({
-    amiLimit: z.number().min(0).max(200).optional(),
+    amiLimit: z.union([
+        z.number().min(0).max(200),
+        z.null().transform(() => undefined)
+    ]).optional(),
     maxIncomeByHouseholdSize: z.record(z.string(), z.number()).optional(),
 }).partial().optional();
 

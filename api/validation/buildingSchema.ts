@@ -6,6 +6,7 @@ import { isValidBuildingId } from '../../src/utils/building-id.js';
 const websiteUrl = (field: string) => z.url({ error: `${field} must start with http:// or https://` });
 
 const ContactInfoSchema = z.object({
+    name: z.string().optional(),
     email: z.email({ error: 'Invalid email address format' }).optional(),
     phone: z.string().regex(/^[\d\s\-().+]+$/, 'Invalid phone number format').optional(),
     propertyWebsite: websiteUrl('Website').optional(),

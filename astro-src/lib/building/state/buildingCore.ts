@@ -20,6 +20,7 @@ export interface BuildingCoreState {
  */
 export class BuildingCore {
     private apiService: BuildingApiService | null = null;
+    private suspendWatcher = false; // Flag to temporarily disable change detection
 
     constructor(private state: BuildingCoreState & AlpineMagicProperties) {}
 
@@ -39,9 +40,10 @@ export class BuildingCore {
         }
 
         // Store original state for change detection
-        this.state.original = this.state.building ?
-            JSON.parse(JSON.stringify(this.state.building))
-            : null;
+        // Only set original if building data is actually loaded
+        if(this.state.building) {
+            this.state.original = JSON.parse(JSON.stringify(this.state.building));
+        }
     }
 
     /**
@@ -49,12 +51,29 @@ export class BuildingCore {
      */
     setupBuildingWatchers(): void {
         // Watch for building changes to update showSave
+        // Use a flag to prevent triggering during initial setup
+        let initialSetupComplete = false;
+
         this.state.$watch('building', (value: BuildingData | null) => {
-            this.state.showSave = hasUnsavedChanges(this.state.building, this.state.original);
+            // Only check for unsaved changes after initial setup is complete and watcher is not suspended
+            if(initialSetupComplete && this.state.original && !this.suspendWatcher) {
+                this.state.showSave = hasUnsavedChanges(this.state.building, this.state.original);
+            }
             if(value) {
                 this.state.$dispatch('building:updated', { building: value });
             }
         }, { deep: true });
+
+        // Mark initial setup as complete after a short delay to allow for data loading
+        this.state.$nextTick(() => {
+            setTimeout(() => {
+                initialSetupComplete = true;
+                // If original hasn't been set yet but building has data, set it now
+                if(!this.state.original && this.state.building) {
+                    this.state.original = JSON.parse(JSON.stringify(this.state.building));
+                }
+            }, 100);
+        });
     }
 
     /**
@@ -106,9 +125,22 @@ export class BuildingCore {
                 savedBuilding = { ...this.state.building };
             }
 
-            this.state.original = JSON.parse(JSON.stringify(savedBuilding));
+            // Suspend watcher temporarily to avoid triggering change detection during state sync
+            this.suspendWatcher = true;
+
+            // Update both building and original state atomically
             this.state.building = savedBuilding;
+            this.state.original = JSON.parse(JSON.stringify(savedBuilding));
             this.state.showSave = false;
+
+            // Re-enable watcher and dispatch reset event
+            this.state.$nextTick(() => {
+                this.suspendWatcher = false;
+                this.state.$dispatch('building:state-reset', {
+                    building: this.state.building,
+                    original: this.state.original
+                });
+            });
 
             // Show appropriate success message based on warnings
             if(warnings && keys(warnings).length > 0) {
@@ -184,6 +216,15 @@ export class BuildingCore {
             this.state.showSave = false;
             this.state.$dispatch('building:reset', { building: this.state.building });
         }
+    }
+
+    /**
+     * Update original state when data is loaded dynamically
+     * This is called when building data is loaded from the server
+     */
+    updateOriginalState(building: BuildingData): void {
+        this.state.original = JSON.parse(JSON.stringify(building));
+        this.state.showSave = false;
     }
 
     /**

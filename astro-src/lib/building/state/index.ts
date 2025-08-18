@@ -116,6 +116,9 @@ function buildingStateObject(): any {
         /**
          * Listen for dynamic data updates from parent BuildingManager
          */
+        /**
+         * Listen for dynamic data updates from parent BuildingManager
+         */
         setupDataUpdateListener(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             // Watch for changes to data attributes
             this.$watch('$el.dataset.buildingData', (value: string) => {
@@ -123,11 +126,10 @@ function buildingStateObject(): any {
                     try {
                         const buildingData = JSON.parse(value);
                         this.building = buildingData;
-                        // Set original state if it hasn't been set yet
-                        // This handles the case where buildingCore initialization failed
-                        // but data was loaded later via dynamic updates
-                        if(!this.original) {
-                            this.original = JSON.parse(JSON.stringify(buildingData));
+                        // Update the original state when building data is loaded dynamically
+                        // This ensures proper change detection for server-loaded data
+                        if(this._buildingCore) {
+                            this._buildingCore.updateOriginalState(buildingData);
                         }
                     } catch{
                         // Failed to parse building data - silently ignore

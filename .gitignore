@@ -172,3 +172,6 @@ sst-env.d.ts
 # Ignore local CLAUDE.md memories
 CLAUDE.local.md
 .claude/settings.local.json
+
+# Ignore playwright-mcp screenshot files
+.playwright-mcp/

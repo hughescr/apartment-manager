@@ -108,6 +108,8 @@ export const BuildingPublishedSchema = z.object({
 
     // MITS Information contact requirements - REQUIRED
     contactInfo: z.object({
+        name: z.string().optional(),
+
         email: z.email({ error: 'Valid email address is required for MITS compliance' })
             .min(1, 'Email cannot be empty for MITS publication'),
 
