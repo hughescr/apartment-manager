@@ -1,8 +1,8 @@
 // Import test setup first to ensure proper mocking
-import '../../data/test-setup';
+import '../data/test-setup';
 
 import { describe, it, expect, beforeEach, afterEach, afterAll, jest } from 'bun:test';
-import { GeocodingService } from '../../../src/services/geocoding';
+import { GeocodingService } from '../../src/services/geocoding';
 
 // Mock fetch for testing
 const mockFetch = jest.fn() as jest.Mock & typeof fetch;

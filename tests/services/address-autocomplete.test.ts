@@ -1,10 +1,10 @@
 // Import test setup first to ensure proper mocking
-import '../../data/test-setup';
+import '../data/test-setup';
 
 import { describe, it, expect, beforeEach, afterEach, afterAll, jest } from 'bun:test';
 import { repeat } from 'lodash';
 
-import { PhotonAutocompleteService } from '../../../src/services/address-autocomplete';
+import { PhotonAutocompleteService } from '../../src/services/address-autocomplete';
 
 // Mock fetch for testing
 const mockFetch = jest.fn() as jest.Mock & typeof fetch;
