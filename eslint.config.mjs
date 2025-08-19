@@ -25,6 +25,7 @@ export default
 
         rules: {
             '@stylistic/indent': 'off',
+            '@stylistic/jsx-one-expression-per-line': ['error', { allow: 'non-jsx' }],
         },
     },
 
