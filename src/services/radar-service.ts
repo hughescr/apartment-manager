@@ -617,8 +617,6 @@ export class RadarService {
                 return cachedResults.slice(0, limit);
             }
 
-            logger.info(`Getting address autocomplete suggestions: ${trimmedQuery}`);
-
             // Use debouncer to prevent excessive API calls
             const results = await debouncer.debounce(trimmedQuery, async () => {
                 const params: Record<string, string> = {

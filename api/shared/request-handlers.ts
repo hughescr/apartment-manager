@@ -83,7 +83,6 @@ export function parseRequestBody<T = unknown>(
         logger.warn(`Failed to parse ${context} request body`, {
             error: parseError,
             context,
-            rawBody: body,
             ...additionalLogContext
         });
         return {

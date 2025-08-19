@@ -208,8 +208,7 @@ function parseBulkRequestBody(body: string | null): StatusUpdateData | APIGatewa
     } catch(parseError) {
         logger.warn('Failed to parse bulk status update request body', {
             error: parseError,
-            context: 'parseBulkRequestBody',
-            rawBody: body
+            context: 'parseBulkRequestBody'
         });
         return {
             statusCode: 400,
@@ -342,8 +341,7 @@ function parseRentRequestBody(body: string | null): RentUpdateData | APIGatewayP
     } catch(parseError) {
         logger.warn('Failed to parse bulk rent update request body', {
             error: parseError,
-            context: 'parseRentRequestBody',
-            rawBody: body
+            context: 'parseRentRequestBody'
         });
         return {
             statusCode: 400,

@@ -58,8 +58,7 @@ function parseAndValidateInput(rawBody: string): { success: true, data: Building
     } catch(parseError) {
         logger.warn('Failed to parse building request body', {
             error: parseError,
-            context: 'parseAndValidateInput',
-            rawBody
+            context: 'parseAndValidateInput'
         });
         return {
             success: false,
@@ -124,11 +123,7 @@ export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyS
 export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     let rawData;
     try {
-        // Debug: log the raw body
-        logger.debug('Raw request body', { body: evt.body });
         rawData = JSON.parse(evt.body || '{}');
-        // Debug: log parsed data
-        logger.debug('Parsed request data', { rawData });
     } catch(parseError) {
         logger.warn('Failed to parse building creation request body', {
             error: parseError,

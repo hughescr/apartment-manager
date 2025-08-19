@@ -158,7 +158,6 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
     } catch(parseError) {
         logger.warn('Failed to parse validation request body', {
             error: parseError,
-            rawBody: body,
             context: 'parseValidationRequest'
         });
         return {

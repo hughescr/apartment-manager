@@ -168,8 +168,6 @@ export class GeocodingService {
                 return null;
             }
 
-            logger.info(`Geocoding address: ${query}`);
-
             // Apply rate limiting
             await rateLimiter.waitIfNeeded();
 
