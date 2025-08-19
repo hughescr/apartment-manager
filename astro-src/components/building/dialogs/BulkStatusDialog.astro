@@ -1,11 +1,11 @@
 ---
 export interface Props {
     building: {
-        buildingID: string;
-    };
-    apiUrl: string;
-    isOpen?: boolean;
-    dialogId?: string;
+        buildingID: string
+    }
+    apiUrl: string
+    isOpen?: boolean
+    dialogId?: string
 }
 
 const {
@@ -26,44 +26,48 @@ const statusOptions = [
     <div class="modal-box">
         <h3 class="font-bold text-lg">Update Status for Selected Units</h3>
         <p class="py-4">
-            Change the status for <span class="font-semibold" x-text="selectedUnits.size"></span> selected units:
+            Change the status for
+{' '}
+<span class="font-semibold" x-text="selectedUnits.size"></span>
+{' '}
+selected units:
         </p>
-        <div 
-            x-data="{
+        <div
+          x-data="{
                 statusValue: '',
                 loading: false,
                 errors: {},
-                
+
                 async performBulkStatusUpdate() {
                     if (!this.statusValue) {
                         this.errors.status = 'Please select a status';
                         return;
                     }
-                    
+
                     this.loading = true;
                     this.errors = {};
-                    
+
                     try {
                         // Use parent's bulk operation method
                         $parent.bulkOperation.statusValue = this.statusValue;
                         await $parent.performBulkStatusUpdate();
-                        
+
                         // Reset and close
                         this.statusValue = '';
                         $parent.showBulkStatusDialog = false;
                     } catch (error) {
                         console.error('Bulk status update error:', error);
                         this.errors.general = 'Failed to update units. Please try again.';
-                        $dispatch('show-toast', { 
-                            message: 'Failed to update units. Please try again.', 
-                            type: 'error' 
+                        $dispatch('show-toast', {
+                            message: 'Failed to update units. Please try again.',
+                            type: 'error'
                         });
                     } finally {
                         this.loading = false;
                     }
                 }
             }"
-            class="space-y-4"
+          class="space-y-4"
         >
             <!-- General Error Display -->
             <div x-show="errors.general" class="alert alert-error" data-testid="bulk-status-general-error">
@@ -72,17 +76,17 @@ const statusOptions = [
                 </svg>
                 <span x-text="errors.general"></span>
             </div>
-            
+
             <!-- Status Selection -->
             <div class="form-control">
                 <label class="label">
                     <span class="label-text">New Status</span>
                 </label>
-                <select 
-                    class="select select-bordered" 
-                    :class="{'select-error': errors.status}"
-                    data-testid="bulk-status-select" 
-                    x-model="statusValue"
+                <select
+                  class="select select-bordered"
+                  class="{'select-error': errors.status}"
+                  data-testid="bulk-status-select"
+                  x-model="statusValue"
                 >
                     <option value="">Select status...</option>
                     {statusOptions.map(option => (
@@ -93,7 +97,7 @@ const statusOptions = [
                     <span class="label-text-alt text-error" x-text="errors.status"></span>
                 </div>
             </div>
-            
+
             <!-- Preview -->
             <div x-show="statusValue" class="alert alert-info">
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
@@ -102,27 +106,29 @@ const statusOptions = [
                 <div>
                     <div class="font-bold">Preview</div>
                     <div class="text-xs">
-                        <span x-text="selectedUnits.size"></span> units will be updated to: 
-                        <span class="font-semibold" x-text="statusValue"></span>
+                        <span x-text="selectedUnits.size"></span>
+{' '}
+units will be updated to:
+<span class="font-semibold" x-text="statusValue"></span>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Dialog Actions -->
             <div class="modal-action">
-                <button 
-                    class="btn" 
-                    @click="showBulkStatusDialog = false; statusValue = ''; errors = {}"
-                    :disabled="loading"
-                    data-testid="cancel-bulk-status"
+                <button
+                  class="btn"
+                  click="showBulkStatusDialog = false; statusValue = ''; errors = {}"
+                  disabled="loading"
+                  data-testid="cancel-bulk-status"
                 >
                     Cancel
                 </button>
-                <button 
-                    class="btn btn-primary" 
-                    data-testid="bulk-status-confirm"
-                    :disabled="!statusValue || loading"
-                    @click="performBulkStatusUpdate()"
+                <button
+                  class="btn btn-primary"
+                  data-testid="bulk-status-confirm"
+                  disabled="!statusValue || loading"
+                  click="performBulkStatusUpdate()"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Update Status</span>

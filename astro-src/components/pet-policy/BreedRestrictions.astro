@@ -3,7 +3,7 @@ import type { BreedRestrictionsProps } from '../../lib/pet-policy/petPolicyTypes
 
 export interface Props extends BreedRestrictionsProps {}
 
-const { 
+const {
     xModel,
     disabled = false,
     showCommonBreeds = true
@@ -13,7 +13,7 @@ const {
 <div class="card bg-base-200">
     <div class="card-body">
         <h3 class="card-title text-base">Breed Restrictions</h3>
-        
+
         <!-- Current Restrictions -->
         <div x-show={`${xModel}.breedRestrictions && ${xModel}.breedRestrictions.length > 0`} class="mb-4">
             <div class="text-sm font-medium mb-2">Current Restrictions:</div>
@@ -22,10 +22,10 @@ const {
                     <div class="badge badge-warning gap-2">
                         <span x-text="breed"></span>
                         <button
-                            type="button"
-                            x-on:click="removeBreedRestriction(index)"
-                            class="btn btn-ghost btn-xs"
-                            disabled={disabled}
+                          type="button"
+                          x-on:click="removeBreedRestriction(index)"
+                          class="btn btn-ghost btn-xs"
+                          disabled={disabled}
                         >
                             ×
                         </button>
@@ -33,29 +33,31 @@ const {
                 </template>
             </div>
         </div>
-        
+
         {showCommonBreeds && (
             <div>
                 <!-- Quick Add Common Breeds -->
                 <button
-                    type="button"
-                    x-on:click="showBreedRestrictions = !showBreedRestrictions"
-                    class="btn btn-sm btn-ghost"
-                    disabled={disabled}
+                  type="button"
+                  x-on:click="showBreedRestrictions = !showBreedRestrictions"
+                  class="btn btn-sm btn-ghost"
+                  disabled={disabled}
                 >
-                    <span x-text="showBreedRestrictions ? 'Hide' : 'Show'"></span> Common Breed Restrictions
+                    <span x-text="showBreedRestrictions ? 'Hide' : 'Show'"></span>
+{' '}
+Common Breed Restrictions
                 </button>
-                
+
                 <div x-show="showBreedRestrictions" x-transition class="mt-4">
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                         <template x-for="breed in commonBreeds" :key="breed">
                             <label class="label cursor-pointer justify-start gap-2">
                                 <input
-                                    type="checkbox"
-                                    class="checkbox checkbox-sm"
-                                    x-on:change="toggleCommonBreed(breed)"
-                                    :checked="isBreedRestricted(breed)"
-                                    disabled={disabled}
+                                  type="checkbox"
+                                  class="checkbox checkbox-sm"
+                                  x-on:change="toggleCommonBreed(breed)"
+                                  checked="isBreedRestricted(breed)"
+                                  disabled={disabled}
                                 />
                                 <span class="label-text text-sm" x-text="breed"></span>
                             </label>
@@ -64,7 +66,7 @@ const {
                 </div>
             </div>
         )}
-        
+
         <!-- Custom Breed Input -->
         <div class="form-control mt-4">
             <label class="label">
@@ -72,24 +74,24 @@ const {
             </label>
             <div class="join">
                 <input
-                    type="text"
-                    x-model="newBreedRestriction"
-                    placeholder="Enter breed name"
-                    class="input input-bordered join-item flex-1"
-                    disabled={disabled}
-                    x-on:keyup.enter="addBreedRestriction(newBreedRestriction)"
+                  type="text"
+                  x-model="newBreedRestriction"
+                  placeholder="Enter breed name"
+                  class="input input-bordered join-item flex-1"
+                  disabled={disabled}
+                  x-on:keyup.enter="addBreedRestriction(newBreedRestriction)"
                 />
                 <button
-                    type="button"
-                    x-on:click="addBreedRestriction(newBreedRestriction)"
-                    class="btn btn-primary join-item"
-                    disabled={disabled}
+                  type="button"
+                  x-on:click="addBreedRestriction(newBreedRestriction)"
+                  class="btn btn-primary join-item"
+                  disabled={disabled}
                 >
                     Add
                 </button>
             </div>
         </div>
-        
+
         <!-- Breed Restrictions Help -->
         <div class="text-xs text-base-content/70 mt-2">
             Enter specific breeds that are not allowed. Common restrictions include aggressive breeds or breeds prohibited by insurance.

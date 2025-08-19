@@ -1,6 +1,6 @@
 ---
 export interface Props {
-    xModelPrefix?: string;
+    xModelPrefix?: string
 }
 
 const { xModelPrefix = 'unit' } = Astro.props;
@@ -11,13 +11,13 @@ const { xModelPrefix = 'unit' } = Astro.props;
         <h3 class="text-lg font-semibold">Unit Descriptions</h3>
         <div class="badge badge-info badge-outline">Internal vs Public Content</div>
     </div>
-    
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Internal Description -->
         <div class="form-control">
-            <div x-data="{ 
-                get charCount() { 
-                    return (unit.description || '').length; 
+            <div x-data="{
+                get charCount() {
+                    return (unit.description || '').length;
                 },
                 get isOverLimit() {
                     return this.charCount > 500;
@@ -27,7 +27,8 @@ const { xModelPrefix = 'unit' } = Astro.props;
                     if (this.charCount > 450) return 'text-warning';
                     return 'text-base-content/70';
                 }
-            }">
+            }"
+            >
                 <!-- Label with Internal Indicator -->
                 <label class="label">
                     <span class="label-text flex items-center gap-2">
@@ -41,28 +42,49 @@ const { xModelPrefix = 'unit' } = Astro.props;
                     </span>
                     <span class="label-text-alt" :class="charCountColor" x-text="`${charCount}/500`"></span>
                 </label>
-                
+
                 <!-- Textarea -->
                 <textarea
-                    name="description"
-                    placeholder="Unit 2A - North-facing corner unit. Note: bathroom faucet replaced 2024. Hardwood floors original to building. AC unit serviced annually."
-                    class="textarea textarea-bordered w-full resize-vertical"
-                    :class="{ 'textarea-error': isOverLimit }"
-                    x-model={`${xModelPrefix}.description`}
-                    rows="4"
-                    maxlength="500"
-                ></textarea>
-                
+                  name="description"
+                  placeholder="Unit 2A - North-facing corner unit. Note: bathroom faucet replaced 2024. Hardwood floors original to building. AC unit serviced annually."
+                  class="textarea textarea-bordered w-full resize-vertical"
+                  class="{ 'textarea-error': isOverLimit }"
+                  x-model={`${xModelPrefix}.description`}
+                  rows="4"
+                  maxlength="500"
+                >
+                </textarea>
+
                 <!-- Enhanced Help Text -->
                 <label class="label">
                     <span class="label-text-alt text-base-content/70">
                         <div class="space-y-1">
                             <div class="font-medium">🔒 Maintenance & Administrative Notes</div>
                             <div class="text-xs space-y-0.5">
-                                <div>• <strong>Purpose:</strong> Maintenance history, special conditions, internal notes</div>
-                                <div>• <strong>Visibility:</strong> Property managers and maintenance staff only</div>
-                                <div>• <strong>Content:</strong> Unit condition, recent repairs, access notes</div>
-                                <div>• <strong>Format:</strong> Plain text only (no HTML/Markdown)</div>
+                                <div>
+•
+<strong>Purpose:</strong>
+{' '}
+Maintenance history, special conditions, internal notes
+                                </div>
+                                <div>
+•
+<strong>Visibility:</strong>
+{' '}
+Property managers and maintenance staff only
+                                </div>
+                                <div>
+•
+<strong>Content:</strong>
+{' '}
+Unit condition, recent repairs, access notes
+                                </div>
+                                <div>
+•
+<strong>Format:</strong>
+{' '}
+Plain text only (no HTML/Markdown)
+                                </div>
                             </div>
                         </div>
                     </span>
@@ -71,15 +93,15 @@ const { xModelPrefix = 'unit' } = Astro.props;
                     </span>
                 </label>
             </div>
-            
+
             <span x-show="errors.description" class="label-text-alt text-error" x-text="errors.description"></span>
         </div>
 
         <!-- Marketing Description -->
         <div class="form-control">
-            <div x-data="{ 
-                get charCount() { 
-                    return (unit.marketingDescription || '').length; 
+            <div x-data="{
+                get charCount() {
+                    return (unit.marketingDescription || '').length;
                 },
                 get isOverLimit() {
                     return this.charCount > 1000;
@@ -89,7 +111,8 @@ const { xModelPrefix = 'unit' } = Astro.props;
                     if (this.charCount > 900) return 'text-warning';
                     return 'text-base-content/70';
                 }
-            }">
+            }"
+            >
                 <!-- Label with Public Indicator -->
                 <label class="label">
                     <span class="label-text flex items-center gap-2">
@@ -103,29 +126,55 @@ const { xModelPrefix = 'unit' } = Astro.props;
                     </span>
                     <span class="label-text-alt" :class="charCountColor" x-text="`${charCount}/1000`"></span>
                 </label>
-                
+
                 <!-- Textarea -->
                 <textarea
-                    name="marketingDescription"
-                    placeholder="Bright and spacious 2-bedroom corner unit with stunning city views! Features hardwood floors, updated kitchen with granite countertops, in-unit washer/dryer, and private balcony. Master bedroom includes walk-in closet and en-suite bathroom. Perfect for professionals or small families!"
-                    class="textarea textarea-bordered w-full resize-vertical"
-                    :class="{ 'textarea-error': isOverLimit }"
-                    x-model={`${xModelPrefix}.marketingDescription`}
-                    rows="4"
-                    maxlength="1000"
-                ></textarea>
-                
+                  name="marketingDescription"
+                  placeholder="Bright and spacious 2-bedroom corner unit with stunning city views! Features hardwood floors, updated kitchen with granite countertops, in-unit washer/dryer, and private balcony. Master bedroom includes walk-in closet and en-suite bathroom. Perfect for professionals or small families!"
+                  class="textarea textarea-bordered w-full resize-vertical"
+                  class="{ 'textarea-error': isOverLimit }"
+                  x-model={`${xModelPrefix}.marketingDescription`}
+                  rows="4"
+                  maxlength="1000"
+                >
+                </textarea>
+
                 <!-- Enhanced Help Text -->
                 <label class="label">
                     <span class="label-text-alt text-base-content/70">
                         <div class="space-y-1">
                             <div class="font-medium">📋 Public unit listing description</div>
                             <div class="text-xs space-y-0.5">
-                                <div>• <strong>Appears on:</strong> Unit listings, rental websites, marketing materials</div>
-                                <div>• <strong>MITS feeds:</strong> Exported as UnitDescription in syndication feeds</div>
-                                <div>• <strong>Content:</strong> Layout, features, views, unique selling points</div>
-                                <div>• <strong>Format:</strong> Plain text only (no HTML/Markdown)</div>
-                                <div>• <strong>Tip:</strong> Focus on lifestyle benefits and standout features</div>
+                                <div>
+•
+<strong>Appears on:</strong>
+{' '}
+Unit listings, rental websites, marketing materials
+                                </div>
+                                <div>
+•
+<strong>MITS feeds:</strong>
+{' '}
+Exported as UnitDescription in syndication feeds
+                                </div>
+                                <div>
+•
+<strong>Content:</strong>
+{' '}
+Layout, features, views, unique selling points
+                                </div>
+                                <div>
+•
+<strong>Format:</strong>
+{' '}
+Plain text only (no HTML/Markdown)
+                                </div>
+                                <div>
+•
+<strong>Tip:</strong>
+{' '}
+Focus on lifestyle benefits and standout features
+                                </div>
                             </div>
                         </div>
                     </span>
@@ -134,7 +183,7 @@ const { xModelPrefix = 'unit' } = Astro.props;
                     </span>
                 </label>
             </div>
-            
+
             <span x-show="errors.marketingDescription" class="label-text-alt text-error" x-text="errors.marketingDescription"></span>
         </div>
     </div>

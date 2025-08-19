@@ -1,9 +1,9 @@
 ---
-import { PhotoUploader } from "../../forms";
-import type { Building } from "../../../types";
+import { PhotoUploader } from '../../forms';
+import type { Building } from '../../../types';
 
 export interface Props {
-    building: Building;
+    building: Building
 }
 
 const { building } = Astro.props;
@@ -19,12 +19,12 @@ const { building } = Astro.props;
         <div class="text-base-content/70 mb-4">
             Upload and manage photos that showcase your property to prospective tenants.
         </div>
-        
+
         <PhotoUploader
-            name="photos"
-            xModel="building.photos"
-            buildingId={building.buildingID}
-            unitId="property-photos"
+          name="photos"
+          xModel="building.photos"
+          buildingId={building.buildingID}
+          unitId="property-photos"
         />
     </div>
 </div>

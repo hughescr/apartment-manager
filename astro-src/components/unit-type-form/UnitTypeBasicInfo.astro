@@ -1,43 +1,43 @@
 ---
 // astro-src/components/unit-type-form/UnitTypeBasicInfo.astro
-import { BaseInput } from "../forms";
+import { BaseInput } from '../forms';
 ---
 
 <!-- Basic Information -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <BaseInput
-        name="modelID"
-        label="Model ID"
-        xModel="unitType.modelID"
-        placeholder="e.g., A1, B2, STUDIO"
-        required={true}
-        error="errors.modelID"
-        helpText="Unique identifier for this unit type"
+      name="modelID"
+      label="Model ID"
+      xModel="unitType.modelID"
+      placeholder="e.g., A1, B2, STUDIO"
+      required={true}
+      error="errors.modelID"
+      helpText="Unique identifier for this unit type"
     />
     <BaseInput
-        name="modelName"
-        label="Model Name"
-        xModel="unitType.modelName"
-        placeholder="e.g., Classic Studio, Deluxe 2BR"
-        required={true}
-        error="errors.modelName"
+      name="modelName"
+      label="Model Name"
+      xModel="unitType.modelName"
+      placeholder="e.g., Classic Studio, Deluxe 2BR"
+      required={true}
+      error="errors.modelName"
     />
 </div>
 
 <!-- Availability -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <BaseInput
-        name="countAvailable"
-        label="Units Available"
-        type="number"
-        xModel="unitType.countAvailable"
-        placeholder="0"
-        min="0"
+      name="countAvailable"
+      label="Units Available"
+      type="number"
+      xModel="unitType.countAvailable"
+      placeholder="0"
+      min="0"
     />
     <BaseInput
-        name="dateAvailable"
-        label="Available From"
-        type="date"
-        xModel="unitType.dateAvailable"
+      name="dateAvailable"
+      label="Available From"
+      type="date"
+      xModel="unitType.dateAvailable"
     />
 </div>

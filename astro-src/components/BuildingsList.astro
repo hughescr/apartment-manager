@@ -1,13 +1,13 @@
 ---
 // BuildingsList.astro - Handles building navigation tabs
 export interface Props {
-    buildings: Array<{
-        buildingID: string;
-        buildingName?: string;
-        street?: string;
-        city?: string;
-        state?: string;
-    }>;
+    buildings: {
+        buildingID: string
+        buildingName?: string
+        street?: string
+        city?: string
+        state?: string
+    }[]
 }
 
 // Buildings passed as prop for static data
@@ -17,19 +17,23 @@ export interface Props {
     <div role="tablist" class="tabs tabs-lift">
         <!-- Building tabs -->
         <template x-for="(building, index) in buildings" :key="building.buildingID">
-            <a role="tab" 
-               class="tab" 
-               :class="{ 'tab-active': activeBuildingTab === index }"
-               @click="setActiveTab(index, building.buildingID)"
-               x-text="building.buildingName || building.buildingID">
+            <a
+              role="tab"
+              class="tab"
+              class="{ 'tab-active': activeBuildingTab === index }"
+              click="setActiveTab(index, building.buildingID)"
+              x-text="building.buildingName || building.buildingID"
+            >
             </a>
         </template>
-        
+
         <!-- Add building tab -->
-        <a role="tab" 
-           class="tab items-center" 
-           :class="{ 'tab-active': activeBuildingTab === buildings.length }"
-           @click="setActiveTab(buildings.length)">
+        <a
+          role="tab"
+          class="tab items-center"
+          class="{ 'tab-active': activeBuildingTab === buildings.length }"
+          click="setActiveTab(buildings.length)"
+        >
             <svg class="size-4 text-secondary me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="16"></line>
@@ -41,6 +45,16 @@ export interface Props {
 </div>
 
 <script>
+
+
+
+
+
+
+
+
+
+
 import type { AlpineComponent } from "../types/alpine";
 
 type Building = {
@@ -116,10 +130,40 @@ declare global {
 }
 
 window.buildingsListData = buildingsListData;
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <style>
+
+
+
+
+
+
+
+
+
+
 .buildings-list {
     margin-bottom: 1rem;
 }
+
+
+
+
+
+
+
+
+
+
 </style>

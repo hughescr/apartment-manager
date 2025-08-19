@@ -1,10 +1,10 @@
 ---
-import { BaseInput } from "../../forms";
-import OfficeHoursEditor from "../editors/OfficeHoursEditor.astro";
+import { BaseInput } from '../../forms';
+import OfficeHoursEditor from '../editors/OfficeHoursEditor.astro';
 
 export interface Props {
-    building: any;
-    errors?: Record<string, string>;
+    building: any
+    errors?: Record<string, string>
 }
 
 const { building: _building, errors: _errors = {} } = Astro.props;
@@ -16,29 +16,29 @@ const { building: _building, errors: _errors = {} } = Astro.props;
         <h3 class="card-title text-lg">Management Contact</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <BaseInput
-                name="contactName"
-                label="Contact Name"
-                xModel="building.contactInfo.name"
-                placeholder="John Doe"
+              name="contactName"
+              label="Contact Name"
+              xModel="building.contactInfo.name"
+              placeholder="John Doe"
             />
             <BaseInput
-                name="contactPhone"
-                label="Phone Number"
-                type="tel"
-                xModel="building.contactInfo.phone"
-                placeholder="(555) 123-4567"
+              name="contactPhone"
+              label="Phone Number"
+              type="tel"
+              xModel="building.contactInfo.phone"
+              placeholder="(555) 123-4567"
             />
             <span x-show="errors.contactPhone" class="label-text-alt text-error" x-text="errors.contactPhone"></span>
             <BaseInput
-                name="contactEmail"
-                label="Email Address"
-                type="email"
-                xModel="building.contactInfo.email"
-                placeholder="contact@property.com"
+              name="contactEmail"
+              label="Email Address"
+              type="email"
+              xModel="building.contactInfo.email"
+              placeholder="contact@property.com"
             />
             <span x-show="errors.contactEmail" class="label-text-alt text-error" x-text="errors.contactEmail"></span>
         </div>
-        
+
         <!-- Website Fields Section -->
         <div class="mt-6">
             <h4 class="text-base font-semibold mb-4 flex items-center gap-2">
@@ -63,35 +63,35 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                     </div>
                 </div>
             </h4>
-            
+
             <div class="grid grid-cols-1 gap-4">
                 <BaseInput
-                    name="contactPropertyWebsite"
-                    label="Property Website"
-                    type="url"
-                    xModel="building.contactInfo.propertyWebsite"
-                    placeholder="https://property-specific-site.com"
-                    helpText="Main website for this specific property/building - used in listings"
+                  name="contactPropertyWebsite"
+                  label="Property Website"
+                  type="url"
+                  xModel="building.contactInfo.propertyWebsite"
+                  placeholder="https://property-specific-site.com"
+                  helpText="Main website for this specific property/building - used in listings"
                 />
                 <span x-show="errors.contactPropertyWebsite" class="label-text-alt text-error" x-text="errors.contactPropertyWebsite"></span>
-                
+
                 <BaseInput
-                    name="contactManagementWebsite"
-                    label="Management Company Website (Optional)"
-                    type="url"
-                    xModel="building.contactInfo.managementWebsite"
-                    placeholder="https://your-management-company.com"
-                    helpText="Your property management company's main website - for corporate information"
+                  name="contactManagementWebsite"
+                  label="Management Company Website (Optional)"
+                  type="url"
+                  xModel="building.contactInfo.managementWebsite"
+                  placeholder="https://your-management-company.com"
+                  helpText="Your property management company's main website - for corporate information"
                 />
                 <span x-show="errors.contactManagementWebsite" class="label-text-alt text-error" x-text="errors.contactManagementWebsite"></span>
             </div>
         </div>
-        
+
         <!-- Office Hours -->
         <div class="mt-6">
-            <OfficeHoursEditor 
-                xModel="building.contactInfo.officeHours"
-                title="Office Hours"
+            <OfficeHoursEditor
+              xModel="building.contactInfo.officeHours"
+              title="Office Hours"
             />
         </div>
     </div>

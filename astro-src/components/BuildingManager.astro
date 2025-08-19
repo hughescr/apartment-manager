@@ -17,15 +17,15 @@ import AddUnitTypeDialog from './building/dialogs/AddUnitTypeDialog.astro';
 
 export interface Props {
     building: {
-        buildingID: string;
-        street?: string;
-        city?: string;
-        state?: string;
-        [key: string]: any;
-    };
-    apiURL: string;
-    class?: string;
-    style?: string;
+        buildingID: string
+        street?: string
+        city?: string
+        state?: string
+        [key: string]: any
+    }
+    apiURL: string
+    'class'?: string
+    style?: string
 }
 
 const { building, apiURL } = Astro.props;
@@ -35,81 +35,83 @@ const emptyUnits: any[] = [];
 const emptyUnitTypes: any[] = [];
 ---
 
-<div class="building-manager" 
-     x-data="buildingManagerData()"
-     x-init="init()"
-     {...Astro.props}>
-     
+<div
+  class="building-manager"
+  x-data="buildingManagerData()"
+  x-init="init()"
+  {...Astro.props}
+>
+
     <!-- Loading state -->
     <div x-show="loading" class="flex justify-center items-center py-8">
         <div class="loading loading-spinner loading-lg"></div>
         <span class="ml-2">Loading building data...</span>
     </div>
-    
+
     <!-- Building management interface -->
     <div x-show="!loading && dataLoaded" x-transition.opacity.duration.300ms>
-        <BuildingProvider 
-            building={building} 
-            units={emptyUnits} 
-            unitTypes={emptyUnitTypes} 
-            apiURL={apiURL}
-            x-bind:data-building-data="JSON.stringify(building)"
-            x-bind:data-initial-units="JSON.stringify(units)"
-            x-bind:data-initial-unit-types="JSON.stringify(unitTypes)"
+        <BuildingProvider
+          building={building}
+          units={emptyUnits}
+          unitTypes={emptyUnitTypes}
+          apiURL={apiURL}
+          x-bind:data-building-data="JSON.stringify(building)"
+          x-bind:data-initial-units="JSON.stringify(units)"
+          x-bind:data-initial-unit-types="JSON.stringify(unitTypes)"
         >
             <!-- Save indicator at the top -->
             <div class="mb-4">
                 <SaveIndicator />
             </div>
-            
+
             <!-- Tab navigation -->
             <TabNavigator />
-            
+
             <!-- Tab content panels -->
             <TabPanels>
-                <BuildingInfoTab 
-                    slot="building-info" 
-                    building={building}
-                    apiUrl={apiURL}
+                <BuildingInfoTab
+                  slot="building-info"
+                  building={building}
+                  apiUrl={apiURL}
                 />
-                <FloorplansUnitsTab 
-                    slot="floorplans-units" 
+                <FloorplansUnitsTab
+                  slot="floorplans-units"
                 />
-                <PricingPoliciesTab 
-                    slot="pricing-policies" 
-                    building={building}
-                    errors={{}}
+                <PricingPoliciesTab
+                  slot="pricing-policies"
+                  building={building}
+                  errors={{}}
                 />
-                <MarketingTab 
-                    slot="marketing" 
-                    building={building}
-                    apiUrl={apiURL}
+                <MarketingTab
+                  slot="marketing"
+                  building={building}
+                  apiUrl={apiURL}
                 />
             </TabPanels>
-            
+
             <!-- Dialogs -->
-            <AddUnitDialog 
-                building={{
+            <AddUnitDialog
+              building={{
                     buildingID: building.buildingID,
                     street: building.street || '',
                     city: building.city || '',
                     state: building.state || ''
                 }}
-                unitTypes={emptyUnitTypes}
-                apiUrl={apiURL}
+              unitTypes={emptyUnitTypes}
+              apiUrl={apiURL}
             />
-            <AddUnitTypeDialog 
-                building={{
+            <AddUnitTypeDialog
+              building={{
                     buildingID: building.buildingID,
                     street: building.street || '',
                     city: building.city || '',
                     state: building.state || ''
                 }}
-                apiUrl={apiURL}
+              apiUrl={apiURL}
             />
         </BuildingProvider>
     </div>
-    
+
     <!-- Error state -->
     <div x-show="error" class="alert alert-error">
         <svg class="w-6 h-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
@@ -121,6 +123,16 @@ const emptyUnitTypes: any[] = [];
 </div>
 
 <script>
+
+
+
+
+
+
+
+
+
+
 import type { AlpineComponent } from "../types/alpine";
 import { createClientLogger } from '../lib/utils/client-logger';
 
@@ -242,9 +254,29 @@ declare global {
 }
 
 window.buildingManagerData = buildingManagerData;
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <style>
+
+
+
+
+
+
+
+
+
+
 .building-manager {
     min-height: 200px;
 }
@@ -253,4 +285,14 @@ window.buildingManagerData = buildingManagerData;
 [x-cloak] { 
     display: none !important; 
 }
+
+
+
+
+
+
+
+
+
+
 </style>

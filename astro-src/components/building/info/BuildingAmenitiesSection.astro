@@ -1,8 +1,8 @@
 ---
-import { AmenitySelector } from "../../forms";
+import { AmenitySelector } from '../../forms';
 
 export interface Props {
-    building: any;
+    building: any
 }
 
 const { building: _building } = Astro.props;
@@ -13,8 +13,8 @@ const { building: _building } = Astro.props;
     <div class="card-body">
         <h3 class="card-title text-lg">Building Amenities</h3>
         <AmenitySelector
-            name="propertyAmenities"
-            xModel="building.propertyAmenities"
+          name="propertyAmenities"
+          xModel="building.propertyAmenities"
         />
     </div>
 </div>

@@ -17,10 +17,11 @@ import { TAB_CONFIGS } from '../../lib/building/types';
         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full border border-base-200">
             {TAB_CONFIGS.map(tab => (
                 <li>
-                    <button 
-                        @click={`activeSectionTab = '${tab.key}'`}
-                        :class={`{'active': activeSectionTab === '${tab.key}'}`}
-                        class="min-h-[44px]">
+                    <button
+                      click={`activeSectionTab = '${tab.key}'`}
+                      class={`{'active': activeSectionTab === '${tab.key}'}`}
+                      class="min-h-[44px]"
+                    >
                         {tab.label}
                     </button>
                 </li>
@@ -32,16 +33,19 @@ import { TAB_CONFIGS } from '../../lib/building/types';
 <!-- Desktop: Horizontal Tabs -->
 <div class="hidden sm:flex tabs tabs-boxed mb-6 flex-wrap">
     {TAB_CONFIGS.map(tab => (
-        <button 
-            class="tab min-h-[44px]" 
-            :class={`{'tab-active': activeSectionTab === '${tab.key}'}`}
-            @click={`activeSectionTab = '${tab.key}'`}>
-            {tab.mobileLabel ? (
+        <button
+          class="tab min-h-[44px]"
+          class={`{'tab-active': activeSectionTab === '${tab.key}'}`}
+          click={`activeSectionTab = '${tab.key}'`}
+        >
+            {tab.mobileLabel
+? (
                 <>
                     <span class="hidden md:inline">{tab.label}</span>
                     <span class="md:hidden">{tab.mobileLabel}</span>
                 </>
-            ) : (
+            )
+: (
                 <span>{tab.label}</span>
             )}
         </button>

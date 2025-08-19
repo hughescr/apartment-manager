@@ -1,27 +1,27 @@
 ---
 export interface SelectOption {
-    value: string | number;
-    label: string;
-    disabled?: boolean;
+    value: string | number
+    label: string
+    disabled?: boolean
 }
 
 export interface Props {
-    name: string;
-    label?: string;
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    xModel: string;
-    options: SelectOption[] | string[];
-    value?: string | number;
-    class?: string;
-    selectClass?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
-    floatingLabel?: boolean;
-    multiple?: boolean;
-    size?: number;
+    name: string
+    label?: string
+    placeholder?: string
+    required?: boolean
+    disabled?: boolean
+    xModel: string
+    options: SelectOption[] | string[]
+    value?: string | number
+    'class'?: string
+    selectClass?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
+    floatingLabel?: boolean
+    multiple?: boolean
+    size?: number
 }
 
 const {
@@ -33,7 +33,7 @@ const {
     xModel,
     options,
     value,
-    class: className = '',
+    'class': className = '',
     selectClass = '',
     error,
     helpText,
@@ -44,11 +44,13 @@ const {
 } = Astro.props;
 
 // Normalize options to SelectOption format
-const normalizedOptions: SelectOption[] = options ? options.map(opt => 
-    typeof opt === 'string' 
+const normalizedOptions: SelectOption[] = options
+? options.map(opt =>
+    (typeof opt === 'string'
         ? { value: opt, label: opt }
-        : opt
-) : [];
+        : opt)
+)
+: [];
 
 // Determine if we should show the label
 const shouldShowLabel = showLabel && label;
@@ -83,24 +85,24 @@ const containerClasses = [
         </span>
     )}
     <select
-        name={name}
-        class={selectClasses}
-        required={required}
-        disabled={disabled}
-        x-model={xModel}
-        multiple={multiple}
-        size={size}
+      name={name}
+      class={selectClasses}
+      required={required}
+      disabled={disabled}
+      x-model={xModel}
+      multiple={multiple}
+      size={size}
     >
         {placeholder && !multiple && (
             <option value="" disabled selected={!value}>
                 {placeholder}
             </option>
         )}
-        {normalizedOptions.map((option) => (
-            <option 
-                value={option.value} 
-                disabled={option.disabled}
-                selected={value === option.value}
+        {normalizedOptions.map(option => (
+            <option
+              value={option.value}
+              disabled={option.disabled}
+              selected={value === option.value}
             >
                 {option.label}
             </option>
@@ -114,6 +116,16 @@ const containerClasses = [
 </label>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Floating label styles for select */
     .floating-label.select-label {
         position: relative;
@@ -155,4 +167,14 @@ const containerClasses = [
         padding-top: 1.25rem;
         padding-bottom: 0.5rem;
     }
+
+
+
+
+
+
+
+
+
+
 </style>

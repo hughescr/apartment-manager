@@ -2,7 +2,7 @@
 import { AmenitySelector } from '../forms';
 
 export interface Props {
-    xModelPrefix?: string;
+    xModelPrefix?: string
 }
 
 const { xModelPrefix = 'unit' } = Astro.props;
@@ -24,7 +24,7 @@ const { xModelPrefix = 'unit' } = Astro.props;
             </template>
         </div>
     </div>
-    
+
     <!-- Inheritance Status Info -->
     <div class="alert" :class="{'alert-warning': getAmenityInheritanceSource() === 'unit', 'alert-info': getAmenityInheritanceSource() === 'floorplan', 'alert-ghost': getAmenityInheritanceSource() === 'building'}">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
@@ -43,21 +43,29 @@ const { xModelPrefix = 'unit' } = Astro.props;
                     </button>
                 </span>
             </template>
-            
+
             <!-- Unit inherits from floorplan -->
             <template x-if="getAmenityInheritanceSource() === 'floorplan'">
                 <span>
-                    This unit inherits <span x-text="selectedUnitType?.modelAmenities?.length || 0"></span> amenities from its floorplan. Add amenities here to customize this unit.
+                    This unit inherits
+{' '}
+<span x-text="selectedUnitType?.modelAmenities?.length || 0"></span>
+{' '}
+amenities from its floorplan. Add amenities here to customize this unit.
                 </span>
             </template>
-            
+
             <!-- Unit inherits from building -->
             <template x-if="getAmenityInheritanceSource() === 'building'">
                 <span>
-                    This unit inherits <span x-text="buildingAmenities?.length || 0"></span> amenities from the building (no floorplan amenities). Add amenities here to customize this unit.
+                    This unit inherits
+{' '}
+<span x-text="buildingAmenities?.length || 0"></span>
+{' '}
+amenities from the building (no floorplan amenities). Add amenities here to customize this unit.
                 </span>
             </template>
-            
+
             <!-- No amenities at any level -->
             <template x-if="getAmenityInheritanceSource() === 'none'">
                 <span>
@@ -66,7 +74,7 @@ const { xModelPrefix = 'unit' } = Astro.props;
             </template>
         </div>
     </div>
-    
+
     <!-- Inheritance Chain Display -->
     <div class="border border-base-300 rounded-lg p-4 bg-base-50">
         <div class="text-sm font-semibold mb-2">Inheritance Chain:</div>
@@ -79,11 +87,11 @@ const { xModelPrefix = 'unit' } = Astro.props;
                 <span class="font-medium">Building</span>
                 <span class="badge badge-xs" :class="buildingAmenities?.length > 0 ? 'badge-success' : 'badge-ghost'" x-text="buildingAmenities?.length || 0"></span>
             </div>
-            
+
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
-            
+
             <!-- Floorplan Level -->
             <div class="flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,11 +101,11 @@ const { xModelPrefix = 'unit' } = Astro.props;
                 <span class="badge badge-xs" :class="selectedUnitType?.modelAmenities?.length > 0 ? 'badge-success' : 'badge-ghost'" x-text="selectedUnitType?.modelAmenities?.length || 0"></span>
                 <span x-show="!selectedUnitType" class="text-xs text-base-content/50">(none selected)</span>
             </div>
-            
+
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
-            
+
             <!-- Unit Level -->
             <div class="flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,7 +116,7 @@ const { xModelPrefix = 'unit' } = Astro.props;
             </div>
         </div>
     </div>
-    
+
     <!-- Inherited Amenities Display -->
     <div x-show={`(!${xModelPrefix}.unitAmenities || ${xModelPrefix}.unitAmenities.length === 0) && getEffectiveAmenities().length > 0`} class="border border-info/20 rounded-lg p-4 bg-info/5">
         <div class="text-sm text-base-content/70 mb-2">
@@ -119,7 +127,9 @@ const { xModelPrefix = 'unit' } = Astro.props;
             <template x-if="getAmenityInheritanceSource() === 'building'">
                 <span> (inherited from building):</span>
             </template>
-            <span x-text="getEffectiveAmenities().length"></span> amenities
+            <span x-text="getEffectiveAmenities().length"></span>
+{' '}
+amenities
         </div>
         <div class="flex flex-wrap gap-2">
             <template x-for="amenity in getEffectiveAmenities()" :key="amenity.name + amenity.category">
@@ -132,14 +142,14 @@ const { xModelPrefix = 'unit' } = Astro.props;
             </template>
         </div>
     </div>
-    
+
     <!-- Unit-specific Amenity Selector -->
     <div class="border border-base-300 rounded-lg p-4">
         <AmenitySelector
-            name="unitAmenities"
-            label="Unit-specific amenities (overrides inherited amenities)"
-            xModel={`${xModelPrefix}.unitAmenities`}
-            showLabel={false}
+          name="unitAmenities"
+          label="Unit-specific amenities (overrides inherited amenities)"
+          xModel={`${xModelPrefix}.unitAmenities`}
+          showLabel={false}
         />
     </div>
 </div>

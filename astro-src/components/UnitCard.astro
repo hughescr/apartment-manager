@@ -1,10 +1,10 @@
 ---
 // astro-src/components/UnitCard.astro
 // DEPRECATED: This is a compatibility wrapper. Use UnitCardProvider instead.
-import { UnitCardProvider } from "./unit-card";
-import type { UnitData, UnitTypeData } from "../../src/types";
+import { UnitCardProvider } from './unit-card';
+import type { UnitData, UnitTypeData } from '../../src/types';
 
-const { unit, unitTypes = [] } = Astro.props as { unit: UnitData; unitTypes: UnitTypeData[] };
+const { unit, unitTypes = [] } = Astro.props as { unit: UnitData, unitTypes: UnitTypeData[] };
 ---
 
 <!-- Backward compatibility wrapper - delegates to the new modular UnitCardProvider -->

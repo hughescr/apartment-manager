@@ -2,7 +2,7 @@
 import BaseInput from '../forms/BaseInput.astro';
 
 export interface Props {
-    xModelPrefix?: string;
+    xModelPrefix?: string
 }
 
 const { xModelPrefix = 'unit' } = Astro.props;
@@ -12,16 +12,19 @@ const { xModelPrefix = 'unit' } = Astro.props;
     <!-- Unit Number -->
     <div class="form-control">
         <label class="label">
-            <span class="label-text font-semibold">Unit Number <span class="text-error">*</span></span>
+            <span class="label-text font-semibold">
+Unit Number
+<span class="text-error">*</span>
+            </span>
         </label>
         <BaseInput
-            name="unitID"
-            xModel={`${xModelPrefix}.unitID`}
-            type="text"
-            placeholder="Unit number"
-            required={true}
-            error="errors.unitID"
-            showLabel={false}
+          name="unitID"
+          xModel={`${xModelPrefix}.unitID`}
+          type="text"
+          placeholder="Unit number"
+          required={true}
+          error="errors.unitID"
+          showLabel={false}
         />
     </div>
 
@@ -31,11 +34,11 @@ const { xModelPrefix = 'unit' } = Astro.props;
             <span class="label-text font-semibold">Unit Model</span>
         </label>
         <select
-            name="modelID"
-            x-model={`${xModelPrefix}.modelID`}
-            @change="selectedUnitType = unitTypes.find(ut => ut.modelID === $event.target.value) || null"
-            class="select select-bordered w-full"
-            :class="errors.modelID ? 'select-error' : ''"
+          name="modelID"
+          x-model={`${xModelPrefix}.modelID`}
+          change="selectedUnitType = unitTypes.find(ut => ut.modelID === $event.target.value) || null"
+          class="select select-bordered w-full"
+          class="errors.modelID ? 'select-error' : ''"
         >
             <option value="">No model selected</option>
             <template x-for="unitType in unitTypes" :key="unitType.modelID">

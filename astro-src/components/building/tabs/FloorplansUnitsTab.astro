@@ -21,7 +21,7 @@ export interface Props {
             <div class="text-base-content/70 mb-4">
                 Define unit types that serve as templates for individual units. Units can inherit settings from their floorplan and override them as needed.
             </div>
-            
+
             <!-- Unit Types List -->
             <div class="grid grid-cols-1 gap-4" data-testid="unit-types-list">
                 <template x-for="unitType in unitTypes" :key="unitType.modelID">
@@ -52,7 +52,7 @@ export interface Props {
                                 <span class="font-semibold" x-text="formatCurrency(unitType.rent)"></span>
                             </div>
                             <div x-show="unitType.description" class="text-sm text-base-content/80 mb-2" x-text="unitType.description"></div>
-                            
+
                             <!-- Units using this type -->
                             <div class="mt-3 pt-3 border-t border-base-200">
                                 <div class="text-xs text-base-content/60 mb-1">Units using this floorplan:</div>
@@ -67,7 +67,7 @@ export interface Props {
                         </div>
                     </div>
                 </template>
-                
+
                 <!-- Empty State -->
                 <div x-show="unitTypes.length === 0" class="text-center py-8 text-base-content/60">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,12 +85,12 @@ export interface Props {
             </div>
         </div>
     </div>
-    
+
     <!-- Visual Divider -->
     <div class="divider divider-primary">
         <span class="text-lg font-medium">Individual Units</span>
     </div>
-    
+
     <!-- Units Section with Listing Management -->
     <div class="card bg-base-100 shadow-lg">
         <div class="card-body">
@@ -101,7 +101,7 @@ export interface Props {
             <div class="text-base-content/70 mb-4">
                 Manage individual units, set availability status, and update rental pricing all in one place.
             </div>
-            
+
             <SimpleUnitsSection />
         </div>
     </div>

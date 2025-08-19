@@ -1,13 +1,13 @@
 ---
-import { 
+import {
     BaseInput,
     CurrencyInput,
     DropdownSelect
-} from "../../forms";
+} from '../../forms';
 
 export interface Props {
-    building: any;
-    errors: Record<string, string>;
+    building: any
+    errors: Record<string, string>
 }
 
 const { building: _building, errors: _errors } = Astro.props;
@@ -17,41 +17,41 @@ const { building: _building, errors: _errors } = Astro.props;
 <div class="card bg-base-100">
     <div class="card-body">
         <h3 class="card-title text-lg mb-4">Lease Terms & Pricing</h3>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-start">
             <BaseInput
-                name="leaseLength"
-                label="Default Lease Length (months)"
-                type="number"
-                xModel="building.leaseLength"
-                placeholder="12"
-                min="1"
-                max="36"
-                helpText="Standard lease term offered"
+              name="leaseLength"
+              label="Default Lease Length (months)"
+              type="number"
+              xModel="building.leaseLength"
+              placeholder="12"
+              min="1"
+              max="36"
+              helpText="Standard lease term offered"
             />
-            
+
             <CurrencyInput
-                name="applicationFee"
-                label="Application Fee"
-                xModel="building.applicationFee"
-                placeholder="50.00"
-                min="0"
-                step="1"
-                helpText="Fee to process rental applications"
+              name="applicationFee"
+              label="Application Fee"
+              xModel="building.applicationFee"
+              placeholder="50.00"
+              min="0"
+              step="1"
+              helpText="Fee to process rental applications"
             />
-            
+
             <div class="form-control">
                 <label class="label cursor-pointer">
                     <span class="label-text">Accepts Online Applications</span>
-                    <input 
-                        type="checkbox" 
-                        class="checkbox checkbox-primary" 
-                        x-model="building.acceptsOnlineApplications"
+                    <input
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-model="building.acceptsOnlineApplications"
                     />
                 </label>
             </div>
         </div>
-        
+
         <!-- Rental Type Section -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="text-base font-semibold mb-4 flex items-center gap-2">
@@ -83,48 +83,64 @@ const { building: _building, errors: _errors } = Astro.props;
                     </div>
                 </div>
             </h4>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <DropdownSelect
-                    name="specialtyType"
-                    label="Rental Type"
-                    xModel="building.specialtyType"
-                    options={[
+                  name="specialtyType"
+                  label="Rental Type"
+                  xModel="building.specialtyType"
+                  options={[
                         { value: 'market-rate', label: 'Market Rate' },
                         { value: 'affordable', label: 'Affordable' },
                         { value: 'student', label: 'Student' },
                         { value: 'senior', label: 'Senior' }
                     ]}
-                    placeholder="Select rental type"
+                  placeholder="Select rental type"
                 />
                 <BaseInput
-                    name="specialtySubType"
-                    label="Specialty Sub-Type"
-                    xModel="building.specialtySubType"
-                    placeholder="e.g., 55+, 62+, graduate"
+                  name="specialtySubType"
+                  label="Specialty Sub-Type"
+                  xModel="building.specialtySubType"
+                  placeholder="e.g., 55+, 62+, graduate"
                 />
             </div>
-            
+
             <!-- Rental Type Explanations -->
             <div class="text-sm text-base-content/70 mb-4 space-y-1">
-                <p><strong>Market Rate:</strong> Standard apartments - appears in general searches with maximum visibility to all renters</p>
-                <p><strong>Affordable:</strong> Income-restricted housing - shows in "Affordable Housing" sections, requires income verification</p>
-                <p><strong>Student:</strong> Campus housing - listed in "Student Housing" categories, shown near colleges/universities</p>
-                <p><strong>Senior:</strong> Age-restricted (55+/62+) - appears in "Senior Living" sections, hidden from general searches</p>
+                <p>
+<strong>Market Rate:</strong>
+{' '}
+Standard apartments - appears in general searches with maximum visibility to all renters
+                </p>
+                <p>
+<strong>Affordable:</strong>
+{' '}
+Income-restricted housing - shows in "Affordable Housing" sections, requires income verification
+                </p>
+                <p>
+<strong>Student:</strong>
+{' '}
+Campus housing - listed in "Student Housing" categories, shown near colleges/universities
+                </p>
+                <p>
+<strong>Senior:</strong>
+{' '}
+Age-restricted (55+/62+) - appears in "Senior Living" sections, hidden from general searches
+                </p>
             </div>
-            
+
             <div class="form-control mb-4">
                 <label class="label cursor-pointer">
                     <span class="label-text">Rooms for Rent Available</span>
-                    <input 
-                        type="checkbox" 
-                        class="toggle toggle-primary" 
-                        x-model="building.roomsForRent"
+                    <input
+                      type="checkbox"
+                      class="toggle toggle-primary"
+                      x-model="building.roomsForRent"
                     />
                 </label>
             </div>
         </div>
-        
+
         <!-- Rent Specials -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="font-semibold mb-4">Rent Specials</h4>
@@ -132,23 +148,28 @@ const { building: _building, errors: _errors } = Astro.props;
                 <template x-for="(special, index) in building.rentSpecials || []" :key="special.id || ('special-' + index)">
                     <div class="border border-base-300 rounded-lg p-4 mb-4">
                         <div class="flex justify-end mb-2">
-                            <button 
-                                @click="removeRentSpecial(index)"
-                                class="btn btn-ghost btn-sm text-error"
-                            >Remove</button>
+                            <button
+                              click="removeRentSpecial(index)"
+                              class="btn btn-ghost btn-sm text-error"
+                            >
+Remove
+                            </button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Title Input -->
                             <label class="floating-label">
-                                <span>Title<span class="text-error">*</span></span>
+                                <span>
+Title
+<span class="text-error">*</span>
+                                </span>
                                 <input
-                                    type="text"
-                                    :name="'special-title-' + index"
-                                    x-model="special.title"
-                                    placeholder="Move-in Special"
-                                    class="input w-full"
-                                    :class="errors['rentSpecial' + index + 'Title'] ? 'input-error' : ''"
-                                    required
+                                  type="text"
+                                  name="'special-title-' + index"
+                                  x-model="special.title"
+                                  placeholder="Move-in Special"
+                                  class="input w-full"
+                                  class="errors['rentSpecial' + index + 'Title'] ? 'input-error' : ''"
+                                  required
                                 />
                                 <span x-show="errors['rentSpecial' + index + 'Title']" class="label-text-alt text-error" x-text="errors['rentSpecial' + index + 'Title']"></span>
                             </label>
@@ -157,20 +178,20 @@ const { building: _building, errors: _errors } = Astro.props;
                                 <label class="floating-label">
                                     <span>Start Date</span>
                                     <input
-                                        type="date"
-                                        :name="'special-start-' + index"
-                                        x-model="special.startDate"
-                                        class="input w-full"
+                                      type="date"
+                                      name="'special-start-' + index"
+                                      x-model="special.startDate"
+                                      class="input w-full"
                                     />
                                 </label>
                                 <!-- End Date Input -->
                                 <label class="floating-label">
                                     <span>End Date</span>
                                     <input
-                                        type="date"
-                                        :name="'special-end-' + index"
-                                        x-model="special.endDate"
-                                        class="input w-full"
+                                      type="date"
+                                      name="'special-end-' + index"
+                                      x-model="special.endDate"
+                                      class="input w-full"
                                     />
                                 </label>
                             </div>
@@ -180,22 +201,25 @@ const { building: _building, errors: _errors } = Astro.props;
                         <label class="floating-label textarea-label">
                             <span>Description</span>
                             <textarea
-                                :name="'special-desc-' + index"
-                                x-model="special.description"
-                                placeholder="Special details..."
-                                class="textarea w-full resize-vertical"
-                                rows="2"
-                            ></textarea>
+                              name="'special-desc-' + index"
+                              x-model="special.description"
+                              placeholder="Special details..."
+                              class="textarea w-full resize-vertical"
+                              rows="2"
+                            >
+                            </textarea>
                         </label>
                     </div>
                 </template>
-                <button 
-                    @click="addRentSpecial()"
-                    class="btn btn-primary btn-sm"
-                >Add Rent Special</button>
+                <button
+                  click="addRentSpecial()"
+                  class="btn btn-primary btn-sm"
+                >
+Add Rent Special
+                </button>
             </div>
         </div>
-        
+
         <!-- Income Restrictions -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="font-semibold mb-4">Income Restrictions</h4>
@@ -203,23 +227,23 @@ const { building: _building, errors: _errors } = Astro.props;
                 <div class="form-control mb-4">
                     <label class="label cursor-pointer">
                         <span class="label-text">Has Income Restrictions</span>
-                        <input 
-                            type="checkbox" 
-                            class="toggle toggle-primary" 
-                            x-model="hasRestrictions"
+                        <input
+                          type="checkbox"
+                          class="toggle toggle-primary"
+                          x-model="hasRestrictions"
                         />
                     </label>
                 </div>
                 <div x-show="hasRestrictions" class="space-y-4">
                     <BaseInput
-                        name="amiLimit"
-                        label="AMI Limit (%)"
-                        type="number"
-                        xModel="building.incomeRestrictions.amiLimit"
-                        placeholder="80"
-                        min="0"
-                        max="200"
-                        helpText="Area Median Income percentage limit"
+                      name="amiLimit"
+                      label="AMI Limit (%)"
+                      type="number"
+                      xModel="building.incomeRestrictions.amiLimit"
+                      placeholder="80"
+                      min="0"
+                      max="200"
+                      helpText="Area Median Income percentage limit"
                     />
                     <span x-show="errors.amiLimit" class="label-text-alt text-error" x-text="errors.amiLimit"></span>
                     <!-- Simplified income limits by household size -->
@@ -230,14 +254,14 @@ const { building: _building, errors: _errors } = Astro.props;
                                 <label class="floating-label">
                                     <span x-text="size + ' Person'"></span>
                                     <input
-                                        type="number"
-                                        :name="'income-size-' + size"
-                                        :value="building.incomeRestrictions && building.incomeRestrictions.maxIncomeByHouseholdSize ? building.incomeRestrictions.maxIncomeByHouseholdSize[size] || '' : ''"
-                                        @input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
-                                        placeholder="50000"
-                                        class="input w-full"
-                                        min="0"
-                                        step="1000"
+                                      type="number"
+                                      name="'income-size-' + size"
+                                      value="building.incomeRestrictions && building.incomeRestrictions.maxIncomeByHouseholdSize ? building.incomeRestrictions.maxIncomeByHouseholdSize[size] || '' : ''"
+                                      input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
+                                      placeholder="50000"
+                                      class="input w-full"
+                                      min="0"
+                                      step="1000"
                                     />
                                 </label>
                             </template>

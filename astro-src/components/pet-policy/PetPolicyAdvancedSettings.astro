@@ -1,10 +1,10 @@
 ---
 export interface Props {
-    xModel: string;
-    disabled?: boolean;
+    xModel: string
+    disabled?: boolean
 }
 
-const { 
+const {
     xModel,
     disabled = false
 } = Astro.props;
@@ -15,10 +15,10 @@ const {
         <div class="flex items-center justify-between">
             <h3 class="card-title text-base">Advanced Pet Settings</h3>
             <button
-                type="button"
-                x-on:click="showAdvancedSettings = !showAdvancedSettings"
-                class="btn btn-sm btn-ghost"
-                disabled={disabled}
+              type="button"
+              x-on:click="showAdvancedSettings = !showAdvancedSettings"
+              class="btn btn-sm btn-ghost"
+              disabled={disabled}
             >
                 <span x-text="showAdvancedSettings ? 'Hide' : 'Show'"></span>
                 <svg class="w-4 h-4 ml-1 transition-transform" :class="{'rotate-180': showAdvancedSettings}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,12 +26,14 @@ const {
                 </svg>
             </button>
         </div>
-        
+
         <!-- Summary when collapsed -->
         <div x-show="!showAdvancedSettings && hasAdvancedPetTypes" class="text-sm text-base-content/70 mt-2">
-            <strong>Current Settings:</strong> <span x-text="advancedPetTypesSummary"></span>
+            <strong>Current Settings:</strong>
+{' '}
+<span x-text="advancedPetTypesSummary"></span>
         </div>
-        
+
         <!-- Advanced settings content -->
         <div x-show="showAdvancedSettings" x-transition class="mt-4 space-y-4">
             <div class="alert alert-info text-sm">
@@ -39,11 +41,19 @@ const {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div>
-                    <p><strong>Advanced Settings:</strong> Configure specific rules for each pet type. These override the basic settings above.</p>
-                    <p class="mt-1"><strong>Basic Settings:</strong> Apply to all pets unless overridden by advanced settings.</p>
+                    <p>
+<strong>Advanced Settings:</strong>
+{' '}
+Configure specific rules for each pet type. These override the basic settings above.
+                    </p>
+                    <p class="mt-1">
+<strong>Basic Settings:</strong>
+{' '}
+Apply to all pets unless overridden by advanced settings.
+                    </p>
                 </div>
             </div>
-            
+
             <!-- Pet Type Policies -->
             <div class="space-y-4">
                 <template x-for={`(petTypePolicy, index) in ${xModel}.petTypes || []`} :key="'pet-type-' + index">
@@ -51,29 +61,32 @@ const {
                         <div class="card-body">
                             <div class="flex items-center justify-between mb-4">
                                 <h4 class="text-base font-semibold">
-                                    Pet Type Configuration 
+                                    Pet Type Configuration
                                     <span class="badge badge-neutral ml-2" x-text="'#' + (index + 1)"></span>
                                 </h4>
                                 <button
-                                    type="button"
-                                    x-on:click="removePetTypePolicy(index)"
-                                    class="btn btn-ghost btn-sm text-error"
-                                    disabled={disabled}
+                                  type="button"
+                                  x-on:click="removePetTypePolicy(index)"
+                                  class="btn btn-ghost btn-sm text-error"
+                                  disabled={disabled}
                                 >
                                     Remove
                                 </button>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <!-- Pet Type Selection -->
                                 <div class="form-control">
                                     <label class="label">
-                                        <span class="label-text">Pet Type <span class="text-error">*</span></span>
+                                        <span class="label-text">
+Pet Type
+<span class="text-error">*</span>
+                                        </span>
                                     </label>
                                     <select
-                                        x-model="petTypePolicy.type"
-                                        class="select select-bordered"
-                                        disabled={disabled}
+                                      x-model="petTypePolicy.type"
+                                      class="select select-bordered"
+                                      disabled={disabled}
                                     >
                                         <option value="dog">Dog</option>
                                         <option value="cat">Cat</option>
@@ -82,39 +95,39 @@ const {
                                         <option value="small-animal">Small Animal</option>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Weight Limit -->
                                 <div class="form-control">
                                     <label class="label">
                                         <span class="label-text">Weight Limit (lbs)</span>
                                     </label>
                                     <input
-                                        type="number"
-                                        x-model.number="petTypePolicy.weightLimit"
-                                        class="input input-bordered"
-                                        placeholder="e.g., 50"
-                                        min="0"
-                                        max="200"
-                                        disabled={disabled}
+                                      type="number"
+                                      x-model.number="petTypePolicy.weightLimit"
+                                      class="input input-bordered"
+                                      placeholder="e.g., 50"
+                                      min="0"
+                                      max="200"
+                                      disabled={disabled}
                                     />
                                 </div>
-                                
+
                                 <!-- Count Limit -->
                                 <div class="form-control">
                                     <label class="label">
                                         <span class="label-text">Count Limit</span>
                                     </label>
                                     <input
-                                        type="number"
-                                        x-model.number="petTypePolicy.countLimit"
-                                        class="input input-bordered"
-                                        placeholder="e.g., 2"
-                                        min="1"
-                                        max="10"
-                                        disabled={disabled}
+                                      type="number"
+                                      x-model.number="petTypePolicy.countLimit"
+                                      class="input input-bordered"
+                                      placeholder="e.g., 2"
+                                      min="1"
+                                      max="10"
+                                      disabled={disabled}
                                     />
                                 </div>
-                                
+
                                 <!-- Monthly Fee -->
                                 <div class="form-control">
                                     <label class="label">
@@ -123,18 +136,18 @@ const {
                                     <div class="join">
                                         <span class="join-item btn btn-disabled btn-sm">$</span>
                                         <input
-                                            type="number"
-                                            x-model.number="petTypePolicy.fee"
-                                            class="input input-bordered join-item flex-1"
-                                            placeholder="e.g., 50"
-                                            min="0"
-                                            max="500"
-                                            step="5"
-                                            disabled={disabled}
+                                          type="number"
+                                          x-model.number="petTypePolicy.fee"
+                                          class="input input-bordered join-item flex-1"
+                                          placeholder="e.g., 50"
+                                          min="0"
+                                          max="500"
+                                          step="5"
+                                          disabled={disabled}
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <!-- Deposit -->
                                 <div class="form-control">
                                     <label class="label">
@@ -143,25 +156,25 @@ const {
                                     <div class="join">
                                         <span class="join-item btn btn-disabled btn-sm">$</span>
                                         <input
-                                            type="number"
-                                            x-model.number="petTypePolicy.deposit"
-                                            class="input input-bordered join-item flex-1"
-                                            placeholder="e.g., 500"
-                                            min="0"
-                                            max="5000"
-                                            step="25"
-                                            disabled={disabled}
+                                          type="number"
+                                          x-model.number="petTypePolicy.deposit"
+                                          class="input input-bordered join-item flex-1"
+                                          placeholder="e.g., 500"
+                                          min="0"
+                                          max="5000"
+                                          step="25"
+                                          disabled={disabled}
                                         />
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Breed Restrictions for this pet type -->
                             <div class="mt-4">
                                 <label class="label">
                                     <span class="label-text">Breed Restrictions (for this pet type)</span>
                                 </label>
-                                
+
                                 <!-- Current breed restrictions -->
                                 <div x-show="petTypePolicy.breedRestrictions && petTypePolicy.breedRestrictions.length > 0" class="mb-2">
                                     <div class="flex flex-wrap gap-2">
@@ -169,10 +182,10 @@ const {
                                             <div class="badge badge-warning gap-2">
                                                 <span x-text="breed"></span>
                                                 <button
-                                                    type="button"
-                                                    x-on:click="removeBreedRestrictionFromPetType(index, breedIndex)"
-                                                    class="btn btn-ghost btn-xs"
-                                                    disabled={disabled}
+                                                  type="button"
+                                                  x-on:click="removeBreedRestrictionFromPetType(index, breedIndex)"
+                                                  class="btn btn-ghost btn-xs"
+                                                  disabled={disabled}
                                                 >
                                                     ×
                                                 </button>
@@ -180,32 +193,32 @@ const {
                                         </template>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Add breed restriction input -->
                                 <div class="join" x-data="{ newBreed: '' }">
                                     <input
-                                        type="text"
-                                        x-model="newBreed"
-                                        placeholder="Enter breed name (e.g., Pit Bull, German Shepherd)"
-                                        class="input input-bordered join-item flex-1"
-                                        disabled={disabled}
-                                        @keyup.enter="addBreedRestrictionToPetType(index, newBreed); newBreed = ''"
+                                      type="text"
+                                      x-model="newBreed"
+                                      placeholder="Enter breed name (e.g., Pit Bull, German Shepherd)"
+                                      class="input input-bordered join-item flex-1"
+                                      disabled={disabled}
+                                      keyup.enter="addBreedRestrictionToPetType(index, newBreed); newBreed = ''"
                                     />
                                     <button
-                                        type="button"
-                                        x-on:click="addBreedRestrictionToPetType(index, newBreed); newBreed = ''"
-                                        class="btn btn-primary join-item"
-                                        disabled={disabled}
+                                      type="button"
+                                      x-on:click="addBreedRestrictionToPetType(index, newBreed); newBreed = ''"
+                                      class="btn btn-primary join-item"
+                                      disabled={disabled}
                                     >
                                         Add
                                     </button>
                                 </div>
-                                
+
                                 <div class="text-xs text-base-content/70 mt-1">
                                     Enter breed names separated by commas, or add them one at a time
                                 </div>
                             </div>
-                            
+
                             <!-- Pet Type Summary -->
                             <div class="mt-4 p-3 bg-base-100 rounded text-sm">
                                 <div class="font-medium mb-1">Configuration Summary:</div>
@@ -242,28 +255,36 @@ const {
                     </div>
                 </template>
             </div>
-            
+
             <!-- Add Pet Type Button -->
             <button
-                type="button"
-                x-on:click="addPetTypePolicy()"
-                class="btn btn-primary btn-sm"
-                disabled={disabled}
+              type="button"
+              x-on:click="addPetTypePolicy()"
+              class="btn btn-primary btn-sm"
+              disabled={disabled}
             >
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 Add Pet Type
             </button>
-            
+
             <!-- Usage Examples -->
             <div class="alert alert-warning text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div>
-                    <p><strong>Example:</strong> Allow dogs up to 50lbs with $75/month fee, and cats with no weight limit and $25/month fee.</p>
-                    <p class="mt-1"><strong>Breed Restrictions:</strong> Enter specific breeds to restrict (e.g., "Pit Bull", "Rottweiler")</p>
+                    <p>
+<strong>Example:</strong>
+{' '}
+Allow dogs up to 50lbs with $75/month fee, and cats with no weight limit and $25/month fee.
+                    </p>
+                    <p class="mt-1">
+<strong>Breed Restrictions:</strong>
+{' '}
+Enter specific breeds to restrict (e.g., "Pit Bull", "Rottweiler")
+                    </p>
                 </div>
             </div>
         </div>

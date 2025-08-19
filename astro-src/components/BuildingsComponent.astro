@@ -15,27 +15,29 @@ let error: string | null = null;
 
 try {
     const buildingsResponse = await buildingsService.getBuildings();
-    if (buildingsResponse.success && buildingsResponse.data) {
+    if(buildingsResponse.success && buildingsResponse.data) {
         buildings = buildingsResponse.data;
     } else {
-        error = buildingsResponse.error || "Failed to load buildings";
+        error = buildingsResponse.error || 'Failed to load buildings';
         buildings = [];
     }
-} catch (e) {
-    error = "Failed to load buildings";
+} catch(e) {
+    error = 'Failed to load buildings';
     buildings = [];
 }
 ---
 
-<div x-data="buildingsComponentData()" 
-     x-init="init()"
-     @building-tab-changed="handleTabChange($event)"
-     @show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
-     @toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
-     @building-data-loaded="handleBuildingDataLoaded($event)"
-     data-buildings={JSON.stringify(buildings)}
-     data-api-url={apiURL}>
-     
+<div
+  x-data="buildingsComponentData()"
+  x-init="init()"
+  building-tab-changed="handleTabChange($event)"
+  show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
+  toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
+  building-data-loaded="handleBuildingDataLoaded($event)"
+  data-buildings={JSON.stringify(buildings)}
+  data-api-url={apiURL}
+>
+
     <!-- Error Display -->
     {error && (
         <div class="alert alert-error mb-6" data-testid="error-message">
@@ -45,32 +47,32 @@ try {
             <span>{error}</span>
         </div>
     )}
-     
+
     <!-- Toast notifications -->
     <div class="toast toast-center toast-middle" x-show="showToast" x-transition.opacity>
         <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
             <span x-text="toastMessage"></span>
         </div>
     </div>
-    
+
     <!-- Building navigation tabs -->
     <BuildingsList buildings={buildings} />
-    
+
     <!-- Individual building managers with lazy loading -->
     <div class="building-managers-container">
         {buildings.map((building, i) => (
-            <BuildingManager 
-                building={building}
-                apiURL={apiURL}
-                data-building-id={building.buildingID}
-                data-api-url={apiURL}
-                data-tab-index={i}
-                class="building-tab-content"
-                style={i === 0 ? '' : 'display: none;'}
+            <BuildingManager
+              building={building}
+              apiURL={apiURL}
+              data-building-id={building.buildingID}
+              data-api-url={apiURL}
+              data-tab-index={i}
+              class="building-tab-content"
+              style={i === 0 ? '' : 'display: none;'}
             />
         ))}
     </div>
-    
+
     <!-- Add building form -->
     <div x-show="activeBuildingTab === buildings.length" x-cloak data-api-url={apiURL}>
         <AddBuildingForm />
@@ -78,6 +80,16 @@ try {
 </div>
 
 <script>
+
+
+
+
+
+
+
+
+
+
 import type { AlpineComponent } from "../types/alpine";
 
 type Building = {
@@ -226,9 +238,29 @@ declare global {
 }
 
 window.buildingsComponentData = buildingsComponentData;
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <style>
+
+
+
+
+
+
+
+
+
+
 /* Smooth loading transitions */
 [x-cloak] { 
     display: none !important; 
@@ -238,4 +270,14 @@ window.buildingsComponentData = buildingsComponentData;
 .hidden {
     display: none !important;
 }
+
+
+
+
+
+
+
+
+
+
 </style>

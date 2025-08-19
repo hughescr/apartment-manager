@@ -1,20 +1,20 @@
 ---
 export interface Props {
-    name: string;
-    label?: string;
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    readonly?: boolean;
-    xModel: string;
-    value?: string | number;
-    min?: string | number;
-    max?: string | number;
-    step?: string | number;
-    class?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
+    name: string
+    label?: string
+    placeholder?: string
+    required?: boolean
+    disabled?: boolean
+    readonly?: boolean
+    xModel: string
+    value?: string | number
+    min?: string | number
+    max?: string | number
+    step?: string | number
+    'class'?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
 }
 
 const {
@@ -29,7 +29,7 @@ const {
     min = 0,
     max,
     step = 0.01,
-    class: className = '',
+    'class': className = '',
     error,
     helpText,
     showLabel = true,
@@ -65,25 +65,25 @@ const wrapperClasses = [
             </span>
         </label>
     )}
-    
+
     <label class={wrapperClasses}>
         <span class="text-base-content/70">$</span>
         <input
-            type="number"
-            name={name}
-            placeholder={placeholder}
-            class="grow bg-transparent border-0 outline-none"
-            required={required}
-            disabled={disabled}
-            readonly={readonly}
-            x-model.number={xModel}
-            value={value}
-            min={min}
-            max={max}
-            step={step}
+          type="number"
+          name={name}
+          placeholder={placeholder}
+          class="grow bg-transparent border-0 outline-none"
+          required={required}
+          disabled={disabled}
+          readonly={readonly}
+          x-model.number={xModel}
+          value={value}
+          min={min}
+          max={max}
+          step={step}
         />
     </label>
-    
+
     {(error || helpText) && (
         <label class="label">
             <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
@@ -94,6 +94,16 @@ const wrapperClasses = [
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Remove spinner buttons in Chrome, Safari, Edge */
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
@@ -110,4 +120,14 @@ const wrapperClasses = [
     .focus-within\:outline-primary:focus-within {
         outline-color: var(--fallback-p, oklch(var(--p)));
     }
+
+
+
+
+
+
+
+
+
+
 </style>

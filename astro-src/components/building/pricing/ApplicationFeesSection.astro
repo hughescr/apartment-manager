@@ -1,14 +1,14 @@
 ---
 import {
     FeeListEditor
-} from "../../forms";
-import { 
-    UtilityType, 
+} from '../../forms';
+import {
+    UtilityType,
     FeeType
-} from "../../../types";
+} from '../../../types';
 
 export interface Props {
-    building: any;
+    building: any
 }
 
 const { building: _building } = Astro.props;
@@ -21,7 +21,7 @@ const utilityTypes = Object.values(UtilityType);
 <div class="card bg-base-100">
     <div class="card-body">
         <h3 class="card-title text-lg mb-4">Application & Fees</h3>
-        
+
         <!-- Utilities Included -->
         <div class="mb-6">
             <h4 class="font-semibold mb-4">Utilities Included</h4>
@@ -30,34 +30,34 @@ const utilityTypes = Object.values(UtilityType);
                     <div class="form-control">
                         <label class="label cursor-pointer">
                             <span class="label-text capitalize">{(utility as string).replace('-', ' ')}</span>
-                            <input 
-                                type="checkbox" 
-                                class="checkbox checkbox-primary" 
-                                x-model={`building.utilitiesIncluded['${utility}']`}
+                            <input
+                              type="checkbox"
+                              class="checkbox checkbox-primary"
+                              x-model={`building.utilitiesIncluded['${utility}']`}
                             />
                         </label>
                     </div>
                 ))}
             </div>
         </div>
-        
+
         <!-- One-Time Fees -->
         <div class="border-t border-base-200 pt-4 mt-4 mb-6">
             <h4 class="font-semibold mb-4">One-Time Fees</h4>
             <FeeListEditor
-                name="oneTimeFees"
-                xModel="building.oneTimeFees"
-                feeTypes={[FeeType.SECURITY_DEPOSIT, FeeType.PET_DEPOSIT, FeeType.MOVE_IN, FeeType.KEY_DEPOSIT, FeeType.CLEANING]}
+              name="oneTimeFees"
+              xModel="building.oneTimeFees"
+              feeTypes={[FeeType.SECURITY_DEPOSIT, FeeType.PET_DEPOSIT, FeeType.MOVE_IN, FeeType.KEY_DEPOSIT, FeeType.CLEANING]}
             />
         </div>
-        
+
         <!-- Monthly Fees -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="font-semibold mb-4">Monthly Fees</h4>
             <FeeListEditor
-                name="monthlyFees"
-                xModel="building.monthlyFees"
-                feeTypes={[FeeType.PET_FEE, FeeType.PARKING, FeeType.STORAGE, FeeType.ADMIN]}
+              name="monthlyFees"
+              xModel="building.monthlyFees"
+              feeTypes={[FeeType.PET_FEE, FeeType.PARKING, FeeType.STORAGE, FeeType.ADMIN]}
             />
         </div>
     </div>

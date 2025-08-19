@@ -1,30 +1,39 @@
 ---
 // astro-src/components/UnitTypeCard.astro
-import Saving from "./Saving.astro";
-import { Resource } from "sst";
-import type { UnitTypeData, Amenity } from "../../src/types";
-import { AmenitySelector } from "./forms";
+import Saving from './Saving.astro';
+import { Resource } from 'sst';
+import type { UnitTypeData, Amenity } from '../../src/types';
+import { AmenitySelector } from './forms';
 
-const { unitType, buildingAmenities = [] } = Astro.props as { 
-    unitType: UnitTypeData;
-    buildingAmenities?: Amenity[];
+const { unitType, buildingAmenities = [] } = Astro.props as {
+    unitType: UnitTypeData
+    buildingAmenities?: Amenity[]
 };
 
 const apiURL = Resource.API.url;
 
-
 // Initialize missing properties
-if (!unitType.modelAmenities) unitType.modelAmenities = [];
+if(!unitType.modelAmenities) { unitType.modelAmenities = []; }
 
 // Declare the global window property for TypeScript
 declare global {
     interface Window {
-        unitTypeCardData: (unitTypeData: any, buildingAmenitiesData: any, apiUrlData: string) => any;
+        unitTypeCardData: (unitTypeData: any, buildingAmenitiesData: any, apiUrlData: string) => any
     }
 }
 ---
 
 <script define:vars={{ unitType, buildingAmenities, apiURL }} is:inline>
+
+
+
+
+
+
+
+
+
+
 // Used by Alpine.js x-data attribute
 window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenitiesData, apiUrlData) {
     return {
@@ -200,6 +209,16 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
         }
     };
 }
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <div x-data="unitTypeCardData(unitType, buildingAmenities, apiURL)" x-init="init(); $watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">
@@ -208,15 +227,17 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
         <div class="flex justify-between items-start mb-4">
             <div class="flex-1">
                 <h3 class="card-title text-2xl">
-                    <input 
-                        type="text" 
-                        x-model="unitType.modelName" 
-                        class="input input-ghost input-lg font-bold w-full"
-                        placeholder="Model Name"
+                    <input
+                      type="text"
+                      x-model="unitType.modelName"
+                      class="input input-ghost input-lg font-bold w-full"
+                      placeholder="Model Name"
                     />
                 </h3>
                 <div class="text-sm text-base-content/70 mt-1">
-                    Model ID: <span x-text="unitType.modelID"></span>
+                    Model ID:
+{' '}
+<span x-text="unitType.modelID"></span>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -232,12 +253,12 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                 <label class="label">
                     <span class="label-text font-semibold">Units Available</span>
                 </label>
-                <input 
-                    type="number" 
-                    x-model.number.lazy="unitType.countAvailable" 
-                    class="input input-bordered"
-                    min="0"
-                    placeholder="0"
+                <input
+                  type="number"
+                  x-model.number.lazy="unitType.countAvailable"
+                  class="input input-bordered"
+                  min="0"
+                  placeholder="0"
                 />
             </div>
 
@@ -245,10 +266,10 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                 <label class="label">
                     <span class="label-text font-semibold">Available From</span>
                 </label>
-                <input 
-                    type="date" 
-                    x-model.lazy="unitType.dateAvailable" 
-                    class="input input-bordered"
+                <input
+                  type="date"
+                  x-model.lazy="unitType.dateAvailable"
+                  class="input input-bordered"
                 />
             </div>
 
@@ -258,23 +279,23 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                     <span class="label-text font-semibold">Configuration</span>
                 </label>
                 <div class="flex gap-2">
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.beds" 
-                        class="input input-bordered w-20"
-                        min="0"
-                        max="10"
-                        placeholder="Beds"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.beds"
+                      class="input input-bordered w-20"
+                      min="0"
+                      max="10"
+                      placeholder="Beds"
                     />
                     <span class="self-center">beds</span>
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.baths" 
-                        class="input input-bordered w-20"
-                        min="0"
-                        max="10"
-                        step="0.5"
-                        placeholder="Baths"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.baths"
+                      class="input input-bordered w-20"
+                      min="0"
+                      max="10"
+                      step="0.5"
+                      placeholder="Baths"
                     />
                     <span class="self-center">baths</span>
                 </div>
@@ -284,13 +305,13 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                 <label class="label">
                     <span class="label-text font-semibold">Max Occupants</span>
                 </label>
-                <input 
-                    type="number" 
-                    x-model.number.lazy="unitType.maxOccupants" 
-                    class="input input-bordered"
-                    min="1"
-                    max="20"
-                    placeholder="Not specified"
+                <input
+                  type="number"
+                  x-model.number.lazy="unitType.maxOccupants"
+                  class="input input-bordered"
+                  min="1"
+                  max="20"
+                  placeholder="Not specified"
                 />
             </div>
 
@@ -300,20 +321,20 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                     <span class="label-text font-semibold">Rent Range</span>
                 </label>
                 <div class="flex gap-2 items-center">
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.minRent" 
-                        class="input input-bordered w-24"
-                        min="0"
-                        placeholder="Min"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.minRent"
+                      class="input input-bordered w-24"
+                      min="0"
+                      placeholder="Min"
                     />
                     <span>-</span>
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.maxRent" 
-                        class="input input-bordered w-24"
-                        min="0"
-                        placeholder="Max"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.maxRent"
+                      class="input input-bordered w-24"
+                      min="0"
+                      placeholder="Max"
                     />
                 </div>
             </div>
@@ -322,12 +343,12 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                 <label class="label">
                     <span class="label-text font-semibold">Per Person Rent</span>
                 </label>
-                <input 
-                    type="number" 
-                    x-model.number.lazy="unitType.perPersonRent" 
-                    class="input input-bordered"
-                    min="0"
-                    placeholder="Not specified"
+                <input
+                  type="number"
+                  x-model.number.lazy="unitType.perPersonRent"
+                  class="input input-bordered"
+                  min="0"
+                  placeholder="Not specified"
                 />
             </div>
 
@@ -348,16 +369,16 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                             <label class="label">
                                 <span class="label-text text-sm">Amount ($)</span>
                             </label>
-                            <input 
-                                type="number" 
-                                :value="getDepositAmount()"
-                                x-on:input="setDepositAmount($event.target.value)"
-                                class="input input-bordered w-full"
-                                min="0"
-                                placeholder="Not specified"
+                            <input
+                              type="number"
+                              value="getDepositAmount()"
+                              x-on:input="setDepositAmount($event.target.value)"
+                              class="input input-bordered w-full"
+                              min="0"
+                              placeholder="Not specified"
                             />
                         </div>
-                        
+
                         <!-- Refundable Toggle -->
                         <div class="form-control">
                             <label class="label">
@@ -368,19 +389,19 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                                     </svg>
                                 </div>
                             </label>
-                            <input 
-                                type="checkbox"
-                                class="toggle toggle-success"
-                                :checked="getDepositRefundable()"
-                                x-on:change="setDepositRefundable($event.target.checked)"
-                                :disabled="!unitType.deposit"
+                            <input
+                              type="checkbox"
+                              class="toggle toggle-success"
+                              checked="getDepositRefundable()"
+                              x-on:change="setDepositRefundable($event.target.checked)"
+                              disabled="!unitType.deposit"
                             />
                             <div class="text-xs text-base-content/70 mt-1">
                                 <span x-show="getDepositRefundable()">Fully refundable</span>
                                 <span x-show="!getDepositRefundable()">Non-refundable or partial</span>
                             </div>
                         </div>
-                        
+
                         <!-- Partial Refund Percentage -->
                         <div class="form-control" x-show="unitType.deposit && !getDepositRefundable()">
                             <label class="label">
@@ -391,14 +412,14 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                                     </svg>
                                 </div>
                             </label>
-                            <input 
-                                type="range"
-                                class="range range-sm range-primary"
-                                min="0"
-                                max="100"
-                                step="5"
-                                :value="getDepositPartialRefundPercentage() || 0"
-                                x-on:input="setDepositPartialRefundPercentage($event.target.value)"
+                            <input
+                              type="range"
+                              class="range range-sm range-primary"
+                              min="0"
+                              max="100"
+                              step="5"
+                              value="getDepositPartialRefundPercentage() || 0"
+                              x-on:input="setDepositPartialRefundPercentage($event.target.value)"
                             />
                             <div class="flex justify-between text-xs text-base-content/70 px-2">
                                 <span>0%</span>
@@ -406,7 +427,9 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                                 <span>100%</span>
                             </div>
                             <div class="text-xs text-base-content/70 mt-1" x-show="getDepositPartialRefundPercentage()">
-                                May refund up to <span x-text="formatCurrency((getDepositAmount() || 0) * (getDepositPartialRefundPercentage() || 0) / 100)"></span>
+                                May refund up to
+{' '}
+<span x-text="formatCurrency((getDepositAmount() || 0) * (getDepositPartialRefundPercentage() || 0) / 100)"></span>
                             </div>
                         </div>
                     </div>
@@ -419,20 +442,20 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                     <span class="label-text font-semibold">Square Footage</span>
                 </label>
                 <div class="flex gap-2 items-center">
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.minSqft" 
-                        class="input input-bordered w-24"
-                        min="0"
-                        placeholder="Min"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.minSqft"
+                      class="input input-bordered w-24"
+                      min="0"
+                      placeholder="Min"
                     />
                     <span>-</span>
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.maxSqft" 
-                        class="input input-bordered w-24"
-                        min="0"
-                        placeholder="Max"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.maxSqft"
+                      class="input input-bordered w-24"
+                      min="0"
+                      placeholder="Max"
                     />
                 </div>
             </div>
@@ -443,22 +466,22 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                     <span class="label-text font-semibold">Lease Terms (months)</span>
                 </label>
                 <div class="flex gap-2 items-center">
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.minLeaseTerm" 
-                        class="input input-bordered w-24"
-                        min="1"
-                        max="24"
-                        placeholder="Min"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.minLeaseTerm"
+                      class="input input-bordered w-24"
+                      min="1"
+                      max="24"
+                      placeholder="Min"
                     />
                     <span>-</span>
-                    <input 
-                        type="number" 
-                        x-model.number.lazy="unitType.maxLeaseTerm" 
-                        class="input input-bordered w-24"
-                        min="1"
-                        max="24"
-                        placeholder="Max"
+                    <input
+                      type="number"
+                      x-model.number.lazy="unitType.maxLeaseTerm"
+                      class="input input-bordered w-24"
+                      min="1"
+                      max="24"
+                      placeholder="Max"
                     />
                 </div>
             </div>
@@ -469,10 +492,14 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                 <div>
                     <span class="font-semibold">Availability:</span>
-                    <span x-text="unitType.countAvailable || 0"></span> units
-                    <span x-show="unitType.dateAvailable">
-                        from <span x-text="formatDate(unitType.dateAvailable)"></span>
-                    </span>
+                    <span x-text="unitType.countAvailable || 0"></span>
+{' '}
+units
+<span x-show="unitType.dateAvailable">
+                        from
+{' '}
+<span x-text="formatDate(unitType.dateAvailable)"></span>
+</span>
                 </div>
                 <div x-show="unitType.minRent || unitType.maxRent">
                     <span class="font-semibold">Rent:</span>
@@ -486,7 +513,15 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                     <span class="font-semibold">Deposit:</span>
                     <span x-text="formatCurrency(getDepositAmount())"></span>
                     <span x-show="unitType.deposit && typeof unitType.deposit === 'object'" class="text-xs ml-1">
-                        (<span x-show="getDepositRefundable()">refundable</span><span x-show="!getDepositRefundable() && getDepositPartialRefundPercentage()">partial: <span x-text="getDepositPartialRefundPercentage()"></span>%</span><span x-show="!getDepositRefundable() && !getDepositPartialRefundPercentage()">non-refundable</span>)
+                        (
+<span x-show="getDepositRefundable()">refundable</span>
+<span x-show="!getDepositRefundable() && getDepositPartialRefundPercentage()">
+partial:
+<span x-text="getDepositPartialRefundPercentage()"></span>
+%
+</span>
+<span x-show="!getDepositRefundable() && !getDepositPartialRefundPercentage()">non-refundable</span>
+)
                     </span>
                 </div>
                 <div x-show="unitType.minLeaseTerm || unitType.maxLeaseTerm">
@@ -504,7 +539,7 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
         <div class="collapse collapse-arrow bg-base-200">
             <input type="checkbox" x-model="expandedAmenities" />
             <div class="collapse-title text-lg font-medium">
-                Model Amenities 
+                Model Amenities
                 <span class="badge badge-primary badge-sm ml-2" x-text="getEffectiveAmenities().length"></span>
                 <span x-show="unitType.modelAmenities && unitType.modelAmenities.length > 0" class="badge badge-warning badge-sm ml-1">custom</span>
                 <span x-show="!unitType.modelAmenities || unitType.modelAmenities.length === 0" class="badge badge-info badge-sm ml-1">inherited from building</span>
@@ -518,24 +553,36 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                         </svg>
                         <div>
                             <span x-show="!unitType.modelAmenities || unitType.modelAmenities.length === 0">
-                                This floorplan inherits <span x-text="buildingAmenities.length"></span> amenities from the building. Add amenities here to customize this floorplan.
+                                This floorplan inherits
+{' '}
+<span x-text="buildingAmenities.length"></span>
+{' '}
+amenities from the building. Add amenities here to customize this floorplan.
                             </span>
                             <span x-show="unitType.modelAmenities && unitType.modelAmenities.length > 0">
-                                This floorplan has custom amenities that override the <span x-text="buildingAmenities.length"></span> building-level amenities.
-                                <button type="button" class="btn btn-ghost btn-xs ml-2" x-on:click="resetToInheritedAmenities()">
+                                This floorplan has custom amenities that override the
+{' '}
+<span x-text="buildingAmenities.length"></span>
+{' '}
+building-level amenities.
+<button type="button" class="btn btn-ghost btn-xs ml-2" x-on:click="resetToInheritedAmenities()">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
                                     Reset to Building Amenities
-                                </button>
+</button>
                             </span>
                         </div>
                     </div>
-                    
+
                     <!-- Inherited Amenities Display -->
                     <div x-show="(!unitType.modelAmenities || unitType.modelAmenities.length === 0) && buildingAmenities && buildingAmenities.length > 0" class="mb-4">
                         <div class="text-sm text-base-content/70 mb-2">
-                            <span class="font-semibold">Inherited from Building:</span> <span x-text="buildingAmenities.length"></span> amenities
+                            <span class="font-semibold">Inherited from Building:</span>
+{' '}
+<span x-text="buildingAmenities.length"></span>
+{' '}
+amenities
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <template x-for="amenity in buildingAmenities" :key="amenity.name + amenity.category">
@@ -548,12 +595,12 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                             </template>
                         </div>
                     </div>
-                    
+
                     <AmenitySelector
-                        name="modelAmenities"
-                        label="Floorplan-specific amenities (overrides building amenities)"
-                        xModel="unitType.modelAmenities"
-                        showLabel={false}
+                      name="modelAmenities"
+                      label="Floorplan-specific amenities (overrides building amenities)"
+                      xModel="unitType.modelAmenities"
+                      showLabel={false}
                     />
                 </div>
             </div>
@@ -562,6 +609,16 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Ensure smooth transitions */
     .collapse-content {
         transition: all 0.3s ease;
@@ -599,4 +656,14 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
     [x-transition] {
         transition: all 0.2s ease;
     }
+
+
+
+
+
+
+
+
+
+
 </style>

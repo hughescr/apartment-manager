@@ -1,14 +1,14 @@
 ---
 export interface Props {
-    fieldName: string;
-    errors: Record<string, string>;
-    class?: string;
+    fieldName: string
+    errors: Record<string, string>
+    'class'?: string
 }
 
-const { 
-    fieldName, 
-    errors: _errors, 
-    class: additionalClass = '' 
+const {
+    fieldName,
+    errors: _errors,
+    'class': additionalClass = ''
 } = Astro.props;
 
 // Generate Alpine.js directives based on field name complexity
@@ -17,11 +17,12 @@ const xShowDirective = isComplexFieldName ? `errors['${fieldName}']` : `errors.$
 const xTextDirective = isComplexFieldName ? `errors['${fieldName}']` : `errors.${fieldName}`;
 ---
 
-<span 
-    x-show={xShowDirective}
-    x-text={xTextDirective}
-    class={`label-text-alt text-error ${additionalClass}`}
-    data-testid={`error-${fieldName}`}
-    role="alert"
-    aria-live="polite"
-></span>
+<span
+  x-show={xShowDirective}
+  x-text={xTextDirective}
+  class={`label-text-alt text-error ${additionalClass}`}
+  data-testid={`error-${fieldName}`}
+  role="alert"
+  aria-live="polite"
+>
+</span>

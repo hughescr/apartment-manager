@@ -1,6 +1,6 @@
 ---
 export interface Props {
-    disabled?: boolean;
+    disabled?: boolean
 }
 
 const { disabled = false } = Astro.props;
@@ -13,17 +13,17 @@ const { disabled = false } = Astro.props;
             <template x-for="petType in petTypes" :key="petType.value">
                 <label class="label cursor-pointer justify-start gap-2">
                     <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary"
-                        x-on:change="togglePetType(petType.value)"
-                        :checked="isPetTypeSelected(petType.value)"
-                        disabled={disabled}
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-on:change="togglePetType(petType.value)"
+                      checked="isPetTypeSelected(petType.value)"
+                      disabled={disabled}
                     />
                     <span class="label-text" x-text="petType.label"></span>
                 </label>
             </template>
         </div>
-        
+
         <!-- Pet Types Summary -->
         <div x-show="selectedPetTypes && selectedPetTypes.length > 0" class="mt-4">
             <div class="text-sm text-base-content/70">

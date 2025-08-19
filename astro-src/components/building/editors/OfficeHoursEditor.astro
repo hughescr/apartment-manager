@@ -1,20 +1,20 @@
 ---
-import { HoursEditor } from "../../forms";
+import { HoursEditor } from '../../forms';
 
 export interface Props {
-    xModel: string; // The Alpine.js model path for the office hours object
-    title?: string;
+    xModel: string // The Alpine.js model path for the office hours object
+    title?: string
 }
 
-const { xModel, title = "Office Hours" } = Astro.props;
+const { xModel, title = 'Office Hours' } = Astro.props;
 ---
 
 <HoursEditor
-    xModel={xModel}
-    title={title}
-    showCopyActions={true}
-    showBulkActions={true}
-    defaultOpenTime="09:00"
-    defaultCloseTime="17:00"
-    helpText="Tip: Use the arrow buttons to copy hours to other days, or the ••• menu for bulk actions"
+  xModel={xModel}
+  title={title}
+  showCopyActions={true}
+  showBulkActions={true}
+  defaultOpenTime="09:00"
+  defaultCloseTime="17:00"
+  helpText="Tip: Use the arrow buttons to copy hours to other days, or the ••• menu for bulk actions"
 />

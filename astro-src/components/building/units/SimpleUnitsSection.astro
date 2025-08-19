@@ -16,10 +16,10 @@ export interface Props {
             <label class="label pb-1">
                 <span class="label-text text-sm font-medium">Filter by Status</span>
             </label>
-            <select 
-                class="select select-bordered w-full sm:w-48" 
-                data-testid="filter-status"
-                x-model="statusFilter"
+            <select
+              class="select select-bordered w-full sm:w-48"
+              data-testid="filter-status"
+              x-model="statusFilter"
             >
                 <option value="">All Units</option>
                 <option value="Occupied">Occupied</option>
@@ -28,19 +28,19 @@ export interface Props {
                 <option value="Down">Down/Maintenance</option>
             </select>
         </div>
-        
+
         <!-- Search -->
         <div class="form-control w-full sm:w-auto">
             <label class="label pb-1">
                 <span class="label-text text-sm font-medium">Search Units</span>
             </label>
             <div class="input-group">
-                <input 
-                    type="text" 
-                    placeholder="Search unit number..." 
-                    class="input input-bordered w-full"
-                    data-testid="search-units"
-                    x-model="searchQuery"
+                <input
+                  type="text"
+                  placeholder="Search unit number..."
+                  class="input input-bordered w-full"
+                  data-testid="search-units"
+                  x-model="searchQuery"
                 />
                 <button class="btn btn-square">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,26 +62,31 @@ export interface Props {
                             <h4 class="font-bold text-lg" x-text="'Unit ' + (unit.unitNumber || unit.unitID)"></h4>
                             <div class="flex items-center gap-2 text-sm text-base-content/70">
                                 <span x-text="unit.beds + ' bed, ' + unit.baths + ' bath'"></span>
-                                <span x-show="unit.sqft">• <span x-text="unit.sqft"></span> sq ft</span>
+                                <span x-show="unit.sqft">
+•
+<span x-text="unit.sqft"></span>
+{' '}
+sq ft
+                                </span>
                             </div>
                             <div x-show="unit.modelID" class="text-xs text-base-content/60 mt-1">
                                 <span>Floorplan: </span>
                                 <span x-text="unitTypes.find(ut => ut.modelID === unit.modelID)?.modelName || unit.modelID"></span>
                             </div>
                         </div>
-                        
+
                         <!-- Center: Listing Status Management -->
                         <div class="flex items-center gap-3">
                             <div class="form-control">
                                 <label class="label pb-1">
                                     <span class="label-text text-xs">Listing Status</span>
                                 </label>
-                                <select 
-                                    class="select select-bordered select-sm w-32"
-                                    :data-testid="'unit-status-' + unit.unitID"
-                                    :value="unit.vacancyClass || 'Unknown'"
-                                    :disabled="unit.savingField === 'vacancyClass'"
-                                    @change="updateUnitStatus(unit, $event.target.value)"
+                                <select
+                                  class="select select-bordered select-sm w-32"
+                                  data-testid="'unit-status-' + unit.unitID"
+                                  value="unit.vacancyClass || 'Unknown'"
+                                  disabled="unit.savingField === 'vacancyClass'"
+                                  change="updateUnitStatus(unit, $event.target.value)"
                                 >
                                     <option value="Occupied">Occupied</option>
                                     <option value="Unoccupied">Available</option>
@@ -89,23 +94,23 @@ export interface Props {
                                     <option value="Down">Down</option>
                                 </select>
                             </div>
-                            
+
                             <!-- Availability toggle for quick access -->
                             <div class="form-control">
                                 <label class="cursor-pointer label gap-2">
                                     <span class="label-text text-xs">List as Available</span>
-                                    <input 
-                                        type="checkbox" 
-                                        class="toggle toggle-success toggle-sm"
-                                        :data-testid="'availability-toggle-' + unit.unitID"
-                                        :checked="unit.vacancyClass === 'Unoccupied'"
-                                        :disabled="unit.savingField === 'vacancyClass'"
-                                        @change="toggleUnitAvailability(unit)"
+                                    <input
+                                      type="checkbox"
+                                      class="toggle toggle-success toggle-sm"
+                                      data-testid="'availability-toggle-' + unit.unitID"
+                                      checked="unit.vacancyClass === 'Unoccupied'"
+                                      disabled="unit.savingField === 'vacancyClass'"
+                                      change="toggleUnitAvailability(unit)"
                                     />
                                 </label>
                             </div>
                         </div>
-                        
+
                         <!-- Right: Rent and actions -->
                         <div class="flex items-center gap-4">
                             <!-- Inline rent editing -->
@@ -114,36 +119,36 @@ export interface Props {
                                     <span class="label-text text-xs">Monthly Rent</span>
                                 </label>
                                 <div x-show="!unit.editingRent" class="flex items-center gap-2">
-                                    <span 
-                                        class="font-bold text-lg cursor-pointer hover:bg-base-200 px-2 py-1 rounded"
-                                        :data-testid="'inline-rent-' + unit.unitID"
-                                        @click="unit.editingRent = true; $nextTick(() => $el.nextElementSibling.focus())"
+                                    <span
+                                      class="font-bold text-lg cursor-pointer hover:bg-base-200 px-2 py-1 rounded"
+                                      data-testid="'inline-rent-' + unit.unitID"
+                                      click="unit.editingRent = true; $nextTick(() => $el.nextElementSibling.focus())"
                                     >
                                         <span :data-testid="'unit-rent-' + unit.unitID" x-text="formatCurrency(unit.rent)"></span>
                                     </span>
                                 </div>
-                                
-                                <input 
-                                    x-show="unit.editingRent"
-                                    type="number"
-                                    class="input input-bordered input-sm w-24"
-                                    :data-testid="'rent-input-' + unit.unitID"
-                                    :value="unit.rent"
-                                    min="0"
-                                    max="25000"
-                                    @blur="unit.editingRent = false"
-                                    @keyup.enter="updateUnitRent(unit, $event.target.value)"
-                                    @keyup.escape="unit.editingRent = false"
+
+                                <input
+                                  x-show="unit.editingRent"
+                                  type="number"
+                                  class="input input-bordered input-sm w-24"
+                                  data-testid="'rent-input-' + unit.unitID"
+                                  value="unit.rent"
+                                  min="0"
+                                  max="25000"
+                                  blur="unit.editingRent = false"
+                                  keyup.enter="updateUnitRent(unit, $event.target.value)"
+                                  keyup.escape="unit.editingRent = false"
                                 />
-                                
+
                                 <div class="text-xs text-base-content/50" :data-testid="'last-updated-' + unit.unitID">
                                     <span x-text="formatRelativeTime(unit.lastUpdated)"></span>
                                 </div>
                             </div>
-                            
+
                             <!-- Saving indicator -->
                             <div x-show="unit.savingField" class="loading loading-spinner loading-sm" :data-testid="'saving-indicator-' + unit.unitID"></div>
-                            
+
                             <!-- Edit button to open full UnitCard -->
                             <button class="btn btn-sm btn-ghost" @click="$dispatch('edit-unit', unit)">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -155,7 +160,7 @@ export interface Props {
                 </div>
             </div>
         </template>
-        
+
         <!-- No units message -->
         <div x-show="filteredUnits.length === 0" class="card bg-base-200">
             <div class="card-body text-center">

@@ -1,21 +1,21 @@
 ---
-import { BaseInput } from "../../forms";
-import ValidationError from "../../common/ValidationError.astro";
+import { BaseInput } from '../../forms';
+import ValidationError from '../../common/ValidationError.astro';
 
 export interface Props {
     building: {
-        buildingID: string;
-        street: string;
-        city: string;
-        state: string;
-    };
-    apiUrl: string;
-    isOpen?: boolean;
-    dialogId?: string;
+        buildingID: string
+        street: string
+        city: string
+        state: string
+    }
+    apiUrl: string
+    isOpen?: boolean
+    dialogId?: string
 }
 
-const { 
-    building, 
+const {
+    building,
     isOpen: _isOpen = false,
     dialogId = 'add-unit-type-dialog'
 } = Astro.props;
@@ -25,14 +25,25 @@ const {
     <div class="modal-box max-w-2xl">
         <h3 class="font-bold text-lg mb-4">Add New Floorplan (Unit Type)</h3>
         <p class="mb-6 text-base-content/70">
-            Create a new unit type for <strong>{building.street}, {building.city}, {building.state}</strong>. 
+            Create a new unit type for
+{' '}
+<strong>
+{building.street}
+,
+{' '}
+{building.city}
+,
+{' '}
+{building.state}
+</strong>
+.
             Unit types serve as templates that individual units can inherit from and customize.
         </p>
-        
-        <form 
-            @submit.prevent="submitAddUnitType()"
-            class="space-y-6"
-            x-data="{
+
+        <form
+          submit.prevent="submitAddUnitType()"
+          class="space-y-6"
+          x-data="{
                 newUnitType: {
                     modelID: '',
                     modelName: '',
@@ -46,7 +57,7 @@ const {
                 },
                 errors: {},
                 loading: false,
-                
+
                 generateModelID() {
                     if (this.newUnitType.modelName.trim()) {
                         // Generate a simple ID from the model name
@@ -57,11 +68,11 @@ const {
                         this.newUnitType.modelID = id || '';
                     }
                 },
-                
+
                 async submitAddUnitType() {
                     this.loading = true;
                     this.errors = {};
-                    
+
                     try {
                         // Client-side validation
                         if (!this.newUnitType.modelName.trim()) {
@@ -94,16 +105,16 @@ const {
                         if (this.newUnitType.minRent && this.newUnitType.maxRent && this.newUnitType.minRent > this.newUnitType.maxRent) {
                             this.errors.maxRent = 'Maximum rent must be greater than minimum';
                         }
-                        
+
                         if (Object.keys(this.errors).length > 0) {
                             this.loading = false;
                             return;
                         }
-                        
+
                         // Use parent's add unit type method
                         $parent.newUnitType = this.newUnitType;
                         await $parent.addUnitType();
-                        
+
                         // Reset form and close dialog
                         this.newUnitType = {
                             modelID: '',
@@ -120,9 +131,9 @@ const {
                     } catch (error) {
                         console.error('Add unit type error:', error);
                         this.errors.general = 'Failed to add floorplan. Please try again.';
-                        $dispatch('show-toast', { 
-                            message: 'Failed to add floorplan. Please try again.', 
-                            type: 'error' 
+                        $dispatch('show-toast', {
+                            message: 'Failed to add floorplan. Please try again.',
+                            type: 'error'
                         });
                     } finally {
                         this.loading = false;
@@ -137,128 +148,128 @@ const {
                 </svg>
                 <span x-text="errors.general"></span>
             </div>
-            
+
             <!-- Basic Unit Type Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseInput
-                    name="modelName"
-                    label="Floorplan Name"
-                    xModel="newUnitType.modelName"
-                    placeholder="1 Bedroom Classic"
-                    required={true}
-                    helpText="Descriptive name for this unit type"
-                    @input="generateModelID()"
+                  name="modelName"
+                  label="Floorplan Name"
+                  xModel="newUnitType.modelName"
+                  placeholder="1 Bedroom Classic"
+                  required={true}
+                  helpText="Descriptive name for this unit type"
+                  input="generateModelID()"
                 />
                 <ValidationError fieldName="modelName" errors={{}} />
-                
+
                 <BaseInput
-                    name="modelID"
-                    label="Model ID"
-                    xModel="newUnitType.modelID"
-                    placeholder="1br-classic"
-                    required={true}
-                    helpText="Unique identifier (auto-generated from name)"
+                  name="modelID"
+                  label="Model ID"
+                  xModel="newUnitType.modelID"
+                  placeholder="1br-classic"
+                  required={true}
+                  helpText="Unique identifier (auto-generated from name)"
                 />
                 <ValidationError fieldName="modelID" errors={{}} />
             </div>
-            
+
             <!-- Room Configuration -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseInput
-                    name="beds"
-                    label="Bedrooms"
-                    type="number"
-                    xModel="newUnitType.beds"
-                    min="0"
-                    max="10"
-                    required={true}
-                    helpText="Number of bedrooms (0 for studio)"
+                  name="beds"
+                  label="Bedrooms"
+                  type="number"
+                  xModel="newUnitType.beds"
+                  min="0"
+                  max="10"
+                  required={true}
+                  helpText="Number of bedrooms (0 for studio)"
                 />
                 <ValidationError fieldName="beds" errors={{}} />
-                
+
                 <BaseInput
-                    name="baths"
-                    label="Bathrooms"
-                    type="number"
-                    xModel="newUnitType.baths"
-                    min="0.5"
-                    max="10"
-                    step="0.5"
-                    required={true}
+                  name="baths"
+                  label="Bathrooms"
+                  type="number"
+                  xModel="newUnitType.baths"
+                  min="0.5"
+                  max="10"
+                  step="0.5"
+                  required={true}
                 />
                 <ValidationError fieldName="baths" errors={{}} />
             </div>
-            
+
             <!-- Square Footage Range -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseInput
-                    name="minSqft"
-                    label="Minimum Square Feet"
-                    type="number"
-                    xModel="newUnitType.minSqft"
-                    min="100"
-                    max="10000"
-                    placeholder="750"
-                    helpText="Optional - smallest unit of this type"
+                  name="minSqft"
+                  label="Minimum Square Feet"
+                  type="number"
+                  xModel="newUnitType.minSqft"
+                  min="100"
+                  max="10000"
+                  placeholder="750"
+                  helpText="Optional - smallest unit of this type"
                 />
                 <ValidationError fieldName="minSqft" errors={{}} />
-                
+
                 <BaseInput
-                    name="maxSqft"
-                    label="Maximum Square Feet"
-                    type="number"
-                    xModel="newUnitType.maxSqft"
-                    min="100"
-                    max="10000"
-                    placeholder="950"
-                    helpText="Optional - largest unit of this type"
+                  name="maxSqft"
+                  label="Maximum Square Feet"
+                  type="number"
+                  xModel="newUnitType.maxSqft"
+                  min="100"
+                  max="10000"
+                  placeholder="950"
+                  helpText="Optional - largest unit of this type"
                 />
                 <ValidationError fieldName="maxSqft" errors={{}} />
             </div>
-            
+
             <!-- Rent Range -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseInput
-                    name="minRent"
-                    label="Minimum Rent"
-                    type="number"
-                    xModel="newUnitType.minRent"
-                    min="0"
-                    max="25000"
-                    placeholder="2000"
-                    helpText="Optional - lowest rent for this type"
+                  name="minRent"
+                  label="Minimum Rent"
+                  type="number"
+                  xModel="newUnitType.minRent"
+                  min="0"
+                  max="25000"
+                  placeholder="2000"
+                  helpText="Optional - lowest rent for this type"
                 />
                 <ValidationError fieldName="minRent" errors={{}} />
-                
+
                 <BaseInput
-                    name="maxRent"
-                    label="Maximum Rent"
-                    type="number"
-                    xModel="newUnitType.maxRent"
-                    min="0"
-                    max="25000"
-                    placeholder="2500"
-                    helpText="Optional - highest rent for this type"
+                  name="maxRent"
+                  label="Maximum Rent"
+                  type="number"
+                  xModel="newUnitType.maxRent"
+                  min="0"
+                  max="25000"
+                  placeholder="2500"
+                  helpText="Optional - highest rent for this type"
                 />
                 <ValidationError fieldName="maxRent" errors={{}} />
             </div>
-            
+
             <!-- Dialog Actions -->
             <div class="modal-action">
-                <button 
-                    type="button"
-                    class="btn" 
-                    @click="showAddUnitTypeDialog = false"
-                    :disabled="loading"
-                    data-testid="cancel-add-unit-type"
+                <button
+                  type="button"
+                  class="btn"
+                  click="showAddUnitTypeDialog = false"
+                  disabled="loading"
+                  data-testid="cancel-add-unit-type"
                 >
                     Cancel
                 </button>
-                <button 
-                    type="submit"
-                    class="btn btn-primary" 
-                    :disabled="loading"
-                    data-testid="confirm-add-unit-type"
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  disabled="loading"
+                  data-testid="confirm-add-unit-type"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Add Floorplan</span>

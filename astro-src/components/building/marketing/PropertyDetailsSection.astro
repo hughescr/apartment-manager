@@ -1,7 +1,7 @@
 ---
 export interface Props {
-    building: any;
-    errors?: Record<string, string>;
+    building: any
+    errors?: Record<string, string>
 }
 
 const { building: _building, errors: _errors = {} } = Astro.props;
@@ -17,11 +17,11 @@ const { building: _building, errors: _errors = {} } = Astro.props;
         <div class="text-base-content/70 mb-6">
             Marketing descriptions and highlights that will be shown to prospective tenants on listing sites.
         </div>
-        
+
         <!-- Marketing Description and Property Highlights within same x-data scope -->
-        <div x-data="{ 
-            get charCount() { 
-                return (building.propertyDescription || '').length; 
+        <div x-data="{
+            get charCount() {
+                return (building.propertyDescription || '').length;
             },
             get isOverLimit() {
                 return this.charCount > 2000;
@@ -31,14 +31,15 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                 if (this.charCount > 1800) return 'text-warning';
                 return 'text-base-content/70';
             },
-            addHighlight() { 
-                if (!building.propertyHighlights) building.propertyHighlights = []; 
-                building.propertyHighlights.push({ id: Date.now() + Math.random(), highlight: '' }); 
-            }, 
-            removeHighlight(index) { 
-                building.propertyHighlights.splice(index, 1); 
-            } 
-        }">
+            addHighlight() {
+                if (!building.propertyHighlights) building.propertyHighlights = [];
+                building.propertyHighlights.push({ id: Date.now() + Math.random(), highlight: '' });
+            },
+            removeHighlight(index) {
+                building.propertyHighlights.splice(index, 1);
+            }
+        }"
+        >
             <!-- Marketing Description -->
             <div class="mb-6">
                 <!-- Label with Public Indicator -->
@@ -55,29 +56,50 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                     </span>
                     <span class="label-text-alt" :class="charCountColor" x-text="`${charCount}/2000`"></span>
                 </label>
-                
+
                 <!-- Textarea -->
                 <textarea
-                    name="propertyDescription"
-                    placeholder="Discover luxury living at its finest! This stunning property offers spacious floor plans with premium finishes, state-of-the-art amenities, and an unbeatable location just minutes from downtown. Residents enjoy resort-style living with a sparkling pool, fitness center, and concierge services. Each home features gourmet kitchens, walk-in closets, and private balconies with breathtaking city views."
-                    class="textarea textarea-bordered w-full resize-vertical"
-                    :class="{ 'textarea-error': isOverLimit }"
-                    x-model="building.propertyDescription"
-                    rows="6"
-                    maxlength="2000"
-                    required
-                ></textarea>
-                
+                  name="propertyDescription"
+                  placeholder="Discover luxury living at its finest! This stunning property offers spacious floor plans with premium finishes, state-of-the-art amenities, and an unbeatable location just minutes from downtown. Residents enjoy resort-style living with a sparkling pool, fitness center, and concierge services. Each home features gourmet kitchens, walk-in closets, and private balconies with breathtaking city views."
+                  class="textarea textarea-bordered w-full resize-vertical"
+                  class="{ 'textarea-error': isOverLimit }"
+                  x-model="building.propertyDescription"
+                  rows="6"
+                  maxlength="2000"
+                  required
+                >
+                </textarea>
+
                 <!-- Enhanced Help Text -->
                 <label class="label">
                     <span class="label-text-alt text-base-content/70">
                         <div class="space-y-1">
                             <div class="font-medium">📋 Public marketing content for rental listings</div>
                             <div class="text-xs space-y-0.5">
-                                <div>• <strong>Appears on:</strong> Apartments.com, Zillow, Rent.com, and other listing sites</div>
-                                <div>• <strong>MITS feeds:</strong> Exported as LongDescription field</div>
-                                <div>• <strong>Format:</strong> Plain text only (no HTML/Markdown)</div>
-                                <div>• <strong>Content tips:</strong> Highlight amenities, lifestyle benefits, neighborhood features</div>
+                                <div>
+•
+<strong>Appears on:</strong>
+{' '}
+Apartments.com, Zillow, Rent.com, and other listing sites
+                                </div>
+                                <div>
+•
+<strong>MITS feeds:</strong>
+{' '}
+Exported as LongDescription field
+                                </div>
+                                <div>
+•
+<strong>Format:</strong>
+{' '}
+Plain text only (no HTML/Markdown)
+                                </div>
+                                <div>
+•
+<strong>Content tips:</strong>
+{' '}
+Highlight amenities, lifestyle benefits, neighborhood features
+                                </div>
                             </div>
                         </div>
                     </span>
@@ -86,22 +108,22 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                     </span>
                 </label>
             </div>
-            
+
             <!-- Property Highlights -->
             <div class="mb-6">
                 <h4 class="font-semibold mb-4">Property Highlights</h4>
                 <template x-for="(item, index) in building.propertyHighlights || []" :key="item.id || ('highlight-' + index)">
                     <div class="flex gap-2 items-center mb-2">
                         <input
-                            type="text"
-                            x-model="item.highlight"
-                            placeholder="Prime downtown location"
-                            class="input input-bordered flex-1"
+                          type="text"
+                          x-model="item.highlight"
+                          placeholder="Prime downtown location"
+                          class="input input-bordered flex-1"
                         />
-                        <button 
-                            @click="removeHighlight(index)"
-                            class="btn btn-ghost btn-sm text-error"
-                            title="Remove highlight"
+                        <button
+                          click="removeHighlight(index)"
+                          class="btn btn-ghost btn-sm text-error"
+                          title="Remove highlight"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -109,9 +131,9 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                         </button>
                     </div>
                 </template>
-                <button 
-                    @click="addHighlight()"
-                    class="btn btn-primary btn-sm mt-2"
+                <button
+                  click="addHighlight()"
+                  class="btn btn-primary btn-sm mt-2"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -119,7 +141,7 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                     Add Highlight
                 </button>
             </div>
-            
+
             <!-- Hidden input for propertyHighlights serialization -->
             <input type="hidden" name="propertyHighlights" :value="JSON.stringify(building.propertyHighlights || [])" />
         </div>

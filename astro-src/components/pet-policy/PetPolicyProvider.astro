@@ -10,7 +10,7 @@ const {
     petPolicy: _petPolicy, // Unused parameter, kept for interface compatibility
     required = false,
     disabled = false,
-    class: className = '',
+    'class': className = '',
     error,
     showLabel = true,
 } = Astro.props;
@@ -23,6 +23,16 @@ const containerClasses = [
 ---
 
 <script>
+
+
+
+
+
+
+
+
+
+
 // Import the state management function directly
 import { createPetPolicyState } from '../../lib/pet-policy/petPolicyState';
 
@@ -37,12 +47,22 @@ declare global {
 if(typeof window !== 'undefined') {
     window.createPetPolicyState = createPetPolicyState;
 }
+
+
+
+
+
+
+
+
+
+
 </script>
 
-<div 
-    class={containerClasses} 
-    x-data={`createPetPolicyState('${xModel}')`}
-    x-init="init()"
+<div
+  class={containerClasses}
+  x-data={`createPetPolicyState('${xModel}')`}
+  x-init="init()"
 >
     {showLabel && (
         <div class="label">
@@ -52,25 +72,25 @@ if(typeof window !== 'undefined') {
             </span>
         </div>
     )}
-    
+
     <!-- Pets Allowed Toggle -->
     <div class="form-control mb-6">
         <label class="label cursor-pointer justify-start gap-3">
             <input
-                type="checkbox"
-                class="toggle toggle-primary toggle-lg"
-                x-model="petsAllowed"
-                disabled={disabled}
+              type="checkbox"
+              class="toggle toggle-primary toggle-lg"
+              x-model="petsAllowed"
+              disabled={disabled}
             />
             <span class="label-text text-lg font-medium">Pets Allowed</span>
         </label>
     </div>
-    
+
     <!-- Pet Policy Details (shown when pets are allowed) -->
     <div x-show="petsAllowed" x-transition class="space-y-6">
         <!-- Pet Types List -->
         <slot name="pet-types-list" />
-        
+
         <!-- Pet Limits (inline since it's simple) -->
         <div class="card bg-base-200">
             <div class="card-body">
@@ -81,13 +101,13 @@ if(typeof window !== 'undefined') {
                             <span class="label-text">Maximum Number of Pets</span>
                         </label>
                         <input
-                            type="number"
-                            x-model={`${xModel}.maxCount`}
-                            class="input input-bordered"
-                            min="1"
-                            max="10"
-                            placeholder="e.g., 2"
-                            disabled={disabled}
+                          type="number"
+                          x-model={`${xModel}.maxCount`}
+                          class="input input-bordered"
+                          min="1"
+                          max="10"
+                          placeholder="e.g., 2"
+                          disabled={disabled}
                         />
                     </div>
                     <div class="form-control">
@@ -95,25 +115,25 @@ if(typeof window !== 'undefined') {
                             <span class="label-text">Weight Limit (lbs)</span>
                         </label>
                         <input
-                            type="number"
-                            x-model={`${xModel}.weightLimit`}
-                            class="input input-bordered"
-                            min="0"
-                            max="200"
-                            placeholder="e.g., 50"
-                            disabled={disabled}
+                          type="number"
+                          x-model={`${xModel}.weightLimit`}
+                          class="input input-bordered"
+                          min="0"
+                          max="200"
+                          placeholder="e.g., 50"
+                          disabled={disabled}
                         />
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Breed Restrictions -->
         <slot name="breed-restrictions" />
-        
+
         <!-- Pet Fee Manager -->
         <slot name="pet-fee-manager" />
-        
+
         <!-- Advanced Pet Settings -->
         <slot name="advanced-settings" />
 
@@ -123,18 +143,19 @@ if(typeof window !== 'undefined') {
                 <span class="label-text">Additional Pet Policy Notes</span>
             </label>
             <textarea
-                x-model={`${xModel}.notes`}
-                class="textarea textarea-bordered"
-                rows="3"
-                placeholder="Any additional pet policy information..."
-                disabled={disabled}
-            ></textarea>
+              x-model={`${xModel}.notes`}
+              class="textarea textarea-bordered"
+              rows="3"
+              placeholder="Any additional pet policy information..."
+              disabled={disabled}
+            >
+            </textarea>
         </div>
     </div>
-    
+
     <!-- Hidden input for form submission -->
     <input type="hidden" name={name} x-bind:value={`JSON.stringify(${xModel} || {})`} />
-    
+
     <!-- Form Error -->
     {error && (
         <label class="label">
@@ -144,7 +165,27 @@ if(typeof window !== 'undefined') {
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     .pet-policy-provider {
         /* Custom styles if needed */
     }
+
+
+
+
+
+
+
+
+
+
 </style>

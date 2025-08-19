@@ -1,36 +1,46 @@
 ---
 // astro-src/components/unit-card/UnitCardProvider.astro
-import Saving from "../Saving.astro";
-import { Resource } from "sst";
-import type { UnitData, UnitTypeData } from "../../../src/types";
-import { PhotoUploader } from "../forms";
+import Saving from '../Saving.astro';
+import { Resource } from 'sst';
+import type { UnitData, UnitTypeData } from '../../../src/types';
+import { PhotoUploader } from '../forms';
 
 // Import all sub-components
-import UnitBasicInfo from "./UnitBasicInfo.astro";
-import UnitDetailsGrid from "./UnitDetailsGrid.astro";
-import UnitDepositSection from "./UnitDepositSection.astro";
-import UnitVacancyStatus from "./UnitVacancyStatus.astro";
-import UnitDescriptions from "./UnitDescriptions.astro";
-import UnitRentSpecial from "./UnitRentSpecial.astro";
-import UnitAmenitiesSection from "./UnitAmenitiesSection.astro";
-import UnitWebsiteStatus from "./UnitWebsiteStatus.astro";
+import UnitBasicInfo from './UnitBasicInfo.astro';
+import UnitDetailsGrid from './UnitDetailsGrid.astro';
+import UnitDepositSection from './UnitDepositSection.astro';
+import UnitVacancyStatus from './UnitVacancyStatus.astro';
+import UnitDescriptions from './UnitDescriptions.astro';
+import UnitRentSpecial from './UnitRentSpecial.astro';
+import UnitAmenitiesSection from './UnitAmenitiesSection.astro';
+import UnitWebsiteStatus from './UnitWebsiteStatus.astro';
 
-const { unit, unitTypes = [] } = Astro.props as { unit: UnitData; unitTypes: UnitTypeData[] };
+const { unit, unitTypes = [] } = Astro.props as { unit: UnitData, unitTypes: UnitTypeData[] };
 
 const apiURL = Resource.API.url;
 
 // Initialize missing properties
-if (!unit.unitAmenities) unit.unitAmenities = [];
-if (!unit.photos) unit.photos = [];
-if (!unit.feedInclusion) unit.feedInclusion = {};
-if (!unit.manualReferences) unit.manualReferences = {};
+if(!unit.unitAmenities) { unit.unitAmenities = []; }
+if(!unit.photos) { unit.photos = []; }
+if(!unit.feedInclusion) { unit.feedInclusion = {}; }
+if(!unit.manualReferences) { unit.manualReferences = {}; }
 // Initialize vacancy status fields
-if (!unit.vacancyClass) unit.vacancyClass = undefined;
-if (!unit.vacateDate) unit.vacateDate = '';
-if (!unit.madeReadyDate) unit.madeReadyDate = '';
+if(!unit.vacancyClass) { unit.vacancyClass = undefined; }
+if(!unit.vacateDate) { unit.vacateDate = ''; }
+if(!unit.madeReadyDate) { unit.madeReadyDate = ''; }
 ---
 
 <script is:inline>
+
+
+
+
+
+
+
+
+
+
 // Used by Alpine.js x-data attribute
 // Client-side safe logging for production
 const safeLog = {
@@ -557,16 +567,26 @@ window.unitCardData = function unitCardData() {
         }
     };
 }
+
+
+
+
+
+
+
+
+
+
 </script>
 
-<li 
-    x-data="unitCardData()" 
-    x-init="init(); $watch('unit', () => saveUnit(this))" 
-    class="card bg-base-100 shadow-xl mb-4" 
-    :class="{'opacity-50': saving}" 
-    data-unit={JSON.stringify(unit)} 
-    data-unit-types={JSON.stringify(unitTypes)} 
-    data-api-url={apiURL}
+<li
+  x-data="unitCardData()"
+  x-init="init(); $watch('unit', () => saveUnit(this))"
+  class="card bg-base-100 shadow-xl mb-4"
+  class="{'opacity-50': saving}"
+  data-unit={JSON.stringify(unit)}
+  data-unit-types={JSON.stringify(unitTypes)}
+  data-api-url={apiURL}
 >
     <div class="card-body">
         <!-- Error Summary -->
@@ -579,7 +599,7 @@ window.unitCardData = function unitCardData() {
                 <span x-show="!errors.submit">Please fix the validation errors below before saving.</span>
             </div>
         </div>
-        
+
         <!-- Header with Unit Number, Model Selection, and Actions -->
         <div class="flex justify-between items-start mb-4">
             <div class="flex-1">
@@ -605,17 +625,17 @@ window.unitCardData = function unitCardData() {
         <div class="mb-6">
             <UnitVacancyStatus />
         </div>
-        
+
         <!-- Descriptions -->
         <div class="mb-6">
             <UnitDescriptions />
         </div>
-        
+
         <!-- Unit Rent Special -->
         <div class="mb-6">
             <UnitRentSpecial />
         </div>
-        
+
         <!-- Unit Amenities Section -->
         <div class="collapse collapse-arrow bg-base-200 mb-4">
             <input type="checkbox" x-model="expandedSections.amenities" />
@@ -629,7 +649,7 @@ window.unitCardData = function unitCardData() {
                 </div>
             </div>
         </div>
-        
+
         <!-- Photos Section -->
         <div class="collapse collapse-arrow bg-base-200 mb-4">
             <input type="checkbox" x-model="expandedSections.photos" />
@@ -640,16 +660,16 @@ window.unitCardData = function unitCardData() {
             <div class="collapse-content">
                 <div class="pt-4">
                     <PhotoUploader
-                        name="photos"
-                        label="Unit photos"
-                        xModel="unit.photos"
-                        buildingId={unit.buildingID}
-                        unitId={unit.unitID}
+                      name="photos"
+                      label="Unit photos"
+                      xModel="unit.photos"
+                      buildingId={unit.buildingID}
+                      unitId={unit.unitID}
                     />
                 </div>
             </div>
         </div>
-        
+
         <!-- Website Status & Listing IDs Section -->
         <div class="collapse collapse-arrow bg-base-200">
             <input type="checkbox" x-model="expandedSections.websites" />
@@ -667,6 +687,16 @@ window.unitCardData = function unitCardData() {
 </li>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Ensure smooth transitions */
     .collapse-content {
         transition: all 0.3s ease;
@@ -716,4 +746,14 @@ window.unitCardData = function unitCardData() {
     [x-transition] {
         transition: all 0.2s ease;
     }
+
+
+
+
+
+
+
+
+
+
 </style>

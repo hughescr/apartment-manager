@@ -1,28 +1,28 @@
 ---
 export interface Props {
     /** Alpine.js x-model for latitude binding */
-    latModel: string;
+    latModel: string
     /** Alpine.js x-model for longitude binding */
-    lngModel: string;
+    lngModel: string
     /** Alpine.js x-model for coordinatesVerified binding */
-    verifiedModel?: string;
+    verifiedModel?: string
     /** Address fields for geocoding - Alpine.js expressions */
-    addressModel?: string;
-    cityModel?: string;
-    stateModel?: string;
+    addressModel?: string
+    cityModel?: string
+    stateModel?: string
     /** Initial center coordinates if not provided by models */
-    defaultLat?: number;
-    defaultLng?: number;
+    defaultLat?: number
+    defaultLng?: number
     /** Height of the map container */
-    height?: string;
+    height?: string
     /** API URL for geocoding endpoint */
-    apiUrl: string;
+    apiUrl: string
     /** CSS classes for the container */
-    class?: string;
+    'class'?: string
     /** Help text to display */
-    helpText?: string;
+    helpText?: string
     /** Show coordinates display */
-    showCoordinates?: boolean;
+    showCoordinates?: boolean
 }
 
 const {
@@ -36,7 +36,7 @@ const {
     defaultLng = -98.5795,
     height = '300px',
     apiUrl,
-    class: className = '',
+    'class': className = '',
     helpText = 'Drag the pin to set the exact building location. Click "Use Address Location" to geocode the address.',
     showCoordinates = true,
 } = Astro.props;
@@ -53,38 +53,38 @@ const containerClasses = [
         <label class="label">
             <span class="label-text font-medium">Building Location</span>
         </label>
-        
+
         <!-- Alpine.js Component Container - encompasses all interactive elements -->
         <div
-            x-data={`locationMapData('${latModel}', '${lngModel}', '${verifiedModel}', ${defaultLat}, ${defaultLng}, '${apiUrl}', ${JSON.stringify({addressModel, cityModel, stateModel})})`}
-            x-init="initMapWhenReady()"
+          x-data={`locationMapData('${latModel}', '${lngModel}', '${verifiedModel}', ${defaultLat}, ${defaultLng}, '${apiUrl}', ${JSON.stringify({ addressModel, cityModel, stateModel })})`}
+          x-init="initMapWhenReady()"
         >
             <!-- Map Controls -->
             <div class="flex flex-wrap gap-2 mb-3">
                 <button
-                    type="button"
-                    class="btn btn-sm btn-outline btn-primary"
-                    x-show={addressModel ? `${addressModel} && ${addressModel}.trim()` : 'false'}
-                    @click="geocodeAddress()"
-                    :disabled="geocoding"
-                    id="geocode-address-btn"
+                  type="button"
+                  class="btn btn-sm btn-outline btn-primary"
+                  x-show={addressModel ? `${addressModel} && ${addressModel}.trim()` : 'false'}
+                  click="geocodeAddress()"
+                  disabled="geocoding"
+                  id="geocode-address-btn"
                 >
                     <span x-show="!geocoding">📍 Use Address Location</span>
                     <span x-show="geocoding" class="loading loading-spinner loading-xs"></span>
                     <span x-show="geocoding">Geocoding...</span>
                 </button>
-                
+
                 <button
-                    type="button"
-                    class="btn btn-sm btn-outline"
-                    @click="centerOnMarker()"
-                    x-show={`${latModel} && ${lngModel}`}
-                    id="center-on-marker-btn"
+                  type="button"
+                  class="btn btn-sm btn-outline"
+                  click="centerOnMarker()"
+                  x-show={`${latModel} && ${lngModel}`}
+                  id="center-on-marker-btn"
                 >
                     🎯 Center on Pin
                 </button>
             </div>
-            
+
             <!-- Coordinates Display -->
             {showCoordinates && (
                 <div class="bg-base-200 rounded-lg p-3 mb-3 text-sm">
@@ -114,10 +114,14 @@ const containerClasses = [
                                     <div tabindex="0" class="dropdown-content z-[1] card card-compact w-72 p-3 shadow-lg bg-base-100 border border-base-300">
                                         <div class="text-xs space-y-1">
                                             <p x-show={verifiedModel} class="text-success">
-                                                <strong>Manually Positioned:</strong> You've placed the pin exactly where the building is located.
+                                                <strong>Manually Positioned:</strong>
+{' '}
+You've placed the pin exactly where the building is located.
                                             </p>
                                             <p x-show={`!${verifiedModel}`}>
-                                                <strong>Auto-Geocoded:</strong> Location was estimated from the address. Click on the map to place the pin exactly where your building is.
+                                                <strong>Auto-Geocoded:</strong>
+{' '}
+Location was estimated from the address. Click on the map to place the pin exactly where your building is.
                                             </p>
                                         </div>
                                     </div>
@@ -127,13 +131,13 @@ const containerClasses = [
                     )}
                 </div>
             )}
-            
+
             <!-- Map Container -->
             <div
-                class="map-container border border-base-300 rounded-lg overflow-hidden bg-base-100"
-                style={`height: ${height}`}
-                x-ref="mapElement"
-                id="location-map-container"
+              class="map-container border border-base-300 rounded-lg overflow-hidden bg-base-100"
+              style={`height: ${height}`}
+              x-ref="mapElement"
+              id="location-map-container"
             >
                 <!-- Map will be initialized here -->
                 <div x-show="!mapInitialized" class="flex items-center justify-center h-full text-base-content/60">
@@ -143,7 +147,7 @@ const containerClasses = [
                     </div>
                 </div>
             </div>
-            
+
             <!-- Help Text -->
             {helpText && (
                 <div class="label">
@@ -155,6 +159,16 @@ const containerClasses = [
 </div>
 
 <script>
+
+
+
+
+
+
+
+
+
+
 // Type declarations for Alpine.js magic properties and global variables
 declare global {
     interface Window {
@@ -547,9 +561,29 @@ function locationMapData(
 
 // Make the function globally available
 window.locationMapData = locationMapData;
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <style>
+
+
+
+
+
+
+
+
+
+
 .location-map-picker {
     /* Custom styles for the map picker */
 }
@@ -600,4 +634,14 @@ window.locationMapData = locationMapData;
         width: 100%;
     }
 }
+
+
+
+
+
+
+
+
+
+
 </style>

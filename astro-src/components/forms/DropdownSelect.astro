@@ -1,23 +1,23 @@
 ---
 export interface SelectOption {
-    value: string | number;
-    label: string;
-    disabled?: boolean;
+    value: string | number
+    label: string
+    disabled?: boolean
 }
 
 export interface Props {
-    name: string;
-    label?: string;
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    xModel: string;
-    options: SelectOption[] | string[];
-    value?: string | number;
-    class?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
+    name: string
+    label?: string
+    placeholder?: string
+    required?: boolean
+    disabled?: boolean
+    xModel: string
+    options: SelectOption[] | string[]
+    value?: string | number
+    'class'?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
 }
 
 const {
@@ -29,18 +29,20 @@ const {
     xModel,
     options,
     value,
-    class: className = '',
+    'class': className = '',
     error,
     helpText,
     showLabel = true,
 } = Astro.props;
 
 // Normalize options to SelectOption format
-const normalizedOptions: SelectOption[] = options ? options.map(opt => 
-    typeof opt === 'string' 
+const normalizedOptions: SelectOption[] = options
+? options.map(opt =>
+    (typeof opt === 'string'
         ? { value: opt, label: opt }
-        : opt
-) : [];
+        : opt)
+)
+: [];
 
 // Determine if we should show the label
 const shouldShowLabel = showLabel && label;
@@ -77,10 +79,10 @@ const buttonClasses = [
             </span>
         </label>
     )}
-    
-    <div 
-        class="dropdown dropdown-bottom dropdown-end w-full"
-        x-data={`{
+
+    <div
+      class="dropdown dropdown-bottom dropdown-end w-full"
+      x-data={`{
             selectedValue: ${xModel},
             get selectedLabel() {
                 const option = ${JSON.stringify(normalizedOptions)}.find(opt => opt.value === this.selectedValue);
@@ -95,63 +97,63 @@ const buttonClasses = [
         }`}
     >
         <details x-ref="dropdownDetails">
-            <summary 
-                tabindex="0" 
-                class={buttonClasses}
-                role="button"
-                aria-haspopup="listbox"
-                aria-expanded="false"
+            <summary
+              tabindex="0"
+              class={buttonClasses}
+              role="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
             >
-                <span 
-                    x-text="selectedLabel"
-                    :class="selectedValue ? '' : 'text-base-content/60'"
+                <span
+                  x-text="selectedLabel"
+                  class="selectedValue ? '' : 'text-base-content/60'"
                 >
                     {placeholder}
                 </span>
-                <svg 
-                    class="w-4 h-4 transition-transform"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
+                <svg
+                  class="w-4 h-4 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                    <path 
-                        stroke-linecap="round" 
-                        stroke-linejoin="round" 
-                        stroke-width="2" 
-                        d="M19 9l-7 7-7-7"
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
                     />
                 </svg>
             </summary>
-            
-            <ul 
-                tabindex="0" 
-                class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1 border border-base-300 max-h-60 overflow-auto"
-                role="listbox"
+
+            <ul
+              tabindex="0"
+              class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1 border border-base-300 max-h-60 overflow-auto"
+              role="listbox"
             >
-                {normalizedOptions.map((option) => (
+                {normalizedOptions.map(option => (
                     <li>
-                        <a 
-                            @click={`selectOption('${option.value}')`}
-                            class:list={[
+                        <a
+                          click={`selectOption('${option.value}')`}
+                          class:list={[
                                 'justify-between',
                                 option.disabled ? 'disabled' : ''
                             ]}
-                            :class={`selectedValue === '${option.value}' ? 'active' : ''`}
-                            role="option"
-                            aria-selected={value === option.value}
-                            tabindex={option.disabled ? -1 : 0}
+                          class={`selectedValue === '${option.value}' ? 'active' : ''`}
+                          role="option"
+                          aria-selected={value === option.value}
+                          tabindex={option.disabled ? -1 : 0}
                         >
                             <span>{option.label}</span>
-                            <svg 
-                                x-show={`selectedValue === '${option.value}'`}
-                                class="w-4 h-4 text-primary"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
+                            <svg
+                              x-show={`selectedValue === '${option.value}'`}
+                              class="w-4 h-4 text-primary"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
                             >
-                                <path 
-                                    fill-rule="evenodd" 
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
-                                    clip-rule="evenodd"
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clip-rule="evenodd"
                                 />
                             </svg>
                         </a>
@@ -159,16 +161,16 @@ const buttonClasses = [
                 ))}
             </ul>
         </details>
-        
+
         <!-- Hidden input for form submission -->
-        <input 
-            type="hidden" 
-            name={name}
-            x-model="selectedValue"
-            required={required}
+        <input
+          type="hidden"
+          name={name}
+          x-model="selectedValue"
+          required={required}
         />
     </div>
-    
+
     {(error || helpText) && (
         <label class="label">
             <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
@@ -179,6 +181,16 @@ const buttonClasses = [
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Ensure dropdown doesn't get cut off */
     .dropdown-content {
         position: absolute;
@@ -208,4 +220,14 @@ const buttonClasses = [
     details[open] summary svg {
         transform: rotate(180deg);
     }
+
+
+
+
+
+
+
+
+
+
 </style>

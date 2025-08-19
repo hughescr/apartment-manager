@@ -1,11 +1,11 @@
 ---
-import LeaseTermsPricingSection from "../pricing/LeaseTermsPricingSection.astro";
-import ApplicationFeesSection from "../pricing/ApplicationFeesSection.astro";
-import PoliciesSection from "../pricing/PoliciesSection.astro";
+import LeaseTermsPricingSection from '../pricing/LeaseTermsPricingSection.astro';
+import ApplicationFeesSection from '../pricing/ApplicationFeesSection.astro';
+import PoliciesSection from '../pricing/PoliciesSection.astro';
 
 export interface Props {
-    building: any;
-    errors: Record<string, string>;
+    building: any
+    errors: Record<string, string>
 }
 
 const { building, errors } = Astro.props;
@@ -14,8 +14,8 @@ const { building, errors } = Astro.props;
 <!-- Pricing & Policies Tab (consolidated) -->
 <div class="space-y-6">
     <LeaseTermsPricingSection building={building} errors={errors} />
-    
+
     <ApplicationFeesSection building={building} />
-    
+
     <PoliciesSection building={building} />
 </div>

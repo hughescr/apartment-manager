@@ -1,7 +1,7 @@
 ---
 
 export interface Props {
-    xModelPrefix?: string;
+    xModelPrefix?: string
 }
 
 const { xModelPrefix = 'unit' } = Astro.props;
@@ -9,7 +9,7 @@ const { xModelPrefix = 'unit' } = Astro.props;
 
 <div class="space-y-4">
     <h3 class="text-lg font-semibold">Rent Special</h3>
-    
+
     <div class="border border-base-300 rounded-lg p-4" :class="{'border-error': errors.rentSpecial || errors.rentSpecialTitle}">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <!-- Special Title -->
@@ -17,69 +17,75 @@ const { xModelPrefix = 'unit' } = Astro.props;
                 <label class="label">
                     <span class="label-text font-semibold">Special Title</span>
                 </label>
-                <input 
-                    type="text"
-                    :value={`${xModelPrefix}.unitRentSpecial?.title || ''`}
-                    x-on:input={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.title = $event.target.value`}
-                    class="input input-bordered w-full"
-                    :class="{'input-error': errors.rentSpecialTitle}"
-                    placeholder="e.g., 'First Month Free'"
+                <input
+                  type="text"
+                  value={`${xModelPrefix}.unitRentSpecial?.title || ''`}
+                  x-on:input={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.title = $event.target.value`}
+                  class="input input-bordered w-full"
+                  class="{'input-error': errors.rentSpecialTitle}"
+                  placeholder="e.g., 'First Month Free'"
                 />
                 <div x-show="errors.rentSpecialTitle" class="text-error text-sm mt-1" x-text="errors.rentSpecialTitle"></div>
             </div>
-            
+
             <!-- Date Range -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text font-semibold">Start Date</span>
                     </label>
-                    <input 
-                        type="date"
-                        :value={`${xModelPrefix}.unitRentSpecial?.startDate || ''`}
-                        x-on:change={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.startDate = $event.target.value`}
-                        class="input input-bordered"
-                        :class="{'input-error': errors.rentSpecial}"
+                    <input
+                      type="date"
+                      value={`${xModelPrefix}.unitRentSpecial?.startDate || ''`}
+                      x-on:change={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.startDate = $event.target.value`}
+                      class="input input-bordered"
+                      class="{'input-error': errors.rentSpecial}"
                     />
                 </div>
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text font-semibold">End Date</span>
                     </label>
-                    <input 
-                        type="date"
-                        :value={`${xModelPrefix}.unitRentSpecial?.endDate || ''`}
-                        x-on:change={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.endDate = $event.target.value`}
-                        class="input input-bordered"
-                        :class="{'input-error': errors.rentSpecial}"
+                    <input
+                      type="date"
+                      value={`${xModelPrefix}.unitRentSpecial?.endDate || ''`}
+                      x-on:change={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.endDate = $event.target.value`}
+                      class="input input-bordered"
+                      class="{'input-error': errors.rentSpecial}"
                     />
                 </div>
             </div>
         </div>
-        
+
         <!-- Special Description -->
         <div class="form-control">
             <label class="label">
                 <span class="label-text font-semibold">Description</span>
             </label>
-            <textarea 
-                :value={`${xModelPrefix}.unitRentSpecial?.description || ''`}
-                x-on:input={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.description = $event.target.value`}
-                class="textarea textarea-bordered w-full"
-                rows="2"
-                placeholder="Detailed description of the rent special"
-            ></textarea>
+            <textarea
+              value={`${xModelPrefix}.unitRentSpecial?.description || ''`}
+              x-on:input={`if (${xModelPrefix} && !${xModelPrefix}.unitRentSpecial) ${xModelPrefix}.unitRentSpecial = {}; if (${xModelPrefix}) ${xModelPrefix}.unitRentSpecial.description = $event.target.value`}
+              class="textarea textarea-bordered w-full"
+              rows="2"
+              placeholder="Detailed description of the rent special"
+            >
+            </textarea>
             <div x-show="errors.rentSpecial" class="text-error text-sm mt-1" x-text="errors.rentSpecial"></div>
         </div>
-        
+
         <!-- Special Preview -->
         <div x-show={`${xModelPrefix}.unitRentSpecial?.title`} class="mt-4 p-3 bg-primary/10 rounded-lg border-l-4 border-primary">
             <div class="text-sm">
                 <span class="font-semibold">Preview:</span>
                 <span x-text={`${xModelPrefix}.unitRentSpecial?.title || ''`}></span>
                 <span x-show={`${xModelPrefix}.unitRentSpecial?.startDate && ${xModelPrefix}.unitRentSpecial?.endDate`}>
-                    (Valid <span x-text={`new Date(${xModelPrefix}.unitRentSpecial?.startDate).toLocaleDateString()`}></span> - 
-                    <span x-text={`new Date(${xModelPrefix}.unitRentSpecial?.endDate).toLocaleDateString()`}></span>)
+                    (Valid
+{' '}
+<span x-text={`new Date(${xModelPrefix}.unitRentSpecial?.startDate).toLocaleDateString()`}></span>
+{' '}
+-
+<span x-text={`new Date(${xModelPrefix}.unitRentSpecial?.endDate).toLocaleDateString()`}></span>
+)
                 </span>
             </div>
             <div x-show={`${xModelPrefix}.unitRentSpecial?.description`} class="text-xs text-base-content/70 mt-1" x-text={`${xModelPrefix}.unitRentSpecial?.description || ''`}></div>

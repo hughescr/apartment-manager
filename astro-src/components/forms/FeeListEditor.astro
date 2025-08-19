@@ -2,16 +2,16 @@
 import { FeeType } from '../../../src/types';
 
 export interface Props {
-    name: string;
-    label?: string;
-    xModel: string;
-    required?: boolean;
-    disabled?: boolean;
-    class?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
-    feeTypes?: FeeType[]; // Allow customization of available fee types
+    name: string
+    label?: string
+    xModel: string
+    required?: boolean
+    disabled?: boolean
+    'class'?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
+    feeTypes?: FeeType[] // Allow customization of available fee types
 }
 
 const {
@@ -20,7 +20,7 @@ const {
     xModel,
     required = false,
     disabled = false,
-    class: className = '',
+    'class': className = '',
     error,
     helpText,
     showLabel = true,
@@ -171,32 +171,37 @@ const xData = `{
             </span>
         </div>
     )}
-    
+
     <!-- Fee Summary -->
     <div x-show="getModelValue().length > 0" class="stats shadow mb-4">
         <div class="stat">
             <div class="stat-title">Total Fees</div>
             <div class="stat-value text-primary">
-                $<span x-text="totalFees.toFixed(2)"></span>
+                $
+<span x-text="totalFees.toFixed(2)"></span>
             </div>
             <div class="stat-desc">
-                <span x-text="getModelValue().length"></span> fee(s)
+                <span x-text="getModelValue().length"></span>
+{' '}
+fee(s)
             </div>
         </div>
         <div class="stat">
             <div class="stat-title">Refundable</div>
             <div class="stat-value text-success text-2xl">
-                $<span x-text="refundableTotal.toFixed(2)"></span>
+                $
+<span x-text="refundableTotal.toFixed(2)"></span>
             </div>
         </div>
         <div class="stat">
             <div class="stat-title">Non-refundable</div>
             <div class="stat-value text-warning text-2xl">
-                $<span x-text="nonRefundableTotal.toFixed(2)"></span>
+                $
+<span x-text="nonRefundableTotal.toFixed(2)"></span>
             </div>
         </div>
     </div>
-    
+
     <!-- Fee List -->
     <div class="flex flex-col gap-2 mb-4">
         <template x-for="(fee, index) in getModelValue()" :key="index">
@@ -209,10 +214,10 @@ const xData = `{
                                 <span class="label-text">Type</span>
                             </label>
                             <select
-                                class="select select-bordered select-sm w-full"
-                                x-model="fee.type"
-                                x-on:change="updateFee(index, 'type', $event.target.value)"
-                                disabled={disabled}
+                              class="select select-bordered select-sm w-full"
+                              x-model="fee.type"
+                              x-on:change="updateFee(index, 'type', $event.target.value)"
+                              disabled={disabled}
                             >
                                 {feeTypes.map(type => (
                                     <option value={type}>
@@ -221,7 +226,7 @@ const xData = `{
                                 ))}
                             </select>
                         </div>
-                        
+
                         <!-- Amount -->
                         <div class="form-control">
                             <label class="label">
@@ -230,32 +235,32 @@ const xData = `{
                             <label class="input-group input-group-sm">
                                 <span>$</span>
                                 <input
-                                    type="number"
-                                    class="input input-bordered input-sm w-full"
-                                    x-model.number="fee.amount"
-                                    x-on:change="updateFee(index, 'amount', $event.target.value)"
-                                    min="0"
-                                    step="0.01"
-                                    disabled={disabled}
+                                  type="number"
+                                  class="input input-bordered input-sm w-full"
+                                  x-model.number="fee.amount"
+                                  x-on:change="updateFee(index, 'amount', $event.target.value)"
+                                  min="0"
+                                  step="0.01"
+                                  disabled={disabled}
                                 />
                             </label>
                         </div>
-                        
+
                         <!-- Description -->
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text">Description</span>
                             </label>
                             <input
-                                type="text"
-                                class="input input-bordered input-sm w-full"
-                                x-model="fee.description"
-                                x-on:change="updateFee(index, 'description', $event.target.value)"
-                                placeholder="Optional description"
-                                disabled={disabled}
+                              type="text"
+                              class="input input-bordered input-sm w-full"
+                              x-model="fee.description"
+                              x-on:change="updateFee(index, 'description', $event.target.value)"
+                              placeholder="Optional description"
+                              disabled={disabled}
                             />
                         </div>
-                        
+
                         <!-- Refundable & Actions -->
                         <div class="form-control">
                             <label class="label">
@@ -264,19 +269,19 @@ const xData = `{
                             <div class="flex items-center gap-2">
                                 <label class="label cursor-pointer flex-1">
                                     <input
-                                        type="checkbox"
-                                        class="checkbox checkbox-sm"
-                                        x-model="fee.refundable"
-                                        x-on:change="updateFee(index, 'refundable', $event.target.checked)"
-                                        disabled={disabled}
+                                      type="checkbox"
+                                      class="checkbox checkbox-sm"
+                                      x-model="fee.refundable"
+                                      x-on:change="updateFee(index, 'refundable', $event.target.checked)"
+                                      disabled={disabled}
                                     />
                                     <span class="label-text ml-2">Refundable</span>
                                 </label>
                                 <button
-                                    type="button"
-                                    class="btn btn-ghost btn-sm btn-square text-error"
-                                    x-on:click="removeFee(index)"
-                                    disabled={disabled}
+                                  type="button"
+                                  class="btn btn-ghost btn-sm btn-square text-error"
+                                  x-on:click="removeFee(index)"
+                                  disabled={disabled}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -289,7 +294,7 @@ const xData = `{
             </div>
         </template>
     </div>
-    
+
     <!-- Add Fee Form -->
     <div x-show="showAddForm" x-transition class="card bg-base-200 mb-4">
         <div class="card-body p-4">
@@ -301,9 +306,9 @@ const xData = `{
                         <span class="label-text">Type</span>
                     </label>
                     <select
-                        class="select select-bordered select-sm w-full"
-                        x-model="newFee.type"
-                        disabled={disabled}
+                      class="select select-bordered select-sm w-full"
+                      x-model="newFee.type"
+                      disabled={disabled}
                     >
                         {feeTypes.map(type => (
                             <option value={type}>
@@ -312,7 +317,7 @@ const xData = `{
                         ))}
                     </select>
                 </div>
-                
+
                 <!-- Amount -->
                 <div class="form-control">
                     <label class="label">
@@ -321,30 +326,30 @@ const xData = `{
                     <label class="input-group input-group-sm">
                         <span>$</span>
                         <input
-                            type="number"
-                            class="input input-bordered input-sm w-full"
-                            x-model.number="newFee.amount"
-                            min="0"
-                            step="0.01"
-                            disabled={disabled}
+                          type="number"
+                          class="input input-bordered input-sm w-full"
+                          x-model.number="newFee.amount"
+                          min="0"
+                          step="0.01"
+                          disabled={disabled}
                         />
                     </label>
                 </div>
-                
+
                 <!-- Description -->
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">Description</span>
                     </label>
                     <input
-                        type="text"
-                        class="input input-bordered input-sm w-full"
-                        x-model="newFee.description"
-                        placeholder="Optional description"
-                        disabled={disabled}
+                      type="text"
+                      class="input input-bordered input-sm w-full"
+                      x-model="newFee.description"
+                      placeholder="Optional description"
+                      disabled={disabled}
                     />
                 </div>
-                
+
                 <!-- Refundable -->
                 <div class="form-control">
                     <label class="label">
@@ -352,54 +357,54 @@ const xData = `{
                     </label>
                     <label class="label cursor-pointer">
                         <input
-                            type="checkbox"
-                            class="checkbox checkbox-sm"
-                            x-model="newFee.refundable"
-                            disabled={disabled}
+                          type="checkbox"
+                          class="checkbox checkbox-sm"
+                          x-model="newFee.refundable"
+                          disabled={disabled}
                         />
                         <span class="label-text ml-2">Refundable</span>
                     </label>
                 </div>
             </div>
-            
+
             <div class="card-actions justify-end mt-4">
                 <button
-                    type="button"
-                    class="btn btn-ghost btn-sm"
-                    x-on:click="showAddForm = false; resetNewFee()"
-                    disabled={disabled}
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  x-on:click="showAddForm = false; resetNewFee()"
+                  disabled={disabled}
                 >
                     Cancel
                 </button>
                 <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
-                    x-on:click="addFee"
-                    disabled={disabled}
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  x-on:click="addFee"
+                  disabled={disabled}
                 >
                     Add Fee
                 </button>
             </div>
         </div>
     </div>
-    
+
     <!-- Add Fee Button -->
     <button
-        type="button"
-        class="btn btn-outline btn-primary"
-        x-on:click="showAddForm = !showAddForm"
-        x-show="!showAddForm"
-        disabled={disabled}
+      type="button"
+      class="btn btn-outline btn-primary"
+      x-on:click="showAddForm = !showAddForm"
+      x-show="!showAddForm"
+      disabled={disabled}
     >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         Add Fee
     </button>
-    
+
     <!-- Hidden input to store the JSON value -->
     <input type="hidden" name={name} :value="JSON.stringify(getModelValue())" />
-    
+
     {(error || helpText) && (
         <div class={`label ${error ? 'text-error' : ''}`}>
             <span class="label-text-alt">
@@ -410,6 +415,16 @@ const xData = `{
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Smooth transitions for showing/hiding elements */
     [x-transition] {
         transition: all 0.2s ease;
@@ -417,4 +432,14 @@ const xData = `{
     
     /* Tailwind safelist comment to ensure utility classes are included */
     /* flex flex-col gap-2 */
+
+
+
+
+
+
+
+
+
+
 </style>

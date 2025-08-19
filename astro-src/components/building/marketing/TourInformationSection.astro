@@ -1,9 +1,9 @@
 ---
-import { BaseInput, HoursEditor } from "../../forms";
+import { BaseInput, HoursEditor } from '../../forms';
 
 export interface Props {
-    building: any;
-    errors?: Record<string, string>;
+    building: any
+    errors?: Record<string, string>
 }
 
 const { building: _building, errors: _errors = {} } = Astro.props;
@@ -19,7 +19,7 @@ const { building: _building, errors: _errors = {} } = Astro.props;
         <div class="text-base-content/70 mb-6">
             Configure tour options and availability for prospective tenants.
         </div>
-        
+
         <!-- Tour Options -->
         <div class="mb-6">
             <h4 class="font-semibold mb-4">Available Tour Types</h4>
@@ -27,11 +27,11 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <span class="label-text">Self-Guided Tours</span>
-                        <input 
-                            type="checkbox" 
-                            class="checkbox checkbox-primary" 
-                            x-model="building.tourAvailability.selfGuidedTours"
-                            x-init="if (!building.tourAvailability) building.tourAvailability = {}"
+                        <input
+                          type="checkbox"
+                          class="checkbox checkbox-primary"
+                          x-model="building.tourAvailability.selfGuidedTours"
+                          x-init="if (!building.tourAvailability) building.tourAvailability = {}"
                         />
                     </label>
                     <div class="label">
@@ -41,10 +41,10 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <span class="label-text">Virtual Tours</span>
-                        <input 
-                            type="checkbox" 
-                            class="checkbox checkbox-primary" 
-                            x-model="building.tourAvailability.virtualTours"
+                        <input
+                          type="checkbox"
+                          class="checkbox checkbox-primary"
+                          x-model="building.tourAvailability.virtualTours"
                         />
                     </label>
                     <div class="label">
@@ -54,10 +54,10 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <span class="label-text">In-Person Tours</span>
-                        <input 
-                            type="checkbox" 
-                            class="checkbox checkbox-primary" 
-                            x-model="building.tourAvailability.inPersonTours"
+                        <input
+                          type="checkbox"
+                          class="checkbox checkbox-primary"
+                          x-model="building.tourAvailability.inPersonTours"
                         />
                     </label>
                     <div class="label">
@@ -66,34 +66,34 @@ const { building: _building, errors: _errors = {} } = Astro.props;
                 </div>
             </div>
         </div>
-        
+
         <!-- Tour Scheduling -->
         <div class="mb-6">
             <BaseInput
-                name="tourSchedulingUrl"
-                label="Tour Scheduling URL"
-                type="url"
-                xModel="building.tourAvailability.tourSchedulingUrl"
-                placeholder="https://calendly.com/property-tours"
-                helpText="Link where tenants can schedule tours (e.g., Calendly, property website)"
+              name="tourSchedulingUrl"
+              label="Tour Scheduling URL"
+              type="url"
+              xModel="building.tourAvailability.tourSchedulingUrl"
+              placeholder="https://calendly.com/property-tours"
+              helpText="Link where tenants can schedule tours (e.g., Calendly, property website)"
             />
             <span x-show="errors.tourSchedulingUrl" class="label-text-alt text-error" x-text="errors.tourSchedulingUrl"></span>
         </div>
-        
+
         <!-- Tour Hours -->
         <div>
             <div class="text-sm text-base-content/60 mb-4">
                 Set the days and hours when tours are available. This helps tenants know when they can schedule visits.
             </div>
             <HoursEditor
-                xModel="building.tourAvailability.tourHours"
-                title="Tour Availability Hours"
-                showCopyActions={true}
-                showBulkActions={true}
-                defaultOpenTime="10:00"
-                defaultCloseTime="18:00"
-                compact={true}
-                helpText="Set tour hours to let prospective tenants know when they can schedule visits."
+              xModel="building.tourAvailability.tourHours"
+              title="Tour Availability Hours"
+              showCopyActions={true}
+              showBulkActions={true}
+              defaultOpenTime="10:00"
+              defaultCloseTime="18:00"
+              compact={true}
+              helpText="Set tour hours to let prospective tenants know when they can schedule visits."
             />
         </div>
     </div>

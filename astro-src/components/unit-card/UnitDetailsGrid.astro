@@ -2,7 +2,7 @@
 import InheritableField from '../forms/InheritableField.astro';
 
 export interface Props {
-    xModelPrefix?: string;
+    xModelPrefix?: string
 }
 
 const { xModelPrefix = 'unit' } = Astro.props;
@@ -23,17 +23,17 @@ const inheritableFields = [
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {inheritableFields.map(field => (
         <InheritableField
-            fieldName={field.name}
-            label={field.label}
-            type={field.type}
-            xModel={`${xModelPrefix}.${field.name}`}
-            inheritanceCheck={`isInherited('${field.name}')`}
-            inheritedValue={`getInheritedValue(selectedUnitType, '${field.name}')`}
-            error={`errors.${field.name}`}
-            min={field.min}
-            max={field.max}
-            step={field.step}
-            onReset={`resetFieldToInherited('${field.name}')`}
+          fieldName={field.name}
+          label={field.label}
+          type={field.type}
+          xModel={`${xModelPrefix}.${field.name}`}
+          inheritanceCheck={`isInherited('${field.name}')`}
+          inheritedValue={`getInheritedValue(selectedUnitType, '${field.name}')`}
+          error={`errors.${field.name}`}
+          min={field.min}
+          max={field.max}
+          step={field.step}
+          onReset={`resetFieldToInherited('${field.name}')`}
         />
     ))}
 </div>

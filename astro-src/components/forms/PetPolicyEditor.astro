@@ -15,7 +15,7 @@ const {
     petPolicy: _petPolicy, // Unused parameter, kept for interface compatibility
     required = false,
     disabled = false,
-    class: className = '',
+    'class': className = '',
     error,
     showLabel = true,
 } = Astro.props;
@@ -23,40 +23,40 @@ const {
 
 <!-- Use the modular PetPolicyProvider with slot-based architecture -->
 <PetPolicyProvider
-    name={name}
-    label={label}
-    xModel={xModel}
-    required={required}
-    disabled={disabled}
-    class={className}
-    error={error}
-    showLabel={showLabel}
+  name={name}
+  label={label}
+  xModel={xModel}
+  required={required}
+  disabled={disabled}
+  class={className}
+  error={error}
+  showLabel={showLabel}
 >
     <!-- Pet Types List -->
-    <PetTypesList 
-        slot="pet-types-list"
-        disabled={disabled}
+    <PetTypesList
+      slot="pet-types-list"
+      disabled={disabled}
     />
-    
+
     <!-- Breed Restrictions -->
-    <BreedRestrictions 
-        slot="breed-restrictions"
-        xModel={xModel}
-        disabled={disabled}
+    <BreedRestrictions
+      slot="breed-restrictions"
+      xModel={xModel}
+      disabled={disabled}
     />
-    
+
     <!-- Pet Fee Manager -->
-    <PetFeeManager 
-        slot="pet-fee-manager"
-        name={name}
-        xModel={xModel}
-        disabled={disabled}
+    <PetFeeManager
+      slot="pet-fee-manager"
+      name={name}
+      xModel={xModel}
+      disabled={disabled}
     />
-    
+
     <!-- Advanced Settings -->
-    <PetPolicyAdvancedSettings 
-        slot="advanced-settings"
-        xModel={xModel}
-        disabled={disabled}
+    <PetPolicyAdvancedSettings
+      slot="advanced-settings"
+      xModel={xModel}
+      disabled={disabled}
     />
 </PetPolicyProvider>

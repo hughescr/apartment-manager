@@ -1,7 +1,7 @@
 ---
 /**
  * HoursEditor Component Usage Examples
- * 
+ *
  * This file demonstrates different configurations of the HoursEditor component
  * for various use cases in the apartment manager application.
  */
@@ -15,13 +15,13 @@ import HoursEditorComponent from './HoursEditor.astro';
         <h3 class="text-lg font-semibold mb-4">Example 1: Office Hours (Full Features)</h3>
         <div class="border border-base-300 rounded-lg p-4">
             <HoursEditorComponent
-                xModel="building.contactInfo.officeHours"
-                title="Office Hours"
-                showCopyActions={true}
-                showBulkActions={true}
-                defaultOpenTime="09:00"
-                defaultCloseTime="17:00"
-                helpText="Use copy buttons to quickly set consistent hours across multiple days."
+              xModel="building.contactInfo.officeHours"
+              title="Office Hours"
+              showCopyActions={true}
+              showBulkActions={true}
+              defaultOpenTime="09:00"
+              defaultCloseTime="17:00"
+              helpText="Use copy buttons to quickly set consistent hours across multiple days."
             />
         </div>
     </div>
@@ -31,14 +31,14 @@ import HoursEditorComponent from './HoursEditor.astro';
         <h3 class="text-lg font-semibold mb-4">Example 2: Tour Hours (Compact)</h3>
         <div class="border border-base-300 rounded-lg p-4">
             <HoursEditorComponent
-                xModel="building.tourAvailability.tourHours"
-                title="Tour Availability Hours"
-                showCopyActions={false}
-                showBulkActions={true}
-                defaultOpenTime="10:00"
-                defaultCloseTime="18:00"
-                compact={true}
-                helpText="Set tour hours to let prospective tenants know when they can schedule visits."
+              xModel="building.tourAvailability.tourHours"
+              title="Tour Availability Hours"
+              showCopyActions={false}
+              showBulkActions={true}
+              defaultOpenTime="10:00"
+              defaultCloseTime="18:00"
+              compact={true}
+              helpText="Set tour hours to let prospective tenants know when they can schedule visits."
             />
         </div>
     </div>
@@ -48,14 +48,14 @@ import HoursEditorComponent from './HoursEditor.astro';
         <h3 class="text-lg font-semibold mb-4">Example 3: Simple Hours (Minimal)</h3>
         <div class="border border-base-300 rounded-lg p-4">
             <HoursEditorComponent
-                xModel="amenity.poolHours"
-                title="Pool Hours"
-                showCopyActions={false}
-                showBulkActions={false}
-                defaultOpenTime="06:00"
-                defaultCloseTime="22:00"
-                compact={true}
-                helpText="Basic hours configuration without bulk actions."
+              xModel="amenity.poolHours"
+              title="Pool Hours"
+              showCopyActions={false}
+              showBulkActions={false}
+              defaultOpenTime="06:00"
+              defaultCloseTime="22:00"
+              compact={true}
+              helpText="Basic hours configuration without bulk actions."
             />
         </div>
     </div>
@@ -65,14 +65,14 @@ import HoursEditorComponent from './HoursEditor.astro';
         <h3 class="text-lg font-semibold mb-4">Example 4: Business Hours (Custom Defaults)</h3>
         <div class="border border-base-300 rounded-lg p-4">
             <HoursEditorComponent
-                xModel="business.operatingHours"
-                title="Operating Hours"
-                showCopyActions={true}
-                showBulkActions={true}
-                defaultOpenTime="08:00"
-                defaultCloseTime="20:00"
-                class="max-w-3xl"
-                helpText="Extended hours with 8 AM to 8 PM default."
+              xModel="business.operatingHours"
+              title="Operating Hours"
+              showCopyActions={true}
+              showBulkActions={true}
+              defaultOpenTime="08:00"
+              defaultCloseTime="20:00"
+              class="max-w-3xl"
+              helpText="Extended hours with 8 AM to 8 PM default."
             />
         </div>
     </div>
@@ -151,7 +151,7 @@ import HoursEditorComponent from './HoursEditor.astro';
     </div>
 </div>
 
-<!-- 
+<!--
 Example data structure expected by the component:
 {
   "monday": { "open": "09:00", "close": "17:00" },

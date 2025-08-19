@@ -2,15 +2,15 @@
 import { AmenityCategory } from '../../../src/types';
 
 export interface Props {
-    name: string;
-    label?: string;
-    xModel: string;
-    required?: boolean;
-    disabled?: boolean;
-    class?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
+    name: string
+    label?: string
+    xModel: string
+    required?: boolean
+    disabled?: boolean
+    'class'?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
 }
 
 const {
@@ -19,7 +19,7 @@ const {
     xModel,
     required = false,
     disabled = false,
-    class: className = '',
+    'class': className = '',
     error,
     helpText,
     showLabel = true,
@@ -174,20 +174,20 @@ const xData = `{
             </span>
         </div>
     )}
-    
+
     <!-- Search and Filter Controls -->
     <div class="flex gap-2 mb-4">
         <input
-            type="text"
-            placeholder="Search amenities..."
-            class="input input-bordered flex-1"
-            x-model="searchQuery"
-            disabled={disabled}
+          type="text"
+          placeholder="Search amenities..."
+          class="input input-bordered flex-1"
+          x-model="searchQuery"
+          disabled={disabled}
         />
         <select
-            class="select select-bordered"
-            x-model="selectedCategory"
-            disabled={disabled}
+          class="select select-bordered"
+          x-model="selectedCategory"
+          disabled={disabled}
         >
             <option value="all">All Categories</option>
             <option value={AmenityCategory.UNIT}>Unit Features</option>
@@ -195,10 +195,10 @@ const xData = `{
             <option value={AmenityCategory.COMMUNITY}>Community</option>
         </select>
         <button
-            type="button"
-            class="btn btn-outline btn-primary"
-            x-on:click="showCustom = !showCustom"
-            disabled={disabled}
+          type="button"
+          class="btn btn-outline btn-primary"
+          x-on:click="showCustom = !showCustom"
+          disabled={disabled}
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -206,52 +206,56 @@ const xData = `{
             Custom
         </button>
     </div>
-    
+
     <!-- Custom Amenity Form -->
     <div x-show="showCustom" x-transition class="card bg-base-200 p-4 mb-4">
         <div class="flex gap-2">
             <input
-                type="text"
-                placeholder="Custom amenity name"
-                class="input input-bordered flex-1"
-                x-model="newAmenityName"
-                x-on:keyup.enter="addCustomAmenity"
-                disabled={disabled}
+              type="text"
+              placeholder="Custom amenity name"
+              class="input input-bordered flex-1"
+              x-model="newAmenityName"
+              x-on:keyup.enter="addCustomAmenity"
+              disabled={disabled}
             />
             <select
-                class="select select-bordered"
-                x-model="newAmenityCategory"
-                disabled={disabled}
+              class="select select-bordered"
+              x-model="newAmenityCategory"
+              disabled={disabled}
             >
                 <option value={AmenityCategory.UNIT}>Unit Feature</option>
                 <option value={AmenityCategory.PROPERTY}>Property</option>
                 <option value={AmenityCategory.COMMUNITY}>Community</option>
             </select>
             <button
-                type="button"
-                class="btn btn-primary"
-                x-on:click="addCustomAmenity"
-                disabled={disabled}
+              type="button"
+              class="btn btn-primary"
+              x-on:click="addCustomAmenity"
+              disabled={disabled}
             >
                 Add
             </button>
         </div>
     </div>
-    
+
     <!-- Selected Amenities Summary -->
     <div x-show="getModelValue().length > 0" class="mb-4">
         <div class="text-sm text-base-content/70 mb-2">
-            Selected: <span x-text="getModelValue().length"></span> amenities
+            Selected:
+{' '}
+<span x-text="getModelValue().length"></span>
+{' '}
+amenities
         </div>
         <div class="flex flex-wrap gap-2">
             <template x-for="amenity in getModelValue()" :key="amenity.name + amenity.category">
                 <div class="badge badge-primary badge-lg gap-2">
                     <span x-text="amenity.name"></span>
                     <button
-                        type="button"
-                        class="btn btn-ghost btn-xs"
-                        x-on:click="toggleAmenity(amenity.name, amenity.category)"
-                        disabled={disabled}
+                      type="button"
+                      class="btn btn-ghost btn-xs"
+                      x-on:click="toggleAmenity(amenity.name, amenity.category)"
+                      disabled={disabled}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -261,7 +265,7 @@ const xData = `{
             </template>
         </div>
     </div>
-    
+
     <!-- Amenity Categories -->
     <div class="space-y-4">
         <template x-for="(amenities, category) in filteredCommonAmenities" :key="category">
@@ -271,18 +275,18 @@ const xData = `{
                         <h3 class="card-title text-base" x-text="category === 'unit' ? 'Unit Features' : category === 'property' ? 'Property' : 'Community'"></h3>
                         <div class="btn-group btn-group-sm">
                             <button
-                                type="button"
-                                class="btn btn-outline btn-sm"
-                                x-on:click="selectAll(category)"
-                                disabled={disabled}
+                              type="button"
+                              class="btn btn-outline btn-sm"
+                              x-on:click="selectAll(category)"
+                              disabled={disabled}
                             >
                                 Select All
                             </button>
                             <button
-                                type="button"
-                                class="btn btn-outline btn-sm"
-                                x-on:click="clearCategory(category)"
-                                disabled={disabled}
+                              type="button"
+                              class="btn btn-outline btn-sm"
+                              x-on:click="clearCategory(category)"
+                              disabled={disabled}
                             >
                                 Clear
                             </button>
@@ -292,11 +296,11 @@ const xData = `{
                         <template x-for="amenityName in amenities" :key="amenityName">
                             <label class="label cursor-pointer justify-start gap-2">
                                 <input
-                                    type="checkbox"
-                                    class="checkbox checkbox-primary"
-                                    :checked="isSelected(amenityName, category)"
-                                    x-on:change="toggleAmenity(amenityName, category)"
-                                    disabled={disabled}
+                                  type="checkbox"
+                                  class="checkbox checkbox-primary"
+                                  checked="isSelected(amenityName, category)"
+                                  x-on:change="toggleAmenity(amenityName, category)"
+                                  disabled={disabled}
                                 />
                                 <span class="label-text" x-text="amenityName"></span>
                             </label>
@@ -306,10 +310,10 @@ const xData = `{
             </div>
         </template>
     </div>
-    
+
     <!-- Hidden input to store the JSON value -->
     <input type="hidden" name={name} :value="JSON.stringify(getModelValue())" />
-    
+
     {(error || helpText) && (
         <div class={`label ${error ? 'text-error' : ''}`}>
             <span class="label-text-alt">
@@ -320,8 +324,28 @@ const xData = `{
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Smooth transitions for showing/hiding elements */
     [x-transition] {
         transition: all 0.2s ease;
     }
+
+
+
+
+
+
+
+
+
+
 </style>

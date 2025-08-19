@@ -2,39 +2,39 @@
 import type { BuildingData, UnitData, UnitTypeData } from '../../types';
 
 export interface Props {
-    building: BuildingData;
-    units: UnitData[];
-    unitTypes: UnitTypeData[];
-    apiURL: string;
+    building: BuildingData
+    units: UnitData[]
+    unitTypes: UnitTypeData[]
+    apiURL: string
 }
 
 const { building, units, unitTypes, apiURL } = Astro.props;
 
 // Initialize any missing nested objects with proper defaults to prevent null reference errors
-if (!building.oneTimeFees) building.oneTimeFees = [];
-if (!building.monthlyFees) building.monthlyFees = [];
-if (!building.parkingOptions) building.parkingOptions = [];
-if (!building.storageOptions) building.storageOptions = [];
-if (!building.propertyAmenities) building.propertyAmenities = [];
-if (!building.rentSpecials) building.rentSpecials = [];
-if (!building.photos) building.photos = [];
+if(!building.oneTimeFees) { building.oneTimeFees = []; }
+if(!building.monthlyFees) { building.monthlyFees = []; }
+if(!building.parkingOptions) { building.parkingOptions = []; }
+if(!building.storageOptions) { building.storageOptions = []; }
+if(!building.propertyAmenities) { building.propertyAmenities = []; }
+if(!building.rentSpecials) { building.rentSpecials = []; }
+if(!building.photos) { building.photos = []; }
 
 // Utilities included - initialize with all utility types set to false
-if (!building.utilitiesIncluded) {
+if(!building.utilitiesIncluded) {
     building.utilitiesIncluded = {};
 }
 
 // Pet policies - ensure it has the required structure
-if (!building.petPolicies) {
+if(!building.petPolicies) {
     building.petPolicies = { allowed: false, petTypes: [] };
 } else {
-    if (!building.petPolicies.petTypes) {
+    if(!building.petPolicies.petTypes) {
         building.petPolicies.petTypes = [];
     }
 }
 
 // Screening criteria - initialize with sensible defaults
-if (!building.screeningCriteria) {
+if(!building.screeningCriteria) {
     building.screeningCriteria = {
         incomeRatio: 3,
         minCreditScore: 600,
@@ -49,15 +49,15 @@ if (!building.screeningCriteria) {
 }
 
 // Contact info - ensure nested objects exist
-if (!building.contactInfo) building.contactInfo = {};
-if (!building.contactInfo.officeHours) building.contactInfo.officeHours = {};
+if(!building.contactInfo) { building.contactInfo = {}; }
+if(!building.contactInfo.officeHours) { building.contactInfo.officeHours = {}; }
 
 // Tour availability - ensure nested objects exist
-if (!building.tourAvailability) building.tourAvailability = {};
-if (!building.tourAvailability.tourHours) building.tourAvailability.tourHours = {};
+if(!building.tourAvailability) { building.tourAvailability = {}; }
+if(!building.tourAvailability.tourHours) { building.tourAvailability.tourHours = {}; }
 
 // Income restrictions - initialize with sensible defaults
-if (!building.incomeRestrictions) {
+if(!building.incomeRestrictions) {
     building.incomeRestrictions = {
         amiLimit: undefined,
         maxIncomeByHouseholdSize: {}
@@ -70,6 +70,16 @@ const safeUnitTypes = unitTypes || [];
 ---
 
 <script>
+
+
+
+
+
+
+
+
+
+
 // Import the state management function directly
 import { createBuildingState } from '../../lib/building/state';
 
@@ -84,16 +94,26 @@ declare global {
 if(typeof window !== 'undefined') {
     window.createBuildingState = createBuildingState;
 }
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <div
-    class="building-provider"
-    x-data="createBuildingState()"
-    :class="{'opacity-50': saving}"
-    data-building-data={JSON.stringify(building)}
-    data-initial-units={JSON.stringify(safeUnits)}
-    data-initial-unit-types={JSON.stringify(safeUnitTypes)}
-    data-api-url={apiURL}
+  class="building-provider"
+  x-data="createBuildingState()"
+  class="{'opacity-50': saving}"
+  data-building-data={JSON.stringify(building)}
+  data-initial-units={JSON.stringify(safeUnits)}
+  data-initial-unit-types={JSON.stringify(safeUnitTypes)}
+  data-api-url={apiURL}
 >
     <!-- Provider passes state down to child components through Alpine.js context -->
     <slot />

@@ -17,7 +17,7 @@ const xData = JSON.stringify({
         photos: []
     },
     errors: {},
-    
+
     async submitForm() {
         console.log('Form submitted:', this.formData);
         // Add your form submission logic here
@@ -38,77 +38,77 @@ const utilityOptions = Object.entries(UtilityType).map(([key, value]) => ({
 
 <div class="max-w-2xl mx-auto p-6" x-data={xData}>
     <h2 class="text-2xl font-bold mb-6">Form Components Example</h2>
-    
+
     <form x-on:submit.prevent="submitForm" class="space-y-6">
         <!-- Text Input Example -->
         <BaseInput
-            name="name"
-            label="Property Name"
-            placeholder="Enter property name"
-            xModel="formData.name"
-            required={true}
-            helpText="This will be displayed as the main title"
-            floatingLabel={true}
+          name="name"
+          label="Property Name"
+          placeholder="Enter property name"
+          xModel="formData.name"
+          required={true}
+          helpText="This will be displayed as the main title"
+          floatingLabel={true}
         />
-        
+
         <!-- Number Input Example -->
         <BaseInput
-            name="bedrooms"
-            label="Number of Bedrooms"
-            type="number"
-            xModel="formData.bedrooms"
-            min="0"
-            max="10"
-            required={true}
-            floatingLabel={true}
+          name="bedrooms"
+          label="Number of Bedrooms"
+          type="number"
+          xModel="formData.bedrooms"
+          min="0"
+          max="10"
+          required={true}
+          floatingLabel={true}
         />
-        
+
         <!-- Select Example -->
         <BaseSelect
-            name="propertyType"
-            label="Property Type"
-            xModel="formData.propertyType"
-            options={propertyTypeOptions}
-            required={true}
-            floatingLabel={true}
-            helpText="Select the type of property"
+          name="propertyType"
+          label="Property Type"
+          xModel="formData.propertyType"
+          options={propertyTypeOptions}
+          required={true}
+          floatingLabel={true}
+          helpText="Select the type of property"
         />
-        
+
         <!-- Multi-Select Example -->
         <BaseSelect
-            name="utilities"
-            label="Utilities Included"
-            xModel="formData.utilities"
-            options={utilityOptions}
-            multiple={true}
-            size={5}
-            floatingLabel={false}
-            helpText="Hold Ctrl/Cmd to select multiple"
+          name="utilities"
+          label="Utilities Included"
+          xModel="formData.utilities"
+          options={utilityOptions}
+          multiple={true}
+          size={5}
+          floatingLabel={false}
+          helpText="Hold Ctrl/Cmd to select multiple"
         />
-        
+
         <!-- Textarea Example -->
         <BaseTextarea
-            name="description"
-            label="Property Description"
-            xModel="formData.description"
-            rows={6}
-            maxlength={1000}
-            floatingLabel={true}
-            helpText="Describe the property features and amenities"
+          name="description"
+          label="Property Description"
+          xModel="formData.description"
+          rows={6}
+          maxlength={1000}
+          floatingLabel={true}
+          helpText="Describe the property features and amenities"
         />
-        
+
         <!-- Photo Uploader Example -->
         <PhotoUploader
-            name="photos"
-            label="Property Photos"
-            xModel="formData.photos"
-            maxFiles={20}
-            maxFileSize={10}
-            helpText="Upload up to 20 photos (max 10MB each)"
-            buildingId="example-building-id"
-            unitId="example-unit-id"
+          name="photos"
+          label="Property Photos"
+          xModel="formData.photos"
+          maxFiles={20}
+          maxFileSize={10}
+          helpText="Upload up to 20 photos (max 10MB each)"
+          buildingId="example-building-id"
+          unitId="example-unit-id"
         />
-        
+
         <!-- Form Actions -->
         <div class="flex gap-4 pt-4">
             <button type="submit" class="btn btn-primary">
@@ -118,7 +118,7 @@ const utilityOptions = Object.entries(UtilityType).map(([key, value]) => ({
                 Reset
             </button>
         </div>
-        
+
         <!-- Debug: Show form data -->
         <div class="mt-8 p-4 bg-base-200 rounded-lg">
             <h3 class="font-bold mb-2">Form Data (Debug):</h3>

@@ -1,15 +1,15 @@
 ---
-import { PropertyType } from "../../../types";
+import { PropertyType } from '../../../types';
 import {
     BaseInput,
     DropdownSelect,
     BaseTextarea,
     LocationMapPicker
-} from "../../forms";
+} from '../../forms';
 
 export interface Props {
-    apiUrl: string;
-    errors?: Record<string, string>;
+    apiUrl: string
+    errors?: Record<string, string>
 }
 
 const { apiUrl, errors: _errors = {} } = Astro.props;
@@ -28,11 +28,11 @@ const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => (
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div class="form-control">
                 <BaseInput
-                    name="buildingID"
-                    label="Building ID"
-                    xModel="building.buildingID"
-                    disabled={true}
-                    required={true}
+                  name="buildingID"
+                  label="Building ID"
+                  xModel="building.buildingID"
+                  disabled={true}
+                  required={true}
                 />
                 <div class="label">
                     <span class="label-text-alt text-base-content/60 flex items-center gap-1">
@@ -45,125 +45,142 @@ const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => (
                 <span x-show="errors.buildingID" class="label-text-alt text-error" x-text="errors.buildingID"></span>
             </div>
             <DropdownSelect
-                name="propertyType"
-                label="Property Type"
-                xModel="building.propertyType"
-                options={propertyTypeOptions}
-                placeholder="Select property type"
+              name="propertyType"
+              label="Property Type"
+              xModel="building.propertyType"
+              options={propertyTypeOptions}
+              placeholder="Select property type"
             />
         </div>
-        
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4">
             <BaseInput
-                name="street"
-                label="Street Address"
-                xModel="building.street"
-                placeholder="123 Main St"
-                required={true}
+              name="street"
+              label="Street Address"
+              xModel="building.street"
+              placeholder="123 Main St"
+              required={true}
             />
             <span x-show="errors.street" class="label-text-alt text-error" x-text="errors.street"></span>
             <BaseInput
-                name="city"
-                label="City"
-                xModel="building.city"
-                placeholder="San Francisco"
-                required={true}
+              name="city"
+              label="City"
+              xModel="building.city"
+              placeholder="San Francisco"
+              required={true}
             />
             <span x-show="errors.city" class="label-text-alt text-error" x-text="errors.city"></span>
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <BaseInput
-                name="state"
-                label="State"
-                xModel="building.state"
-                placeholder="CA"
-                required={true}
+              name="state"
+              label="State"
+              xModel="building.state"
+              placeholder="CA"
+              required={true}
             />
             <span x-show="errors.state" class="label-text-alt text-error" x-text="errors.state"></span>
             <BaseInput
-                name="zip"
-                label="ZIP Code"
-                xModel="building.zip"
-                placeholder="94102"
-                required={true}
+              name="zip"
+              label="ZIP Code"
+              xModel="building.zip"
+              placeholder="94102"
+              required={true}
             />
             <span x-show="errors.zip" class="label-text-alt text-error" x-text="errors.zip"></span>
         </div>
-        
+
         <!-- Location Map -->
         <div class="mt-6">
             <LocationMapPicker
-                latModel="building.latitude"
-                lngModel="building.longitude"
-                verifiedModel="building.coordinatesVerified"
-                addressModel="building.street"
-                cityModel="building.city"
-                stateModel="building.state"
-                apiUrl={apiUrl}
-                height="350px"
+              latModel="building.latitude"
+              lngModel="building.longitude"
+              verifiedModel="building.coordinatesVerified"
+              addressModel="building.street"
+              cityModel="building.city"
+              stateModel="building.state"
+              apiUrl={apiUrl}
+              height="350px"
             />
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <BaseInput
-                name="yearBuilt"
-                label="Year Built"
-                type="number"
-                xModel="building.yearBuilt"
-                placeholder="2020"
-                min="1800"
-                max="2030"
+              name="yearBuilt"
+              label="Year Built"
+              type="number"
+              xModel="building.yearBuilt"
+              placeholder="2020"
+              min="1800"
+              max="2030"
             />
             <span x-show="errors.yearBuilt" class="label-text-alt text-error" x-text="errors.yearBuilt"></span>
             <BaseInput
-                name="numberStories"
-                label="Number of Stories"
-                type="number"
-                xModel="building.numberStories"
-                placeholder="3"
-                min="1"
+              name="numberStories"
+              label="Number of Stories"
+              type="number"
+              xModel="building.numberStories"
+              placeholder="3"
+              min="1"
             />
             <span x-show="errors.numberStories" class="label-text-alt text-error" x-text="errors.numberStories"></span>
             <BaseInput
-                name="totalUnits"
-                label="Total Units"
-                type="number"
-                xModel="building.totalUnits"
-                placeholder="24"
-                min="1"
+              name="totalUnits"
+              label="Total Units"
+              type="number"
+              xModel="building.totalUnits"
+              placeholder="24"
+              min="1"
             />
             <span x-show="errors.totalUnits" class="label-text-alt text-error" x-text="errors.totalUnits"></span>
         </div>
-        
+
         <div class="form-control">
             <BaseTextarea
-                name="description"
-                label="Basic Description"
-                xModel="building.description"
-                placeholder="e.g., Modern 24-unit apartment complex with covered parking, built in 2020. Features energy-efficient appliances and central air conditioning."
-                rows={4}
-                maxlength={1000}
+              name="description"
+              label="Basic Description"
+              xModel="building.description"
+              placeholder="e.g., Modern 24-unit apartment complex with covered parking, built in 2020. Features energy-efficient appliances and central air conditioning."
+              rows={4}
+              maxlength={1000}
             />
-            
+
             <!-- Character Counter -->
             <div class="label">
                 <div class="label-text-alt text-base-content/60">
                     <div class="flex flex-col gap-1 text-sm">
                         <div class="font-medium">Administrative Summary (Internal Use)</div>
                         <ul class="list-disc list-inside space-y-0.5 text-xs leading-relaxed">
-                            <li><strong>Purpose:</strong> Brief summary for internal property management</li>
-                            <li><strong>Format:</strong> Plain text only (no HTML or Markdown)</li>
-                            <li><strong>MITS Integration:</strong> Appears as "ShortDescription" in property feeds</li>
-                            <li><strong>Content:</strong> Key features, year built, unit count, notable amenities</li>
+                            <li>
+<strong>Purpose:</strong>
+{' '}
+Brief summary for internal property management
+                            </li>
+                            <li>
+<strong>Format:</strong>
+{' '}
+Plain text only (no HTML or Markdown)
+                            </li>
+                            <li>
+<strong>MITS Integration:</strong>
+{' '}
+Appears as "ShortDescription" in property feeds
+                            </li>
+                            <li>
+<strong>Content:</strong>
+{' '}
+Key features, year built, unit count, notable amenities
+                            </li>
                         </ul>
                     </div>
                 </div>
                 <span class="label-text-alt" :class="{ 'text-warning': (building.description || '').length > 900, 'text-error': (building.description || '').length > 1000 }">
-                    <span x-text="(building.description || '').length">0</span>/1000 characters
+                    <span x-text="(building.description || '').length">0</span>
+/1000 characters
                 </span>
             </div>
-            
+
             <span x-show="errors.description" class="label-text-alt text-error" x-text="errors.description"></span>
         </div>
     </div>

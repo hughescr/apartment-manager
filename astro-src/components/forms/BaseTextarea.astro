@@ -1,24 +1,24 @@
 ---
 export interface Props {
-    name: string;
-    label?: string;
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    readonly?: boolean;
-    xModel: string;
-    value?: string;
-    rows?: number;
-    cols?: number;
-    maxlength?: number;
-    minlength?: number;
-    class?: string;
-    textareaClass?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
-    floatingLabel?: boolean;
-    resize?: 'none' | 'both' | 'horizontal' | 'vertical';
+    name: string
+    label?: string
+    placeholder?: string
+    required?: boolean
+    disabled?: boolean
+    readonly?: boolean
+    xModel: string
+    value?: string
+    rows?: number
+    cols?: number
+    maxlength?: number
+    minlength?: number
+    'class'?: string
+    textareaClass?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
+    floatingLabel?: boolean
+    resize?: 'none' | 'both' | 'horizontal' | 'vertical'
 }
 
 const {
@@ -34,7 +34,7 @@ const {
     cols,
     maxlength,
     minlength,
-    class: className = '',
+    'class': className = '',
     textareaClass = '',
     error,
     helpText,
@@ -71,8 +71,9 @@ const containerClasses = [
             </span>
         </label>
     )}
-    
-    {floatingLabel ? (
+
+    {floatingLabel
+? (
         <label class="floating-label textarea-label">
             {shouldShowLabel && (
                 <span>
@@ -81,35 +82,40 @@ const containerClasses = [
                 </span>
             )}
             <textarea
-                name={name}
-                placeholder={placeholder || label}
-                class={textareaClasses}
-                required={required}
-                disabled={disabled}
-                readonly={readonly}
-                x-model={xModel}
-                rows={rows}
-                cols={cols}
-                maxlength={maxlength}
-                minlength={minlength}
-            >{value}</textarea>
+              name={name}
+              placeholder={placeholder || label}
+              class={textareaClasses}
+              required={required}
+              disabled={disabled}
+              readonly={readonly}
+              x-model={xModel}
+              rows={rows}
+              cols={cols}
+              maxlength={maxlength}
+              minlength={minlength}
+            >
+{value}
+            </textarea>
         </label>
-    ) : (
+    )
+: (
         <textarea
-            name={name}
-            placeholder={placeholder}
-            class={textareaClasses}
-            required={required}
-            disabled={disabled}
-            readonly={readonly}
-            x-model={xModel}
-            rows={rows}
-            cols={cols}
-            maxlength={maxlength}
-            minlength={minlength}
-        >{value}</textarea>
+          name={name}
+          placeholder={placeholder}
+          class={textareaClasses}
+          required={required}
+          disabled={disabled}
+          readonly={readonly}
+          x-model={xModel}
+          rows={rows}
+          cols={cols}
+          maxlength={maxlength}
+          minlength={minlength}
+        >
+{value}
+        </textarea>
     )}
-    
+
     {(error || helpText) && (
         <label class="label">
             <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
@@ -120,6 +126,16 @@ const containerClasses = [
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Floating label styles for textarea */
     .floating-label.textarea-label {
         position: relative;
@@ -176,4 +192,14 @@ const containerClasses = [
     .resize-vertical {
         resize: vertical;
     }
+
+
+
+
+
+
+
+
+
+
 </style>

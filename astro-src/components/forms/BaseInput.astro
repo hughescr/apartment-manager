@@ -1,25 +1,25 @@
 ---
 export interface Props {
-    name: string;
-    label?: string;
-    placeholder?: string;
-    type?: 'text' | 'number' | 'email' | 'tel' | 'url' | 'date' | 'time' | 'datetime-local';
-    required?: boolean;
-    disabled?: boolean;
-    readonly?: boolean;
-    xModel: string;
-    value?: string | number;
-    min?: string | number;
-    max?: string | number;
-    step?: string | number;
-    pattern?: string;
-    autocomplete?: string;
-    class?: string;
-    inputClass?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
-    floatingLabel?: boolean;
+    name: string
+    label?: string
+    placeholder?: string
+    type?: 'text' | 'number' | 'email' | 'tel' | 'url' | 'date' | 'time' | 'datetime-local'
+    required?: boolean
+    disabled?: boolean
+    readonly?: boolean
+    xModel: string
+    value?: string | number
+    min?: string | number
+    max?: string | number
+    step?: string | number
+    pattern?: string
+    autocomplete?: string
+    'class'?: string
+    inputClass?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
+    floatingLabel?: boolean
 }
 
 const {
@@ -37,7 +37,7 @@ const {
     step,
     pattern,
     autocomplete,
-    class: className = '',
+    'class': className = '',
     inputClass = '',
     error,
     helpText,
@@ -72,8 +72,9 @@ const containerClasses = [
             </span>
         </label>
     )}
-    
-    {floatingLabel ? (
+
+    {floatingLabel
+? (
         <label class="floating-label">
             {shouldShowLabel && (
                 <span>
@@ -82,41 +83,42 @@ const containerClasses = [
                 </span>
             )}
             <input
-                type={type}
-                name={name}
-                placeholder={placeholder || label}
-                class={inputClasses}
-                required={required}
-                disabled={disabled}
-                readonly={readonly}
-                {...(type === 'number' ? { 'x-model.number': xModel } : { 'x-model': xModel })}
-                value={value}
-                min={min}
-                max={max}
-                step={step}
-                pattern={pattern}
-                autocomplete={autocomplete}
+              type={type}
+              name={name}
+              placeholder={placeholder || label}
+              class={inputClasses}
+              required={required}
+              disabled={disabled}
+              readonly={readonly}
+              {...(type === 'number' ? { 'x-model.number': xModel } : { 'x-model': xModel })}
+              value={value}
+              min={min}
+              max={max}
+              step={step}
+              pattern={pattern}
+              autocomplete={autocomplete}
             />
         </label>
-    ) : (
+    )
+: (
         <input
-            type={type}
-            name={name}
-            placeholder={placeholder}
-            class={inputClasses}
-            required={required}
-            disabled={disabled}
-            readonly={readonly}
-            {...(type === 'number' ? { 'x-model.number': xModel } : { 'x-model': xModel })}
-            value={value}
-            min={min}
-            max={max}
-            step={step}
-            pattern={pattern}
-            autocomplete={autocomplete}
+          type={type}
+          name={name}
+          placeholder={placeholder}
+          class={inputClasses}
+          required={required}
+          disabled={disabled}
+          readonly={readonly}
+          {...(type === 'number' ? { 'x-model.number': xModel } : { 'x-model': xModel })}
+          value={value}
+          min={min}
+          max={max}
+          step={step}
+          pattern={pattern}
+          autocomplete={autocomplete}
         />
     )}
-    
+
     {(error || helpText) && (
         <label class="label">
             <span class={`label-text-alt ${error ? 'text-error' : ''}`}>
@@ -127,6 +129,16 @@ const containerClasses = [
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     /* Floating label styles to match building component pattern */
     .floating-label {
         position: relative;
@@ -160,4 +172,14 @@ const containerClasses = [
     .floating-label input.input-error:focus ~ span:first-of-type {
         color: var(--fallback-er, oklch(var(--er)));
     }
+
+
+
+
+
+
+
+
+
+
 </style>

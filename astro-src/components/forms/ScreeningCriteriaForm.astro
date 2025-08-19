@@ -3,15 +3,15 @@ import BaseInput from './BaseInput.astro';
 import BaseTextarea from './BaseTextarea.astro';
 
 export interface Props {
-    name: string;
-    label?: string;
-    xModel: string;
-    required?: boolean;
-    disabled?: boolean;
-    class?: string;
-    error?: string;
-    helpText?: string;
-    showLabel?: boolean;
+    name: string
+    label?: string
+    xModel: string
+    required?: boolean
+    disabled?: boolean
+    'class'?: string
+    error?: string
+    helpText?: string
+    showLabel?: boolean
 }
 
 const {
@@ -20,7 +20,7 @@ const {
     xModel,
     required = false,
     disabled = false,
-    class: className = '',
+    'class': className = '',
     error,
     helpText,
     showLabel = true,
@@ -191,7 +191,7 @@ const xData = `{
             </span>
         </div>
     )}
-    
+
     <!-- Quick Presets -->
     <div class="alert alert-info mb-4">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
@@ -201,41 +201,41 @@ const xData = `{
             <div class="text-sm mb-2">Quick presets:</div>
             <div class="btn-group btn-group-sm">
                 <button
-                    type="button"
-                    class="btn btn-outline"
-                    x-on:click="applyPreset('strict')"
-                    disabled={disabled}
+                  type="button"
+                  class="btn btn-outline"
+                  x-on:click="applyPreset('strict')"
+                  disabled={disabled}
                 >
                     Strict
                 </button>
                 <button
-                    type="button"
-                    class="btn btn-outline"
-                    x-on:click="applyPreset('standard')"
-                    disabled={disabled}
+                  type="button"
+                  class="btn btn-outline"
+                  x-on:click="applyPreset('standard')"
+                  disabled={disabled}
                 >
                     Standard
                 </button>
                 <button
-                    type="button"
-                    class="btn btn-outline"
-                    x-on:click="applyPreset('flexible')"
-                    disabled={disabled}
+                  type="button"
+                  class="btn btn-outline"
+                  x-on:click="applyPreset('flexible')"
+                  disabled={disabled}
                 >
                     Flexible
                 </button>
                 <button
-                    type="button"
-                    class="btn btn-outline"
-                    x-on:click="applyPreset('minimal')"
-                    disabled={disabled}
+                  type="button"
+                  class="btn btn-outline"
+                  x-on:click="applyPreset('minimal')"
+                  disabled={disabled}
                 >
                     Minimal
                 </button>
             </div>
         </div>
     </div>
-    
+
     <!-- Requirements Summary -->
     <div x-show="hasRequirements" class="stats shadow mb-4 w-full">
         <div class="stat">
@@ -243,7 +243,7 @@ const xData = `{
             <div class="stat-value text-lg" x-text="requirementsSummary"></div>
         </div>
     </div>
-    
+
     <!-- Financial Requirements -->
     <div class="card bg-base-200 mb-4">
         <div class="card-body">
@@ -251,35 +251,35 @@ const xData = `{
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <BaseInput
-                        name={name + '_incomeRatio'}
-                        label="Income to Rent Ratio"
-                        type="number"
-                        xModel={`${xModel}.incomeRatio`}
-                        min="0"
-                        max="10"
-                        step="0.5"
-                        placeholder="e.g., 3"
-                        helpText="Applicant's monthly income must be X times the rent"
-                        disabled={disabled}
+                      name={name + '_incomeRatio'}
+                      label="Income to Rent Ratio"
+                      type="number"
+                      xModel={`${xModel}.incomeRatio`}
+                      min="0"
+                      max="10"
+                      step="0.5"
+                      placeholder="e.g., 3"
+                      helpText="Applicant's monthly income must be X times the rent"
+                      disabled={disabled}
                     />
                 </div>
                 <div>
                     <BaseInput
-                        name={name + '_minCreditScore'}
-                        label="Minimum Credit Score"
-                        type="number"
-                        xModel={`${xModel}.minCreditScore`}
-                        min="300"
-                        max="850"
-                        step="10"
-                        placeholder="e.g., 650"
-                        disabled={disabled}
+                      name={name + '_minCreditScore'}
+                      label="Minimum Credit Score"
+                      type="number"
+                      xModel={`${xModel}.minCreditScore`}
+                      min="300"
+                      max="850"
+                      step="10"
+                      placeholder="e.g., 650"
+                      disabled={disabled}
                     />
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Background Checks -->
     <div class="card bg-base-200 mb-4">
         <div class="card-body">
@@ -287,44 +287,44 @@ const xData = `{
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary"
-                        x-model={`${xModel}.backgroundCheckRequired`}
-                        disabled={disabled}
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-model={`${xModel}.backgroundCheckRequired`}
+                      disabled={disabled}
                     />
                     <span class="label-text">Background Check Required</span>
                 </label>
                 <label class="label cursor-pointer justify-start gap-3">
                     <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary"
-                        x-model={`${xModel}.evictionHistory`}
-                        disabled={disabled}
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-model={`${xModel}.evictionHistory`}
+                      disabled={disabled}
                     />
                     <span class="label-text">Check Eviction History</span>
                 </label>
                 <label class="label cursor-pointer justify-start gap-3">
                     <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary"
-                        x-model={`${xModel}.criminalHistory`}
-                        disabled={disabled}
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-model={`${xModel}.criminalHistory`}
+                      disabled={disabled}
                     />
                     <span class="label-text">Check Criminal History</span>
                 </label>
                 <label class="label cursor-pointer justify-start gap-3">
                     <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary"
-                        x-model={`${xModel}.rentalHistory`}
-                        disabled={disabled}
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-model={`${xModel}.rentalHistory`}
+                      disabled={disabled}
                     />
                     <span class="label-text">Verify Rental History</span>
                 </label>
             </div>
         </div>
     </div>
-    
+
     <!-- Verification Requirements -->
     <div class="card bg-base-200 mb-4">
         <div class="card-body">
@@ -332,64 +332,64 @@ const xData = `{
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary"
-                        x-model={`${xModel}.employmentVerification`}
-                        disabled={disabled}
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-model={`${xModel}.employmentVerification`}
+                      disabled={disabled}
                     />
                     <span class="label-text">Employment Verification Required</span>
                 </label>
                 <div>
                     <BaseInput
-                        name={name + '_references'}
-                        label="Number of References Required"
-                        type="number"
-                        xModel={`${xModel}.references`}
-                        min="0"
-                        max="5"
-                        placeholder="e.g., 2"
-                        disabled={disabled}
+                      name={name + '_references'}
+                      label="Number of References Required"
+                      type="number"
+                      xModel={`${xModel}.references`}
+                      min="0"
+                      max="5"
+                      placeholder="e.g., 2"
+                      disabled={disabled}
                     />
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Occupancy Limits -->
     <div class="card bg-base-200 mb-4">
         <div class="card-body">
             <h3 class="card-title text-base">Occupancy Limits</h3>
             <BaseInput
-                name={name + '_maxOccupantsPerBedroom'}
-                label="Maximum Occupants per Bedroom"
-                type="number"
-                xModel={`${xModel}.maxOccupantsPerBedroom`}
-                min="1"
-                max="5"
-                placeholder="e.g., 2"
-                helpText="Maximum number of people allowed per bedroom"
-                disabled={disabled}
-                class="max-w-xs"
+              name={name + '_maxOccupantsPerBedroom'}
+              label="Maximum Occupants per Bedroom"
+              type="number"
+              xModel={`${xModel}.maxOccupantsPerBedroom`}
+              min="1"
+              max="5"
+              placeholder="e.g., 2"
+              helpText="Maximum number of people allowed per bedroom"
+              disabled={disabled}
+              class="max-w-xs"
             />
         </div>
     </div>
-    
+
     <!-- Additional Notes -->
     <div class="card bg-base-200">
         <div class="card-body">
             <h3 class="card-title text-base">Additional Criteria</h3>
             <BaseTextarea
-                name={name + '_notes'}
-                label="Additional Screening Notes"
-                xModel={`${xModel}.notes`}
-                placeholder="Any additional screening criteria or requirements..."
-                disabled={disabled}
-                showLabel={false}
-                class="w-full"
+              name={name + '_notes'}
+              label="Additional Screening Notes"
+              xModel={`${xModel}.notes`}
+              placeholder="Any additional screening criteria or requirements..."
+              disabled={disabled}
+              showLabel={false}
+              class="w-full"
             />
         </div>
     </div>
-    
+
     <!-- Fair Housing Notice -->
     <div class="alert alert-warning mt-4">
         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
@@ -398,15 +398,15 @@ const xData = `{
         <div>
             <h3 class="font-bold">Fair Housing Notice</h3>
             <div class="text-sm">
-                All screening criteria must comply with Fair Housing laws. Criteria cannot discriminate based on race, color, 
+                All screening criteria must comply with Fair Housing laws. Criteria cannot discriminate based on race, color,
                 national origin, religion, sex, familial status, or disability.
             </div>
         </div>
     </div>
-    
+
     <!-- Hidden input to store the JSON value -->
     <input type="hidden" name={name} :value="JSON.stringify(getModelValue())" />
-    
+
     {(error || helpText) && (
         <div class={`label ${error ? 'text-error' : ''} mt-2`}>
             <span class="label-text-alt">
@@ -417,6 +417,16 @@ const xData = `{
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     @reference "../../styles/global.css";
     
     .screening-criteria-form {
@@ -429,4 +439,14 @@ const xData = `{
     [x-transition] {
         transition: all 0.2s ease;
     }
+
+
+
+
+
+
+
+
+
+
 </style>

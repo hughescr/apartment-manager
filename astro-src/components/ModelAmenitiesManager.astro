@@ -1,13 +1,13 @@
 ---
 // astro-src/components/ModelAmenitiesManager.astro
-import { Resource } from "sst";
-import type { UnitTypeData } from "../../src/types";
-import { AmenitySelector } from "./forms";
-import Saving from "./Saving.astro";
+import { Resource } from 'sst';
+import type { UnitTypeData } from '../../src/types';
+import { AmenitySelector } from './forms';
+import Saving from './Saving.astro';
 
-const { unitTypes, buildingID } = Astro.props as { 
-    unitTypes: UnitTypeData[];
-    buildingID: string;
+const { unitTypes, buildingID } = Astro.props as {
+    unitTypes: UnitTypeData[]
+    buildingID: string
 };
 
 const apiURL = Resource.API.url;
@@ -21,6 +21,16 @@ const unitTypesMap = Object.fromEntries(
 ---
 
 <script define:vars={{ apiURL, buildingID, unitTypesMap }} is:inline>
+
+
+
+
+
+
+
+
+
+
 // Used by Alpine.js x-data attribute
 window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData, buildingIdData, unitTypesMapData) {
     return {
@@ -157,6 +167,16 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
         }
     };
 }
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <div x-data="modelAmenitiesManagerData(apiURL, buildingID, unitTypesMap)" class="model-amenities-manager">
@@ -166,10 +186,10 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
                 <h3 class="card-title text-xl">Manage Model Amenities</h3>
                 <div class="flex gap-2 items-center">
                     <Saving />
-                    <button 
-                        class="btn btn-outline btn-sm"
-                        x-on:click="toggleBulkEdit()"
-                        :class="{'btn-active': bulkEditMode}"
+                    <button
+                      class="btn btn-outline btn-sm"
+                      x-on:click="toggleBulkEdit()"
+                      class="{'btn-active': bulkEditMode}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -186,9 +206,9 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
                     <label class="label">
                         <span class="label-text font-semibold">Select Unit Type Model</span>
                     </label>
-                    <select 
-                        class="select select-bordered w-full"
-                        x-model="selectedModel"
+                    <select
+                      class="select select-bordered w-full"
+                      x-model="selectedModel"
                     >
                         <option value="">Choose a model...</option>
                         <template x-for="model in availableModels" :key="model.value">
@@ -208,9 +228,9 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
 
                     <div x-effect="$watch('currentModelAmenities', () => saveModelAmenities(selectedModel))">
                         <AmenitySelector
-                            name="modelAmenities"
-                            label="Model Amenities"
-                            xModel="currentModelAmenities"
+                          name="modelAmenities"
+                          label="Model Amenities"
+                          xModel="currentModelAmenities"
                         />
                     </div>
 
@@ -220,10 +240,10 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
                             <h4 class="font-semibold mb-2">Copy amenities from another model</h4>
                             <div class="flex gap-2 flex-wrap">
                                 <template x-for="model in availableModels.filter(m => m.value !== selectedModel)" :key="model.value">
-                                    <button 
-                                        class="btn btn-sm"
-                                        x-on:click="copyAmenities(model.value)"
-                                        :disabled="saving"
+                                    <button
+                                      class="btn btn-sm"
+                                      x-on:click="copyAmenities(model.value)"
+                                      disabled="saving"
                                     >
                                         <span x-text="model.label"></span>
                                         <span class="badge badge-primary ml-1" x-text="getAmenityCount(model.value)"></span>
@@ -248,15 +268,15 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
                             <button class="btn btn-outline" x-on:click="deselectAllModels()">Clear</button>
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         <template x-for="model in availableModels" :key="model.value">
                             <label class="label cursor-pointer justify-start gap-3 p-3 rounded-lg hover:bg-base-200">
-                                <input 
-                                    type="checkbox" 
-                                    class="checkbox checkbox-primary" 
-                                    :value="model.value"
-                                    x-model="selectedModels"
+                                <input
+                                  type="checkbox"
+                                  class="checkbox checkbox-primary"
+                                  value="model.value"
+                                  x-model="selectedModels"
                                 />
                                 <div class="flex-1">
                                     <div class="font-medium" x-text="model.label"></div>
@@ -278,27 +298,32 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
                     </div>
 
                     <AmenitySelector
-                        name="bulkAmenities"
-                        label="Amenities to Apply"
-                        xModel="bulkAmenities"
+                      name="bulkAmenities"
+                      label="Amenities to Apply"
+                      xModel="bulkAmenities"
                     />
 
                     <div class="card-actions justify-end mt-6">
-                        <button 
-                            class="btn btn-ghost"
-                            x-on:click="toggleBulkEdit()"
-                            :disabled="saving"
+                        <button
+                          class="btn btn-ghost"
+                          x-on:click="toggleBulkEdit()"
+                          disabled="saving"
                         >
                             Cancel
                         </button>
-                        <button 
-                            class="btn btn-primary"
-                            x-on:click="applyBulkAmenities()"
-                            :disabled="saving || selectedModels.length === 0"
-                            :class="{'loading': saving}"
+                        <button
+                          class="btn btn-primary"
+                          x-on:click="applyBulkAmenities()"
+                          disabled="saving || selectedModels.length === 0"
+                          class="{'loading': saving}"
                         >
                             <span x-show="!saving">
-                                Apply to <span x-text="selectedModels.length"></span> Model<span x-show="selectedModels.length !== 1">s</span>
+                                Apply to
+{' '}
+<span x-text="selectedModels.length"></span>
+{' '}
+Model
+<span x-show="selectedModels.length !== 1">s</span>
                             </span>
                             <span x-show="saving">Updating...</span>
                         </button>
@@ -328,9 +353,9 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
                                         <span class="badge badge-primary" x-text="getAmenityCount(model.value)"></span>
                                     </td>
                                     <td>
-                                        <button 
-                                            class="btn btn-ghost btn-xs"
-                                            x-on:click="selectedModel = model.value"
+                                        <button
+                                          class="btn btn-ghost btn-xs"
+                                          x-on:click="selectedModel = model.value"
                                         >
                                             Edit
                                         </button>
@@ -346,6 +371,16 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
 </div>
 
 <style>
+
+
+
+
+
+
+
+
+
+
     @reference "../styles/global.css";
     
     /* Smooth transitions */
@@ -365,4 +400,14 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData(apiUrlData
         transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         transition-duration: 150ms;
     }
+
+
+
+
+
+
+
+
+
+
 </style>

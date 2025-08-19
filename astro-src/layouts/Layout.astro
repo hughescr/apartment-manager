@@ -1,6 +1,6 @@
 ---
-import BaseHead from "../components/BaseHead.astro";
-import Footer from "../components/Footer.astro";
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
 const { title } = Astro.props;
 import '../styles/global.css';
 const navItems = [
@@ -19,36 +19,36 @@ const currentPath = Astro.url.pathname;
     </head>
     <body>
         <nav
-            aria-label="Main navigation"
-            class="navbar bg-base-100"
-            x-data={`{ open: false, current: '${currentPath}' }`}
+          aria-label="Main navigation"
+          class="navbar bg-base-100"
+          x-data={`{ open: false, current: '${currentPath}' }`}
         >
             <div class="flex-1">
                 <a class="btn btn-ghost normal-case text-xl" href="/">Apartment Manager</a>
             </div>
             <div class="flex-none">
                 <button
-                    data-testid="mobile-menu-button"
-                    class="btn btn-square btn-ghost md:hidden"
-                    @click="open = !open"
-                    :aria-expanded="open"
+                  data-testid="mobile-menu-button"
+                  class="btn btn-square btn-ghost md:hidden"
+                  click="open = !open"
+                  aria-expanded="open"
                 >
                     <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
                 <ul class="menu menu-horizontal px-1 hidden md:flex">
-                    {navItems.map((item) => (
+                    {navItems.map(item => (
                         <li>
                             <a
-                                href={item.href}
-                                class={currentPath.startsWith(item.href) ? 'active' : ''}
+                              href={item.href}
+                              class={currentPath.startsWith(item.href) ? 'active' : ''}
                             >
                                 {item.label}
                             </a>
@@ -56,17 +56,17 @@ const currentPath = Astro.url.pathname;
                     ))}
                 </ul>
                 <ul
-                    class="menu menu-sm mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 absolute right-0 md:hidden"
-                    x-show="open"
-                    x-transition
-                    @click.outside="open = false"
-                    data-testid="mobile-menu"
+                  class="menu menu-sm mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 absolute right-0 md:hidden"
+                  x-show="open"
+                  x-transition
+                  click.outside="open = false"
+                  data-testid="mobile-menu"
                 >
-                    {navItems.map((item) => (
+                    {navItems.map(item => (
                         <li>
                             <a
-                                href={item.href}
-                                class={currentPath.startsWith(item.href) ? 'active' : ''}
+                              href={item.href}
+                              class={currentPath.startsWith(item.href) ? 'active' : ''}
                             >
                                 {item.label}
                             </a>
@@ -79,10 +79,10 @@ const currentPath = Astro.url.pathname;
             <h1 class="text-3xl font-bold mb-6">Apartment Manager</h1>
             <slot />
         </main>
-        
+
         <!-- Global Toast Container -->
-        <div 
-            x-data="{
+        <div
+          x-data="{
                 showToast: false,
                 toastMessage: '',
                 toastType: 'success',
@@ -95,25 +95,45 @@ const currentPath = Astro.url.pathname;
                     }, 3000);
                 }
             }"
-            @show-toast.window="showAndHideToast($event.detail.message, $event.detail.type)"
-            class="toast toast-center toast-middle" 
-            x-show="showToast" 
-            x-transition.opacity
+          show-toast.window="showAndHideToast($event.detail.message, $event.detail.type)"
+          class="toast toast-center toast-middle"
+          x-show="showToast"
+          x-transition.opacity
         >
             <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
                 <span x-text="toastMessage"></span>
             </div>
         </div>
-        
+
         <Footer />
-        
+
         <!-- Global showToast function -->
         <script>
+
+
+
+
+
+
+
+
+
+
             window.showToast = function(message, type) {
                 window.dispatchEvent(new CustomEvent('show-toast', {
                     detail: { message, type }
                 }));
             };
-        </script>
+
+
+
+
+
+
+
+
+
+
+</script>
     </body>
 </html>

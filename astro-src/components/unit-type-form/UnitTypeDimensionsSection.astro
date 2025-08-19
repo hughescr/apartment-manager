@@ -1,39 +1,39 @@
 ---
 // astro-src/components/unit-type-form/UnitTypeDimensionsSection.astro
-import { BaseInput } from "../forms";
+import { BaseInput } from '../forms';
 ---
 
 <!-- Unit Configuration -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <BaseInput
-        name="beds"
-        label="Bedrooms"
-        type="number"
-        xModel="unitType.beds"
-        required={true}
-        min="0"
-        max="10"
-        error="errors.beds"
+      name="beds"
+      label="Bedrooms"
+      type="number"
+      xModel="unitType.beds"
+      required={true}
+      min="0"
+      max="10"
+      error="errors.beds"
     />
     <BaseInput
-        name="baths"
-        label="Bathrooms"
-        type="number"
-        xModel="unitType.baths"
-        required={true}
-        min="0"
-        max="10"
-        step="0.5"
-        error="errors.baths"
+      name="baths"
+      label="Bathrooms"
+      type="number"
+      xModel="unitType.baths"
+      required={true}
+      min="0"
+      max="10"
+      step="0.5"
+      error="errors.baths"
     />
     <BaseInput
-        name="maxOccupants"
-        label="Max Occupants"
-        type="number"
-        xModel="unitType.maxOccupants"
-        placeholder="Not specified"
-        min="1"
-        max="20"
+      name="maxOccupants"
+      label="Max Occupants"
+      type="number"
+      xModel="unitType.maxOccupants"
+      placeholder="Not specified"
+      min="1"
+      max="20"
     />
 </div>
 
@@ -46,49 +46,49 @@ import { BaseInput } from "../forms";
         </label>
         <div class="flex gap-2 items-center">
             <BaseInput
-                name="minSqft"
-                xModel="unitType.minSqft"
-                type="number"
-                placeholder="Min"
-                min="0"
-                class="flex-1"
+              name="minSqft"
+              xModel="unitType.minSqft"
+              type="number"
+              placeholder="Min"
+              min="0"
+              class="flex-1"
             />
             <span>-</span>
             <BaseInput
-                name="maxSqft"
-                xModel="unitType.maxSqft"
-                type="number"
-                placeholder="Max"
-                min="0"
-                class="flex-1"
+              name="maxSqft"
+              xModel="unitType.maxSqft"
+              type="number"
+              placeholder="Max"
+              min="0"
+              class="flex-1"
             />
         </div>
         <div x-show="errors.sqft" class="text-error text-sm mt-1" x-text="errors.sqft"></div>
     </div>
-    
+
     <div>
         <label class="label">
             <span class="label-text">Lease Terms (months)</span>
         </label>
         <div class="flex gap-2 items-center">
             <BaseInput
-                name="minLeaseTerm"
-                xModel="unitType.minLeaseTerm"
-                type="number"
-                placeholder="Min"
-                min="1"
-                max="24"
-                class="flex-1"
+              name="minLeaseTerm"
+              xModel="unitType.minLeaseTerm"
+              type="number"
+              placeholder="Min"
+              min="1"
+              max="24"
+              class="flex-1"
             />
             <span>-</span>
             <BaseInput
-                name="maxLeaseTerm"
-                xModel="unitType.maxLeaseTerm"
-                type="number"
-                placeholder="Max"
-                min="1"
-                max="24"
-                class="flex-1"
+              name="maxLeaseTerm"
+              xModel="unitType.maxLeaseTerm"
+              type="number"
+              placeholder="Max"
+              min="1"
+              max="24"
+              class="flex-1"
             />
         </div>
         <div x-show="errors.lease" class="text-error text-sm mt-1" x-text="errors.lease"></div>

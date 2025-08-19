@@ -1,11 +1,11 @@
 ---
 export interface Props {
     building: {
-        buildingID: string;
-    };
-    apiUrl: string;
-    isOpen?: boolean;
-    dialogId?: string;
+        buildingID: string
+    }
+    apiUrl: string
+    isOpen?: boolean
+    dialogId?: string
 }
 
 const {
@@ -18,59 +18,62 @@ const {
     <div class="modal-box">
         <h3 class="font-bold text-lg">Update Rent for Selected Units</h3>
         <p class="py-4">
-            Update rent for <span class="font-semibold" x-text="selectedUnits.size"></span> selected units:
+            Update rent for
+{' '}
+<span class="font-semibold" x-text="selectedUnits.size"></span>
+{' '}
+selected units:
         </p>
-        
-        
-        <div 
-            x-data="{
+
+        <div
+          x-data="{
                 rentUpdateType: 'absolute',
                 rentValue: '',
                 loading: false,
                 errors: {},
-                
+
                 // Computed preview values
                 get previewValues() {
                     if (!this.rentValue || !selectedUnits || selectedUnits.size === 0) return [];
-                    
+
                     const values = [];
                     const unitsArray = Array.from(selectedUnits);
-                    
+
                     // Get first few units for preview (limit to 3 for display)
                     const previewUnits = unitsArray.slice(0, 3).map(unitID => {
                         const unit = units.find(u => u.unitID === unitID);
                         if (!unit) return null;
-                        
+
                         let newRent;
                         if (this.rentUpdateType === 'absolute') {
                             newRent = parseFloat(this.rentValue);
                         } else {
                             newRent = Math.round(unit.rent * (1 + parseFloat(this.rentValue) / 100));
                         }
-                        
+
                         return {
                             unitNumber: unit.unitNumber || unit.unitID,
                             currentRent: unit.rent,
                             newRent: newRent
                         };
                     }).filter(Boolean);
-                    
+
                     return previewUnits;
                 },
-                
+
                 get hasMoreUnits() {
                     return selectedUnits && selectedUnits.size > 3;
                 },
-                
+
                 validateInput() {
                     this.errors = {};
                     const value = parseFloat(this.rentValue);
-                    
+
                     if (!this.rentValue || isNaN(value)) {
                         this.errors.value = 'Please enter a valid number';
                         return false;
                     }
-                    
+
                     if (this.rentUpdateType === 'absolute') {
                         if (value < 0) {
                             this.errors.value = 'Rent cannot be negative';
@@ -90,23 +93,23 @@ const {
                             return false;
                         }
                     }
-                    
+
                     return true;
                 },
-                
+
                 async performBulkRentUpdate() {
                     if (!this.validateInput()) {
                         return;
                     }
-                    
+
                     this.loading = true;
-                    
+
                     try {
                         // Use parent's bulk operation method
                         $parent.bulkOperation.rentUpdateType = this.rentUpdateType;
                         $parent.bulkOperation.rentValue = parseFloat(this.rentValue);
                         await $parent.performBulkRentUpdate();
-                        
+
                         // Reset and close
                         this.rentUpdateType = 'absolute';
                         this.rentValue = '';
@@ -115,16 +118,16 @@ const {
                     } catch (error) {
                         console.error('Bulk rent update error:', error);
                         this.errors.general = 'Failed to update rents. Please try again.';
-                        $dispatch('show-toast', { 
-                            message: 'Failed to update rents. Please try again.', 
-                            type: 'error' 
+                        $dispatch('show-toast', {
+                            message: 'Failed to update rents. Please try again.',
+                            type: 'error'
                         });
                     } finally {
                         this.loading = false;
                     }
                 }
             }"
-            class="space-y-4"
+          class="space-y-4"
         >
             <!-- General Error Display -->
             <div x-show="errors.general" class="alert alert-error" data-testid="bulk-rent-general-error">
@@ -133,22 +136,22 @@ const {
                 </svg>
                 <span x-text="errors.general"></span>
             </div>
-            
+
             <!-- Update Type Selection -->
             <div class="form-control">
                 <label class="label">
                     <span class="label-text">Update Type</span>
                 </label>
-                <select 
-                    class="select select-bordered" 
-                    data-testid="rent-update-type" 
-                    x-model="rentUpdateType"
+                <select
+                  class="select select-bordered"
+                  data-testid="rent-update-type"
+                  x-model="rentUpdateType"
                 >
                     <option value="absolute">Set to specific amount</option>
                     <option value="percentage">Percentage increase/decrease</option>
                 </select>
             </div>
-            
+
             <!-- Value Input -->
             <div class="form-control">
                 <label class="label">
@@ -157,16 +160,16 @@ const {
                         <span x-show="rentUpdateType === 'percentage'">Percentage Change (%)</span>
                     </span>
                 </label>
-                <input 
-                    type="number" 
-                    class="input input-bordered"
-                    :class="{'input-error': errors.value}"
-                    data-testid="rent-update-value"
-                    x-model="rentValue"
-                    :min="rentUpdateType === 'absolute' ? 0 : -100"
-                    :max="rentUpdateType === 'absolute' ? 25000 : 1000"
-                    :placeholder="rentUpdateType === 'absolute' ? 'Enter rent amount' : 'Enter percentage (e.g., 10 for 10% increase, -5 for 5% decrease)'"
-                    step="any"
+                <input
+                  type="number"
+                  class="input input-bordered"
+                  class="{'input-error': errors.value}"
+                  data-testid="rent-update-value"
+                  x-model="rentValue"
+                  min="rentUpdateType === 'absolute' ? 0 : -100"
+                  max="rentUpdateType === 'absolute' ? 25000 : 1000"
+                  placeholder="rentUpdateType === 'absolute' ? 'Enter rent amount' : 'Enter percentage (e.g., 10 for 10% increase, -5 for 5% decrease)'"
+                  step="any"
                 />
                 <div class="label">
                     <span x-show="errors.value" class="label-text-alt text-error" x-text="errors.value"></span>
@@ -175,7 +178,7 @@ const {
                     </span>
                 </div>
             </div>
-            
+
             <!-- Preview -->
             <div x-show="rentValue && !errors.value" class="alert alert-info">
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
@@ -200,22 +203,22 @@ const {
                     </div>
                 </div>
             </div>
-            
+
             <!-- Dialog Actions -->
             <div class="modal-action">
-                <button 
-                    class="btn" 
-                    @click="showBulkRentDialog = false; rentUpdateType = 'absolute'; rentValue = ''; errors = {}"
-                    :disabled="loading"
-                    data-testid="cancel-bulk-rent"
+                <button
+                  class="btn"
+                  click="showBulkRentDialog = false; rentUpdateType = 'absolute'; rentValue = ''; errors = {}"
+                  disabled="loading"
+                  data-testid="cancel-bulk-rent"
                 >
                     Cancel
                 </button>
-                <button 
-                    class="btn btn-primary" 
-                    data-testid="bulk-rent-confirm"
-                    :disabled="!rentValue || !!errors.value || loading"
-                    @click="performBulkRentUpdate()"
+                <button
+                  class="btn btn-primary"
+                  data-testid="bulk-rent-confirm"
+                  disabled="!rentValue || !!errors.value || loading"
+                  click="performBulkRentUpdate()"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Update Rent</span>

@@ -1,30 +1,30 @@
 ---
-import BasicInformationSection from "../info/BasicInformationSection.astro";
-import ManagementContactSection from "../info/ManagementContactSection.astro";
-import BuildingAmenitiesSection from "../info/BuildingAmenitiesSection.astro";
+import BasicInformationSection from '../info/BasicInformationSection.astro';
+import ManagementContactSection from '../info/ManagementContactSection.astro';
+import BuildingAmenitiesSection from '../info/BuildingAmenitiesSection.astro';
 
 export interface Props {
-    building: any; // Building object from the data layer
-    apiUrl: string;
-    errors?: Record<string, string>;
-    onBuildingUpdate?: string; // Alpine.js expression to emit building updates
+    building: any // Building object from the data layer
+    apiUrl: string
+    errors?: Record<string, string>
+    onBuildingUpdate?: string // Alpine.js expression to emit building updates
 }
 
-const { 
+const {
     building,
-    apiUrl, 
+    apiUrl,
     errors,
-    onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)" 
+    onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)"
 } = Astro.props;
 ---
 
 <div class="building-info-tab space-y-6">
     <BasicInformationSection apiUrl={apiUrl} errors={errors} />
-    
+
     <ManagementContactSection building={building} errors={errors} />
-    
+
     <BuildingAmenitiesSection building={building} />
-    
+
     <!-- Danger Zone -->
     <div class="card bg-base-100 shadow-lg border-2 border-error/20">
         <div class="card-body p-4 sm:p-6">
@@ -43,11 +43,11 @@ const {
                     <div class="text-sm">Deleting this building will permanently remove all associated units, floorplans, and data.</div>
                 </div>
             </div>
-            <button 
-                class="btn btn-error btn-outline"
-                @click="deleteBuilding()"
-                :disabled="saving"
-                data-testid="delete-building-btn"
+            <button
+              class="btn btn-error btn-outline"
+              click="deleteBuilding()"
+              disabled="saving"
+              data-testid="delete-building-btn"
             >
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>

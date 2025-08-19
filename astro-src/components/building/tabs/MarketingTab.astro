@@ -1,28 +1,28 @@
 ---
-import type { Building } from "../../../types";
-import PropertyDetailsSection from "../marketing/PropertyDetailsSection.astro";
-import MediaGallerySection from "../marketing/MediaGallerySection.astro";
-import TourInformationSection from "../marketing/TourInformationSection.astro";
+import type { Building } from '../../../types';
+import PropertyDetailsSection from '../marketing/PropertyDetailsSection.astro';
+import MediaGallerySection from '../marketing/MediaGallerySection.astro';
+import TourInformationSection from '../marketing/TourInformationSection.astro';
 
 export interface Props {
-    building: Building; // Building object from the data layer
-    apiUrl: string;
-    errors?: Record<string, string>;
-    onBuildingUpdate?: string; // Alpine.js expression to emit building updates
+    building: Building // Building object from the data layer
+    apiUrl: string
+    errors?: Record<string, string>
+    onBuildingUpdate?: string // Alpine.js expression to emit building updates
 }
 
-const { 
-    building, 
-    apiUrl: _apiUrl, 
+const {
+    building,
+    apiUrl: _apiUrl,
     errors,
-    onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)" 
+    onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)"
 } = Astro.props;
 ---
 
 <div class="marketing-tab space-y-6">
     <PropertyDetailsSection building={building} errors={errors} />
-    
+
     <MediaGallerySection building={building} />
-    
+
     <TourInformationSection building={building} errors={errors} />
 </div>

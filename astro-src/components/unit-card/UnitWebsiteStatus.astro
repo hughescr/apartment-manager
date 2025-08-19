@@ -1,6 +1,6 @@
 ---
 export interface Props {
-    xModelPrefix?: string;
+    xModelPrefix?: string
 }
 
 const { xModelPrefix = 'unit' } = Astro.props;
@@ -13,7 +13,7 @@ const websites = [
 
 <div class="space-y-4">
     <h3 class="text-lg font-semibold">Website Status</h3>
-    
+
     <!-- Feed Inclusion -->
     <div class="border border-base-300 rounded-lg p-4">
         <h4 class="font-medium mb-3">Include in Feeds</h4>
@@ -21,9 +21,9 @@ const websites = [
             {websites.map(site => (
                 <label class="flex items-center gap-2 cursor-pointer">
                     <input
-                        type="checkbox"
-                        class="checkbox checkbox-primary"
-                        x-model={`${xModelPrefix}.feedInclusion.${site.key}`}
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      x-model={`${xModelPrefix}.feedInclusion.${site.key}`}
                     />
                     <span class="label-text">{site.label}</span>
                 </label>
@@ -38,13 +38,17 @@ const websites = [
             {websites.map(site => (
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text">{site.label} ID</span>
+                        <span class="label-text">
+{site.label}
+{' '}
+ID
+                        </span>
                     </label>
                     <input
-                        type="text"
-                        class="input input-bordered w-full"
-                        x-model={`${xModelPrefix}.manualReferences.${site.key}`}
-                        placeholder={`${site.label} reference ID`}
+                      type="text"
+                      class="input input-bordered w-full"
+                      x-model={`${xModelPrefix}.manualReferences.${site.key}`}
+                      placeholder={`${site.label} reference ID`}
                     />
                 </div>
             ))}

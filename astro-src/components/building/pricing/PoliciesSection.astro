@@ -2,10 +2,10 @@
 import {
     PetPolicyEditor,
     ScreeningCriteriaForm
-} from "../../forms";
+} from '../../forms';
 
 export interface Props {
-    building: any;
+    building: any
 }
 
 const { building: _building } = Astro.props;
@@ -15,22 +15,22 @@ const { building: _building } = Astro.props;
 <div class="card bg-base-100">
     <div class="card-body">
         <h3 class="card-title text-lg mb-4">Policies</h3>
-        
+
         <!-- Pet Policies -->
         <div class="mb-6">
             <h4 class="font-semibold mb-4">Pet Policies</h4>
             <PetPolicyEditor
-                name="petPolicies"
-                xModel="building.petPolicies"
+              name="petPolicies"
+              xModel="building.petPolicies"
             />
         </div>
-        
+
         <!-- Screening Criteria -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="font-semibold mb-4">Screening Criteria</h4>
             <ScreeningCriteriaForm
-                name="screeningCriteria"
-                xModel="building.screeningCriteria"
+              name="screeningCriteria"
+              xModel="building.screeningCriteria"
             />
         </div>
     </div>
