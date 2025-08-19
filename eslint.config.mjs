@@ -3,15 +3,31 @@ import packageJson from 'eslint-plugin-package-json';
 
 import tseslint from 'typescript-eslint';
 
+import eslintPluginAstro from 'eslint-plugin-astro';
+
 export default
 [
     {
         name: 'ignores',
-        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts', 'convert-lodash.ts', 'scripts/migrate-building-names.ts'],
+        ignores: ['coverage', 'node_modules', '.sst', 'sst-env.d.ts'],
     },
+
     defaultConfig.configs.recommended,
+
     ...tseslint.configs.recommended,
     ...tseslint.configs.stylistic,
+
+    ...eslintPluginAstro.configs.recommended,
+    // ...eslintPluginAstro.configs['jsx-a11y-recommended'],
+
+    { // Disable @stylistic/indent for astro files as it conflicts with jsx rules and crashes
+        files: ['**/*.astro'],
+
+        rules: {
+            '@stylistic/indent': 'off',
+        },
+    },
+
     {
         rules: {
             '@typescript-eslint/triple-slash-reference': 'off',
@@ -20,6 +36,7 @@ export default
             'n/no-missing-import': 'off',
         },
     },
+
     {
         ...packageJson.configs.recommended,
         rules: {
@@ -27,6 +44,7 @@ export default
             strict: 'off',
         }
     },
+
     {
         files: ['**/*.js', '**/*.mjs'],
         ...tseslint.configs.disableTypeChecked,
