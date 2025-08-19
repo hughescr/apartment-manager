@@ -123,34 +123,24 @@ const emptyUnitTypes: any[] = [];
 </div>
 
 <script>
-
-
-
-
-
-
-
-
-
-
-import type { AlpineComponent } from "../types/alpine";
+import type { AlpineComponent } from '../types/alpine';
 import { createClientLogger } from '../lib/utils/client-logger';
 
 const logger = createClientLogger('BuildingManager');
 
 type BuildingManagerData = AlpineComponent<{
-    loading: boolean;
-    dataLoaded: boolean;
-    error: boolean;
-    errorMessage: string;
-    buildingID: string;
-    apiURL: string;
-    building: any;
-    units: any[];
-    unitTypes: any[];
-    init(): void;
-    loadBuildingData(): Promise<void>;
-    retryLoad(): void;
+    loading: boolean
+    dataLoaded: boolean
+    error: boolean
+    errorMessage: string
+    buildingID: string
+    apiURL: string
+    building: any
+    units: any[]
+    unitTypes: any[]
+    init(): void
+    loadBuildingData(): Promise<void>
+    retryLoad(): void
 }>;
 
 function buildingManagerData(): BuildingManagerData {
@@ -164,34 +154,34 @@ function buildingManagerData(): BuildingManagerData {
         building: null,
         units: [],
         unitTypes: [],
-        
+
         init() {
             this.buildingID = this.$root.dataset.buildingId || '';
             this.apiURL = this.$root.dataset.apiUrl || '';
-            
+
             // Listen for Alpine events to trigger loading
             this.$root.addEventListener('trigger-load', () => {
-                if (!this.dataLoaded && !this.loading) {
+                if(!this.dataLoaded && !this.loading) {
                     this.loadBuildingData();
                 }
             });
-            
+
             // Check if we should load immediately (for initially visible tab)
             // Use a small delay to ensure Alpine is fully initialized
             setTimeout(() => {
                 const isVisible = this.$root.style.display !== 'none';
-                if (isVisible && !this.dataLoaded && !this.loading) {
+                if(isVisible && !this.dataLoaded && !this.loading) {
                     this.loadBuildingData();
                 }
             }, 100);
         },
-        
+
         async loadBuildingData() {
-            if (this.dataLoaded || this.loading) return;
-            
+            if(this.dataLoaded || this.loading) { return; }
+
             this.loading = true;
             this.error = false;
-            
+
             try {
                 // Load full building data, units and unit types in parallel
                 const [buildingResponse, unitsResponse, unitTypesResponse] = await Promise.all([
@@ -199,23 +189,23 @@ function buildingManagerData(): BuildingManagerData {
                     fetch(`${this.apiURL}buildings/${this.buildingID}/units`),
                     fetch(`${this.apiURL}buildings/${this.buildingID}/unit-types`)
                 ]);
-                
-                if (!buildingResponse.ok || !unitsResponse.ok || !unitTypesResponse.ok) {
+
+                if(!buildingResponse.ok || !unitsResponse.ok || !unitTypesResponse.ok) {
                     throw new Error('Failed to fetch building data');
                 }
-                
+
                 const [building, units, unitTypes] = await Promise.all([
                     buildingResponse.json(),
                     unitsResponse.json(),
                     unitTypesResponse.json()
                 ]);
-                
+
                 this.building = building;
                 this.units = units;
                 this.unitTypes = unitTypes;
                 this.dataLoaded = true;
                 this.loading = false;
-                
+
                 // Update the BuildingProvider component with new data
                 this.$dispatch('building-data-loaded', {
                     buildingID: this.buildingID,
@@ -223,21 +213,20 @@ function buildingManagerData(): BuildingManagerData {
                     units: units,
                     unitTypes: unitTypes
                 });
-                
-            } catch (error) {
+            } catch(error) {
                 this.loading = false;
                 this.error = true;
                 this.errorMessage = (error as Error).message;
                 logger.error('Failed to load building data', error);
             }
         },
-        
+
         retryLoad() {
             this.error = false;
             this.errorMessage = '';
             this.loadBuildingData();
         },
-        
+
         // Add Alpine magic properties
         $dispatch: (() => {}) as any,
         $root: null as any,
@@ -249,50 +238,22 @@ function buildingManagerData(): BuildingManagerData {
 // Make available globally for Alpine.js
 declare global {
     interface Window {
-        buildingManagerData: typeof buildingManagerData;
+        buildingManagerData: typeof buildingManagerData
     }
 }
 
 window.buildingManagerData = buildingManagerData;
-
-
-
-
-
-
-
-
-
-
 </script>
 
 <style>
-
-
-
-
-
-
-
-
-
 
 .building-manager {
     min-height: 200px;
 }
 
 /* Smooth loading transitions */
-[x-cloak] { 
-    display: none !important; 
+[x-cloak] {
+    display: none !important;
 }
-
-
-
-
-
-
-
-
-
 
 </style>

@@ -42,8 +42,12 @@ export interface Props {
                                         </svg>
                                     </label>
                                     <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                                        <li><a @click="$dispatch('edit-unit-type', unitType)">Edit</a></li>
-                                        <li><a @click="$dispatch('delete-unit-type', unitType)" class="text-error">Delete</a></li>
+                                        <li>
+<a @click="$dispatch('edit-unit-type', unitType)">Edit</a>
+                                        </li>
+                                        <li>
+<a @click="$dispatch('delete-unit-type', unitType)" class="text-error">Delete</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>

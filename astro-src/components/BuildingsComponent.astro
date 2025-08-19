@@ -80,38 +80,28 @@ try {
 </div>
 
 <script>
+import type { AlpineComponent } from '../types/alpine';
 
-
-
-
-
-
-
-
-
-
-import type { AlpineComponent } from "../types/alpine";
-
-type Building = {
-    buildingID: string;
-    buildingName?: string;
-    street?: string;
-    city?: string;
-    state?: string;
-    [key: string]: any;
-};
+interface Building {
+    buildingID: string
+    buildingName?: string
+    street?: string
+    city?: string
+    state?: string
+    [key: string]: any
+}
 
 type BuildingsComponentData = AlpineComponent<{
-    activeBuildingTab: number;
-    showToast: boolean;
-    toastMessage: string;
-    toastType: string;
-    buildings: Building[];
-    apiURL: string;
-    init(): void;
-    handleTabChange(event: CustomEvent<{ tabIndex: number; buildingID?: string }>): void;
-    handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string; units: any[]; unitTypes: any[] }>): void;
-    showAndHideToast(message: string, type: string): void;
+    activeBuildingTab: number
+    showToast: boolean
+    toastMessage: string
+    toastType: string
+    buildings: Building[]
+    apiURL: string
+    init(): void
+    handleTabChange(event: CustomEvent<{ tabIndex: number, buildingID?: string }>): void
+    handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, units: any[], unitTypes: any[] }>): void
+    showAndHideToast(message: string, type: string): void
 }>;
 
 function buildingsComponentData(): BuildingsComponentData {
@@ -122,36 +112,36 @@ function buildingsComponentData(): BuildingsComponentData {
         toastType: '',
         buildings: [] as Building[],
         apiURL: '',
-        
+
         init() {
             this.buildings = JSON.parse(this.$el.dataset.buildings || '[]');
             this.apiURL = this.$el.dataset.apiUrl || '';
-            
+
             // Restore active tab from session or URL hash
             const stored = sessionStorage.getItem('activeBuildingTab');
-            if (stored) {
-                if (stored === 'add-new-building') {
+            if(stored) {
+                if(stored === 'add-new-building') {
                     this.activeBuildingTab = this.buildings.length;
                 } else {
                     const idx = this.buildings.findIndex((b: Building) => b.buildingID === stored);
-                    if (idx !== -1) {
+                    if(idx !== -1) {
                         this.activeBuildingTab = idx;
                     }
                 }
             } else {
                 const hash = decodeURIComponent(window.location.hash.substring(1));
-                if (hash) {
+                if(hash) {
                     const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
-                    if (index !== -1) {
+                    if(index !== -1) {
                         this.activeBuildingTab = index;
-                    } else if (hash === 'add-new-building') {
+                    } else if(hash === 'add-new-building') {
                         this.activeBuildingTab = this.buildings.length;
                     }
                 }
             }
 
             // Sync URL and session storage with active tab
-            if (this.activeBuildingTab < this.buildings.length) {
+            if(this.activeBuildingTab < this.buildings.length) {
                 const id = this.buildings[this.activeBuildingTab].buildingID;
                 history.replaceState(null, '', `#${id}`);
                 sessionStorage.setItem('activeBuildingTab', id);
@@ -159,66 +149,66 @@ function buildingsComponentData(): BuildingsComponentData {
                 history.replaceState(null, '', '#add-new-building');
                 sessionStorage.setItem('activeBuildingTab', 'add-new-building');
             }
-            
+
             // Show the initially active tab based on data-tab-index
             const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
             allManagers.forEach((manager) => {
                 const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
                 manager.style.display = managerTabIndex === this.activeBuildingTab ? '' : 'none';
             });
-            
+
             // Trigger lazy loading for the initially active building tab
-            if (this.activeBuildingTab < this.buildings.length) {
+            if(this.activeBuildingTab < this.buildings.length) {
                 const buildingID = this.buildings[this.activeBuildingTab].buildingID;
                 // Use setTimeout to ensure DOM and Alpine are ready
                 setTimeout(() => {
                     const buildingElement = document.querySelector(`.building-manager[data-building-id="${buildingID}"]`) as HTMLElement;
-                    if (buildingElement) {
+                    if(buildingElement) {
                         buildingElement.dispatchEvent(new CustomEvent('trigger-load'));
                     }
                 }, 200);  // Slightly longer delay to ensure Alpine components are initialized
             }
         },
-        
-        handleTabChange(event: CustomEvent<{ tabIndex: number; buildingID?: string }>) {
+
+        handleTabChange(event: CustomEvent<{ tabIndex: number, buildingID?: string }>) {
             const { tabIndex, buildingID } = event.detail;
             this.activeBuildingTab = tabIndex;
-            
+
             // Show/hide building managers based on their data-tab-index
             const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
             allManagers.forEach((manager) => {
                 const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
                 manager.style.display = managerTabIndex === tabIndex ? '' : 'none';
             });
-            
-            if (buildingID && tabIndex < this.buildings.length) {
+
+            if(buildingID && tabIndex < this.buildings.length) {
                 history.pushState(null, '', `#${buildingID}`);
                 sessionStorage.setItem('activeBuildingTab', buildingID);
                 const buildingElement = document.querySelector(`.building-manager[data-building-id="${buildingID}"]`) as HTMLElement;
-                if (buildingElement) {
+                if(buildingElement) {
                     buildingElement.dispatchEvent(new CustomEvent('trigger-load'));
                 }
-            } else if (tabIndex === this.buildings.length) {
+            } else if(tabIndex === this.buildings.length) {
                 history.pushState(null, '', '#add-new-building');
                 sessionStorage.setItem('activeBuildingTab', 'add-new-building');
             }
         },
-        
-        handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string; building: any; units: any[]; unitTypes: any[] }>) {
+
+        handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, building: any, units: any[], unitTypes: any[] }>) {
             const { buildingID, building, units, unitTypes } = event.detail;
-            console.log(`Loaded data for building ${buildingID}:`, { 
+            console.log(`Loaded data for building ${buildingID}:`, {
                 building: building,
-                units: units.length, 
-                unitTypes: unitTypes.length 
+                units: units.length,
+                unitTypes: unitTypes.length
             });
-            
+
             // Update the building in our local state
             const index = this.buildings.findIndex((b: Building) => b.buildingID === buildingID);
-            if (index !== -1 && building) {
+            if(index !== -1 && building) {
                 this.buildings[index] = building;
             }
         },
-        
+
         showAndHideToast(message: string, type: string) {
             this.toastMessage = message;
             this.toastType = type;
@@ -233,51 +223,23 @@ function buildingsComponentData(): BuildingsComponentData {
 // Make available globally for Alpine.js
 declare global {
     interface Window {
-        buildingsComponentData: typeof buildingsComponentData;
+        buildingsComponentData: typeof buildingsComponentData
     }
 }
 
 window.buildingsComponentData = buildingsComponentData;
-
-
-
-
-
-
-
-
-
-
 </script>
 
 <style>
 
-
-
-
-
-
-
-
-
-
 /* Smooth loading transitions */
-[x-cloak] { 
-    display: none !important; 
+[x-cloak] {
+    display: none !important;
 }
 
 /* Hide inactive tabs */
 .hidden {
     display: none !important;
 }
-
-
-
-
-
-
-
-
-
 
 </style>

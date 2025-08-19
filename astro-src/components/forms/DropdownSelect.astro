@@ -182,15 +182,6 @@ const buttonClasses = [
 
 <style>
 
-
-
-
-
-
-
-
-
-
     /* Ensure dropdown doesn't get cut off */
     .dropdown-content {
         position: absolute;
@@ -198,36 +189,27 @@ const buttonClasses = [
         left: 0;
         right: 0;
     }
-    
+
     /* Style disabled options */
     .menu li a.disabled {
         opacity: 0.5;
         cursor: not-allowed;
         pointer-events: none;
     }
-    
+
     /* Ensure proper focus styles */
     .dropdown summary:focus {
         outline: 2px solid transparent;
         outline-offset: 2px;
     }
-    
+
     .dropdown summary:focus-visible {
         box-shadow: 0 0 0 2px var(--fallback-b1, oklch(var(--b1))), 0 0 0 4px var(--fallback-p, oklch(var(--p)));
     }
-    
+
     /* Rotate chevron when open */
     details[open] summary svg {
         transform: rotate(180deg);
     }
-
-
-
-
-
-
-
-
-
 
 </style>

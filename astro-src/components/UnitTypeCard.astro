@@ -25,15 +25,6 @@ declare global {
 
 <script define:vars={{ unitType, buildingAmenities, apiURL }} is:inline>
 
-
-
-
-
-
-
-
-
-
 // Used by Alpine.js x-data attribute
 window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenitiesData, apiUrlData) {
     return {
@@ -48,21 +39,21 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
             // Initialize enhanced deposit structure
             this.initializeDeposit();
         },
-        
+
         getEffectiveAmenities() {
             // If floorplan has amenities defined, use them (override)
-            if (this.unitType.modelAmenities && this.unitType.modelAmenities.length > 0) {
+            if(this.unitType.modelAmenities && this.unitType.modelAmenities.length > 0) {
                 return this.unitType.modelAmenities;
             }
             // Otherwise, use building amenities if available
-            if (this.buildingAmenities && this.buildingAmenities.length > 0) {
+            if(this.buildingAmenities && this.buildingAmenities.length > 0) {
                 return this.buildingAmenities;
             }
             return [];
         },
-        
+
         resetToInheritedAmenities() {
-            if (confirm('This will reset floorplan amenities to match the building amenities. Continue?')) {
+            if(confirm('This will reset floorplan amenities to match the building amenities. Continue?')) {
                 this.unitType.modelAmenities = [];
             }
         },
@@ -73,7 +64,7 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
 
         async saveUnitType(myThis) {
             myThis = this || myThis; // Allow passing 'this' context
-            if (!myThis.isDirty()) { return; }
+            if(!myThis.isDirty()) { return; }
 
             this.saving = true;
             try {
@@ -82,14 +73,14 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(myThis.unitType),
                 });
-                if (response.ok) {
+                if(response.ok) {
                     myThis.originalUnitType = { ...myThis.unitType };
                 } else {
                     console.error('Save failed:', response.statusText);
                     // Revert to original value on save failure
                     myThis.unitType = { ...myThis.originalUnitType };
                 }
-            } catch (error) {
+            } catch(error) {
                 console.error('Network error during save:', error);
                 // Revert to original value on network error
                 myThis.unitType = { ...myThis.originalUnitType };
@@ -99,22 +90,22 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
         },
 
         async deleteUnitType() {
-            if (!confirm('Are you sure you want to delete this unit type?')) return;
+            if(!confirm('Are you sure you want to delete this unit type?')) { return; }
             try {
                 const response = await fetch(this.apiURL + 'buildings/' + this.unitType.buildingID + '/unit-types/' + this.unitType.modelID, { method: 'DELETE' });
-                if (response.ok) {
+                if(response.ok) {
                     // Reload the page or remove the card from the DOM
                     window.location.reload(); // Simplest for now
                 } else {
                     console.error('Delete failed:', response.statusText);
                 }
-            } catch (error) {
+            } catch(error) {
                 console.error('Network error during delete:', error);
             }
         },
 
         formatCurrency(value) {
-            if (!value) return '';
+            if(!value) { return ''; }
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
@@ -124,51 +115,51 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
         },
 
         formatDate(dateString) {
-            if (!dateString) return 'Not set';
+            if(!dateString) { return 'Not set'; }
             const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
             });
         },
-        
+
         // Deposit handling functions
         initializeDeposit() {
             // Convert legacy number deposits to enhanced object format
-            if (typeof this.unitType.deposit === 'number') {
+            if(typeof this.unitType.deposit === 'number') {
                 this.unitType.deposit = {
                     amount: this.unitType.deposit,
                     refundable: true
                 };
             }
             // Initialize empty deposit object if not present
-            if (!this.unitType.deposit) {
+            if(!this.unitType.deposit) {
                 this.unitType.deposit = null;
             }
         },
-        
+
         getDepositAmount() {
-            if (!this.unitType.deposit) return null;
-            if (typeof this.unitType.deposit === 'number') return this.unitType.deposit;
+            if(!this.unitType.deposit) { return null; }
+            if(typeof this.unitType.deposit === 'number') { return this.unitType.deposit; }
             return this.unitType.deposit.amount;
         },
-        
+
         setDepositAmount(value) {
-            if (!value || value === '') {
+            if(!value || value === '') {
                 this.unitType.deposit = null;
                 return;
             }
-            
+
             const amount = parseFloat(value);
-            if (isNaN(amount) || amount < 0) return;
-            
-            if (!this.unitType.deposit) {
+            if(isNaN(amount) || amount < 0) { return; }
+
+            if(!this.unitType.deposit) {
                 this.unitType.deposit = {
                     amount: amount,
                     refundable: true
                 };
-            } else if (typeof this.unitType.deposit === 'number') {
+            } else if(typeof this.unitType.deposit === 'number') {
                 this.unitType.deposit = {
                     amount: amount,
                     refundable: true
@@ -177,48 +168,38 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                 this.unitType.deposit.amount = amount;
             }
         },
-        
+
         getDepositRefundable() {
-            if (!this.unitType.deposit) return true;
-            if (typeof this.unitType.deposit === 'number') return true;
+            if(!this.unitType.deposit) { return true; }
+            if(typeof this.unitType.deposit === 'number') { return true; }
             return this.unitType.deposit.refundable !== false;
         },
-        
+
         setDepositRefundable(value) {
-            if (!this.unitType.deposit || typeof this.unitType.deposit === 'number') return;
+            if(!this.unitType.deposit || typeof this.unitType.deposit === 'number') { return; }
             this.unitType.deposit.refundable = value;
-            if (value) {
+            if(value) {
                 // Clear partial refund percentage when fully refundable
                 delete this.unitType.deposit.partialRefundPercentage;
             }
         },
-        
+
         getDepositPartialRefundPercentage() {
-            if (!this.unitType.deposit || typeof this.unitType.deposit === 'number') return null;
+            if(!this.unitType.deposit || typeof this.unitType.deposit === 'number') { return null; }
             return this.unitType.deposit.partialRefundPercentage || null;
         },
-        
+
         setDepositPartialRefundPercentage(value) {
-            if (!this.unitType.deposit || typeof this.unitType.deposit === 'number') return;
+            if(!this.unitType.deposit || typeof this.unitType.deposit === 'number') { return; }
             const percentage = parseFloat(value);
-            if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+            if(isNaN(percentage) || percentage < 0 || percentage > 100) {
                 delete this.unitType.deposit.partialRefundPercentage;
                 return;
             }
             this.unitType.deposit.partialRefundPercentage = percentage;
         }
     };
-}
-
-
-
-
-
-
-
-
-
-
+};
 </script>
 
 <div x-data="unitTypeCardData(unitType, buildingAmenities, apiURL)" x-init="init(); $watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">
@@ -610,60 +591,42 @@ amenities
 
 <style>
 
-
-
-
-
-
-
-
-
-
     /* Ensure smooth transitions */
     .collapse-content {
         transition: all 0.3s ease;
     }
-    
+
     /* Badge styling for inheritance indicators */
     .badge-ghost {
         background-color: transparent;
         border: 1px dashed currentColor;
         opacity: 0.7;
     }
-    
+
     /* Inheritance display styling */
     .inheritance-display {
         padding: 0.5rem;
         border-radius: 0.5rem;
-        background: linear-gradient(90deg, 
-            hsl(var(--b2)) 0%, 
-            hsl(var(--b3)) 50%, 
+        background: linear-gradient(90deg,
+            hsl(var(--b2)) 0%,
+            hsl(var(--b3)) 50%,
             hsl(var(--b2)) 100%);
     }
-    
+
     /* Style number inputs to hide spinners on hover */
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
         -webkit-appearance: none;
         margin: 0;
     }
-    
+
     input[type="number"] {
         -moz-appearance: textfield;
     }
-    
+
     /* Smooth transitions for inheritance indicators */
     [x-transition] {
         transition: all 0.2s ease;
     }
-
-
-
-
-
-
-
-
-
 
 </style>

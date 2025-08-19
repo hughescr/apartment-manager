@@ -109,31 +109,11 @@ const currentPath = Astro.url.pathname;
 
         <!-- Global showToast function -->
         <script>
-
-
-
-
-
-
-
-
-
-
             window.showToast = function(message, type) {
                 window.dispatchEvent(new CustomEvent('show-toast', {
                     detail: { message, type }
                 }));
             };
-
-
-
-
-
-
-
-
-
-
-</script>
+        </script>
     </body>
 </html>

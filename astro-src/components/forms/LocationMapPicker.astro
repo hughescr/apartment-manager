@@ -159,36 +159,26 @@ Location was estimated from the address. Click on the map to place the pin exact
 </div>
 
 <script>
-
-
-
-
-
-
-
-
-
-
 // Type declarations for Alpine.js magic properties and global variables
 declare global {
     interface Window {
-        locationMapData: typeof locationMapData;
-        L: any;
+        locationMapData: typeof locationMapData
+        L: any
     }
 }
 
 // Alpine.js context with magic properties
 interface AlpineContext {
-    $el: HTMLElement;
-    $dispatch: (event: string, data?: any) => void;
-    [key: string]: any; // Allow dynamic property access for x-model bindings
+    $el: HTMLElement
+    $dispatch: (event: string, data?: any) => void
+    [key: string]: any // Allow dynamic property access for x-model bindings
 }
 
 // Address models configuration
 interface AddressModels {
-    addressModel?: string;
-    cityModel?: string;
-    stateModel?: string;
+    addressModel?: string
+    cityModel?: string
+    stateModel?: string
 }
 
 // Leaflet Map Component for Alpine.js
@@ -208,46 +198,46 @@ function locationMapData(
         mapInitialized: false,
         $el: null as any as HTMLElement, // Alpine.js magic property
         $dispatch: null as any as (event: string, data?: any) => void, // Alpine.js magic property
-        
+
         // Helper function to get nested property value
         getNestedProperty(path: string): any {
-            if (!path) return undefined;
+            if(!path) { return undefined; }
             const parts = path.split('.');
             let current: any = this;
-            for (const part of parts) {
-                if (current == null) return undefined;
+            for(const part of parts) {
+                if(current == null) { return undefined; }
                 current = current[part];
             }
             return current;
         },
-        
+
         // Helper function to set nested property value
         setNestedProperty(path: string, value: any): void {
-            if (!path) return;
+            if(!path) { return; }
             const parts = path.split('.');
             const lastPart = parts.pop();
-            if (!lastPart) return;
-            
+            if(!lastPart) { return; }
+
             let current: any = this;
-            for (const part of parts) {
-                if (current[part] == null) {
+            for(const part of parts) {
+                if(current[part] == null) {
                     current[part] = {};
                 }
                 current = current[part];
             }
             current[lastPart] = value;
         },
-        
+
         async initMapWhenReady() {
             // Check if we're in a tab system
             const isInTab = this.$root && this.$root.activeSectionTab !== undefined;
-            
-            if (isInTab && this.$root.activeSectionTab !== 'building-info') {
+
+            if(isInTab && this.$root.activeSectionTab !== 'building-info') {
                 console.log('Map is in a hidden tab, waiting for tab to be visible...');
-                
+
                 // Wait for the correct tab to be active
                 const unwatch = this.$watch('$root.activeSectionTab', async (newTab: string) => {
-                    if (newTab === 'building-info') {
+                    if(newTab === 'building-info') {
                         console.log('Tab is now visible, initializing map...');
                         unwatch(); // Stop watching
                         await this.initMap();
@@ -258,129 +248,129 @@ function locationMapData(
                 await this.initMap();
             }
         },
-        
+
         async initMap() {
             // Prevent multiple initialization
-            if (this.mapInitialized || this.map) {
+            if(this.mapInitialized || this.map) {
                 console.log('Map already initialized, skipping...');
                 return;
             }
-            
+
             // Import Leaflet dynamically
-            if (typeof window !== 'undefined') {
+            if(typeof window !== 'undefined') {
                 // Import Leaflet CSS
-                if (!document.querySelector('link[href*="leaflet.css"]')) {
+                if(!document.querySelector('link[href*="leaflet.css"]')) {
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
                     link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
                     document.head.appendChild(link);
                 }
-                
+
                 // Import Leaflet JS
                 const LeafletModule = await import('leaflet');
                 window.L = LeafletModule;
-                
+
                 // Use Alpine's $nextTick to ensure DOM is ready
                 await (this as any).$nextTick();
-                
+
                 // Initialize map
                 const lat = this.getNestedProperty(latModel) || defaultLat;
                 const lng = this.getNestedProperty(lngModel) || defaultLng;
-                
+
                 // Use x-ref to get the map element
                 const mapElement = (this as any).$refs.mapElement;
-                if (!mapElement) {
+                if(!mapElement) {
                     console.error('Map element not found');
                     return;
                 }
-                
+
                 // Ensure the container has dimensions before initializing
                 const rect = mapElement.getBoundingClientRect();
                 console.log('Map container dimensions before init:', { width: rect.width, height: rect.height });
-                
+
                 // If container has no dimensions, force them
-                if (rect.width === 0 || rect.height === 0) {
+                if(rect.width === 0 || rect.height === 0) {
                     console.warn('Map container has no dimensions, forcing size...');
                     mapElement.style.minHeight = '350px';
                     mapElement.style.width = '100%';
-                    
+
                     // Wait a frame for styles to apply
                     await new Promise(resolve => requestAnimationFrame(resolve));
                 }
-                
+
                 this.map = LeafletModule.map(mapElement, {
                     center: [lat, lng],
                     zoom: this.getNestedProperty(latModel) && this.getNestedProperty(lngModel) ? 16 : 4,
                     zoomControl: true,
                 });
-                
+
                 // Add OpenStreetMap tiles
                 LeafletModule.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                     maxZoom: 19,
                 }).addTo(this.map);
-                
+
                 // Add marker if coordinates exist
-                if (this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
+                if(this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
                     this.addMarker(this.getNestedProperty(latModel), this.getNestedProperty(lngModel));
                 }
-                
+
                 // Add click handler to add/move marker
                 this.map.on('click', (e: any) => {
                     this.setMarker(e.latlng.lat, e.latlng.lng);
                 });
-                
+
                 // Mark map as initialized to hide loading text
                 this.mapInitialized = true;
-                
+
                 // Multiple invalidateSize calls with increasing delays for robustness
                 const refreshMap = () => {
-                    if (this.map) {
+                    if(this.map) {
                         console.log('Refreshing map size...');
                         this.map.invalidateSize();
                     }
                 };
-                
+
                 // Immediate refresh after Alpine's next tick
                 await (this as any).$nextTick();
                 refreshMap();
-                
+
                 // Quick refresh after a short delay
                 setTimeout(refreshMap, 100);
-                
+
                 // Another refresh after components settle
                 setTimeout(refreshMap, 300);
-                
+
                 // Final refresh after everything should be loaded
                 setTimeout(refreshMap, 1000);
-                
+
                 // Set up tab visibility handler
                 this.handleTabVisibility();
-                
+
                 // Also refresh on window resize
                 window.addEventListener('resize', () => refreshMap());
             }
         },
-        
+
         addMarker(lat: number, lng: number) {
-            if (typeof window !== 'undefined' && (window as any).L) {
+            if(typeof window !== 'undefined' && (window as any).L) {
                 const L = (window as any).L;
-                
+
                 // Remove existing marker
-                if (this.marker) {
+                if(this.marker) {
                     this.map.removeLayer(this.marker);
                 }
-                
+
                 // Add new draggable marker
                 this.marker = L.marker([lat, lng], { draggable: true })
                     .addTo(this.map);
-                
+
                 // Handle marker drag
                 this.marker.on('dragend', (e: any) => {
                     const position = e.target.getLatLng();
                     this.setMarker(position.lat, position.lng);
                 });
-                
+
                 // Add popup
                 this.marker.bindPopup(`
                     <div class="text-center">
@@ -395,20 +385,20 @@ function locationMapData(
                 `);
             }
         },
-        
+
         setMarker(lat: number, lng: number) {
             // Update the Alpine.js models
             this.setNestedProperty(latModel, lat);
             this.setNestedProperty(lngModel, lng);
-            if (verifiedModel) {
+            if(verifiedModel) {
                 this.setNestedProperty(verifiedModel, true); // Mark as verified when manually set
             }
-            
+
             // Add or update marker
             this.addMarker(lat, lng);
-            
+
             // Update popup content
-            if (this.marker) {
+            if(this.marker) {
                 this.marker.setPopupContent(`
                     <div class="text-center">
                         <div class="font-medium">Building Location</div>
@@ -422,40 +412,40 @@ function locationMapData(
                 `);
             }
         },
-        
+
         centerOnMarker() {
-            if (this.map && this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
+            if(this.map && this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
                 this.map.setView([this.getNestedProperty(latModel), this.getNestedProperty(lngModel)], 16);
-                if (this.marker) {
+                if(this.marker) {
                     this.marker.openPopup();
                 }
             }
         },
-        
+
         async geocodeAddress() {
-            if (!addressModels.addressModel) return;
-            
+            if(!addressModels.addressModel) { return; }
+
             this.geocoding = true;
-            
+
             try {
                 const address = this.getNestedProperty(addressModels.addressModel!);
                 const city = addressModels.cityModel ? this.getNestedProperty(addressModels.cityModel) : undefined;
                 const state = addressModels.stateModel ? this.getNestedProperty(addressModels.stateModel) : undefined;
-                
-                if (!address || !address.trim()) {
+
+                if(!address || !address.trim()) {
                     (this as AlpineContext).$dispatch('show-toast', {
-                        message: 'Please enter an address first', 
-                        type: 'error' 
+                        message: 'Please enter an address first',
+                        type: 'error'
                     });
                     return;
                 }
-                
+
                 const requestBody = {
                     address: address.trim(),
                     ...(city && { city: city.trim() }),
                     ...(state && { state: state.trim() })
                 };
-                
+
                 const response = await fetch(`${apiUrl}geocoding`, {
                     method: 'POST',
                     headers: {
@@ -463,95 +453,95 @@ function locationMapData(
                     },
                     body: JSON.stringify(requestBody),
                 });
-                
+
                 const data = await response.json();
-                
-                if (data.success && data.result) {
+
+                if(data.success && data.result) {
                     // Set coordinates
                     this.setMarker(data.result.lat, data.result.lng);
-                    
+
                     // Center map on new location
                     this.map?.setView([data.result.lat, data.result.lng], 16);
-                    
+
                     // Mark as geocoded (not manually verified)
-                    if (verifiedModel) {
+                    if(verifiedModel) {
                         this.setNestedProperty(verifiedModel!, false);
                     }
-                    
+
                     (this as AlpineContext).$dispatch('show-toast', {
-                        message: `Address geocoded: ${data.result.displayName || 'Location found'}`, 
-                        type: 'success' 
+                        message: `Address geocoded: ${data.result.displayName || 'Location found'}`,
+                        type: 'success'
                     });
                 } else {
                     (this as AlpineContext).$dispatch('show-toast', {
-                        message: data.error || 'Could not find coordinates for this address', 
-                        type: 'error' 
+                        message: data.error || 'Could not find coordinates for this address',
+                        type: 'error'
                     });
                 }
-            } catch (error) {
+            } catch(error) {
                 console.error('Geocoding error:', error);
                 (this as AlpineContext).$dispatch('show-toast', {
-                    message: 'Failed to geocode address. Please try again.', 
-                    type: 'error' 
+                    message: 'Failed to geocode address. Please try again.',
+                    type: 'error'
                 });
             } finally {
                 this.geocoding = false;
             }
         },
-        
+
         handleTabVisibility() {
             // Watch for tab changes and refresh map when visible
             this.$watch('$root.activeSectionTab', async (newTab: string) => {
-                if (newTab === 'building-info' && this.map) {
+                if(newTab === 'building-info' && this.map) {
                     console.log('Tab switched to building-info, refreshing map...');
-                    
+
                     // Use Alpine's nextTick first
                     await (this as any).$nextTick();
-                    
+
                     // Multiple refreshes for robustness
                     this.map.invalidateSize();
-                    
+
                     setTimeout(() => {
-                        if (this.map) {
+                        if(this.map) {
                             this.map.invalidateSize();
                         }
                     }, 100);
-                    
+
                     setTimeout(() => {
-                        if (this.map) {
+                        if(this.map) {
                             this.map.invalidateSize();
                             // Also re-center if we have coordinates
-                            if (this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
+                            if(this.getNestedProperty(latModel) && this.getNestedProperty(lngModel)) {
                                 this.map.setView([this.getNestedProperty(latModel), this.getNestedProperty(lngModel)]);
                             }
                         }
                     }, 300);
                 }
             });
-            
+
             // Also handle visibility changes (for modals, hidden tabs, etc.)
             const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && this.map) {
+                entries.forEach((entry) => {
+                    if(entry.isIntersecting && this.map) {
                         console.log('Map became visible, refreshing...');
                         setTimeout(() => {
-                            if (this.map) {
+                            if(this.map) {
                                 this.map.invalidateSize();
                             }
                         }, 100);
                     }
                 });
             });
-            
+
             const mapElement = (this as any).$refs.mapElement;
-            if (mapElement) {
+            if(mapElement) {
                 observer.observe(mapElement);
             }
         },
-        
+
         // Clean up when component is destroyed
         destroy() {
-            if (this.map) {
+            if(this.map) {
                 this.map?.remove();
                 this.map = null;
             }
@@ -561,28 +551,9 @@ function locationMapData(
 
 // Make the function globally available
 window.locationMapData = locationMapData;
-
-
-
-
-
-
-
-
-
-
 </script>
 
 <style>
-
-
-
-
-
-
-
-
-
 
 .location-map-picker {
     /* Custom styles for the map picker */
@@ -621,27 +592,18 @@ window.locationMapData = locationMapData;
     .location-map-picker .map-container {
         height: 250px !important;
     }
-    
+
     .location-map-picker .grid-cols-2 {
         grid-template-columns: 1fr;
     }
-    
+
     .location-map-picker .flex {
         flex-direction: column;
     }
-    
+
     .location-map-picker .btn {
         width: 100%;
     }
 }
-
-
-
-
-
-
-
-
-
 
 </style>

@@ -45,75 +45,65 @@ export interface Props {
 </div>
 
 <script>
+import type { AlpineComponent } from '../types/alpine';
 
-
-
-
-
-
-
-
-
-
-import type { AlpineComponent } from "../types/alpine";
-
-type Building = {
-    buildingID: string;
-    buildingName?: string;
-    street?: string;
-    city?: string;
-    state?: string;
-    [key: string]: any;
-};
+interface Building {
+    buildingID: string
+    buildingName?: string
+    street?: string
+    city?: string
+    state?: string
+    [key: string]: any
+}
 
 type BuildingsListData = AlpineComponent<{
-    activeBuildingTab: number;
-    buildings: Building[];
-    init(): void;
-    setActiveTab(tabIndex: number, buildingID?: string | null): void;
+    activeBuildingTab: number
+    buildings: Building[]
+    init(): void
+    setActiveTab(tabIndex: number, buildingID?: string | null): void
 }>;
 
 function buildingsListData(): BuildingsListData {
     return {
         activeBuildingTab: 0,
         buildings: [] as Building[],
-        
+
         init() {
             this.buildings = this.$root.dataset.buildings ? JSON.parse(this.$root.dataset.buildings) : [];
-            
+
             // Restore tab from session or URL hash
             const stored = sessionStorage.getItem('activeBuildingTab');
-            if (stored) {
-                if (stored === 'add-new-building') {
+            if(stored) {
+                if(stored === 'add-new-building') {
                     this.activeBuildingTab = this.buildings.length;
                 } else {
                     const idx = this.buildings.findIndex((b: Building) => b.buildingID === stored);
-                    if (idx !== -1) {
+                    if(idx !== -1) {
                         this.activeBuildingTab = idx;
                     }
                 }
             } else {
                 const hash = decodeURIComponent(window.location.hash.substring(1));
-                if (hash) {
+                if(hash) {
                     const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
-                    if (index !== -1) {
+                    if(index !== -1) {
                         this.activeBuildingTab = index;
-                    } else if (hash === 'add-new-building') {
+                    } else if(hash === 'add-new-building') {
                         this.activeBuildingTab = this.buildings.length;
                     }
                 }
             }
-            
+
             // Dispatch initial selection
             this.$dispatch('building-tab-changed', {
                 tabIndex: this.activeBuildingTab,
                 buildingID: this.activeBuildingTab < this.buildings.length ? this.buildings[this.activeBuildingTab].buildingID : null
             });
         },
-        
+
         setActiveTab(tabIndex: number, buildingID: string | null = null) {
             this.activeBuildingTab = tabIndex;
-            
+
             this.$dispatch('building-tab-changed', {
                 tabIndex: tabIndex,
                 buildingID: buildingID
@@ -125,45 +115,17 @@ function buildingsListData(): BuildingsListData {
 // Make available globally for Alpine.js
 declare global {
     interface Window {
-        buildingsListData: typeof buildingsListData;
+        buildingsListData: typeof buildingsListData
     }
 }
 
 window.buildingsListData = buildingsListData;
-
-
-
-
-
-
-
-
-
-
 </script>
 
 <style>
 
-
-
-
-
-
-
-
-
-
 .buildings-list {
     margin-bottom: 1rem;
 }
-
-
-
-
-
-
-
-
-
 
 </style>
