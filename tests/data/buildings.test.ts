@@ -1,10 +1,10 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
+import { dynamoDbMock, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'bun:test';
 import { PropertyType, FeeType, PetType, ParkingType, AmenityCategory, DayOfWeek, ContactInfo } from '../../src/types';
-import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
+import { mockQueryResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 import { fill, repeat } from 'lodash';
 import { testBuilding, minimalBuilding, complexBuilding, getExpectedBuilding } from './buildings-test-fixtures';
 
@@ -18,12 +18,8 @@ describe('Building Data Layer', () => {
     });
 
     beforeEach(() => {
-        // Reset all mock state including queued responses
-        jest.clearAllMocks();
-        jest.restoreAllMocks();
-
-        // CRITICAL: Reset the mock completely to clear any queued responses
-        dynamoDbMock.mockReset();
+        // CRITICAL: Reset ALL mocks to prevent cross-test contamination
+        resetAllMocks();
     });
 
     // Helper functions for mock implementations
@@ -100,7 +96,7 @@ describe('Building Data Layer', () => {
 
     it('should get all buildings', async () => {
         expect.assertions(1);
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
         const buildings = await getBuildings();
         expect(buildings).toEqual([getExpectedBuilding(testBuilding)]);
     });

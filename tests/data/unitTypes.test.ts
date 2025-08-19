@@ -1,10 +1,10 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
+import { dynamoDbMock, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { AmenityCategory } from '../../src/types';
-import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
+import { mockQueryResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 import { every, filter, map, repeat } from 'lodash';
 
 // Import the functions AFTER mocking
@@ -32,12 +32,8 @@ describe('UnitType Data Layer', () => {
     });
 
     beforeEach(() => {
-        // Reset all mock state including queued responses
-        // Note: Don't clear spy call history for logger since tests need to assert on it
-        jest.restoreAllMocks();
-
-        // CRITICAL: Reset the mock completely to clear any queued responses
-        dynamoDbMock.mockReset();
+        // CRITICAL: Reset ALL mocks to prevent cross-test contamination
+        resetAllMocks();
     });
 
     const testBuildingID = 'test-building-1';
@@ -72,7 +68,8 @@ describe('UnitType Data Layer', () => {
         ];
         // Mock response will include unitID field, but getUnitTypes will omit it
         const mockResponseData = map(unitTypes, ut => ({ ...ut, unitID: `MODEL#${ut.modelID}` }));
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse(mockResponseData));
+
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(mockResponseData));
 
         const result = await getUnitTypes(testBuildingID);
         expect(result).toEqual(unitTypes);
@@ -80,7 +77,7 @@ describe('UnitType Data Layer', () => {
 
     it('should handle empty unit type list', async () => {
         expect.assertions(1);
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([]));
 
         const result = await getUnitTypes(testBuildingID);
         expect(result).toEqual([]);
@@ -242,7 +239,7 @@ describe('UnitType Data Layer', () => {
                 rent: 1200
             }
         ];
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse(units));
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
 
         const result = await getUnitsByModelID(testBuildingID, 'model-2br');
         // getUnitsByModelID strips the UNIT# prefix from unitID
@@ -256,7 +253,7 @@ describe('UnitType Data Layer', () => {
 
     it('should handle empty result when getting units by model ID', async () => {
         expect.assertions(1);
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([]));
 
         const result = await getUnitsByModelID(testBuildingID, 'model-3br');
         expect(result).toEqual([]);
@@ -291,7 +288,7 @@ describe('UnitType Data Layer', () => {
             modelAmenities: []
         };
         // Mock response includes unitID field
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([{ ...unitTypeWithEmptyCollections, unitID: `MODEL#${testUnitType.modelID}` }]));
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([{ ...unitTypeWithEmptyCollections, unitID: `MODEL#${testUnitType.modelID}` }]));
 
         const unitTypes = await getUnitTypes(testBuildingID);
         expect(unitTypes[0].modelAmenities).toHaveLength(0);
@@ -442,7 +439,7 @@ describe('UnitType Data Layer', () => {
             }));
 
             // Mock paginated response
-            dynamoDbMock.mockResolvedValueOnce(mockScanResponse(largeUnitSet));
+            dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(largeUnitSet));
 
             const result = await getUnitsByModelID(testBuildingID, 'model-2br');
 
@@ -468,7 +465,7 @@ describe('UnitType Data Layer', () => {
                     rent: 1650
                 }
             ];
-            dynamoDbMock.mockResolvedValueOnce(mockScanResponse(units));
+            dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
 
             await getUnitsByModelID(testBuildingID, 'model-2br');
 
@@ -490,7 +487,7 @@ describe('UnitType Data Layer', () => {
                 baths: 2,
                 rent: 1650
             }];
-            dynamoDbMock.mockResolvedValueOnce(mockScanResponse(units));
+            dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
 
             await getUnitsByModelID(testBuildingID, 'model-2br');
 
@@ -537,7 +534,7 @@ describe('UnitType Data Layer', () => {
                     _ct: 'Unit'
                 }
             ];
-            dynamoDbMock.mockResolvedValueOnce(mockScanResponse(unitsWithEmptyID));
+            dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(unitsWithEmptyID));
 
             const result = await getUnitsByModelID(testBuildingID, 'model-2br');
 

@@ -11,7 +11,8 @@ export interface MockResponseOptions {
     ScannedCount?: number
 }
 
-import { isObject, map, isString, startsWith } from 'lodash';
+import { isObject, map, isString, startsWith, merge } from 'lodash';
+import { getDefaultBuildingData } from '../../src/types/index';
 
 /**
  * Add DynamoDB Toolbox v2 metadata fields to an item
@@ -24,9 +25,13 @@ function addToolboxMetadata(item: unknown): unknown {
 
     const itemWithMetadata = item as Record<string, unknown>;
 
-    // Don't apply defaults here - the getBuilding/getBuildings functions will do that
-    // We're mocking the raw DynamoDB response, not the processed result
-    const processedItem = itemWithMetadata;
+    // For building entities, merge with default building data to match what the actual
+    // createBuilding and getBuilding functions do when they process DynamoDB responses
+    let processedItem = itemWithMetadata;
+    if(itemWithMetadata.unitID === 'BUILDING' || (!itemWithMetadata.unitID && !itemWithMetadata.buildingID)) {
+        // Use deep merge to match the expected behavior (same as getExpectedBuilding)
+        processedItem = merge({}, getDefaultBuildingData(), itemWithMetadata);
+    }
 
     // Determine entity type based on unitID pattern
     let entityType = 'Building'; // default

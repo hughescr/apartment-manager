@@ -2,11 +2,18 @@ import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-l
 import { getBuildings, getBuilding, createBuilding, updateBuilding, deleteBuilding } from '../data/buildings';
 import { BuildingData } from '../src/types';
 import { forEach, isArray, isError, isString } from 'lodash';
-import { validateId, sanitizeObject } from './security-validation';
+import { sanitizeObject } from './security-validation';
 import { logger } from '@hughescr/logger';
 import { BuildingInput } from './validation/buildingSchema';
 import { validateForSave } from './validation/helpers';
 import { generateBuildingId, generateBuildingName } from '../src/utils/index.js';
+import {
+    validateSingleId,
+    createSuccessResponse,
+    createNotFoundResponse,
+    createNoContentResponse,
+    createServerErrorResponse
+} from './shared/request-handlers';
 
 // Legacy validation functions removed - now using Zod schemas in ./validation/
 // All validation is now handled by the Zod schemas in ./validation/
@@ -43,7 +50,7 @@ function parseJsonStringFields(data: Record<string, unknown>): void {
     });
 }
 
-// Helper function to handle parsing and initial validation
+// Helper function to handle parsing and initial validation with building-specific logic
 function parseAndValidateInput(rawBody: string): { success: true, data: BuildingInput } | { success: false, response: APIGatewayProxyStructuredResultV2 } {
     let rawData;
     try {
@@ -104,20 +111,24 @@ export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => {
 export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
 
-    // Validate buildingID
-    const idError = validateId(buildingID, 'buildingID');
-    if(idError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate buildingID using shared utility
+    const validationResult = validateSingleId(buildingID, 'buildingID');
+    if(!validationResult.valid) {
+        return validationResult.response!;
     }
 
     const building = await getBuilding(buildingID);
-    return building ? { statusCode: 200, body: JSON.stringify(building) } : { statusCode: 404, body: 'Not Found' };
+    return building ? createSuccessResponse(building) : createNotFoundResponse();
 };
 
 export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     let rawData;
     try {
+        // Debug: log the raw body
+        logger.debug('Raw request body', { body: evt.body });
         rawData = JSON.parse(evt.body || '{}');
+        // Debug: log parsed data
+        logger.debug('Parsed request data', { rawData });
     } catch(parseError) {
         logger.warn('Failed to parse building creation request body', {
             error: parseError,
@@ -151,6 +162,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
 
     // Use draft validation for save operations - allows incomplete data
     const validation = validateForSave('building', data);
+
     if(!validation.success) {
         const errors: Record<string, string> = {};
         forEach(validation.errors, (err) => {
@@ -168,20 +180,44 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         sanitizedData.buildingName = 'unknown';
     }
 
+    // Debug: log data being sent to createBuilding
+    logger.debug('Data being sent to createBuilding', {
+        sanitizedData,
+        zip: sanitizedData.zip,
+        contactInfo: sanitizedData.contactInfo
+    });
+
     const newBuilding = await createBuilding(sanitizedData as BuildingData);
-    return { statusCode: 201, body: JSON.stringify({ ...newBuilding, buildingName: sanitizedData.buildingName || 'unknown' }) };
+
+    // Debug: log result from createBuilding
+    logger.debug('Result from createBuilding', {
+        newBuilding,
+        zip: newBuilding.zip,
+        contactInfo: newBuilding.contactInfo
+    });
+
+    const response = { ...newBuilding, buildingName: sanitizedData.buildingName || 'unknown' };
+
+    // Debug: log final response
+    logger.debug('Final response', {
+        response,
+        zip: response.zip,
+        contactInfo: response.contactInfo
+    });
+
+    return { statusCode: 201, body: JSON.stringify(response) };
 };
 
 export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
 
-    // Validate buildingID
-    const idError = validateId(buildingID, 'buildingID');
-    if(idError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate buildingID using shared utility
+    const idValidationResult = validateSingleId(buildingID, 'buildingID');
+    if(!idValidationResult.valid) {
+        return idValidationResult.response!;
     }
 
-    // Parse and validate input
+    // Parse and validate input (using building-specific logic for JSON string fields)
     const parseResult = parseAndValidateInput(evt.body || '{}');
     if(!parseResult.success) {
         return parseResult.response;
@@ -196,36 +232,26 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     try {
         const updatedBuilding = await updateBuilding(buildingID, sanitizedData);
         if(!updatedBuilding) {
-            return { statusCode: 404, body: 'Not Found' };
+            return createNotFoundResponse();
         }
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                ...updatedBuilding,
-                buildingName: sanitizedData.buildingName || updatedBuilding.buildingName || 'unknown'
-            })
-        };
+        return createSuccessResponse({
+            ...updatedBuilding,
+            buildingName: sanitizedData.buildingName || updatedBuilding.buildingName || 'unknown'
+        });
     } catch(error) {
-        logger.error('Error updating building:', error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({
-                error: 'Internal server error during update',
-                details: isError(error) ? error.message : 'Unknown error'
-            })
-        };
+        return createServerErrorResponse(error, 'update', { buildingID });
     }
 };
 
 export const del = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
 
-    // Validate buildingID
-    const idError = validateId(buildingID, 'buildingID');
-    if(idError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate buildingID using shared utility
+    const validationResult = validateSingleId(buildingID, 'buildingID');
+    if(!validationResult.valid) {
+        return validationResult.response!;
     }
 
     const success = await deleteBuilding(buildingID);
-    return success ? { statusCode: 204, body: '' } : { statusCode: 404, body: 'Not Found' };
+    return success ? createNoContentResponse() : createNotFoundResponse();
 };

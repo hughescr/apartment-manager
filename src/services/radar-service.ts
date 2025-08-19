@@ -158,9 +158,8 @@ interface IPCacheEntry {
  * Features:
  * - Time-to-live (TTL) expiration
  * - Maximum size limits with LRU eviction
- * - Periodic cleanup of expired entries
+ * - Passive cleanup of expired entries on access
  * - Access tracking for LRU ordering
- * - Memory leak prevention
  */
 class RadarCache {
     private autocompleteCache = new Map<string, AutocompleteCacheEntry>();
@@ -169,57 +168,7 @@ class RadarCache {
     private readonly ipTtlMs = 60 * 60 * 1000; // 1 hour
     private readonly maxAutocompleteSize = 500; // Maximum autocomplete entries
     private readonly maxIPSize = 1000; // Maximum IP cache entries
-    private cleanupInterval?: ReturnType<typeof setInterval>;
-    private _isDestroyed = false;
-
-    constructor() {
-        // Start periodic cleanup to prevent unbounded memory growth
-        this.startPeriodicCleanup();
-    }
-
-    private startPeriodicCleanup(): void {
-        // Clean up expired entries every 5 minutes
-        this.cleanupInterval = setInterval(() => {
-            if(!this._isDestroyed) {
-                this.cleanupExpiredEntries();
-                this.enforceSizeLimits();
-            }
-        }, 5 * 60 * 1000);
-    }
-
-    private cleanupExpiredEntries(): void {
-        const now = Date.now();
-        let removedAutocomplete = 0;
-        let removedIP = 0;
-
-        // Clean expired autocomplete entries
-        for(const [key, entry] of this.autocompleteCache.entries()) {
-            if(now - entry.timestamp > this.autocompleteTtlMs) {
-                this.autocompleteCache.delete(key);
-                removedAutocomplete++;
-            }
-        }
-
-        // Clean expired IP entries
-        for(const [key, entry] of this.ipCache.entries()) {
-            if(now - entry.timestamp > this.ipTtlMs) {
-                this.ipCache.delete(key);
-                removedIP++;
-            }
-        }
-
-        if(removedAutocomplete > 0 || removedIP > 0) {
-            logger.debug(`Cleaned up expired cache entries: ${removedAutocomplete} autocomplete, ${removedIP} IP`);
-        }
-    }
-
-    /**
-     * Enforce maximum cache size limits using LRU eviction
-     */
-    private enforceSizeLimits(): void {
-        this.enforceAutocompleteSize();
-        this.enforceIPSize();
-    }
+    // Constructor removed - no periodic cleanup needed
 
     /**
      * Enforce autocomplete cache size limit using LRU eviction
@@ -288,11 +237,6 @@ class RadarCache {
     }
 
     getAutocomplete(query: string, coordinates?: { lat: number, lon: number }): RadarAutocompleteResult[] | null {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed RadarCache');
-            return null;
-        }
-
         const key = this.createAutocompleteKey(query, coordinates);
         const entry = this.autocompleteCache.get(key);
 
@@ -315,11 +259,6 @@ class RadarCache {
     }
 
     setAutocomplete(query: string, results: RadarAutocompleteResult[], coordinates?: { lat: number, lon: number }): void {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed RadarCache');
-            return;
-        }
-
         const key = this.createAutocompleteKey(query, coordinates);
         const now = Date.now();
         this.autocompleteCache.set(key, {
@@ -337,11 +276,6 @@ class RadarCache {
     }
 
     getIP(clientIP: string): GeolocationResult | null {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed RadarCache');
-            return null;
-        }
-
         const entry = this.ipCache.get(clientIP);
 
         if(!entry) {
@@ -363,11 +297,6 @@ class RadarCache {
     }
 
     setIP(clientIP: string, result: GeolocationResult): void {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed RadarCache');
-            return;
-        }
-
         const now = Date.now();
         this.ipCache.set(clientIP, {
             result,
@@ -387,37 +316,6 @@ class RadarCache {
         this.autocompleteCache.clear();
         this.ipCache.clear();
         logger.info('Radar cache cleared');
-    }
-
-    /**
-     * Cleanup method to prevent memory leaks
-     * Clears all timers, maps, and marks instance as destroyed
-     */
-    destroy(): void {
-        if(this._isDestroyed) {
-            return;
-        }
-
-        logger.info('Destroying RadarCache instance');
-
-        // Clear the periodic cleanup interval
-        if(this.cleanupInterval) {
-            clearInterval(this.cleanupInterval);
-            this.cleanupInterval = undefined;
-        }
-
-        // Clear all cached data
-        this.clear();
-
-        // Mark as destroyed to prevent further usage
-        this._isDestroyed = true;
-    }
-
-    /**
-     * Check if the cache instance is destroyed
-     */
-    isDestroyed(): boolean {
-        return this._isDestroyed;
     }
 
     getStats(): {
@@ -446,14 +344,8 @@ class RadarCache {
 class RateLimiter {
     private lastRequestTime = 0;
     private readonly minIntervalMs = 100; // Conservative 100ms between requests
-    private _isDestroyed = false;
 
     async waitIfNeeded(): Promise<void> {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed RateLimiter');
-            return;
-        }
-
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
 
@@ -473,26 +365,6 @@ class RateLimiter {
         this.lastRequestTime = 0;
         logger.debug('Rate limiter state reset');
     }
-
-    /**
-     * Cleanup method to prevent memory leaks
-     */
-    destroy(): void {
-        if(this._isDestroyed) {
-            return;
-        }
-
-        logger.info('Destroying RateLimiter instance');
-        this.reset();
-        this._isDestroyed = true;
-    }
-
-    /**
-     * Check if the rate limiter instance is destroyed
-     */
-    isDestroyed(): boolean {
-        return this._isDestroyed;
-    }
 }
 
 /**
@@ -503,14 +375,8 @@ class Debouncer {
     private timeouts = new Map<string, ReturnType<typeof setTimeout>>();
     private pendingPromises = new Map<string, { resolve: (value: unknown) => void, reject: (error: unknown) => void }>();
     private readonly debounceMs = 200; // 200ms debounce
-    private _isDestroyed = false;
 
     async debounce<T>(key: string, fn: () => Promise<T>): Promise<T> {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed Debouncer');
-            throw new Error('Debouncer instance has been destroyed');
-        }
-
         // Reject any existing pending promise for this key
         const existingPending = this.pendingPromises.get(key);
         if(existingPending) {
@@ -578,26 +444,6 @@ class Debouncer {
         this.pendingPromises.clear();
 
         logger.debug('Cleared all debounced calls');
-    }
-
-    /**
-     * Cleanup method to prevent memory leaks
-     */
-    destroy(): void {
-        if(this._isDestroyed) {
-            return;
-        }
-
-        logger.info('Destroying Debouncer instance');
-        this.clearAll();
-        this._isDestroyed = true;
-    }
-
-    /**
-     * Check if the debouncer instance is destroyed
-     */
-    isDestroyed(): boolean {
-        return this._isDestroyed;
     }
 
     /**
@@ -1035,25 +881,6 @@ export async function getUserLocation(
 }
 
 /**
- * Cleanup function for all singleton instances in radar-service
- * Prevents memory leaks by properly destroying all cached instances
- */
-export function cleanupRadarService(): void {
-    try {
-        logger.info('Cleaning up radar-service singleton instances');
-
-        // Destroy all singleton instances
-        cache.destroy();
-        rateLimiter.destroy();
-        debouncer.destroy();
-
-        logger.info('Radar service cleanup completed successfully');
-    } catch(error) {
-        logger.error('Error during radar service cleanup', { error });
-    }
-}
-
-/**
  * Get statistics about all singleton instances
  */
 export function getRadarServiceStats(): {
@@ -1064,11 +891,4 @@ export function getRadarServiceStats(): {
         cache: cache.getStats(),
         debouncer: debouncer.getStats()
     };
-}
-
-/**
- * Check if all singleton instances are properly destroyed
- */
-export function isRadarServiceDestroyed(): boolean {
-    return cache.isDestroyed() && rateLimiter.isDestroyed() && debouncer.isDestroyed();
 }

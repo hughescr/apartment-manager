@@ -2,61 +2,50 @@ import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-l
 import { getUnitTypes, getUnitType, createUnitType, updateUnitType, deleteUnitType } from '../data/unitTypes';
 import { UnitTypeData } from '../src/types/index';
 import { forEach, keys, trim } from 'lodash';
-import { validateId, sanitizeObject } from './security-validation';
+import { sanitizeObject } from './security-validation';
 import { UnitTypeInput } from './validation/unitTypeSchema';
 import { validateForSave } from './validation/helpers';
 import { logger } from '@hughescr/logger';
+import {
+    validateMultipleIds,
+    parseAndValidateRequest,
+    createSuccessResponse,
+    createNotFoundResponse,
+    createNoContentResponse
+} from './shared/request-handlers';
 
 // Legacy validation functions removed - now using Zod schemas in ./validation/
 
-export const list = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => ({
-    statusCode: 200,
-    body: JSON.stringify(await getUnitTypes(evt.pathParameters?.buildingID ?? '')),
-});
+export const list = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
+    return createSuccessResponse(await getUnitTypes(evt.pathParameters?.buildingID ?? ''));
+};
 
 export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const unitType = await getUnitType(evt.pathParameters?.buildingID ?? '', evt.pathParameters?.modelID ?? '');
-    return unitType ? { statusCode: 200, body: JSON.stringify(unitType) } : { statusCode: 404, body: 'Not Found' };
+    return unitType ? createSuccessResponse(unitType) : createNotFoundResponse();
 };
 
 export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
-    // Parse and validate input using draft validation - allows incomplete data
-    let rawData;
-    try {
-        rawData = JSON.parse(evt.body || '{}');
-    } catch(parseError) {
-        logger.warn('Failed to parse unit type creation request body', {
-            error: parseError,
-            context: 'unit type creation request parsing',
-            httpMethod: evt.requestContext.http.method
-        });
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
-        };
+    // Parse and validate input using shared utility
+    const parseResult = parseAndValidateRequest<UnitTypeInput>(
+        evt.body || null,
+        'unitType',
+        'unit type creation request parsing',
+        { httpMethod: evt.requestContext.http.method },
+        true // Use simple error format for backward compatibility
+    );
+    if(!parseResult.success) {
+        return parseResult.response!;
     }
 
-    const data = sanitizeObject(rawData);
-    const validation = validateForSave('unitType', data);
-    if(!validation.success) {
-        const errors: Record<string, string> = {};
-        forEach(validation.errors, (err) => {
-            errors[err.field] = err.message;
-        });
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
-        };
-    }
-
-    const unitTypeData = validation.data as UnitTypeInput;
+    const unitTypeData = parseResult.data as UnitTypeInput;
 
     // Additional validation: ensure required fields for creation are provided
     const errors: Record<string, string> = {};
-    if(!unitTypeData.buildingID || trim(unitTypeData.buildingID) === '') {
+    if(!unitTypeData?.buildingID || trim(unitTypeData.buildingID) === '') {
         errors.buildingID = 'Building ID is required for creation';
     }
-    if(!unitTypeData.modelID || trim(unitTypeData.modelID) === '') {
+    if(!unitTypeData?.modelID || trim(unitTypeData.modelID) === '') {
         errors.modelID = 'Model ID is required for creation';
     }
 
@@ -68,27 +57,29 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     }
 
     // Check if unit type already exists
-    const existing = await getUnitType(unitTypeData.buildingID, unitTypeData.modelID);
+    const existing = await getUnitType(unitTypeData!.buildingID, unitTypeData!.modelID);
     if(existing) {
         return { statusCode: 409, body: JSON.stringify({ error: 'Unit type already exists' }) };
     }
 
-    const newUnitType = await createUnitType(unitTypeData as UnitTypeData);
-    return { statusCode: 201, body: JSON.stringify(newUnitType) };
+    const newUnitType = await createUnitType(unitTypeData! as UnitTypeData);
+    return createSuccessResponse(newUnitType, 201);
 };
 
 export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
     const modelID = evt.pathParameters?.modelID ?? '';
 
-    // Validate IDs from URL parameters
-    const buildingError = validateId(buildingID, 'buildingID');
-    const modelError = validateId(modelID, 'modelID');
-    if(buildingError || modelError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate IDs from URL parameters using shared utility
+    const validationResult = validateMultipleIds([
+        { value: buildingID, fieldName: 'buildingID' },
+        { value: modelID, fieldName: 'modelID' }
+    ]);
+    if(!validationResult.valid) {
+        return validationResult.response!;
     }
 
-    // Parse and validate input using draft validation - allows incomplete data
+    // Parse request body (use simple parsing for backward compatibility)
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
@@ -135,10 +126,10 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     } as Partial<UnitTypeData>;
 
     const updatedUnitType = await updateUnitType(buildingID, modelID, unitTypeData);
-    return updatedUnitType ? { statusCode: 200, body: JSON.stringify(updatedUnitType) } : { statusCode: 404, body: 'Not Found' };
+    return updatedUnitType ? createSuccessResponse(updatedUnitType) : createNotFoundResponse();
 };
 
 export const del = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const success = await deleteUnitType(evt.pathParameters?.buildingID ?? '', evt.pathParameters?.modelID ?? '');
-    return success ? { statusCode: 204, body: '' } : { statusCode: 404, body: 'Not Found' };
+    return success ? createNoContentResponse() : createNotFoundResponse();
 };

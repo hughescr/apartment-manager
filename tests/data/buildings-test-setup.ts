@@ -6,7 +6,7 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
 import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
-import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
+import { mockQueryResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 import { resetClients } from '../../data/clients';
 
 /**
@@ -113,7 +113,7 @@ export {
     dynamoDbMock,
     jest,
     resetAllMocks,
-    mockScanResponse,
+    mockQueryResponse,
     mockGetResponse,
     mockPutResponse,
     mockUpdateResponse,

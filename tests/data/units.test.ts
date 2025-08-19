@@ -1,10 +1,10 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
+import { dynamoDbMock, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { AmenityCategory, Amenity, RentSpecial } from '../../src/types';
-import { mockScanResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
+import { mockQueryResponse, mockGetResponse, mockPutResponse, mockUpdateResponse, mockDeleteResponse } from '../helpers/mock-responses';
 
 // Import the functions AFTER mocking
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../../data/units';
@@ -17,12 +17,8 @@ describe('Unit Data Layer', () => {
     });
 
     beforeEach(() => {
-        // Reset all mock state including queued responses
-        // Note: Don't clear spy call history for logger since tests need to assert on it
-        jest.restoreAllMocks();
-
-        // CRITICAL: Reset the mock completely to clear any queued responses
-        dynamoDbMock.mockReset();
+        // CRITICAL: Reset ALL mocks to prevent cross-test contamination
+        resetAllMocks();
     });
 
     const testBuildingID = 'test-building-1';
@@ -66,7 +62,8 @@ describe('Unit Data Layer', () => {
             { ...testUnit, unitID: 'UNIT#test-unit-1' },
             { ...testUnit, unitID: 'UNIT#test-unit-2', unitNumber: '102' }
         ];
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse(units));
+
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
 
         const result = await getUnits(testBuildingID);
         // The function strips the UNIT# prefix when returning
@@ -78,7 +75,7 @@ describe('Unit Data Layer', () => {
 
     it('should handle empty unit list', async () => {
         expect.assertions(1);
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([]));
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([]));
 
         const result = await getUnits(testBuildingID);
         expect(result).toEqual([]);
@@ -297,7 +294,7 @@ describe('Unit Data Layer', () => {
             feedInclusion: {},
             manualReferences: {}
         };
-        dynamoDbMock.mockResolvedValueOnce(mockScanResponse([unitWithEmptyCollections]));
+        dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([unitWithEmptyCollections]));
 
         const units = await getUnits(testBuildingID);
         expect(units[0].photos).toHaveLength(0);

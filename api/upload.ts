@@ -5,7 +5,8 @@ import { Resource } from 'sst';
 import { randomUUID } from 'crypto';
 import { split, toLower, startsWith, isError } from 'lodash';
 import { getS3Client } from '../data/clients';
-import { validateId, validatePath } from './security-validation';
+import { validatePath } from './security-validation';
+import { validateMultipleIds } from './shared/request-handlers';
 
 const s3Client = getS3Client();
 
@@ -39,10 +40,12 @@ const handleUploadRequest = async (body: string | null) => {
         };
     }
 
-    // Validate IDs to prevent path traversal
-    const buildingIdError = validateId(buildingId, 'buildingId');
-    const unitIdError = validateId(unitId, 'unitId');
-    if(buildingIdError || unitIdError) {
+    // Validate IDs to prevent path traversal using shared utility
+    const validationResult = validateMultipleIds([
+        { value: buildingId, fieldName: 'buildingId' },
+        { value: unitId, fieldName: 'unitId' }
+    ]);
+    if(!validationResult.valid) {
         return {
             statusCode: 403,
             body: JSON.stringify({ error: 'Forbidden' })

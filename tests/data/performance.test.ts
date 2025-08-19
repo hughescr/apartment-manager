@@ -1,11 +1,10 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
+import { dynamoDbMock, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import {
     mockQueryResponse,
-    mockScanResponse,
     mockGetResponse,
     mockPutResponse,
     mockUpdateResponse
@@ -23,16 +22,12 @@ describe('Data Layer Performance Tests', () => {
     });
 
     beforeEach(() => {
-        // Reset all mock state including queued responses
-        jest.clearAllMocks();
-        jest.restoreAllMocks();
-
-        // CRITICAL: Reset the mock completely to clear any queued responses
-        dynamoDbMock.mockReset();
+        // CRITICAL: Reset ALL mocks to prevent cross-test contamination
+        resetAllMocks();
     });
 
     describe('Pagination with >1MB of data (DynamoDB limit)', () => {
-        it('should handle paginated scan results for getBuildings when response exceeds 1MB', async () => {
+        it('should handle paginated query results for getBuildings when response exceeds 1MB', async () => {
             expect.assertions(4);
 
             // Create 500 buildings with large data (~2KB each = ~1MB total)
@@ -82,7 +77,7 @@ describe('Data Layer Performance Tests', () => {
             const page1 = largeUnits.slice(0, 500);
 
             dynamoDbMock.mockResolvedValueOnce({
-                ...mockScanResponse(page1),
+                ...mockQueryResponse(page1),
                 LastEvaluatedKey: { buildingID: 'test-building', unitID: 'UNIT#unit-499' },
                 Count: page1.length
             });

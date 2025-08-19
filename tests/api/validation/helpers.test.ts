@@ -447,13 +447,12 @@ describe('Validation Helper Functions', () => {
             };
 
             const result = canPublishToSite('apartments_com', dataWithPhotos);
+            // Debug output for test failures - using test framework reporting
             if(result.errors.length > 0) {
-                // eslint-disable-next-line no-console -- Debug output for test failures
-                console.log('Validation errors:', JSON.stringify(result.errors, null, 2));
+                throw new Error(`Validation errors found: ${JSON.stringify(result.errors, null, 2)}`);
             }
             if(result.missingFields.length > 0) {
-                // eslint-disable-next-line no-console -- Debug output for test failures
-                console.log('Missing fields:', JSON.stringify(result.missingFields, null, 2));
+                throw new Error(`Missing required fields: ${JSON.stringify(result.missingFields, null, 2)}`);
             }
             expect(result.site).toBe('apartments_com');
             expect(result.canPublish).toBe(true);

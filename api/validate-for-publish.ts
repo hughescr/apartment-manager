@@ -4,7 +4,8 @@ import { getUnitTypes } from '../data/unitTypes';
 import { getUnits } from '../data/units';
 import { BuildingData, UnitTypeData, UnitData } from '../src/types';
 import { every, filter, isError, isObject, isString, map, omit, pick, replace, sumBy } from 'lodash';
-import { validateId, sanitizeObject } from './security-validation';
+import { sanitizeObject } from './security-validation';
+import { validateSingleId } from './shared/request-handlers';
 import { logger } from '@hughescr/logger';
 import {
     validateForPublish,
@@ -139,15 +140,15 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
             };
         }
 
-        // Validate buildingID if provided
+        // Validate buildingID if provided using shared utility
         if(data.buildingID) {
-            const idError = validateId(data.buildingID, 'buildingID');
-            if(idError) {
+            const validationResult = validateSingleId(data.buildingID, 'buildingID');
+            if(!validationResult.valid) {
                 return {
                     statusCode: 400,
                     body: JSON.stringify({
                         error: 'Validation failed',
-                        errors: { buildingID: idError }
+                        errors: { buildingID: 'Invalid buildingID format' }
                     })
                 };
             }

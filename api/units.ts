@@ -1,8 +1,16 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getUnits, getUnit, createUnit, updateUnit, deleteUnit } from '../data/units';
 import { UnitData, VacancyClass } from '../src/types/index';
-import { forEach, keys, pick, trim, isError } from 'lodash';
-import { validateId, sanitizeObject } from './security-validation';
+import { keys, pick, trim, isError } from 'lodash';
+import { sanitizeObject } from './security-validation';
+import {
+    validateSingleId,
+    validateMultipleIds,
+    parseAndValidateRequest,
+    createSuccessResponse,
+    createNotFoundResponse,
+    createNoContentResponse
+} from './shared/request-handlers';
 import {
     performBulkStatusUpdate,
     performBulkRentUpdate,
@@ -11,7 +19,6 @@ import {
     validateBulkRentParams
 } from '../data/services/bulk-operations';
 import { UnitInput } from './validation/unitSchema';
-import { validateForSave } from './validation/helpers';
 import { logger } from '@hughescr/logger';
 
 // mapZodErrors removed - now using new validation system
@@ -35,78 +42,55 @@ import { logger } from '@hughescr/logger';
 export const list = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
 
-    // Validate buildingID
-    const idError = validateId(buildingID, 'buildingID');
-    if(idError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate buildingID using shared utility
+    const validationResult = validateSingleId(buildingID, 'buildingID');
+    if(!validationResult.valid) {
+        return validationResult.response!;
     }
 
-    return {
-        statusCode: 200,
-        body: JSON.stringify(await getUnits(buildingID)),
-    };
+    return createSuccessResponse(await getUnits(buildingID));
 };
 
 export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
     const unitID = evt.pathParameters?.unitID ?? '';
 
-    // Validate IDs
-    const buildingError = validateId(buildingID, 'buildingID');
-    const unitError = validateId(unitID, 'unitID');
-    if(buildingError || unitError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate IDs using shared utility
+    const validationResult = validateMultipleIds([
+        { value: buildingID, fieldName: 'buildingID' },
+        { value: unitID, fieldName: 'unitID' }
+    ]);
+    if(!validationResult.valid) {
+        return validationResult.response!;
     }
 
     const unit = await getUnit(buildingID, unitID);
-    return unit ? { statusCode: 200, body: JSON.stringify(unit) } : { statusCode: 404, body: 'Not Found' };
+    return unit ? createSuccessResponse(unit) : createNotFoundResponse();
 };
 
 export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     // Get buildingID from URL path for validation
     const urlBuildingID = evt.pathParameters?.buildingID;
 
-    // Validate buildingID from URL
-    const buildingIdError = validateId(urlBuildingID || '', 'buildingID');
-    if(buildingIdError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate buildingID from URL using shared utility
+    const idValidationResult = validateSingleId(urlBuildingID || '', 'buildingID');
+    if(!idValidationResult.valid) {
+        return idValidationResult.response!;
     }
 
-    // Parse and validate input using draft validation - allows incomplete data
-    let rawData;
-    try {
-        rawData = JSON.parse(evt.body || '{}');
-    } catch(parseError) {
-        logger.warn('Failed to parse unit creation request body', {
-            error: parseError,
-            context: 'unit creation request parsing',
-            httpMethod: evt.requestContext.http.method,
-            buildingID: urlBuildingID
-        });
-        return {
-            statusCode: 400,
-            body: JSON.stringify({
-                error: 'Invalid request body',
-                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
-            }),
-        };
-    }
-
-    const data = sanitizeObject(rawData);
-    const validation = validateForSave('unit', data);
-    if(!validation.success) {
-        const errors: Record<string, string> = {};
-        forEach(validation.errors, (err) => {
-            errors[err.field] = err.message;
-        });
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
-        };
+    // Parse and validate input using shared utility
+    const parseResult = parseAndValidateRequest(
+        evt.body || null,
+        'unit',
+        'unit creation request parsing',
+        { buildingID: urlBuildingID, httpMethod: evt.requestContext.http.method }
+    );
+    if(!parseResult.success) {
+        return parseResult.response!;
     }
 
     // Ensure buildingID matches URL parameter (security check)
-    const unitData = { ...validation.data as UnitInput, buildingID: urlBuildingID } as UnitInput;
+    const unitData = { ...(parseResult.data as UnitInput), buildingID: urlBuildingID } as UnitInput;
 
     // Additional validation: ensure unitID is provided for creation
     if(!unitData.unitID || trim(unitData.unitID) === '') {
@@ -120,84 +104,62 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     }
 
     const newUnit = await createUnit(unitData as UnitData);
-    return {
-        statusCode: 201,
-        body: JSON.stringify({
-            ...unitData,
-            ...pick(newUnit, ['created', 'modified'])
-        })
-    };
+    return createSuccessResponse({
+        ...unitData,
+        ...pick(newUnit, ['created', 'modified'])
+    }, 201);
 };
 
 export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
     const unitID = evt.pathParameters?.unitID ?? '';
 
-    // Validate IDs from URL parameters
-    const buildingError = validateId(buildingID, 'buildingID');
-    const unitError = validateId(unitID, 'unitID');
-    if(buildingError || unitError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate IDs from URL parameters using shared utility
+    const validationResult = validateMultipleIds([
+        { value: buildingID, fieldName: 'buildingID' },
+        { value: unitID, fieldName: 'unitID' }
+    ]);
+    if(!validationResult.valid) {
+        return validationResult.response!;
     }
 
-    // Parse and validate input using draft validation - allows incomplete data
-    let rawData;
-    try {
-        rawData = JSON.parse(evt.body || '{}');
-    } catch(parseError) {
-        logger.warn('Failed to parse unit update request body', {
-            error: parseError,
-            context: 'unit update request parsing',
-            httpMethod: evt.requestContext.http.method,
-            buildingID,
-            unitID
-        });
-        return {
-            statusCode: 400,
-            body: JSON.stringify({
-                error: 'Invalid request body',
-                details: isError(parseError) ? parseError.message : 'Invalid JSON format'
-            }),
-        };
-    }
-
-    const data = sanitizeObject(rawData);
-    const validation = validateForSave('unit', data);
-    if(!validation.success) {
-        const errors: Record<string, string> = {};
-        forEach(validation.errors, (err) => {
-            errors[err.field] = err.message;
-        });
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
-        };
+    // Parse and validate input using shared utility
+    const parseResult = parseAndValidateRequest(
+        evt.body || null,
+        'unit',
+        'unit update request parsing',
+        { buildingID, unitID, httpMethod: evt.requestContext.http.method }
+    );
+    if(!parseResult.success) {
+        return parseResult.response!;
     }
 
     // Ensure IDs match URL parameters (security check)
     const unitData = {
-        ...validation.data as UnitInput,
+        ...(parseResult.data as UnitInput),
         buildingID,
         unitID
     } as Partial<UnitData>;
 
     const updatedUnit = await updateUnit(buildingID, unitID, unitData);
-    return updatedUnit ? { statusCode: 200, body: JSON.stringify(updatedUnit) } : { statusCode: 404, body: 'Not Found' };
+    return updatedUnit ? createSuccessResponse(updatedUnit) : createNotFoundResponse();
 };
 
 export const del = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
     const unitID = evt.pathParameters?.unitID ?? '';
 
-    // Validate IDs
-    const buildingError = validateId(buildingID, 'buildingID');
-    const unitError = validateId(unitID, 'unitID');
-    if(buildingError || unitError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate IDs using shared utility
+    const validationResult = validateMultipleIds([
+        { value: buildingID, fieldName: 'buildingID' },
+        { value: unitID, fieldName: 'unitID' }
+    ]);
+    if(!validationResult.valid) {
+        return validationResult.response!;
     }
 
     const success = await deleteUnit(buildingID, unitID);
-    return success ? { statusCode: 204, body: '' } : { statusCode: 404, body: 'Not Found' };
+    return success ? createNoContentResponse() : createNotFoundResponse();
 };
 
 // Interface for bulk request data
@@ -214,10 +176,10 @@ interface StatusUpdateData extends BulkRequestData {
 export const bulkStatusUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
 
-    // Validate buildingID
-    const buildingError = validateId(buildingID, 'buildingID');
-    if(buildingError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate buildingID using shared utility
+    const bulkStatusValidationResult = validateSingleId(buildingID, 'buildingID');
+    if(!bulkStatusValidationResult.valid) {
+        return bulkStatusValidationResult.response!;
     }
 
     // Parse and validate request body
@@ -348,10 +310,10 @@ interface RentUpdateData extends BulkRequestData {
 export const bulkRentUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildingID = evt.pathParameters?.buildingID ?? '';
 
-    // Validate buildingID
-    const buildingError = validateId(buildingID, 'buildingID');
-    if(buildingError) {
-        return { statusCode: 404, body: 'Not Found' };
+    // Validate buildingID using shared utility
+    const bulkRentValidationResult = validateSingleId(buildingID, 'buildingID');
+    if(!bulkRentValidationResult.valid) {
+        return bulkRentValidationResult.response!;
     }
 
     // Parse and validate request body

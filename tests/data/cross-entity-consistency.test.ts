@@ -1,6 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { dynamoDbMock, jest, resetAllMocks } from './test-setup';
+import { dynamoDbMock, resetAllMocks } from './test-setup';
 
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { mockQueryResponse, mockGetResponse, mockPutResponse, mockDeleteResponse } from '../helpers/mock-responses';
@@ -18,12 +18,8 @@ describe('Cross-Entity Consistency Tests', () => {
     });
 
     beforeEach(() => {
-        // Reset all mock state including queued responses
-        jest.clearAllMocks();
-        jest.restoreAllMocks();
-
-        // CRITICAL: Reset the mock completely to clear any queued responses
-        dynamoDbMock.mockReset();
+        // CRITICAL: Reset ALL mocks to prevent cross-test contamination
+        resetAllMocks();
     });
 
     const testBuilding = {

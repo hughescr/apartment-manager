@@ -3,13 +3,28 @@
 import BuildingsList from './BuildingsList.astro';
 import AddBuildingForm from './AddBuildingForm.astro';
 import BuildingManager from './BuildingManager.astro';
-
-import { getBuildings } from '../../data/buildings';
+import { BuildingsApiService } from '../lib/buildings/services/buildingsApiService';
 import { Resource } from 'sst';
 
-// Only fetch basic building list - units/unit types loaded lazily
-const buildings = await getBuildings();
+// Only fetch basic building list via API - units/unit types loaded lazily
 const apiURL = Resource.API.url;
+const buildingsService = new BuildingsApiService(apiURL);
+
+let buildings: any[] = [];
+let error: string | null = null;
+
+try {
+    const buildingsResponse = await buildingsService.getBuildings();
+    if (buildingsResponse.success && buildingsResponse.data) {
+        buildings = buildingsResponse.data;
+    } else {
+        error = buildingsResponse.error || "Failed to load buildings";
+        buildings = [];
+    }
+} catch (e) {
+    error = "Failed to load buildings";
+    buildings = [];
+}
 ---
 
 <div x-data="buildingsComponentData()" 
@@ -20,6 +35,16 @@ const apiURL = Resource.API.url;
      @building-data-loaded="handleBuildingDataLoaded($event)"
      data-buildings={JSON.stringify(buildings)}
      data-api-url={apiURL}>
+     
+    <!-- Error Display -->
+    {error && (
+        <div class="alert alert-error mb-6" data-testid="error-message">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{error}</span>
+        </div>
+    )}
      
     <!-- Toast notifications -->
     <div class="toast toast-center toast-middle" x-show="showToast" x-transition.opacity>

@@ -422,10 +422,9 @@ describe('Validate for Publish API Endpoint', () => {
             expect(result.statusCode).toBe(200);
             const response = JSON.parse(result.body as string);
 
-            // Debug logging to see what's failing
+            // Debug logging to see what's failing - use test framework reporting
             if(!response.summary.canPublishToSites.apartments_com) {
-                // eslint-disable-next-line no-console -- Debug logging for test failures
-                console.log('Apartments.com requirements:', JSON.stringify(response.siteRequirements[0], null, 2));
+                throw new Error(`Apartments.com requirements not met: ${JSON.stringify(response.siteRequirements[0], null, 2)}`);
             }
 
             expect(response.success).toBe(true);
@@ -629,7 +628,7 @@ describe('Validate for Publish API Endpoint', () => {
 
             expect(result.statusCode).toBe(400);
             const response = JSON.parse(result.body as string);
-            expect(response.errors.buildingID).toContain('must be a valid building ID');
+            expect(response.errors.buildingID).toContain('Invalid buildingID format');
         });
 
         it('should return 400 for missing required parameters', async () => {

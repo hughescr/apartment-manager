@@ -21,125 +21,21 @@ import * as buildingsHandler from '../../api/buildings';
 import * as unitsHandler from '../../api/units';
 import { handler as uploadHandler } from '../../api/upload';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { dynamoDbMock, resetAllMocks } from '../data/test-setup';
-import { chain, fill, isObject, repeat, startsWith } from 'lodash';
-// Type for DynamoDB item with optional properties
-type DynamoItem = Record<string, unknown> & {
-    buildingID?: string
-    unitID?: string
-};
-
-// Helper function to determine entity type based on unitID
-function getEntityType(unitID: string): string {
-    if(startsWith(unitID, 'UNIT#') || (unitID !== 'BUILDING' && !startsWith(unitID, 'MODEL#'))) {
-        return 'Unit';
-    }
-    if(startsWith(unitID, 'MODEL#')) {
-        return 'UnitType';
-    }
-    return 'Building';
-}
-
-// Helper function to handle put commands
-function handlePutCommand(cmd: { input?: Record<string, unknown> }) {
-    const item = cmd.input?.Item || cmd.input || {};
-    const unitID = (item as DynamoItem).unitID || 'BUILDING';
-    const entityType = getEntityType(unitID);
-
-    const responseItem = {
-        buildingID: (item as DynamoItem).buildingID || 'test-building',
-        unitID: unitID,
-        ...item,
-        _ct: new Date().toISOString(),
-        _md: new Date().toISOString(),
-        _et: entityType
-    };
-
-    return Promise.resolve({
-        Attributes: responseItem,
-        Item: responseItem
-    });
-}
-
-// Helper function to handle update commands
-function handleUpdateCommand(cmd: { input?: Record<string, unknown> }) {
-    const key = cmd.input?.Key || {};
-    const updates = cmd.input?.Item || cmd.input || {};
-    const unitID = (key as DynamoItem).unitID || (updates as DynamoItem).unitID || 'BUILDING';
-    const entityType = getEntityType(unitID);
-
-    const responseItem = {
-        buildingID: (key as DynamoItem).buildingID || (updates as DynamoItem).buildingID || 'test-building',
-        unitID: unitID,
-        ...updates,
-        _ct: new Date().toISOString(),
-        _md: new Date().toISOString(),
-        _et: entityType
-    };
-
-    return Promise.resolve({
-        Attributes: responseItem,
-        Item: responseItem
-    });
-}
-
-// Helper function to handle DynamoDB command routing
-function createDynamoDbMockImplementation() {
-    return (command: unknown) => {
-        if(!command || !isObject(command)) {
-            return Promise.resolve({});
-        }
-        const cmd = command as { constructor?: { name: string }, input?: Record<string, unknown> };
-        const commandName = cmd.constructor?.name || '';
-
-        return handleDynamoDbCommand(commandName, cmd);
-    };
-}
-
-// Helper function to route DynamoDB commands
-function handleDynamoDbCommand(commandName: string, cmd: { input?: Record<string, unknown> }) {
-    if(commandName === 'PutItemCommand' || commandName === 'PutCommand') {
-        return handlePutCommand(cmd);
-    }
-
-    if(commandName === 'GetItemCommand' || commandName === 'GetCommand') {
-        return Promise.resolve({});
-    }
-
-    if(commandName === 'UpdateItemCommand' || commandName === 'UpdateCommand') {
-        return handleUpdateCommand(cmd);
-    }
-
-    if(commandName === 'QueryCommand') {
-        return Promise.resolve({ Items: [], Count: 0 });
-    }
-
-    if(commandName === 'DeleteItemCommand' || commandName === 'DeleteCommand') {
-        return Promise.resolve({});
-    }
-
-    if(commandName === 'TransactWriteItemsCommand' || commandName === 'TransactWriteCommand') {
-        return Promise.resolve({});
-    }
-
-    return Promise.reject(new Error(`Unmocked DynamoDB command: ${commandName}`));
-}
+import { resetAllMocks } from '../data/test-setup';
+import { resetClients } from '../../data/clients';
+import { chain, fill, isObject, repeat } from 'lodash';
 
 // Setup function for tests
 async function setupTestEnvironment() {
-    // Reset all mock state including queued responses
-    dynamoDbMock.mockReset();
-
-    // Set up proper mock implementation for DynamoDB Toolbox
-    dynamoDbMock.mockImplementation(createDynamoDbMockImplementation());
+    // Reset clients to use default test mocks
+    resetClients();
 }
 
 // Cleanup function for tests
 async function cleanupTestEnvironment() {
     // Clean up after tests
-    dynamoDbMock.mockClear();
+    resetClients();
 }
-
 describe('Security Validation Tests', () => {
     beforeAll(() => {
         resetAllMocks();
@@ -1024,7 +920,7 @@ describe('Security Validation Tests', () => {
 
             for(const zip of validZips) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: `wgey4dDPEd8qEMGtGoMef${zip === '12345' ? '7' : '8'}`, // Valid short-uuid format
+                    buildingID: `wgey4dDPEd8qEMGtGoMe${Date.now().toString().slice(-2)}${Math.random().toString(36).slice(2, 4)}`, // Valid short-uuid format
                     buildingName: 'Test Building',
                     street: '123 Main St',
                     city: 'Test City',

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, spyOn, mock } from 'bun:test';
 import { generateMITSFeed } from '../../src/mits/generator';
 import * as geocodingModule from '../../src/services/geocoding';
 import {
@@ -17,6 +17,11 @@ describe('MITS Coordinate Handling', () => {
         mockBuilding = createMockBuilding();
         mockUnitTypes = createMockUnitTypes();
         mockUnits = createMockUnits();
+    });
+
+    afterEach(() => {
+        // Restore all spies to prevent test pollution
+        mock.restore();
     });
 
     describe('Coordinate Handling', () => {

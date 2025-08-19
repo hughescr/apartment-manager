@@ -11,7 +11,7 @@ import {
     cleanupBuildingsTest,
     mockPutResponse,
     mockGetResponse,
-    mockScanResponse,
+    mockQueryResponse,
     mockUpdateResponse,
     mockDeleteResponse
 } from './buildings-test-setup';
@@ -87,7 +87,7 @@ describe('Building Data Layer - CRUD Operations', () => {
     describe('Read Building', () => {
         it('should get all buildings', async () => {
             expect.assertions(1);
-            dynamoDbMock.mockResolvedValueOnce(mockScanResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
+            dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([{ ...testBuilding, unitID: 'BUILDING' }]));
             const buildings = await getBuildings();
             expect(buildings).toEqual([getExpectedBuilding(testBuilding)]);
         });

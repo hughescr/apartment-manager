@@ -8,7 +8,8 @@ import { number } from 'dynamodb-toolbox/schema/number';
 import { boolean } from 'dynamodb-toolbox/schema/boolean';
 import { list } from 'dynamodb-toolbox/schema/list';
 import { record } from 'dynamodb-toolbox/schema/record';
-import { any } from 'dynamodb-toolbox/schema/any';
+import { map } from 'dynamodb-toolbox/schema/map';
+import { anyOf } from 'dynamodb-toolbox/schema/anyOf';
 
 export const ApartmentTable = new Table({
     name: getTableName(),
@@ -80,10 +81,124 @@ export const getApartmentTable = () => {
     });
 };
 
-// Workaround for DynamoDB Toolbox v2.7.0 compatibility issue
-// The getDocumentClient() method returns an empty object instead of the actual client
-// Building.buildingName was added below
-ApartmentTable.getDocumentClient = () => db;
+// Define complex type schemas
+const rentSpecialSchema = map({
+    id: anyOf(number(), string()).optional(),
+    title: string(),
+    startDate: string().optional(),
+    endDate: string().optional(),
+    description: string()
+});
+
+const incomeRestrictionSchema = map({
+    amiLimit: number().optional(),
+    maxIncomeByHouseholdSize: record(string(), number())
+});
+
+const feeSchema = map({
+    type: string(),
+    amount: number(),
+    description: string().optional(),
+    refundable: boolean().optional()
+});
+
+const depositSchema = anyOf(
+    number(), // Legacy number format
+    map({
+        amount: number(),
+        refundable: boolean().optional(),
+        partialRefundPercentage: number().optional()
+    })
+);
+
+const petTypePolicySchema = map({
+    type: string(),
+    weightLimit: number().optional(),
+    countLimit: number().optional(),
+    fee: number().optional(),
+    deposit: number().optional(),
+    breedRestrictions: list(string()).optional()
+});
+
+const petPolicySchema = map({
+    allowed: boolean(),
+    types: list(string()).optional(),
+    maxCount: number().optional(),
+    weightLimit: number().optional(),
+    breedRestrictions: list(string()).optional(),
+    deposit: number().optional(),
+    monthlyFee: number().optional(),
+    oneTimeFee: number().optional(),
+    notes: string().optional(),
+    petTypes: list(petTypePolicySchema).optional()
+});
+
+const parkingOptionSchema = map({
+    type: string(),
+    included: boolean(),
+    fee: number().optional(),
+    spaces: number().optional(),
+    description: string().optional()
+});
+
+const storageOptionSchema = map({
+    type: string(),
+    included: boolean(),
+    fee: number().optional(),
+    dimensions: string().optional(),
+    description: string().optional()
+});
+
+const amenitySchema = map({
+    name: string(),
+    category: string(),
+    description: string().optional()
+});
+
+const propertyHighlightSchema = map({
+    id: anyOf(number(), string()),
+    highlight: string()
+});
+
+const screeningCriteriaSchema = map({
+    incomeRatio: number().optional(),
+    minCreditScore: number().optional(),
+    maxOccupantsPerBedroom: number().optional(),
+    backgroundCheckRequired: boolean().optional(),
+    evictionHistory: boolean().optional(),
+    criminalHistory: boolean().optional(),
+    references: number().optional(),
+    employmentVerification: boolean().optional(),
+    rentalHistory: boolean().optional(),
+    notes: string().optional()
+});
+
+const officeHoursSchema = map({
+    open: string(),
+    close: string()
+});
+
+const contactInfoSchema = map({
+    name: string().optional(),
+    phone: string().optional(),
+    email: string().optional(),
+    propertyWebsite: string().optional(),
+    managementWebsite: string().optional(),
+    officeHours: record(string(), officeHoursSchema).optional()
+});
+
+const tourAvailabilitySchema = map({
+    selfGuidedTours: boolean().optional(),
+    virtualTours: boolean().optional(),
+    inPersonTours: boolean().optional(),
+    tourSchedulingUrl: string().optional(),
+    tourHours: record(string(), officeHoursSchema).optional()
+});
+
+const feedMetadataSchema = map({
+    timestamp: string(), // ISO date string
+    ipAddress: string().optional()
+});
 
 // Define the building schema separately to avoid circular dependencies
 const buildingSchema = item({
@@ -110,19 +225,19 @@ const buildingSchema = item({
     specialtyType: string().optional(),
     specialtySubType: string().optional(),
     propertyDescription: string().optional(),
-    rentSpecials: list(any()).optional(),
-    incomeRestrictions: any().optional(),
+    rentSpecials: list(rentSpecialSchema).optional(),
+    incomeRestrictions: incomeRestrictionSchema.optional(),
     utilitiesIncluded: record(string(), boolean()).optional(),
-    oneTimeFees: list(any()).optional(),
-    monthlyFees: list(any()).optional(),
-    parkingOptions: list(any()).optional(),
-    petPolicies: any().optional(),
-    storageOptions: list(any()).optional(),
-    propertyAmenities: list(any()).optional(),
-    propertyHighlights: list(any()).optional(),
-    screeningCriteria: any().optional(),
-    contactInfo: any().optional(),
-    tourAvailability: any().optional(),
+    oneTimeFees: list(feeSchema).optional(),
+    monthlyFees: list(feeSchema).optional(),
+    parkingOptions: list(parkingOptionSchema).optional(),
+    petPolicies: petPolicySchema.optional(),
+    storageOptions: list(storageOptionSchema).optional(),
+    propertyAmenities: list(amenitySchema).optional(),
+    propertyHighlights: list(propertyHighlightSchema).optional(),
+    screeningCriteria: screeningCriteriaSchema.optional(),
+    contactInfo: contactInfoSchema.optional(),
+    tourAvailability: tourAvailabilitySchema.optional(),
     applicationFee: number().optional(),
     acceptsOnlineApplications: boolean().optional(),
     // MITS compliance fields
@@ -176,16 +291,16 @@ const unitSchema = item({
     unitNumber: string().optional(),
     maxOccupants: number().optional(),
     perPersonRent: number().optional(),
-    deposit: any().optional(), // Supports both number (legacy) and Deposit object (enhanced)
+    deposit: depositSchema.optional(), // Supports both number (legacy) and Deposit object (enhanced)
     minLeaseTerm: number().optional(),
     maxLeaseTerm: number().optional(),
     unitDescription: string().optional(),
-    unitRentSpecial: any().optional(),
-    unitAmenities: list(any()).optional(),
+    unitRentSpecial: rentSpecialSchema.optional(),
+    unitAmenities: list(amenitySchema).optional(),
     photos: list(string()).optional(),
     feedInclusion: record(string(), boolean()).optional(),
     manualReferences: record(string(), string()).optional(),
-    feedLastPulled: record(string(), any()).optional(),
+    feedLastPulled: record(string(), feedMetadataSchema).optional(),
     feedLastModified: string().optional(),
     // MITS compliance fields
     vacancyClass: string().optional(),
@@ -238,10 +353,10 @@ const unitTypeSchema = item({
     perPersonRent: number().optional(),
     minSqft: number().optional(),
     maxSqft: number().optional(),
-    deposit: any().optional(), // Supports both number (legacy) and Deposit object (enhanced)
+    deposit: depositSchema.optional(), // Supports both number (legacy) and Deposit object (enhanced)
     minLeaseTerm: number().optional(),
     maxLeaseTerm: number().optional(),
-    modelAmenities: list(any()).optional(),
+    modelAmenities: list(amenitySchema).optional(),
     updatedAt: string().optional(),
 });
 

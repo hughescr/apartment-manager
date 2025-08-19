@@ -122,6 +122,9 @@ const emptyUnitTypes: any[] = [];
 
 <script>
 import type { AlpineComponent } from "../types/alpine";
+import { createClientLogger } from '../lib/utils/client-logger';
+
+const logger = createClientLogger('BuildingManager');
 
 type BuildingManagerData = AlpineComponent<{
     loading: boolean;
@@ -213,7 +216,7 @@ function buildingManagerData(): BuildingManagerData {
                 this.loading = false;
                 this.error = true;
                 this.errorMessage = (error as Error).message;
-                console.error('Failed to load building data:', error);
+                logger.error('Failed to load building data', error);
             }
         },
         

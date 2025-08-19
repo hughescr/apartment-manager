@@ -7,7 +7,7 @@
   "author": "Craig R. Hughes <craig.git@rungie.com>",
   "type": "module",
   "scripts": {
-    "claude": "tmux -CC new -A -n Claude -s apartment-manager bunx --bun @anthropic-ai/claude-code@latest --mcp-config ~/.claude/mcp.json",
+    "claude": "tmux -CC new -A -n Claude -s apartment-manager bunx @anthropic-ai/claude-code@latest --mcp-config ~/.claude/mcp.json",
     "dev": "astro dev",
     "dev-console": "sh -c 'if [ -z \"$AWS_ACCESS_KEY_ID\" ]; then op run --env-file=.env.op -- bunx sst dev --mode=mono \"$@\"; else bunx sst dev --mode=mono  \"$@\"; fi' _",
     "full-test": "eslint --fix && tsc && astro check && bun test",
@@ -39,6 +39,7 @@
     "parse-address": "^1.1.2",
     "short-uuid": "^5.2.0",
     "sst": "^3.17.10",
+    "validator": "^13.15.15",
     "zod": "^4.0.17"
   },
   "devDependencies": {
@@ -54,6 +55,7 @@
     "@types/lodash": "^4.17.20",
     "@types/luxon": "^3.7.1",
     "@types/node": "^24.3.0",
+    "@types/validator": "^13.15.2",
     "daisyui": "^5.0.50",
     "esbuild": "^0.25.9",
     "eslint": "^9.33.0",

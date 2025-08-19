@@ -407,11 +407,6 @@ export const getDefaultBuildingData = (): Partial<BuildingData> => ({
         rentalHistory: true
     },
     contactInfo: {
-        name: undefined,
-        phone: undefined,
-        email: undefined,
-        propertyWebsite: undefined,
-        managementWebsite: undefined,
         officeHours: {}
     },
     tourAvailability: {

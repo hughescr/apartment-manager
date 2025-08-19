@@ -49,30 +49,36 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         // Process each batch sequentially, but buildings within each batch concurrently
         for(const batch of buildingBatches) {
             await Promise.all(map(batch, async (building) => {
-                try {
-                    // Fetch unit types and units for this building concurrently
-                    const [unitTypes, units] = await Promise.all([
-                        getUnitTypes(building.buildingID),
-                        getUnits(building.buildingID)
-                    ]);
+                // Fetch unit types and units individually to handle partial failures
+                let unitTypes: UnitTypeData[] = [];
+                let units: UnitData[] = [];
 
-                    unitTypesByBuilding[building.buildingID] = unitTypes;
+                // Try to get unit types
+                try {
+                    unitTypes = await getUnitTypes(building.buildingID);
+                } catch(error: unknown) {
+                    const errorMessage = isError(error) ? error.message : 'Unknown error';
+                    buildingErrors[`${building.buildingID}_unitTypes`] = errorMessage;
+                    unitTypes = []; // Empty array on failure
+                }
+
+                // Try to get units
+                try {
+                    units = await getUnits(building.buildingID);
                     // Filter units by feed inclusion for this site
                     const filteredUnits = filter(units, unit =>
                         unit.feedInclusion && unit.feedInclusion[validatedSite] === true
                     ) as UnitData[];
-                    unitsByBuilding[building.buildingID] = filteredUnits;
+                    units = filteredUnits;
                 } catch(error: unknown) {
-                    // Log individual building failures but continue processing
                     const errorMessage = isError(error) ? error.message : 'Unknown error';
-                    buildingErrors[building.buildingID] = errorMessage;
-                    // In production, this should use proper logging (CloudWatch, etc.)
-                    // For now, we store the error but don't log to console to avoid ESLint warnings
-
-                    // Set empty arrays for failed buildings to prevent downstream errors
-                    unitTypesByBuilding[building.buildingID] = [];
-                    unitsByBuilding[building.buildingID] = [];
+                    buildingErrors[`${building.buildingID}_units`] = errorMessage;
+                    units = []; // Empty array on failure
                 }
+
+                // Set the results regardless of partial failures
+                unitTypesByBuilding[building.buildingID] = unitTypes;
+                unitsByBuilding[building.buildingID] = units;
             }));
 
             // Small delay between batches to be respectful to the database

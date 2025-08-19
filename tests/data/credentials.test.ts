@@ -1,6 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import './test-setup';
-import { ssmMock, resetAllMocks, jest, createTestSSMClient } from './test-setup';
+import { ssmMock, resetAllMocks, createTestSSMClient } from './test-setup';
 
 import { describe, test, expect, beforeEach, beforeAll } from 'bun:test';
 import { SSMClient } from '@aws-sdk/client-ssm';
@@ -25,12 +25,8 @@ describe('Credentials Data Layer', () => {
     });
 
     beforeEach(() => {
-        // Reset all mock state including queued responses
-        jest.clearAllMocks();
-        jest.restoreAllMocks();
-
-        // CRITICAL: Reset the mock completely to clear any queued responses
-        ssmMock.mockReset();
+        // CRITICAL: Reset ALL mocks to prevent cross-test contamination
+        resetAllMocks();
 
         // Inject the mock SSM client so credentials.ts uses our controlled mock
         const testSSMClient = createTestSSMClient();

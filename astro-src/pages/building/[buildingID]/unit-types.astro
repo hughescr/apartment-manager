@@ -1,11 +1,12 @@
 ---
 // Example page showing how to use the UnitType components
 import Layout from "../../../layouts/Layout.astro";
-import { getBuilding } from "../../../../data/buildings";
-import { getUnitTypes } from "../../../../data/unitTypes";
+import { BuildingsApiService } from "../../../lib/buildings/services/buildingsApiService";
+import { UnitTypesApiService } from "../../../lib/unitTypes/services/unitTypesApiService";
 import UnitTypeCard from "../../../components/UnitTypeCard.astro";
 import UnitTypeForm from "../../../components/UnitTypeForm.astro";
 import ModelAmenitiesManager from "../../../components/ModelAmenitiesManager.astro";
+import { Resource } from "sst";
 
 const { buildingID } = Astro.params;
 
@@ -13,19 +14,34 @@ if (!buildingID) {
     return Astro.redirect("/404");
 }
 
-let building: Awaited<ReturnType<typeof getBuilding>> | undefined;
-let unitTypes: Awaited<ReturnType<typeof getUnitTypes>> = [];
+// Initialize API services
+const apiURL = Resource.API.url;
+const buildingsService = new BuildingsApiService(apiURL);
+const unitTypesService = new UnitTypesApiService(apiURL);
+
+let building: any = undefined;
+let unitTypes: any[] = [];
 let error: string | null = null;
 
 try {
-    building = await getBuilding(buildingID);
-    if (!building) {
+    // Load building data via API
+    const buildingResponse = await buildingsService.getBuilding(buildingID);
+    if (!buildingResponse.success || !buildingResponse.data) {
         return Astro.redirect("/404");
     }
-    unitTypes = await getUnitTypes(buildingID);
+    building = buildingResponse.data;
+
+    // Load unit types data via API
+    const unitTypesResponse = await unitTypesService.getUnitTypes(buildingID);
+    if (unitTypesResponse.success && unitTypesResponse.data) {
+        unitTypes = unitTypesResponse.data;
+    } else {
+        error = unitTypesResponse.error || "Failed to load unit types";
+        unitTypes = [];
+    }
 } catch (e) {
-    error = "Failed to load unit types";
-    unitTypes = [];
+    error = "Failed to load building data";
+    building = undefined;
 }
 
 // TypeScript now knows building is defined if we reach this point

@@ -93,49 +93,13 @@ interface CacheEntry {
  * - Maximum size limits with LRU eviction
  * - Periodic cleanup of expired entries
  * - Access tracking for LRU ordering
- * - Memory leak prevention
+ * - Passive cleanup on access
  */
 class AutocompleteCache {
     private cache = new Map<string, CacheEntry>();
     private readonly ttlMs = 5 * 60 * 1000; // 5 minutes
     private readonly maxSize = 1000; // Maximum cache entries
-    private cleanupInterval?: ReturnType<typeof setInterval>;
-    private _isDestroyed = false;
-
-    constructor() {
-        // Start periodic cleanup to prevent unbounded memory growth
-        this.startPeriodicCleanup();
-    }
-
-    private startPeriodicCleanup(): void {
-        // Clean up expired entries every 5 minutes
-        this.cleanupInterval = setInterval(() => {
-            if(!this._isDestroyed) {
-                this.cleanupExpiredEntries();
-                this.enforceSizeLimit();
-            }
-        }, 5 * 60 * 1000);
-    }
-
-    private cleanupExpiredEntries(): void {
-        const now = Date.now();
-        let removedCount = 0;
-
-        // Clean expired cache entries
-        for(const [key, entry] of this.cache.entries()) {
-            if(now - entry.timestamp > this.ttlMs) {
-                this.cache.delete(key);
-                removedCount++;
-            }
-        }
-
-        if(removedCount > 0) {
-            logger.debug(`Cleaned up ${removedCount} expired autocomplete cache entries`);
-        }
-        if(removedCount > 0) {
-            logger.debug(`Cleaned up ${removedCount} expired autocomplete cache entries`);
-        }
-    }
+    // Constructor removed - no periodic cleanup needed
 
     /**
      * Enforce maximum cache size using LRU eviction
@@ -171,11 +135,6 @@ class AutocompleteCache {
     }
 
     get(query: string): AddressSuggestion[] | null {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed AutocompleteCache');
-            return null;
-        }
-
         const key = this.createKey(query);
         const entry = this.cache.get(key);
 
@@ -198,11 +157,6 @@ class AutocompleteCache {
     }
 
     set(query: string, suggestions: AddressSuggestion[]): void {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed AutocompleteCache');
-            return;
-        }
-
         const key = this.createKey(query);
         const now = Date.now();
         this.cache.set(key, {
@@ -238,37 +192,6 @@ class AutocompleteCache {
             ttlMinutes: 5
         };
     }
-
-    /**
-     * Cleanup method to prevent memory leaks
-     * Clears all timers, maps, and marks instance as destroyed
-     */
-    destroy(): void {
-        if(this._isDestroyed) {
-            return;
-        }
-
-        logger.info('Destroying AutocompleteCache instance');
-
-        // Clear the periodic cleanup interval
-        if(this.cleanupInterval) {
-            clearInterval(this.cleanupInterval);
-            this.cleanupInterval = undefined;
-        }
-
-        // Clear all cached data
-        this.clear();
-
-        // Mark as destroyed to prevent further usage
-        this._isDestroyed = true;
-    }
-
-    /**
-     * Check if the cache instance is destroyed
-     */
-    isDestroyed(): boolean {
-        return this._isDestroyed;
-    }
 }
 
 /**
@@ -278,14 +201,8 @@ class AutocompleteCache {
 class RateLimiter {
     private lastRequestTime = 0;
     private readonly minIntervalMs = 300; // 300ms minimum between requests
-    private _isDestroyed = false;
 
     async waitIfNeeded(): Promise<void> {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed RateLimiter');
-            return;
-        }
-
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
 
@@ -305,26 +222,6 @@ class RateLimiter {
         this.lastRequestTime = 0;
         logger.debug('Rate limiter state reset');
     }
-
-    /**
-     * Cleanup method to prevent memory leaks
-     */
-    destroy(): void {
-        if(this._isDestroyed) {
-            return;
-        }
-
-        logger.info('Destroying RateLimiter instance');
-        this.reset();
-        this._isDestroyed = true;
-    }
-
-    /**
-     * Check if the rate limiter instance is destroyed
-     */
-    isDestroyed(): boolean {
-        return this._isDestroyed;
-    }
 }
 
 /**
@@ -335,14 +232,8 @@ class Debouncer {
     private timeouts = new Map<string, ReturnType<typeof setTimeout>>();
     private pendingPromises = new Map<string, { resolve: (value: unknown) => void, reject: (error: unknown) => void }>();
     private readonly debounceMs = 200; // 200ms debounce
-    private _isDestroyed = false;
 
     async debounce<T>(key: string, fn: () => Promise<T>): Promise<T> {
-        if(this._isDestroyed) {
-            logger.warn('Attempting to use destroyed Debouncer');
-            throw new Error('Debouncer instance has been destroyed');
-        }
-
         // Reject any existing pending promise for this key
         const existingPending = this.pendingPromises.get(key);
         if(existingPending) {
@@ -410,26 +301,6 @@ class Debouncer {
         this.pendingPromises.clear();
 
         logger.debug('Cleared all debounced calls');
-    }
-
-    /**
-     * Cleanup method to prevent memory leaks
-     */
-    destroy(): void {
-        if(this._isDestroyed) {
-            return;
-        }
-
-        logger.info('Destroying Debouncer instance');
-        this.clearAll();
-        this._isDestroyed = true;
-    }
-
-    /**
-     * Check if the debouncer instance is destroyed
-     */
-    isDestroyed(): boolean {
-        return this._isDestroyed;
     }
 
     /**
@@ -812,25 +683,6 @@ export async function getAddressSuggestions(query: string, limit = 5): Promise<s
 }
 
 /**
- * Cleanup function for all singleton instances in address-autocomplete service
- * Prevents memory leaks by properly destroying all cached instances
- */
-export function cleanupAddressAutocompleteService(): void {
-    try {
-        logger.info('Cleaning up address-autocomplete service singleton instances');
-
-        // Destroy all singleton instances
-        cache.destroy();
-        rateLimiter.destroy();
-        debouncer.destroy();
-
-        logger.info('Address autocomplete service cleanup completed successfully');
-    } catch(error) {
-        logger.error('Error during address autocomplete service cleanup', { error });
-    }
-}
-
-/**
  * Get statistics about all singleton instances
  */
 export function getAddressAutocompleteServiceStats(): {
@@ -841,11 +693,4 @@ export function getAddressAutocompleteServiceStats(): {
         cache: cache.getStats(),
         debouncer: debouncer.getStats()
     };
-}
-
-/**
- * Check if all singleton instances are properly destroyed
- */
-export function isAddressAutocompleteServiceDestroyed(): boolean {
-    return cache.isDestroyed() && rateLimiter.isDestroyed() && debouncer.isDestroyed();
 }

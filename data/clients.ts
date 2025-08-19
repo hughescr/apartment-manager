@@ -16,10 +16,11 @@ let _testSSMClient: SSMClient | null = null;
 
 // Helper functions for test DynamoDB mock
 function createMockItemResponse(item: Record<string, unknown>, unitID: string) {
+    // Return all the item data that was sent, plus metadata
     return {
+        ...item,
         buildingID: item.buildingID || 'test-building',
         unitID,
-        ...item,
         _ct: new Date().toISOString(),
         _md: new Date().toISOString(),
         _et: unitID === 'BUILDING' ? 'Building' : 'Unit'
@@ -27,12 +28,13 @@ function createMockItemResponse(item: Record<string, unknown>, unitID: string) {
 }
 
 function handleMockPutCommand(cmd: { input?: Record<string, unknown> }) {
-    const item = cmd.input?.Item || cmd.input || {};
-    const unitID = isString((item as Record<string, unknown>).unitID)
-        ? (item as Record<string, unknown>).unitID as string
+    // DynamoDB Toolbox sends data in input.Item
+    const item = (cmd.input?.Item || cmd.input || {}) as Record<string, unknown>;
+    const unitID = isString(item.unitID)
+        ? item.unitID as string
         : 'BUILDING';
     return Promise.resolve({
-        Attributes: createMockItemResponse(item as Record<string, unknown>, unitID)
+        Attributes: createMockItemResponse(item, unitID)
     });
 }
 
@@ -82,7 +84,6 @@ function createTestDynamoClient(): DynamoDBDocumentClient {
         middlewareStack: {} as unknown
     } as unknown as DynamoDBDocumentClient;
 }
-
 /**
  * Get the DynamoDB Document client instance.
  * Creates a new client on first call, then reuses the same instance.

@@ -7,7 +7,8 @@
  */
 
 import { z } from 'zod';
-import { flatMap, forEach, includes, isArray, isEmpty, isNumber, isPlainObject, isString, last, map, omit, replace, split, startCase } from 'lodash';
+import validator from 'validator';
+import { flatMap, forEach, includes, isArray, isEmpty, isNumber, isPlainObject, isString, last, map, omit, replace, split, startCase, toLower, trim } from 'lodash';
 import { sanitizeHtml, validateArraySize, validateNumericValue } from '../security-validation';
 
 // Import draft schemas (permissive)
@@ -136,7 +137,7 @@ export function validateForSave(
     if(result.success) {
         return {
             success: true,
-            data: result.data,
+            data: sanitizedData,  // Return sanitized data, not Zod's parsed result
             errors: []
         };
     }
@@ -614,26 +615,141 @@ function sanitizeDataForSecurity(data: unknown): unknown {
     const obj = data as Record<string, unknown>;
     const sanitized: Record<string, unknown> = {};
 
+    forEach(obj, (value, key) => {
+        const sanitizedValue = sanitizeField(key, value);
+        // Preserve all fields, even if empty
+        if(sanitizedValue !== undefined) {
+            sanitized[key] = sanitizedValue;
+        }
+    });
+
+    return sanitized;
+}
+
+/**
+ * Sanitize a single field based on its type and name
+ */
+function sanitizeField(key: string, value: unknown): unknown {
+    // Handle nested objects first
+    if(isPlainObject(value)) {
+        const sanitized = sanitizeDataForSecurity(value);
+        // Preserve nested objects even if empty
+        return sanitized;
+    }
+
+    // Handle arrays
+    if(isArray(value)) {
+        return sanitizeArray(value);
+    }
+
+    // Handle string values based on field type
+    if(isString(value)) {
+        return sanitizeStringField(key, value);
+    }
+
+    // Keep other values as-is (including null, undefined, numbers, booleans)
+    return value;
+}
+
+/**
+ * Sanitize array values
+ */
+function sanitizeArray(value: unknown[]): unknown[] {
+    return map(value, (item) => {
+        if(isString(item)) {
+            return sanitizeHtml(item);
+        } else if(isPlainObject(item)) {
+            return sanitizeDataForSecurity(item);
+        } else {
+            return item;
+        }
+    });
+}
+
+/**
+ * Sanitize string fields based on field name
+ */
+function sanitizeStringField(key: string, value: string): unknown {
     // Text fields that should be sanitized for XSS
     const textFields = [
         'buildingName', 'description', 'street', 'city', 'state',
         'modelName', 'unitNumber', 'notes'
     ];
 
-    forEach(obj, (value, key) => {
-        if(includes(textFields, key) && isString(value)) {
-            sanitized[key] = sanitizeHtml(value);
-        } else if(isArray(value)) {
-            // Sanitize array elements if they're strings
-            sanitized[key] = map(value, item =>
-                (isString(item) ? sanitizeHtml(item) : item)
-            );
-        } else {
-            sanitized[key] = value;
-        }
-    });
+    // Handle text fields
+    if(includes(textFields, key)) {
+        const result = sanitizeHtml(value);
+        return result;
+    }
 
-    return sanitized;
+    // Handle URL fields
+    if(isUrlField(key)) {
+        const trimmedValue = trim(value);
+        if(trimmedValue && validator.isURL(trimmedValue, {
+            protocols: ['http', 'https'],
+            require_protocol: false,
+            require_valid_protocol: true,
+            allow_query_components: true,
+            allow_fragments: true
+        })) {
+            const result = sanitizeHtml(trimmedValue);
+            return result;
+        }
+        // For invalid URLs, keep the sanitized value to maintain field presence
+        // Empty string ensures the field exists for proper error reporting
+        const result = trimmedValue ? sanitizeHtml(trimmedValue) : '';
+        return result;
+    }
+
+    // Handle email fields
+    if(isEmailField(key)) {
+        const trimmedValue = trim(value);
+        if(trimmedValue && validator.isEmail(trimmedValue)) {
+            return sanitizeHtml(trimmedValue);
+        }
+        // Return sanitized value for validation to handle
+        // This allows the schema to properly validate and return appropriate errors
+        return sanitizeHtml(trimmedValue);
+    }
+
+    // Handle ZIP codes
+    if(key === 'zip') {
+        // Check if the ZIP code contains any suspicious characters
+        // These could indicate SQL injection, XSS, or other attacks
+        const suspiciousPatterns = /[;<>{}$|\\`"'\0\r\n]/;
+        if(suspiciousPatterns.test(value)) {
+            // Return the malicious value as-is so validation will reject it
+            return value;
+        }
+
+        // For non-malicious input, clean and validate
+        const cleanedZip = replace(value, /[^0-9-]/g, '');
+        const zipRegex = /^\d{5}(?:-\d{4})?$/;
+        if(cleanedZip && zipRegex.test(cleanedZip)) {
+            return cleanedZip;
+        }
+        // Return original value for validation to handle
+        return value;
+    }
+
+    // Default: return as-is
+    return value;
+}
+
+/**
+ * Check if a field name represents a URL field
+ */
+function isUrlField(fieldName: string): boolean {
+    const lowerName = toLower(fieldName);
+    return includes(lowerName, 'website') || includes(lowerName, 'url');
+}
+
+/**
+ * Check if a field name represents an email field
+ */
+function isEmailField(fieldName: string): boolean {
+    const lowerName = toLower(fieldName);
+    return includes(lowerName, 'email');
 }
 
 // Export all types for external use

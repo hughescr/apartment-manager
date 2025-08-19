@@ -8,6 +8,7 @@
 
 import { getBuildings, updateBuilding } from '../data/buildings.js';
 import { generateBuildingName } from '../src/utils/index.js';
+import { createMigrationLogger } from '../src/utils/logger.js';
 
 interface MigrationStats {
     totalBuildings: number
@@ -17,7 +18,8 @@ interface MigrationStats {
 }
 
 async function migrateBuildingNames(dryRun = false): Promise<MigrationStats> {
-    console.log(`🏗️  Starting building name migration ${dryRun ? '(DRY RUN)' : ''}...`);
+    const migrationLogger = createMigrationLogger('migrate-building-names');
+    migrationLogger.start(`Starting building name migration ${dryRun ? '(DRY RUN)' : ''}`);
 
     const stats: MigrationStats = {
         totalBuildings: 0,
@@ -31,14 +33,14 @@ async function migrateBuildingNames(dryRun = false): Promise<MigrationStats> {
         const buildings = await getBuildings();
         stats.totalBuildings = buildings.length;
 
-        console.log(`📋 Found ${buildings.length} buildings to check`);
+        migrationLogger.progress(`Found ${buildings.length} buildings to check`);
 
         for(const building of buildings) {
             try {
                 // Check if building already has a name
                 if(building.buildingName) {
                     stats.buildingsWithNames++;
-                    console.log(`✅ Building ${building.buildingID} already has name: "${building.buildingName}"`);
+                    migrationLogger.progress(`Building ${building.buildingID} already has name: "${building.buildingName}"`);
                     continue;
                 }
 
@@ -53,16 +55,16 @@ async function migrateBuildingNames(dryRun = false): Promise<MigrationStats> {
                     generatedName = building.buildingID;
                 }
 
-                console.log(`🏷️  Building ${building.buildingID}: "${building.street}" → "${generatedName}"`);
+                migrationLogger.progress(`Building ${building.buildingID}: "${building.street}" → "${generatedName}"`);
 
                 if(!dryRun) {
                     // Update the building with the generated name
                     await updateBuilding(building.buildingID, {
                         buildingName: generatedName
                     });
-                    console.log(`✅ Updated building ${building.buildingID} with name: "${generatedName}"`);
+                    migrationLogger.success(`Updated building ${building.buildingID} with name: "${generatedName}"`);
                 } else {
-                    console.log(`📝 Would update building ${building.buildingID} with name: "${generatedName}"`);
+                    migrationLogger.progress(`Would update building ${building.buildingID} with name: "${generatedName}"`);
                 }
 
                 stats.buildingsUpdated++;
@@ -72,29 +74,28 @@ async function migrateBuildingNames(dryRun = false): Promise<MigrationStats> {
                     buildingID: building.buildingID,
                     error: errorMessage
                 });
-                console.error(`❌ Failed to update building ${building.buildingID}:`, errorMessage);
+                migrationLogger.error(`Failed to update building ${building.buildingID}`, { buildingID: building.buildingID, error: errorMessage });
             }
         }
 
         // Print summary
-        console.log('\n📊 Migration Summary:');
-        console.log(`   Total buildings: ${stats.totalBuildings}`);
-        console.log(`   Already had names: ${stats.buildingsWithNames}`);
-        console.log(`   ${dryRun ? 'Would update' : 'Updated'}: ${stats.buildingsUpdated}`);
-        console.log(`   Errors: ${stats.errors.length}`);
+        migrationLogger.summary('Migration Summary', {
+            totalBuildings: stats.totalBuildings,
+            buildingsWithNames: stats.buildingsWithNames,
+            buildingsUpdated: stats.buildingsUpdated,
+            errorCount: stats.errors.length,
+            mode: dryRun ? 'DRY RUN' : 'LIVE'
+        });
 
         if(stats.errors.length > 0) {
-            console.log('\n❌ Errors encountered:');
-            stats.errors.forEach(({ buildingID, error }) => {
-                console.log(`   ${buildingID}: ${error}`);
-            });
+            migrationLogger.error('Errors encountered during migration', { errors: stats.errors });
         }
 
         if(!dryRun && stats.buildingsUpdated > 0) {
-            console.log(`\n🎉 Successfully migrated ${stats.buildingsUpdated} buildings!`);
+            migrationLogger.complete(`Successfully migrated ${stats.buildingsUpdated} buildings!`);
         }
     } catch(error) {
-        console.error('💥 Migration failed:', error);
+        migrationLogger.error('Migration failed', error);
         throw error;
     }
 
@@ -103,19 +104,20 @@ async function migrateBuildingNames(dryRun = false): Promise<MigrationStats> {
 
 // Main execution
 async function main() {
+    const migrationLogger = createMigrationLogger('migrate-building-names');
     const args = process.argv.slice(2);
     const dryRun = args.includes('--dry-run') || args.includes('-d');
 
     if(dryRun) {
-        console.log('🔍 Running in DRY RUN mode - no changes will be made');
+        migrationLogger.progress('Running in DRY RUN mode - no changes will be made');
     }
 
     try {
         await migrateBuildingNames(dryRun);
-        console.log('\n✅ Migration completed successfully!');
+        migrationLogger.complete('Migration completed successfully!');
         process.exit(0);
     } catch(error) {
-        console.error('\n💥 Migration failed:', error);
+        migrationLogger.error('Migration failed', error);
         process.exit(1);
     }
 }

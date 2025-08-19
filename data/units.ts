@@ -1,4 +1,4 @@
-import { UnitData, VacancyClass } from '../src/types';
+import { UnitData, VacancyClass, RentSpecial, Amenity } from '../src/types';
 import { ApartmentTable, getApartmentTable, getUnitEntity, Unit } from './model';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
@@ -9,6 +9,8 @@ import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 
 import { logger } from '@hughescr/logger';
 import { assign, isObject, isString, keys, map, mapValues, omit, pickBy, replace } from 'lodash';
+
+// Note: DynamoDB Toolbox .item() calls require 'any' due to library constraints
 
 // This type is no longer used as we switched to Record<string, unknown> for DynamoDB compatibility
 
@@ -54,10 +56,8 @@ function convertRawItemToUnitData(rawItem: Record<string, unknown>): UnitData {
         minLeaseTerm: rawItem.minLeaseTerm as number | undefined,
         maxLeaseTerm: rawItem.maxLeaseTerm as number | undefined,
         unitDescription: rawItem.unitDescription as string | undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Complex nested types from DynamoDB
-        unitRentSpecial: rawItem.unitRentSpecial as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Complex nested types from DynamoDB
-        unitAmenities: rawItem.unitAmenities as any[] | undefined,
+        unitRentSpecial: rawItem.unitRentSpecial as RentSpecial | undefined,
+        unitAmenities: rawItem.unitAmenities as Amenity[] | undefined,
         photos: rawItem.photos as string[] | undefined,
         features: rawItem.features as string[] | undefined,
         notes: rawItem.notes as string | undefined,
@@ -159,7 +159,7 @@ export async function createUnit(unit: UnitData) {
 
     const UnitEntity = getUnitEntity() as typeof Unit;
     const { Attributes } = await UnitEntity.build(PutItemCommand)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox .item() requires any for library compatibility
         .item(unitForDB as any)
         .options({
             condition: { // Fail if unit already exists
@@ -220,7 +220,7 @@ function prepareUnitDataForDB(updates: Partial<UnitData>, buildingID: string, un
 async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Promise<UnitData | undefined> {
     const UnitEntity = getUnitEntity() as typeof Unit;
     const { Attributes } = await UnitEntity.build(UpdateItemCommand)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox .item() requires any for library compatibility
         .item(updatesForDB as any)
         .options({ returnValues: 'ALL_NEW' })
         .send();
@@ -284,7 +284,7 @@ async function fallbackToPutItemCommand(
     // Use PutItemCommand as fallback for more reliable data persistence
     const UnitEntity = getUnitEntity() as typeof Unit;
     await UnitEntity.build(PutItemCommand)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox requires any for complex item types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox .item() requires any for library compatibility
         .item(mergedData as any)
         .send();
 

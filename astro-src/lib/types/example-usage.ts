@@ -15,6 +15,7 @@ import type {
     BuildingData
 } from './index';
 import { keys, noop, constant, isObject, isBoolean, isString, isArray, toUpper } from 'lodash';
+import { devLogger } from '../utils/client-logger';
 
 // ===== EXAMPLE 1: TYPED ALPINE.JS STATE =====
 
@@ -137,8 +138,8 @@ function setupTypedEventListeners() {
     // Type-safe event listener with IntelliSense
     window.addEventListener('building:updated', ((event: CustomEvent<BuildingUpdatedEvent>) => {
         // TypeScript knows event.detail has a 'building' property of type BuildingData
-        // eslint-disable-next-line no-console -- Example code
-        console.log('Building updated:', event.detail.building.buildingID);
+        // Example: Log building updates (only in development)
+        devLogger.log('Building updated', { buildingID: event.detail.building.buildingID });
     }) as EventListener);
 
     // Type-safe toast listener
@@ -203,12 +204,12 @@ function createTypedBuildingProvider(props: BuildingProviderProps) {
     const { building, units, unitTypes, apiURL } = props;
 
     // Type-safe property access
-    // eslint-disable-next-line no-console -- Example code
-    console.log(`Building: ${building.buildingID}`);
-    // eslint-disable-next-line no-console -- Example code
-    console.log(`Units: ${units.length}`);
-    // eslint-disable-next-line no-console -- Example code
-    console.log(`Unit Types: ${unitTypes.length}`);
+    // Example: Log building data (only in development)
+    devLogger.log('Building data loaded', {
+        buildingID: building.buildingID,
+        unitsCount: units.length,
+        unitTypesCount: unitTypes.length
+    });
 
     return {
         // Alpine.js x-data would use this
@@ -250,8 +251,8 @@ function validateBuildingState(state: unknown): state is BuildingAlpineState {
  * Example utility function with proper typing
  */
 function showToast(message: string, type: import('./alpine-state').ToastType) {
-    // eslint-disable-next-line no-console -- Example code
-    console.log(`${toUpper(type)}: ${message}`);
+    // Example: Show toast message (only in development)
+    devLogger.log(`Toast: ${toUpper(type)}`, { message });
 }
 
 /**

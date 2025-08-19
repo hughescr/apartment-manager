@@ -32,6 +32,15 @@ if (!unit.madeReadyDate) unit.madeReadyDate = '';
 
 <script is:inline>
 // Used by Alpine.js x-data attribute
+// Client-side safe logging for production
+const safeLog = {
+    error: (msg, data) => {
+        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+            console.error('[UnitCard]', msg, data);
+        }
+    }
+};
+
 window.unitCardData = function unitCardData() {
     return {
         unit: null,
@@ -399,7 +408,7 @@ window.unitCardData = function unitCardData() {
             if (!myThis.isDirty()) { return; }
 
             if (!myThis.validateForm()) {
-                console.error('Validation failed:', myThis.errors);
+                safeLog.error('Validation failed', myThis.errors);
                 return;
             }
 
@@ -415,13 +424,13 @@ window.unitCardData = function unitCardData() {
                     myThis.errors = {}; // Clear all errors on successful save
                 } else {
                     const errorData = await response.json();
-                    console.error('Save failed:', errorData);
+                    safeLog.error('Save failed', errorData);
                     myThis.errors.submit = errorData.error || 'Failed to save unit';
                     // Revert to original value on save failure
                     myThis.unit = { ...myThis.originalUnit };
                 }
             } catch (error) {
-                console.error('Network error during save:', error);
+                safeLog.error('Network error during save', error);
                 myThis.errors.submit = 'Network error. Please try again.';
                 // Revert to original value on network error
                 myThis.unit = { ...myThis.originalUnit };
@@ -438,10 +447,10 @@ window.unitCardData = function unitCardData() {
                     // Reload the page or remove the row from the DOM
                     window.location.reload(); // Simplest for now
                 } else {
-                    console.error('Delete failed:', response.statusText);
+                    safeLog.error('Delete failed', { status: response.statusText });
                 }
             } catch (error) {
-                console.error('Network error during delete:', error);
+                safeLog.error('Network error during delete', error);
             }
         },
         
@@ -542,7 +551,7 @@ window.unitCardData = function unitCardData() {
                     this.buildingAmenities = building.propertyAmenities || [];
                 }
             } catch (error) {
-                console.error('Failed to load building amenities:', error);
+                safeLog.error('Failed to load building amenities', error);
                 this.buildingAmenities = [];
             }
         }
