@@ -31,7 +31,7 @@ const currentPath = Astro.url.pathname;
                 <button
                   data-testid="mobile-menu-button"
                   class="btn btn-square btn-ghost md:hidden"
-                  @click="open = !open"
+                  onclick="open = !open"
                   :aria-expanded="open"
                 >
                     <svg
@@ -60,7 +60,7 @@ const currentPath = Astro.url.pathname;
                   class="menu menu-sm mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 absolute right-0 md:hidden"
                   x-show="open"
                   x-transition
-                  click.outside="open = false"
+                  x-on:click.outside="open = false"
                   data-testid="mobile-menu"
                 >
                     {_.map(navItems, item => (
@@ -88,6 +88,9 @@ const currentPath = Astro.url.pathname;
                 toastMessage: '',
                 toastType: 'success',
                 autoHideTimer: null,
+                init() {
+                    window.toastController = this;
+                },
                 showAndHideToast(message, type) {
                     this.toastMessage = message;
                     this.toastType = type;
@@ -128,19 +131,19 @@ const currentPath = Astro.url.pathname;
         >
             <div
               class="alert cursor-pointer relative pr-12"
-              :class="{
+              x-bind:class="{
                 'alert-error': toastType === 'error',
                 'alert-success': toastType === 'success',
                 'alert-warning': toastType === 'warning',
                 'alert-info': toastType === 'info'
               }"
-                @click="dismissToast()"
+              onclick="window.toastController?.dismissToast?.()"
             >
                 <span x-text="toastMessage" class="flex-1"></span>
 
                 <!-- Close button -->
                 <button
-                  @click.stop="dismissToast()"
+                  @click.stop="window.toastController?.dismissToast?.()"
                   class="btn btn-ghost btn-sm btn-square absolute top-2 right-2"
                   aria-label="Dismiss notification"
                 >
