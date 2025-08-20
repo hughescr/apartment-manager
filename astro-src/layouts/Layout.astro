@@ -87,22 +87,67 @@ const currentPath = Astro.url.pathname;
                 showToast: false,
                 toastMessage: '',
                 toastType: 'success',
+                autoHideTimer: null,
                 showAndHideToast(message, type) {
                     this.toastMessage = message;
                     this.toastType = type;
                     this.showToast = true;
-                    setTimeout(() => {
-                        this.showToast = false;
-                    }, 3000);
+
+                    // Clear existing timer if any
+                    if (this.autoHideTimer) {
+                        clearTimeout(this.autoHideTimer);
+                        this.autoHideTimer = null;
+                    }
+
+                    // Only auto-hide non-error toasts
+                    if (type !== 'error') {
+                        // Calculate display time based on message length
+                        // Base time: 3 seconds + (message length / 10 chars per second reading speed)
+                        // Min: 3 seconds, Max: 15 seconds
+                        const baseTime = 3000;
+                        const readingTime = Math.min(Math.max(message.length * 100, baseTime), 15000);
+
+                        this.autoHideTimer = setTimeout(() => {
+                            this.showToast = false;
+                            this.autoHideTimer = null;
+                        }, readingTime);
+                    }
+                },
+                dismissToast() {
+                    if (this.autoHideTimer) {
+                        clearTimeout(this.autoHideTimer);
+                        this.autoHideTimer = null;
+                    }
+                    this.showToast = false;
                 }
             }"
-          show-toast.window="showAndHideToast($event.detail.message, $event.detail.type)"
-          class="toast toast-center toast-middle"
+          @show-toast.window="showAndHideToast($event.detail.message, $event.detail.type)"
+          class="toast toast-top toast-end"
           x-show="showToast"
           x-transition.opacity
         >
-            <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
-                <span x-text="toastMessage"></span>
+            <div
+              class="alert cursor-pointer relative pr-12"
+              :class="{
+                'alert-error': toastType === 'error',
+                'alert-success': toastType === 'success',
+                'alert-warning': toastType === 'warning',
+                'alert-info': toastType === 'info'
+              }"
+                @click="dismissToast()"
+            >
+                <span x-text="toastMessage" class="flex-1"></span>
+
+                <!-- Close button -->
+                <button
+                  @click.stop="dismissToast()"
+                  class="btn btn-ghost btn-sm btn-square absolute top-2 right-2"
+                  aria-label="Dismiss notification"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
         </div>
 

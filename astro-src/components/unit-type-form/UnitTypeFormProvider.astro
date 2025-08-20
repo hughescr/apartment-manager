@@ -110,16 +110,16 @@ window.unitTypeFormData = function unitTypeFormData(_apiUrlData, _buildingIdData
                 <button
                   class="btn btn-ghost"
                   x-on:click="toggleForm()"
-                  disabled="saving"
+                  :disabled="saving"
                 >
                     Cancel
                 </button>
                 <button
                   class="btn btn-primary"
                   x-on:click="saveUnitType()"
-                  disabled="saving"
-                  class="{'loading': saving}"
-                  data-testid="submit-button"
+                  :disabled="saving"
+                    class="{'loading': saving}"
+                    data-testid="submit-button"
                 >
                     <span x-show="!saving">Create Unit Type</span>
                     <span x-show="saving">Creating...</span>

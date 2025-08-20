@@ -247,7 +247,7 @@ const defaultItem = _.reduce(fields, (acc, field) => {
                 <div class="flex justify-end mb-2">
                     <button
                       data-testid="`remove-${name}-item-` + index"
-                      onclick={`${removeMethodName}(index)`}
+                      @click={`${removeMethodName}(index)`}
                       class={removeButtonClass}
                       type="button"
                     >
@@ -284,7 +284,7 @@ added yet. Click the button below to add your first entry.
         <!-- Add Button -->
         {showAddButton && (
             <button
-              onclick={addMethodName + '()'}
+              @click={addMethodName + '()'}
               class={addButtonClass}
               type="button"
               data-testid={`add-${name}-button`}

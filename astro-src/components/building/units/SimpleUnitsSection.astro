@@ -82,9 +82,9 @@ sq ft
                                 <select
                                   class="select select-bordered select-sm w-32"
                                   data-testid="'unit-status-' + unit.unitID"
-                                  value="unit.vacancyClass || 'Unknown'"
-                                  disabled="unit.savingField === 'vacancyClass'"
-                                  @change="updateUnitStatus(unit, $event.target.value)"
+                                  :value="unit.vacancyClass || 'Unknown'"
+                                    disabled="unit.savingField === 'vacancyClass'"
+                                    change="updateUnitStatus(unit, $event.target.value)"
                                 >
                                     <option value="Occupied">Occupied</option>
                                     <option value="Unoccupied">Available</option>
@@ -101,9 +101,9 @@ sq ft
                                       type="checkbox"
                                       class="toggle toggle-success toggle-sm"
                                       data-testid="'availability-toggle-' + unit.unitID"
-                                      checked="unit.vacancyClass === 'Unoccupied'"
-                                      disabled="unit.savingField === 'vacancyClass'"
-                                      @change="toggleUnitAvailability(unit)"
+                                      :checked="unit.vacancyClass === 'Unoccupied'"
+                                        disabled="unit.savingField === 'vacancyClass'"
+                                        change="toggleUnitAvailability(unit)"
                                     />
                                 </label>
                             </div>
@@ -131,12 +131,12 @@ sq ft
                                   type="number"
                                   class="input input-bordered input-sm w-24"
                                   data-testid="'rent-input-' + unit.unitID"
-                                  value="unit.rent"
-                                  min="0"
-                                  max="25000"
-                                  @blur="unit.editingRent = false"
-                                  keyup.enter="updateUnitRent(unit, $event.target.value)"
-                                  keyup.escape="unit.editingRent = false"
+                                  :value="unit.rent"
+                                    min="0"
+                                    max="25000"
+                                    blur="unit.editingRent = false"
+                                    keyup.enter="updateUnitRent(unit, $event.target.value)"
+                                    keyup.escape="unit.editingRent = false"
                                 />
 
                                 <div class="text-xs text-base-content/50" :data-testid="'last-updated-' + unit.unitID">

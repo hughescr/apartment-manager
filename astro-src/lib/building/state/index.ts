@@ -53,6 +53,7 @@ function buildingStateObject(): any {
         saving: false,
         geocoding: false,
         errors: {} as Record<string, string>,
+        selectedPetTypes: [] as string[],
 
         // Units tab state
         filteredUnits: [] as ExtendedUnitData[],
@@ -166,6 +167,39 @@ function buildingStateObject(): any {
                     }
                 }
             });
+        },
+
+        /**
+         * Handle building data update events from BuildingManager
+         */
+        handleBuildingDataUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, event: CustomEvent) {
+            const { building: newBuilding, units: newUnits, unitTypes: newUnitTypes } = event.detail;
+
+            if(newBuilding) {
+                // Update building data
+                this.building = newBuilding;
+                // Update original state to prevent unsaved changes detection
+                if(this._buildingCore) {
+                    this._buildingCore.updateOriginalState(newBuilding);
+                }
+            }
+
+            if(newUnits) {
+                // Update units with extended properties
+                this.units = map(newUnits, (unit: ExtendedUnitData) => ({
+                    ...unit,
+                    lastUpdated: unit.lastUpdated || new Date().toISOString(),
+                    status: unit.status || this._unitManagement?.getUnitStatus(unit) || 'unknown',
+                    currentRent: unit.rent || 0,
+                    editingRent: false,
+                    savingField: null
+                }));
+                this._unitManagement?.updateFilteredUnits();
+            }
+
+            if(newUnitTypes) {
+                this.unitTypes = newUnitTypes;
+            }
         },
 
         // Building Core Methods - maintain exact same interface

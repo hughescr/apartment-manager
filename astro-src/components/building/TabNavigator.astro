@@ -19,7 +19,7 @@ import { TAB_CONFIGS } from '../../lib/building/types';
             {_.map(TAB_CONFIGS, tab => (
                 <li>
                     <button
-                      onclick={`activeSectionTab = '${tab.key}'`}
+                      @click={`activeSectionTab = '${tab.key}'`}
                       class={`{'active': activeSectionTab === '${tab.key}'}`}
                       class="min-h-[44px]"
                     >
@@ -37,7 +37,7 @@ import { TAB_CONFIGS } from '../../lib/building/types';
         <button
           class="tab min-h-[44px]"
           class={`{'tab-active': activeSectionTab === '${tab.key}'}`}
-          onclick={`activeSectionTab = '${tab.key}'`}
+          @click={`activeSectionTab = '${tab.key}'`}
         >
             {tab.mobileLabel
 ? (

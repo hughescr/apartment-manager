@@ -37,7 +37,7 @@ try {
   x-init="init()"
   @building-tab-changed="handleTabChange($event)"
   @show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
-  @toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
+  @toast:show="showAndHideToast($event.detail.message, $event.detail.type)"
   @building-data-loaded="handleBuildingDataLoaded($event)"
   data-buildings={JSON.stringify(buildings)}
   data-api-url={_apiURL}
@@ -53,12 +53,7 @@ try {
         </div>
     )}
 
-    <!-- Toast notifications -->
-    <div class="toast toast-center toast-middle" x-show="showToast" x-transition.opacity>
-        <div class="alert" :class="{ 'alert-error': toastType === 'error', 'alert-success': toastType === 'success' }">
-            <span x-text="toastMessage"></span>
-        </div>
-    </div>
+    <!-- Toast notifications now handled by global Layout.astro toast system -->
 
     <!-- Building navigation tabs -->
     <BuildingsList buildings={buildings} />
@@ -99,9 +94,7 @@ interface Building {
 
 type BuildingsComponentData = AlpineComponent<{
     activeBuildingTab: number
-    showToast: boolean
-    toastMessage: string
-    toastType: string
+    // Toast properties removed - now uses global toast system
     buildings: Building[]
     apiURL: string
     init(): void
@@ -113,9 +106,7 @@ type BuildingsComponentData = AlpineComponent<{
 function buildingsComponentData(): BuildingsComponentData {
     return {
         activeBuildingTab: 0,
-        showToast: false,
-        toastMessage: '',
-        toastType: '',
+        // Toast properties removed - now uses global toast system
         buildings: [] as Building[],
         apiURL: '',
 
@@ -212,12 +203,8 @@ function buildingsComponentData(): BuildingsComponentData {
         },
 
         showAndHideToast(message: string, type: string) {
-            this.toastMessage = message;
-            this.toastType = type;
-            this.showToast = true;
-            setTimeout(() => {
-                this.showToast = false;
-            }, 3000);
+            // Use global toast system instead of local toast
+            window.showToast(message, type);
         }
     } as BuildingsComponentData;
 }

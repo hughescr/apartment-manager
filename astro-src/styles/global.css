@@ -13,3 +13,5 @@ main {
 [x-cloak] {
     display: none !important;
 }
+
+/* Toast styling now handled by DaisyUI positioning classes */

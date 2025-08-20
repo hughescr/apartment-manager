@@ -1,5 +1,5 @@
 ---
-/* eslint-disable lodash/prefer-lodash-method -- Converting from lodash to native JavaScript for browser compatibility */
+/* eslint-disable lodash/prefer-lodash-method -- Native methods preferred for client-side code */
 import { FeeType } from '../../../src/types';
 
 export interface Props {
@@ -62,7 +62,7 @@ const xData = `{
     },
     feeTypeLabels: ${JSON.stringify(feeTypeLabels)},
     xModelRef: '${xModel}',
-    
+
     getModelValue() {
         const path = this.xModelRef.split('.');
         let current = this;
@@ -72,7 +72,7 @@ const xData = `{
         }
         return current || [];
     },
-    
+
     setModelValue(value) {
         const path = this.xModelRef.split('.');
         const lastKey = path.pop();
@@ -83,16 +83,16 @@ const xData = `{
         }
         current[lastKey] = value;
     },
-    
+
     addFee() {
         let fees = this.getModelValue();
-        
+
         // Validate amount
         if (this.newFee.amount <= 0) {
             alert('Fee amount must be greater than 0');
             return;
         }
-        
+
         // Add the new fee
         fees.push({
             type: this.newFee.type,
@@ -100,14 +100,14 @@ const xData = `{
             description: this.newFee.description || undefined,
             refundable: this.newFee.refundable || undefined
         });
-        
+
         this.setModelValue(fees);
-        
+
         // Reset form
         this.resetNewFee();
         this.showAddForm = false;
     },
-    
+
     removeFee(index) {
         if (confirm('Are you sure you want to remove this fee?')) {
             let fees = this.getModelValue();
@@ -115,20 +115,20 @@ const xData = `{
             this.setModelValue(fees);
         }
     },
-    
+
     updateFee(index, field, value) {
         let fees = this.getModelValue();
         if (!fees[index]) return;
-        
+
         if (field === 'amount') {
             fees[index][field] = Number(value);
         } else {
             fees[index][field] = value;
         }
-        
+
         this.setModelValue(fees);
     },
-    
+
     resetNewFee() {
         this.newFee = {
             type: '${FeeType.APPLICATION}',
@@ -137,23 +137,23 @@ const xData = `{
             refundable: false
         };
     },
-    
+
     getFeeTypeLabel(type) {
         return this.feeTypeLabels[type] || type;
     },
-    
+
     get totalFees() {
         const fees = this.getModelValue();
         return fees.reduce((sum, fee) => sum + (fee.amount || 0), 0);
     },
-    
+
     get refundableTotal() {
         const fees = this.getModelValue();
         return fees
             .filter(fee => fee.refundable)
             .reduce((sum, fee) => sum + (fee.amount || 0), 0);
     },
-    
+
     get nonRefundableTotal() {
         const fees = this.getModelValue();
         return fees
@@ -161,6 +161,7 @@ const xData = `{
             .reduce((sum, fee) => sum + (fee.amount || 0), 0);
     }
 }`;
+/* eslint-enable lodash/prefer-lodash-method -- Re-enable lodash rule for template section */
 ---
 
 <div class={containerClasses} x-data={xData}>
@@ -220,6 +221,7 @@ fee(s)
                               x-on:change="updateFee(index, 'type', $event.target.value)"
                               disabled={disabled}
                             >
+                                {/* eslint-disable-next-line lodash/prefer-lodash-method -- Native methods preferred for client-side code */}
                                 {Object.values(feeTypes).map(type => (
                                     <option value={type}>
                                         {feeTypeLabels[type] || type}
@@ -311,6 +313,7 @@ fee(s)
                       x-model="newFee.type"
                       disabled={disabled}
                     >
+                        {/* eslint-disable-next-line lodash/prefer-lodash-method -- Native methods preferred for client-side code */}
                         {Object.values(feeTypes).map(type => (
                             <option value={type}>
                                 {feeTypeLabels[type] || type}

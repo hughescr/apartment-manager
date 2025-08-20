@@ -16,8 +16,8 @@ const { disabled = false } = Astro.props;
                       type="checkbox"
                       class="checkbox checkbox-primary"
                       x-on:change="togglePetType(petType.value)"
-                      checked="isPetTypeSelected(petType.value)"
-                      disabled={disabled}
+                      :checked="isPetTypeSelected(petType.value)"
+                        disabled={disabled}
                     />
                     <span class="label-text" x-text="petType.label"></span>
                 </label>

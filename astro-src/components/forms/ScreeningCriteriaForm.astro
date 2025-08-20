@@ -147,8 +147,8 @@ const xData = `{
         
         // Force Alpine.js reactivity by triggering a change event on the parent
         // This ensures the building state's x-effect detects the change
-        (this as { $nextTick: (callback: () => void) => void; $dispatch: (event: string, data: any) => void }).$nextTick(() => {
-            (this as { $nextTick: (callback: () => void) => void; $dispatch: (event: string, data: any) => void }).$dispatch('change', { field: this.xModelRef, value: model });
+        this.$nextTick(() => {
+            this.$dispatch('change', { field: this.xModelRef, value: model });
         });
     },
     

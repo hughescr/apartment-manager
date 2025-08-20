@@ -66,8 +66,8 @@ const containerClasses = _.compact([
                   class="btn btn-sm btn-outline btn-primary"
                   x-show={addressModel ? `${addressModel} && ${addressModel}.trim()` : 'false'}
                   @click="geocodeAddress()"
-                  disabled="geocoding"
-                  id="geocode-address-btn"
+                  :disabled="geocoding"
+                    id="geocode-address-btn"
                 >
                     <span x-show="!geocoding">📍 Use Address Location</span>
                     <span x-show="geocoding" class="loading loading-spinner loading-xs"></span>

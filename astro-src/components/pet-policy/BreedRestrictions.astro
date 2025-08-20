@@ -56,8 +56,8 @@ Common Breed Restrictions
                                   type="checkbox"
                                   class="checkbox checkbox-sm"
                                   x-on:change="toggleCommonBreed(breed)"
-                                  checked="isBreedRestricted(breed)"
-                                  disabled={disabled}
+                                  :checked="isBreedRestricted(breed)"
+                                    disabled={disabled}
                                 />
                                 <span class="label-text text-sm" x-text="breed"></span>
                             </label>

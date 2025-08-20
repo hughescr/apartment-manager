@@ -121,16 +121,16 @@ units will be updated to:
                 <button
                   class="btn"
                   @click="showBulkStatusDialog = false; statusValue = ''; errors = {}"
-                  disabled="loading"
-                  data-testid="cancel-bulk-status"
+                  :disabled="loading"
+                    data-testid="cancel-bulk-status"
                 >
                     Cancel
                 </button>
                 <button
                   class="btn btn-primary"
                   data-testid="bulk-status-confirm"
-                  disabled="!statusValue || loading"
-                  @click="performBulkStatusUpdate()"
+                  :disabled="!statusValue || loading"
+                    click="performBulkStatusUpdate()"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Update Status</span>

@@ -1,4 +1,7 @@
 ---
+import _ from 'lodash';
+const { map, isString, filter, identity } = _;
+
 export interface SelectOption {
     value: string | number
     label: string
@@ -38,8 +41,8 @@ const {
 
 // Normalize options to SelectOption format
 const normalizedOptions: SelectOption[] = options
-    ? (options.map(opt =>
-        (typeof opt === 'string'
+    ? (map(options, opt =>
+        (isString(opt)
             ? { value: opt, label: opt }
             : opt)
     ) as SelectOption[])
@@ -48,13 +51,13 @@ const normalizedOptions: SelectOption[] = options
 const shouldShowLabel = showLabel && label;
 
 // Container classes
-const containerClasses = [
+const containerClasses = filter([
     'form-control',
     className
-].filter(Boolean).join(' ');
+], identity).join(' ');
 
 // Button classes - styled to look like a select input
-const buttonClasses = [
+const buttonClasses = filter([
     'btn',
     'btn-outline',
     'w-full',
@@ -67,7 +70,7 @@ const buttonClasses = [
     'hover:border-base-300',
     error ? 'border-error' : '',
     disabled ? 'btn-disabled' : ''
-].filter(Boolean).join(' ');
+], identity).join(' ');
 ---
 
 <div class={containerClasses}>
@@ -92,7 +95,7 @@ const buttonClasses = [
                 this.selectedValue = value;
                 ${xModel} = value;
                 // Close dropdown after selection
-                (this as { $refs: { dropdownDetails: HTMLDetailsElement } }).$refs.dropdownDetails.removeAttribute('open');
+                this.$refs.dropdownDetails.removeAttribute('open');
             }
         }`}
     >
@@ -130,10 +133,10 @@ const buttonClasses = [
               class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1 border border-base-300 max-h-60 overflow-auto"
               role="listbox"
             >
-                {normalizedOptions.map(option => (
+                {map(normalizedOptions, option => (
                     <li>
                         <a
-                          onclick={`selectOption('${option.value}')`}
+                          @click={`selectOption('${option.value}')`}
                           class:list={[
                                 'justify-between',
                                 option.disabled ? 'disabled' : ''

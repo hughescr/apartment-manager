@@ -400,11 +400,11 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                             </label>
                             <input
                               type="number"
-                              value="getDepositAmount()"
-                              x-on:input="setDepositAmount($event.target.value)"
-                              class="input input-bordered w-full"
-                              min="0"
-                              placeholder="Not specified"
+                              :value="getDepositAmount()"
+                                x-on:input="setDepositAmount($event.target.value)"
+                                class="input input-bordered w-full"
+                                min="0"
+                                placeholder="Not specified"
                             />
                         </div>
 
@@ -421,9 +421,9 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                             <input
                               type="checkbox"
                               class="toggle toggle-success"
-                              checked="getDepositRefundable()"
-                              x-on:change="setDepositRefundable($event.target.checked)"
-                              disabled="!unitType.deposit"
+                              :checked="getDepositRefundable()"
+                                x-on:change="setDepositRefundable($event.target.checked)"
+                                :disabled="!unitType.deposit"
                             />
                             <div class="text-xs text-base-content/70 mt-1">
                                 <span x-show="getDepositRefundable()">Fully refundable</span>
@@ -447,8 +447,8 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                               min="0"
                               max="100"
                               step="5"
-                              value="getDepositPartialRefundPercentage() || 0"
-                              x-on:input="setDepositPartialRefundPercentage($event.target.value)"
+                              :value="getDepositPartialRefundPercentage() || 0"
+                                x-on:input="setDepositPartialRefundPercentage($event.target.value)"
                             />
                             <div class="flex justify-between text-xs text-base-content/70 px-2">
                                 <span>0%</span>

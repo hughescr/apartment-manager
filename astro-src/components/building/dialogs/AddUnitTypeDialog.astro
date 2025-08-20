@@ -260,16 +260,16 @@ const {
                   type="button"
                   class="btn"
                   @click="showAddUnitTypeDialog = false"
-                  disabled="loading"
-                  data-testid="cancel-add-unit-type"
+                  :disabled="loading"
+                    data-testid="cancel-add-unit-type"
                 >
                     Cancel
                 </button>
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  disabled="loading"
-                  data-testid="confirm-add-unit-type"
+                  :disabled="loading"
+                    data-testid="confirm-add-unit-type"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Add Floorplan</span>

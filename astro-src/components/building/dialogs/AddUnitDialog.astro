@@ -269,16 +269,16 @@ const statusOptions = [
                   type="button"
                   class="btn"
                   @click="showAddUnitDialog = false"
-                  disabled="loading"
-                  data-testid="cancel-add-unit"
+                  :disabled="loading"
+                    data-testid="cancel-add-unit"
                 >
                     Cancel
                 </button>
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  disabled="loading"
-                  data-testid="confirm-add-unit"
+                  :disabled="loading"
+                    data-testid="confirm-add-unit"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Add Unit</span>

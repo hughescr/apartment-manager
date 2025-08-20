@@ -209,16 +209,16 @@ selected units:
                 <button
                   class="btn"
                   @click="showBulkRentDialog = false; rentUpdateType = 'absolute'; rentValue = ''; errors = {}"
-                  disabled="loading"
-                  data-testid="cancel-bulk-rent"
+                  :disabled="loading"
+                    data-testid="cancel-bulk-rent"
                 >
                     Cancel
                 </button>
                 <button
                   class="btn btn-primary"
                   data-testid="bulk-rent-confirm"
-                  disabled="!rentValue || !!errors.value || loading"
-                  @click="performBulkRentUpdate()"
+                  :disabled="!rentValue || !!errors.value || loading"
+                    click="performBulkRentUpdate()"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Update Rent</span>

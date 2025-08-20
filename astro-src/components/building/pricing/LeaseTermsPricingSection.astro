@@ -257,12 +257,12 @@ Add Rent Special
                                     <input
                                       type="number"
                                       name="'income-size-' + size"
-                                      value="building.incomeRestrictions && building.incomeRestrictions.maxIncomeByHouseholdSize ? building.incomeRestrictions.maxIncomeByHouseholdSize[size] || '' : ''"
-                                      @input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
-                                      placeholder="50000"
-                                      class="input w-full"
-                                      min="0"
-                                      step="1000"
+                                      :value="building.incomeRestrictions && building.incomeRestrictions.maxIncomeByHouseholdSize ? building.incomeRestrictions.maxIncomeByHouseholdSize[size] || '' : ''"
+                                        input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
+                                        placeholder="50000"
+                                        class="input w-full"
+                                        min="0"
+                                        step="1000"
                                     />
                                 </label>
                             </template>
