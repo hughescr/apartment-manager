@@ -33,6 +33,21 @@ const buildingsUnitsTable = new sst.aws.Dynamo('BuildingsUnits', {
             hashKey: 'unitID',
             rangeKey: 'buildingID'
         }
+    },
+    transform: {
+        table: {
+            billingMode: 'PROVISIONED',
+            readCapacity: 1,
+            writeCapacity: 1,
+            globalSecondaryIndexes: [{
+                name: 'unitTypeIndex',
+                hashKey: 'unitID',
+                rangeKey: 'buildingID',
+                readCapacity: 1,
+                writeCapacity: 1,
+                projectionType: 'ALL'
+            }]
+        }
     }
 });
 
