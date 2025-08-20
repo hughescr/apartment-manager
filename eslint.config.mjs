@@ -51,7 +51,7 @@ export default
     },
 
     { // Configure browser environment for TypeScript in Astro script tags
-        files: ['**/*.astro/*.ts'],
+        files: ['**/*.astro/*.ts', 'astro-src/**/*.ts'],
         languageOptions: {
             parser: tseslint.parser,
             globals: {
@@ -71,21 +71,6 @@ export default
         },
     },
 
-    { // Configure browser environment for client-side service files
-        files: ['astro-src/lib/**/services/*.ts', 'astro-src/lib/**/*Service.ts'],
-        languageOptions: {
-            globals: {
-                ...globals.browser,
-            },
-        },
-        rules: {
-            'n/no-unsupported-features/node-builtins': 'off',
-            'n/no-unsupported-features/es-builtins': 'off',
-            'n/no-unsupported-features/es-syntax': 'off',
-            'lodash/prefer-lodash-method': 'off',
-            'lodash/prefer-lodash-typecheck': 'off',
-        },
-    },
     {
         rules: {
             '@typescript-eslint/triple-slash-reference': 'off',
