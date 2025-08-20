@@ -58,7 +58,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                 <button
                   type="button"
                   class={`btn btn-ghost ${compact ? 'btn-xs' : 'btn-sm'}`}
-                  @click="setAllDays('${defaultOpenTime}', '${defaultCloseTime}')"
+                  @click={`setAllDays('${defaultOpenTime}', '${defaultCloseTime}')`}
                   title={`Set all days to ${defaultOpenTime}-${defaultCloseTime}`}
                 >
                     Set All
@@ -86,8 +86,8 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                 <input
                   type="checkbox"
                   class={`checkbox checkbox-primary ${compact ? 'checkbox-sm' : ''}`}
-                  :checked="isDayOpen('${day}')"
-                    x-on:change="toggleDay('${day}')"
+                  :checked={`isDayOpen('${day}')`}
+                    x-on:change={`toggleDay('${day}')`}
                 />
 
                 <!-- Day name - fixed width -->
@@ -98,18 +98,18 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                     <input
                       type="time"
                       class={`input ${compact ? 'input-sm w-24' : 'input-sm w-28'}`}
-                      :disabled="!isDayOpen('${day}')"
-                      :value="getDayTime('${day}', 'open')"
-                        x-on:input="setDayTime('${day}', 'open', $event.target.value)"
+                      :disabled={`!isDayOpen('${day}')`}
+                      :value={`getDayTime('${day}', 'open')`}
+                        x-on:input={`setDayTime('${day}', 'open', $event.target.value)`}
                         placeholder={defaultOpenTime}
                     />
                     <span class="text-xs text-base-content/60">to</span>
                     <input
                       type="time"
                       class={`input ${compact ? 'input-sm w-24' : 'input-sm w-28'}`}
-                      :disabled="!isDayOpen('${day}')"
-                      :value="getDayTime('${day}', 'close')"
-                        x-on:input="setDayTime('${day}', 'close', $event.target.value)"
+                      :disabled={`!isDayOpen('${day}')`}
+                      :value={`getDayTime('${day}', 'close')`}
+                        x-on:input={`setDayTime('${day}', 'close', $event.target.value)`}
                         placeholder={defaultCloseTime}
                     />
                 </div>
@@ -119,12 +119,12 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                     <div class="flex gap-1 ml-auto">
                         {/* Copy to next day button */}
                         {index < daysOfWeek.length - 1 && (
-                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? "Copy ${day}'s hours to ${daysOfWeek[index + 1]} only" : ""`}>
+                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? 'Copy ${day}'s hours to ${daysOfWeek[index + 1]} only' : ''`}>
                                 <button
                                   type="button"
                                   class="btn btn-xs btn-ghost"
-                                  :disabled="!isDayOpen('${day}')"
-                                    x-on:click="copyToDay('${day}', '${daysOfWeek[index + 1]}')"
+                                  :disabled={`!isDayOpen('${day}')`}
+                                    x-on:click={`copyToDay('${day}', '${daysOfWeek[index + 1]}')`}
                                 >
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
@@ -135,12 +135,12 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
 
                         {/* Copy to all below button */}
                         {index < daysOfWeek.length - 1 && (
-                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? "Apply ${day}'s hours to all remaining days" : ""`}>
+                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? 'Apply ${day}'s hours to all remaining days' : ''`}>
                                 <button
                                   type="button"
                                   class="btn btn-xs btn-ghost"
-                                  :disabled="!isDayOpen('${day}')"
-                                    x-on:click="copyToAllBelow('${day}', ${index})"
+                                  :disabled={`!isDayOpen('${day}')`}
+                                    x-on:click={`copyToAllBelow('${day}', ${index})`}
                                 >
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path>
@@ -151,7 +151,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
 
                         {/* Apply to weekdays/weekends button */}
                         <div class="dropdown dropdown-end">
-                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? "More copy options" : ""`}>
+                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? 'More copy options' : ''`}>
                                 <label
                                   tabindex="0"
                                   class="btn btn-xs btn-ghost"

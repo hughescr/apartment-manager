@@ -115,7 +115,7 @@ const utilityOptions = Object.entries(UtilityType).map(([key, value]) => ({
             <button type="submit" class="btn btn-primary">
                 Save Property
             </button>
-            <button type="button" class="btn btn-ghost" x-on:click="formData = { name: '', propertyType: '${PropertyType.APARTMENT}', bedrooms: null, description: '', utilities: [], photos: [] }">
+            <button type="button" class="btn btn-ghost" x-on:click={`formData = { name: '', propertyType: '${PropertyType.APARTMENT}', bedrooms: null, description: '', utilities: [], photos: [] }`}>
                 Reset
             </button>
         </div>
