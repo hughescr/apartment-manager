@@ -1,4 +1,5 @@
 ---
+import _ from 'lodash';
 export interface Props {
     /** Alpine.js x-model for latitude binding */
     latModel: string
@@ -41,11 +42,10 @@ const {
     showCoordinates = true,
 } = Astro.props;
 
-// Container classes
-const containerClasses = [
+const containerClasses = _.compact([
     'location-map-picker',
     className
-].filter(cls => cls).join(' ');
+]).join(' ');
 ---
 
 <div class={containerClasses}>

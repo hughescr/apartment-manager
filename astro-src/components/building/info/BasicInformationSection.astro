@@ -1,4 +1,5 @@
 ---
+import _ from 'lodash';
 import { PropertyType } from '../../../types';
 import {
     BaseInput,
@@ -15,9 +16,9 @@ export interface Props {
 const { apiUrl, errors: _errors = {} } = Astro.props;
 
 // Property type options
-const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => ({
+const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) => ({
     value: value as string,
-    label: key.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
+    label: _.map(_.split(key, '_'), word => word.charAt(0) + _.toLower(word.slice(1))).join(' ')
 }));
 ---
 

@@ -2,6 +2,7 @@
 
 import BaseInput from './BaseInput.astro';
 import BaseSelect from './BaseSelect.astro';
+import _ from 'lodash';
 
 export interface Props {
     fieldName: string
@@ -64,9 +65,9 @@ const {
             >
                 <option value="">
 Select
-{label.toLowerCase()}
+{_.toLower(label)}
                 </option>
-                {options.map(option => (
+                {_.map(options, option => (
                     <option value={option.value}>{option.label}</option>
                 ))}
             </BaseSelect>
