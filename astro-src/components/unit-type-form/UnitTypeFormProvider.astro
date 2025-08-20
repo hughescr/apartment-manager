@@ -1,6 +1,7 @@
 ---
 // astro-src/components/unit-type-form/UnitTypeFormProvider.astro
 import { Resource } from 'sst';
+import type { UnitTypeFormState } from '../../lib/unit-type-form/state/unitTypeFormState';
 
 // Import child components
 import UnitTypeBasicInfo from './UnitTypeBasicInfo.astro';
@@ -13,12 +14,16 @@ const { buildingID, onSuccess } = Astro.props as {
     onSuccess?: string // JavaScript code to execute on success
 };
 
-const apiURL = Resource.API.url;
+const _apiURL = Resource.API.url;
+if(!_apiURL) {
+    throw new Error('API URL not configured');
+} // Validate and mark as used for TypeScript
 
 // Declare the global window property for TypeScript
 declare global {
     interface Window {
-        unitTypeFormData: (apiUrlData: string, buildingIdData: string) => any
+        unitTypeFormData: (_apiUrlData: string, _buildingIdData: string) => UnitTypeFormState
+        unitTypeFormOnSuccess?: () => void
     }
 }
 ---
@@ -40,11 +45,13 @@ if(typeof window !== 'undefined') {
 }
 </script>
 
-<script define:vars={{ apiURL, buildingID }} is:inline>
+<script define:vars={{ _apiURL, buildingID }} is:inline>
 
 // Used by Alpine.js x-data attribute - wrapper for the state function
-window.unitTypeFormData = function unitTypeFormData(apiUrlData, buildingIdData) {
-    return window.createUnitTypeFormState(apiUrlData, buildingIdData);
+
+window.unitTypeFormData = function unitTypeFormData(_apiUrlData, _buildingIdData) {
+    // Variables _apiURL and buildingID are injected by Astro's define:vars
+    return window.createUnitTypeFormState(_apiURL, buildingID);
 };
 </script>
 
@@ -52,12 +59,14 @@ window.unitTypeFormData = function unitTypeFormData(apiUrlData, buildingIdData) 
     <script define:vars={{ onSuccess }} is:inline>
 
         window.unitTypeFormOnSuccess = function() {
-            eval(onSuccess);
+            // Execute the provided JavaScript code dynamically
+
+            new Function(onSuccess)();
         };
     </script>
 )}
 
-<div x-data="unitTypeFormData(apiURL, buildingID)" class="unit-type-form">
+<div x-data="unitTypeFormData(_apiURL, buildingID)" class="unit-type-form">
     <!-- Toggle Button -->
     <button
       class="btn btn-primary"

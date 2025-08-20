@@ -1,4 +1,5 @@
 ---
+import _ from 'lodash';
 import BaseInput from '../forms/BaseInput.astro';
 import BaseSelect from '../forms/BaseSelect.astro';
 
@@ -32,7 +33,7 @@ const vacancyOptions = [
               error="errors.vacancyClass"
               options={vacancyOptions}
             >
-                {vacancyOptions.map(option => (
+                {_.map(vacancyOptions, option => (
                     <option value={option.value}>{option.label}</option>
                 ))}
             </BaseSelect>

@@ -1,6 +1,7 @@
 ---
 import { BaseInput, BaseSelect } from '../../forms';
 import ValidationError from '../../common/ValidationError.astro';
+import _ from 'lodash';
 
 export interface Props {
     building: {
@@ -29,7 +30,7 @@ const {
 } = Astro.props;
 
 // Prepare unit type options for select
-const unitTypeOptions = unitTypes.map(ut => ({
+const unitTypeOptions = _.map(unitTypes, ut => ({
     value: ut.modelID,
     label: `${ut.modelName} (${ut.beds} bed/${ut.baths} bath${ut.sqft ? `, ${ut.sqft} sq ft` : ''})`
 }));
@@ -176,7 +177,7 @@ const statusOptions = [
                   options={unitTypeOptions}
                   placeholder="Select a unit type..."
                   helpText="Choose to inherit properties from a unit type"
-                  change="onUnitTypeChange()"
+                  @change="onUnitTypeChange()"
                 />
                 <ValidationError fieldName="modelID" errors={{}} />
             </div>
@@ -267,7 +268,7 @@ const statusOptions = [
                 <button
                   type="button"
                   class="btn"
-                  click="showAddUnitDialog = false"
+                  @click="showAddUnitDialog = false"
                   disabled="loading"
                   data-testid="cancel-add-unit"
                 >

@@ -1,4 +1,5 @@
 ---
+import _ from 'lodash';
 import BaseInput from './BaseInput.astro';
 import BaseTextarea from './BaseTextarea.astro';
 
@@ -27,10 +28,10 @@ const {
 } = Astro.props;
 
 // Container classes
-const containerClasses = [
+const containerClasses = _.filter([
     'screening-criteria-form',
     className
-].filter(Boolean).join(' ');
+], _.identity).join(' ');
 
 // Create Alpine.js data string with proper xModel reference handling
 const xData = `{
@@ -146,8 +147,8 @@ const xData = `{
         
         // Force Alpine.js reactivity by triggering a change event on the parent
         // This ensures the building state's x-effect detects the change
-        this.$nextTick(() => {
-            this.$dispatch('change', { field: this.xModelRef, value: model });
+        (this as { $nextTick: (callback: () => void) => void; $dispatch: (event: string, data: any) => void }).$nextTick(() => {
+            (this as { $nextTick: (callback: () => void) => void; $dispatch: (event: string, data: any) => void }).$dispatch('change', { field: this.xModelRef, value: model });
         });
     },
     

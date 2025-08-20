@@ -1,8 +1,10 @@
 ---
 import { AmenitySelector } from '../../forms';
 
+import type { BuildingData } from '../../../types';
+
 export interface Props {
-    building: any
+    building: BuildingData
 }
 
 const { building: _building } = Astro.props;

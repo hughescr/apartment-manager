@@ -15,14 +15,11 @@ import MarketingTab from './building/tabs/MarketingTab.astro';
 import AddUnitDialog from './building/dialogs/AddUnitDialog.astro';
 import AddUnitTypeDialog from './building/dialogs/AddUnitTypeDialog.astro';
 
+// Types
+import type { BuildingData, UnitData, UnitTypeData } from '../types';
+
 export interface Props {
-    building: {
-        buildingID: string
-        street?: string
-        city?: string
-        state?: string
-        [key: string]: any
-    }
+    building: BuildingData
     apiURL: string
     'class'?: string
     style?: string
@@ -31,8 +28,8 @@ export interface Props {
 const { building, apiURL } = Astro.props;
 
 // Note: For lazy loading, we'll initially pass empty arrays and load data client-side
-const emptyUnits: any[] = [];
-const emptyUnitTypes: any[] = [];
+const emptyUnits: UnitData[] = [];
+const emptyUnitTypes: UnitTypeData[] = [];
 ---
 
 <div
@@ -74,9 +71,7 @@ const emptyUnitTypes: any[] = [];
                   building={building}
                   apiUrl={apiURL}
                 />
-                <FloorplansUnitsTab
-                  slot="floorplans-units"
-                />
+                <FloorplansUnitsTab />
                 <PricingPoliciesTab
                   slot="pricing-policies"
                   building={building}
@@ -124,7 +119,9 @@ const emptyUnitTypes: any[] = [];
 
 <script>
 import type { AlpineComponent } from '../types/alpine';
+import type { BuildingData, UnitData, UnitTypeData } from '../types';
 import { createClientLogger } from '../lib/utils/client-logger';
+import { noop } from 'lodash';
 
 const logger = createClientLogger('BuildingManager');
 
@@ -135,9 +132,9 @@ type BuildingManagerData = AlpineComponent<{
     errorMessage: string
     buildingID: string
     apiURL: string
-    building: any
-    units: any[]
-    unitTypes: any[]
+    building: BuildingData | null
+    units: UnitData[]
+    unitTypes: UnitTypeData[]
     init(): void
     loadBuildingData(): Promise<void>
     retryLoad(): void
@@ -177,7 +174,9 @@ function buildingManagerData(): BuildingManagerData {
         },
 
         async loadBuildingData() {
-            if(this.dataLoaded || this.loading) { return; }
+            if(this.dataLoaded || this.loading) {
+                return;
+            }
 
             this.loading = true;
             this.error = false;
@@ -228,10 +227,10 @@ function buildingManagerData(): BuildingManagerData {
         },
 
         // Add Alpine magic properties
-        $dispatch: (() => {}) as any,
-        $root: null as any,
-        $el: null as any,
-        $watch: (() => {}) as any
+        $dispatch: noop as AlpineComponent['$dispatch'],
+        $root: null as unknown as HTMLElement,
+        $el: null as unknown as HTMLElement,
+        $watch: noop as AlpineComponent['$watch']
     } as BuildingManagerData;
 }
 

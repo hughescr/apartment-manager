@@ -1,4 +1,6 @@
 ---
+import _ from 'lodash';
+
 export interface Props {
     name: string
     label?: string
@@ -15,11 +17,12 @@ export interface Props {
     pattern?: string
     autocomplete?: string
     'class'?: string
-    inputClass?: string
     error?: string
     helpText?: string
+    oninput?: string
     showLabel?: boolean
     floatingLabel?: boolean
+    inputClass?: string
 }
 
 const {
@@ -41,6 +44,7 @@ const {
     inputClass = '',
     error,
     helpText,
+    oninput,
     showLabel = true,
     floatingLabel = false,
 } = Astro.props;
@@ -49,18 +53,18 @@ const {
 const shouldShowLabel = showLabel && label;
 
 // Build input classes
-const inputClasses = [
+const inputClasses = _.compact([
     'input',
     'w-full',
     error ? 'input-error' : '',
     inputClass
-].filter(Boolean).join(' ');
+]).join(' ');
 
 // Container classes
-const containerClasses = [
+const containerClasses = _.compact([
     'form-control',
     className
-].filter(Boolean).join(' ');
+]).join(' ');
 ---
 
 <div class={containerClasses}>
@@ -74,18 +78,38 @@ const containerClasses = [
     )}
 
     {floatingLabel
-? (
-        <label class="floating-label">
-            {shouldShowLabel && (
-                <span>
-                    {label}
-                    {required && <span class="text-error">*</span>}
-                </span>
-            )}
+        ? (
+            <label class="floating-label">
+                {shouldShowLabel && (
+                    <span>
+                        {label}
+                        {required && <span class="text-error">*</span>}
+                    </span>
+                )}
+                <input
+                  type={type}
+                  name={name}
+                  placeholder={placeholder || label}
+                  class={inputClasses}
+                  required={required}
+                  disabled={disabled}
+                  readonly={readonly}
+                  {...(type === 'number' ? { 'x-model.number': xModel } : { 'x-model': xModel })}
+                  value={value}
+                  min={min}
+                  max={max}
+                  step={step}
+                  pattern={pattern}
+                  autocomplete={autocomplete}
+                  oninput={oninput}
+                />
+            </label>
+        )
+        : (
             <input
               type={type}
               name={name}
-              placeholder={placeholder || label}
+              placeholder={placeholder}
               class={inputClasses}
               required={required}
               disabled={disabled}
@@ -97,28 +121,9 @@ const containerClasses = [
               step={step}
               pattern={pattern}
               autocomplete={autocomplete}
+              oninput={oninput}
             />
-        </label>
-    )
-: (
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder}
-          class={inputClasses}
-          required={required}
-          disabled={disabled}
-          readonly={readonly}
-          {...(type === 'number' ? { 'x-model.number': xModel } : { 'x-model': xModel })}
-          value={value}
-          min={min}
-          max={max}
-          step={step}
-          pattern={pattern}
-          autocomplete={autocomplete}
-        />
-    )}
-
+        )}
     {(error || helpText) && (
         <label class="label">
             <span class={`label-text-alt ${error ? 'text-error' : ''}`}>

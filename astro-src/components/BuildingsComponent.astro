@@ -1,16 +1,21 @@
 ---
 // Refactored BuildingsComponent.astro - Now uses modular components with lazy loading
+import _ from 'lodash';
 import BuildingsList from './BuildingsList.astro';
 import AddBuildingForm from './AddBuildingForm.astro';
 import BuildingManager from './BuildingManager.astro';
 import { BuildingsApiService } from '../lib/buildings/services/buildingsApiService';
 import { Resource } from 'sst';
+import type { Building } from '../types';
 
 // Only fetch basic building list via API - units/unit types loaded lazily
-const apiURL = Resource.API.url;
-const buildingsService = new BuildingsApiService(apiURL);
+const _apiURL = Resource.API.url;
+if(!_apiURL) {
+    throw new Error('API URL not configured');
+} // Validate and mark as used for TypeScript
+const buildingsService = new BuildingsApiService(_apiURL);
 
-let buildings: any[] = [];
+let buildings: Building[] = [];
 let error: string | null = null;
 
 try {
@@ -21,7 +26,7 @@ try {
         error = buildingsResponse.error || 'Failed to load buildings';
         buildings = [];
     }
-} catch(e) {
+} catch{
     error = 'Failed to load buildings';
     buildings = [];
 }
@@ -30,12 +35,12 @@ try {
 <div
   x-data="buildingsComponentData()"
   x-init="init()"
-  building-tab-changed="handleTabChange($event)"
-  show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
-  toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
-  building-data-loaded="handleBuildingDataLoaded($event)"
+  @building-tab-changed="handleTabChange($event)"
+  @show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
+  @toast:show="showAndHideToast($event.detail.message, $event.detail.toastType)"
+  @building-data-loaded="handleBuildingDataLoaded($event)"
   data-buildings={JSON.stringify(buildings)}
-  data-api-url={apiURL}
+  data-api-url={_apiURL}
 >
 
     <!-- Error Display -->
@@ -60,12 +65,12 @@ try {
 
     <!-- Individual building managers with lazy loading -->
     <div class="building-managers-container">
-        {buildings.map((building, i) => (
+        {_.map(buildings, (building, i) => (
             <BuildingManager
               building={building}
-              apiURL={apiURL}
+              apiURL={_apiURL}
               data-building-id={building.buildingID}
-              data-api-url={apiURL}
+              data-api-url={_apiURL}
               data-tab-index={i}
               class="building-tab-content"
               style={i === 0 ? '' : 'display: none;'}
@@ -74,12 +79,13 @@ try {
     </div>
 
     <!-- Add building form -->
-    <div x-show="activeBuildingTab === buildings.length" x-cloak data-api-url={apiURL}>
+    <div x-show="activeBuildingTab === buildings.length" x-cloak data-api-url={_apiURL}>
         <AddBuildingForm />
     </div>
 </div>
 
 <script>
+import _ from 'lodash';
 import type { AlpineComponent } from '../types/alpine';
 
 interface Building {
@@ -88,7 +94,7 @@ interface Building {
     street?: string
     city?: string
     state?: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 type BuildingsComponentData = AlpineComponent<{
@@ -100,7 +106,7 @@ type BuildingsComponentData = AlpineComponent<{
     apiURL: string
     init(): void
     handleTabChange(event: CustomEvent<{ tabIndex: number, buildingID?: string }>): void
-    handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, units: any[], unitTypes: any[] }>): void
+    handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, building: Building, units: unknown[], unitTypes: unknown[] }>): void
     showAndHideToast(message: string, type: string): void
 }>;
 
@@ -123,7 +129,7 @@ function buildingsComponentData(): BuildingsComponentData {
                 if(stored === 'add-new-building') {
                     this.activeBuildingTab = this.buildings.length;
                 } else {
-                    const idx = this.buildings.findIndex((b: Building) => b.buildingID === stored);
+                    const idx = _.findIndex(this.buildings, { buildingID: stored });
                     if(idx !== -1) {
                         this.activeBuildingTab = idx;
                     }
@@ -131,7 +137,7 @@ function buildingsComponentData(): BuildingsComponentData {
             } else {
                 const hash = decodeURIComponent(window.location.hash.substring(1));
                 if(hash) {
-                    const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
+                    const index = _.findIndex(this.buildings, { buildingID: hash });
                     if(index !== -1) {
                         this.activeBuildingTab = index;
                     } else if(hash === 'add-new-building') {
@@ -152,7 +158,7 @@ function buildingsComponentData(): BuildingsComponentData {
 
             // Show the initially active tab based on data-tab-index
             const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
-            allManagers.forEach((manager) => {
+            _.forEach(allManagers, (manager) => {
                 const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
                 manager.style.display = managerTabIndex === this.activeBuildingTab ? '' : 'none';
             });
@@ -176,7 +182,7 @@ function buildingsComponentData(): BuildingsComponentData {
 
             // Show/hide building managers based on their data-tab-index
             const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
-            allManagers.forEach((manager) => {
+            _.forEach(allManagers, (manager) => {
                 const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
                 manager.style.display = managerTabIndex === tabIndex ? '' : 'none';
             });
@@ -194,16 +200,12 @@ function buildingsComponentData(): BuildingsComponentData {
             }
         },
 
-        handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, building: any, units: any[], unitTypes: any[] }>) {
-            const { buildingID, building, units, unitTypes } = event.detail;
-            console.log(`Loaded data for building ${buildingID}:`, {
-                building: building,
-                units: units.length,
-                unitTypes: unitTypes.length
-            });
+        handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, building: Building, units: unknown[], unitTypes: unknown[] }>) {
+            const { buildingID, building, units: _units, unitTypes: _unitTypes } = event.detail;
+            // Data loaded successfully for building
 
             // Update the building in our local state
-            const index = this.buildings.findIndex((b: Building) => b.buildingID === buildingID);
+            const index = _.findIndex(this.buildings, { buildingID: buildingID });
             if(index !== -1 && building) {
                 this.buildings[index] = building;
             }

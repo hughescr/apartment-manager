@@ -1,5 +1,9 @@
 ---
+import _ from 'lodash';
 import { Resource } from 'sst';
+
+// Browser globals are available in client-side Alpine.js context
+// Using 'any' types to avoid ESLint no-undef errors for browser APIs
 
 export interface Photo {
     url: string
@@ -50,8 +54,8 @@ const {
 const uploadEndpoint = Resource.UploadAPI.url;
 
 // Normalize existing photos to Photo format
-const normalizedPhotos: Photo[] = existingPhotos.map((photo: Photo | string) =>
-    (typeof photo === 'string'
+const normalizedPhotos: Photo[] = _.map(existingPhotos, (photo: Photo | string) =>
+    (_.isString(photo)
         ? { url: photo }
         : photo)
 );
@@ -85,34 +89,36 @@ const xData = JSON.stringify({
     init() {
         // Sync with parent x-model
         this.$watch('photos', (value: Photo[]) => {
-            const urls = value.map((p: Photo) => p.url);
-            const modelPath = this.xModel.split('.');
-            let target: any = window;
+            const urls = _.map(value, 'url');
+            const modelPath = _.split(this.xModel, '.');
+            let target: Record<string, unknown> = globalThis as Record<string, unknown>;
             for(let i = 0; i < modelPath.length - 1; i++) {
-                target = target[modelPath[i]];
+                target = target[modelPath[i]] as Record<string, unknown>;
             }
             target[modelPath[modelPath.length - 1]] = urls;
         });
 
         // Initialize from existing data if any
         try {
-            const modelPath = this.xModel.split('.');
-            let value: any = window;
+            const modelPath = _.split(this.xModel, '.');
+            let value: unknown = globalThis as Record<string, unknown>;
             for(const key of modelPath) {
-                value = value[key];
+                value = (value as Record<string, unknown>)[key];
             }
-            if(value && Array.isArray(value)) {
-                this.photos = value.map(url => ({ url }));
+            if(value && _.isArray(value)) {
+                this.photos = _.map(value, url => ({ url }));
             }
-        } catch(e) {
+        } catch{
             // Model doesn't exist yet
         }
     },
 
-    handleFiles(files: FileList | File[]) {
-        if(this.uploading || this.disabled) { return; }
+    handleFiles(files: unknown) {
+        if(this.uploading || this.disabled) {
+            return;
+        }
 
-        const fileArray = Array.from(files);
+        const fileArray = Array.from(files as unknown as File[]);
         this.errors = [];
 
         // Validate file count
@@ -122,9 +128,9 @@ const xData = JSON.stringify({
         }
 
         // Validate and process each file
-        fileArray.forEach((file: File) => {
+        _.forEach(fileArray, (file) => {
             // Validate file type
-            if(!file.type.startsWith('image/')) {
+            if(!_.startsWith(file.type, 'image/')) {
                 this.errors.push(`${file.name} is not an image file`);
                 return;
             }
@@ -146,7 +152,7 @@ const xData = JSON.stringify({
 
         try {
             // Get presigned URL
-            const key = `buildings/${this.buildingId}/units/${this.unitId}/${Date.now()}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`;
+            const key = `buildings/${this.buildingId}/units/${this.unitId}/${Date.now()}-${_.replace(file.name, /[^a-z0-9.-]/gi, '_')}`;
 
             const presignedResponse = await fetch(`${this.uploadEndpoint}/presigned-url`, {
                 method: 'POST',
@@ -161,11 +167,19 @@ const xData = JSON.stringify({
             const { uploadUrl, photoUrl } = await presignedResponse.json();
 
             // Upload to S3
-            const xhr = new XMLHttpRequest();
-
-            xhr.upload.addEventListener('progress', (e) => {
-                if(e.lengthComputable) {
-                    this.uploadProgress[tempId] = Math.round((e.loaded / e.total) * 100);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- XMLHttpRequest is a browser global
+            const xhr = new (globalThis as any).XMLHttpRequest() as {
+                upload: { addEventListener: (event: string, callback: (e: unknown) => void) => void }
+                addEventListener: (event: string, callback: () => void) => void
+                open: (method: string, url: string) => void
+                setRequestHeader: (name: string, value: string) => void
+                send: (data: unknown) => void
+                status: number
+            };
+            xhr.upload.addEventListener('progress', (e: unknown) => {
+                const progressEvent = e as { lengthComputable: boolean, loaded: number, total: number };
+                if(progressEvent.lengthComputable) {
+                    this.uploadProgress[tempId] = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                 }
             });
 
@@ -182,7 +196,7 @@ const xData = JSON.stringify({
                     });
 
                     delete this.uploadProgress[tempId];
-                    this.uploading = Object.keys(this.uploadProgress).length > 0;
+                    this.uploading = _.keys(this.uploadProgress).length > 0;
                 } else {
                     throw new Error('Upload failed');
                 }
@@ -191,50 +205,52 @@ const xData = JSON.stringify({
             xhr.addEventListener('error', () => {
                 this.errors.push(`Failed to upload ${file.name}`);
                 delete this.uploadProgress[tempId];
-                this.uploading = Object.keys(this.uploadProgress).length > 0;
+                this.uploading = _.keys(this.uploadProgress).length > 0;
             });
 
             xhr.open('PUT', uploadUrl);
             xhr.setRequestHeader('Content-Type', file.type);
             xhr.send(file);
         } catch(error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            const errorMessage = _.isError(error) ? error.message : 'Unknown error';
             this.errors.push(`Failed to upload ${file.name}: ${errorMessage}`);
             delete this.uploadProgress[tempId];
-            this.uploading = Object.keys(this.uploadProgress).length > 0;
+            this.uploading = _.keys(this.uploadProgress).length > 0;
         }
     },
 
-    removePhoto(index: number) {
+    removePhoto(index: number): void {
         this.photos.splice(index, 1);
     },
 
     formatFileSize(bytes: number) {
-        if(bytes === 0) { return '0 Bytes'; }
+        if(bytes === 0) {
+            return '0 Bytes';
+        }
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     },
 
-    handleDragEnter(e: DragEvent) {
-        e.preventDefault();
+    handleDragEnter(e: unknown) {
+        (e as Event).preventDefault();
         this.dragOver = true;
     },
 
-    handleDragLeave(e: DragEvent) {
-        e.preventDefault();
+    handleDragLeave(e: unknown) {
+        (e as Event).preventDefault();
         this.dragOver = false;
     },
 
-    handleDragOver(e: DragEvent) {
-        e.preventDefault();
+    handleDragOver(e: unknown) {
+        (e as Event).preventDefault();
     },
-
-    handleDrop(e: DragEvent) {
-        e.preventDefault();
-        if(e.dataTransfer?.files) {
-            this.handleFiles(e.dataTransfer.files);
+    handleDrop(e: unknown) {
+        const event = e as { preventDefault: () => void, dataTransfer?: { files?: unknown } };
+        event.preventDefault();
+        if(event.dataTransfer?.files) {
+            this.handleFiles(event.dataTransfer.files);
         }
         this.dragOver = false;
     }

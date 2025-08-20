@@ -2,9 +2,10 @@
 import BasicInformationSection from '../info/BasicInformationSection.astro';
 import ManagementContactSection from '../info/ManagementContactSection.astro';
 import BuildingAmenitiesSection from '../info/BuildingAmenitiesSection.astro';
+import type { BuildingData } from '../../../types';
 
 export interface Props {
-    building: any // Building object from the data layer
+    building: BuildingData // Building object from the data layer
     apiUrl: string
     errors?: Record<string, string>
     onBuildingUpdate?: string // Alpine.js expression to emit building updates
@@ -45,7 +46,7 @@ const {
             </div>
             <button
               class="btn btn-error btn-outline"
-              click="deleteBuilding()"
+              @click="deleteBuilding()"
               disabled="saving"
               data-testid="delete-building-btn"
             >

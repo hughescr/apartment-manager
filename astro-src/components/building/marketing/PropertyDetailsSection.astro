@@ -1,6 +1,8 @@
 ---
+import type { BuildingData } from '../../../types';
+
 export interface Props {
-    building: any
+    building: BuildingData
     errors?: Record<string, string>
 }
 
@@ -121,7 +123,7 @@ Highlight amenities, lifestyle benefits, neighborhood features
                           class="input input-bordered flex-1"
                         />
                         <button
-                          click="removeHighlight(index)"
+                          @click="removeHighlight(index)"
                           class="btn btn-ghost btn-sm text-error"
                           title="Remove highlight"
                         >
@@ -132,7 +134,7 @@ Highlight amenities, lifestyle benefits, neighborhood features
                     </div>
                 </template>
                 <button
-                  click="addHighlight()"
+                  @click="addHighlight()"
                   class="btn btn-primary btn-sm mt-2"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

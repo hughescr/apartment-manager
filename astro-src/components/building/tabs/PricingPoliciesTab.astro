@@ -2,9 +2,10 @@
 import LeaseTermsPricingSection from '../pricing/LeaseTermsPricingSection.astro';
 import ApplicationFeesSection from '../pricing/ApplicationFeesSection.astro';
 import PoliciesSection from '../pricing/PoliciesSection.astro';
+import type { BuildingData } from '../../../types';
 
 export interface Props {
-    building: any
+    building: BuildingData
     errors: Record<string, string>
 }
 

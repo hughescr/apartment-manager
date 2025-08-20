@@ -1,4 +1,5 @@
 ---
+import _ from 'lodash';
 import { DayOfWeek } from '../../types';
 
 export interface Props {
@@ -35,14 +36,14 @@ const {
 } = Astro.props;
 
 // Days of week for hours
-const daysOfWeek = Object.values(DayOfWeek);
+const daysOfWeek = _.values(DayOfWeek);
 
 // Create the parent path for initialization
-const parentPath = xModel.split('.').slice(0, -1).join('.');
+const parentPath = _(xModel).split('.').slice(0, -1).join('.');
 
 // Generate unique component ID for Alpine.js scope
 // Used in x-id attribute below
-const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
+const componentId = `hours_editor_${_.slice(Math.random().toString(36), 2, 11)}`;
 ---
 
 <div
@@ -57,7 +58,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                 <button
                   type="button"
                   class={`btn btn-ghost ${compact ? 'btn-xs' : 'btn-sm'}`}
-                  click={`setAllDays('${defaultOpenTime}', '${defaultCloseTime}')`}
+                  onclick={`setAllDays('${defaultOpenTime}', '${defaultCloseTime}')`}
                   title={`Set all days to ${defaultOpenTime}-${defaultCloseTime}`}
                 >
                     Set All
@@ -69,7 +70,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                 <button
                   type="button"
                   class={`btn btn-ghost ${compact ? 'btn-xs' : 'btn-sm'}`}
-                  click="clearAllDays()"
+                  @click="clearAllDays()"
                   title="Clear all days"
                 >
                     Clear All
@@ -79,14 +80,14 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
     </div>
 
     <div class={`space-y-1 ${compact ? 'max-w-xl' : 'max-w-2xl'}`}>
-        {daysOfWeek.map((day, index) => (
+        {_.map(daysOfWeek, (day, index) => (
             <div class={`flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50 transition-colors ${compact ? 'py-1' : ''}`}>
                 <!-- Checkbox -->
                 <input
                   type="checkbox"
                   class={`checkbox checkbox-primary ${compact ? 'checkbox-sm' : ''}`}
                   checked={`isDayOpen('${day}')`}
-                  change={`toggleDay('${day}')`}
+                  onchange={`toggleDay('${day}')`}
                 />
 
                 <!-- Day name - fixed width -->
@@ -99,7 +100,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                       class={`input ${compact ? 'input-sm w-24' : 'input-sm w-28'}`}
                       disabled={`!isDayOpen('${day}')`}
                       value={`getDayTime('${day}', 'open')`}
-                      input={`setDayTime('${day}', 'open', $event.target.value)`}
+                      oninput={`setDayTime('${day}', 'open', $event.target.value)`}
                       placeholder={defaultOpenTime}
                     />
                     <span class="text-xs text-base-content/60">to</span>
@@ -108,7 +109,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                       class={`input ${compact ? 'input-sm w-24' : 'input-sm w-28'}`}
                       disabled={`!isDayOpen('${day}')`}
                       value={`getDayTime('${day}', 'close')`}
-                      input={`setDayTime('${day}', 'close', $event.target.value)`}
+                      oninput={`setDayTime('${day}', 'close', $event.target.value)`}
                       placeholder={defaultCloseTime}
                     />
                 </div>
@@ -123,7 +124,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                                   type="button"
                                   class="btn btn-xs btn-ghost"
                                   disabled={`!isDayOpen('${day}')`}
-                                  click={`copyToDay('${day}', '${daysOfWeek[index + 1]}')`}
+                                  onclick={`copyToDay('${day}', '${daysOfWeek[index + 1]}')`}
                                 >
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
@@ -139,7 +140,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                                   type="button"
                                   class="btn btn-xs btn-ghost"
                                   disabled={`!isDayOpen('${day}')`}
-                                  click={`copyToAllBelow('${day}', ${index})`}
+                                  onclick={`copyToAllBelow('${day}', ${index})`}
                                 >
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path>
@@ -154,7 +155,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                                 <label
                                   tabindex="0"
                                   class="btn btn-xs btn-ghost"
-                                  disabled={`!isDayOpen('${day}')`}
+
                                 >
                                     •••
                                 </label>
@@ -186,40 +187,54 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
 </div>
 
 <script>
+import _ from 'lodash';
+
+// Define types for hours data structure
+interface DayHours {
+    open: string
+    close: string
+}
+
+type HoursData = Record<string, DayHours>;
+
 // Hours Editor Alpine.js component
 function hoursEditor(modelPath: string, parentPath: string) {
     const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
     return {
         // Helper to get nested property value
-        getNestedProperty(path: string) {
-            const keys = path.split('.');
-            let value = this as any;
-            for(const key of keys) {
-                value = value?.[key];
-            }
+        getNestedProperty(path: string): unknown {
+            const keys = _.split(path, '.');
+            let value = this as Record<string, unknown>;
+            _.forEach(keys, (key) => {
+                value = value?.[key] as Record<string, unknown>;
+            });
             return value;
         },
 
         // Helper to set nested property value
-        setNestedProperty(path: string, value: any) {
-            const keys = path.split('.');
-            let obj = this as any;
+        setNestedProperty(path: string, value: unknown): void {
+            const keys = _.split(path, '.');
+            let obj = this as Record<string, unknown>;
 
             // Initialize parent if needed
             if(parentPath && !this.getNestedProperty(parentPath)) {
-                const parentKeys = parentPath.split('.');
+                const parentKeys = _.split(parentPath, '.');
                 let parent = obj;
-                for(const key of parentKeys) {
-                    if(!parent[key]) { parent[key] = {}; }
-                    parent = parent[key];
-                }
+                _.forEach(parentKeys, (key) => {
+                    if(!parent[key]) {
+                        parent[key] = {};
+                    }
+                    parent = parent[key] as Record<string, unknown>;
+                });
             }
 
             // Navigate to the parent of the final key
             for(let i = 0; i < keys.length - 1; i++) {
-                if(!obj[keys[i]]) { obj[keys[i]] = {}; }
-                obj = obj[keys[i]];
+                if(!obj[keys[i]]) {
+                    obj[keys[i]] = {};
+                }
+                obj = obj[keys[i]] as Record<string, unknown>;
             }
 
             // Set the final value
@@ -227,12 +242,12 @@ function hoursEditor(modelPath: string, parentPath: string) {
         },
 
         isDayOpen(day: string): boolean {
-            const hours = this.getNestedProperty(modelPath);
+            const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             return !!(hours && hours[day]);
         },
 
         toggleDay(day: string) {
-            const hours = this.getNestedProperty(modelPath) || {};
+            const hours = (this.getNestedProperty(modelPath) || {}) as HoursData;
             if(hours[day]) {
                 delete hours[day];
             } else {
@@ -242,12 +257,12 @@ function hoursEditor(modelPath: string, parentPath: string) {
         },
 
         getDayTime(day: string, type: 'open' | 'close'): string {
-            const hours = this.getNestedProperty(modelPath);
+            const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             return hours?.[day]?.[type] || '';
         },
 
         setDayTime(day: string, type: 'open' | 'close', value: string) {
-            let hours = this.getNestedProperty(modelPath);
+            let hours = this.getNestedProperty(modelPath) as HoursData;
             if(!hours) {
                 hours = {};
                 this.setNestedProperty(modelPath, hours);
@@ -259,14 +274,14 @@ function hoursEditor(modelPath: string, parentPath: string) {
         },
 
         copyToDay(fromDay: string, toDay: string) {
-            const hours = this.getNestedProperty(modelPath);
+            const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             if(hours?.[fromDay]) {
                 hours[toDay] = { ...hours[fromDay] };
             }
         },
 
         copyToAllBelow(fromDay: string, fromIndex: number) {
-            const hours = this.getNestedProperty(modelPath);
+            const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             if(hours?.[fromDay]) {
                 for(let i = fromIndex + 1; i < daysOfWeek.length; i++) {
                     hours[daysOfWeek[i]] = { ...hours[fromDay] };
@@ -275,17 +290,17 @@ function hoursEditor(modelPath: string, parentPath: string) {
         },
 
         copyToWeekdays(fromDay: string) {
-            const hours = this.getNestedProperty(modelPath);
+            const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             if(hours?.[fromDay]) {
                 const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-                weekdays.forEach((day) => {
+                _.forEach(weekdays, (day) => {
                     hours[day] = { ...hours[fromDay] };
                 });
             }
         },
 
         copyToWeekends(fromDay: string) {
-            const hours = this.getNestedProperty(modelPath);
+            const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             if(hours?.[fromDay]) {
                 hours.saturday = { ...hours[fromDay] };
                 hours.sunday = { ...hours[fromDay] };
@@ -293,17 +308,17 @@ function hoursEditor(modelPath: string, parentPath: string) {
         },
 
         copyToAll(fromDay: string) {
-            const hours = this.getNestedProperty(modelPath);
+            const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             if(hours?.[fromDay]) {
-                daysOfWeek.forEach((day) => {
+                _.forEach(daysOfWeek, (day) => {
                     hours[day] = { ...hours[fromDay] };
                 });
             }
         },
 
         setAllDays(open: string, close: string) {
-            const hours = this.getNestedProperty(modelPath) || {};
-            daysOfWeek.forEach((day) => {
+            const hours = (this.getNestedProperty(modelPath) || {}) as HoursData;
+            _.forEach(daysOfWeek, (day) => {
                 hours[day] = { open, close };
             });
             this.setNestedProperty(modelPath, hours);

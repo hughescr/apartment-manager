@@ -158,7 +158,7 @@ const {
                   placeholder="1 Bedroom Classic"
                   required={true}
                   helpText="Descriptive name for this unit type"
-                  input="generateModelID()"
+                  @input="generateModelID()"
                 />
                 <ValidationError fieldName="modelName" errors={{}} />
 
@@ -259,7 +259,7 @@ const {
                 <button
                   type="button"
                   class="btn"
-                  click="showAddUnitTypeDialog = false"
+                  @click="showAddUnitTypeDialog = false"
                   disabled="loading"
                   data-testid="cancel-add-unit-type"
                 >

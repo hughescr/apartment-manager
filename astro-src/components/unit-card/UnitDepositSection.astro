@@ -21,7 +21,7 @@ export interface Props {
                     <input
                       name="depositAmount"
                       x-model="tempDepositAmount"
-                      input="setDepositAmount($event.target.value)"
+                      @input="setDepositAmount($event.target.value)"
                       x-init="tempDepositAmount = getDepositAmount(unit.deposit)"
                       type="number"
                       min="0"
@@ -33,7 +33,7 @@ export interface Props {
                     <button
                       type="button"
                       x-show="!isInherited('deposit')"
-                      click="resetFieldToInherited('deposit'); tempDepositAmount = null"
+                      @click="resetFieldToInherited('deposit'); tempDepositAmount = null"
                       class="btn btn-ghost btn-sm"
                       title="Reset to inherited value"
                     >
@@ -55,7 +55,7 @@ export interface Props {
                       class="toggle toggle-success"
                       x-model="tempDepositRefundable"
                       x-init="tempDepositRefundable = getDepositRefundable(unit.deposit)"
-                      change="setDepositRefundable($event.target.checked)"
+                      @change="setDepositRefundable($event.target.checked)"
                     />
                     <span class="ml-2 text-sm" x-text="tempDepositRefundable ? 'Yes' : 'No'"></span>
                 </div>
@@ -75,7 +75,7 @@ export interface Props {
                       step="5"
                       x-model="tempPartialRefundPercentage"
                       x-init="tempPartialRefundPercentage = getDepositPartialRefundPercentage(unit.deposit) || 0"
-                      input="setDepositPartialRefundPercentage($event.target.value)"
+                      @input="setDepositPartialRefundPercentage($event.target.value)"
                     />
                     <span class="text-sm font-medium w-12" x-text="tempPartialRefundPercentage + '%'"></span>
                 </div>

@@ -1,4 +1,6 @@
 ---
+import _ from 'lodash';
+
 export interface SelectOption {
     value: string | number
     label: string
@@ -20,6 +22,7 @@ export interface Props {
     helpText?: string
     showLabel?: boolean
     floatingLabel?: boolean
+    onchange?: string
     multiple?: boolean
     size?: number
 }
@@ -39,47 +42,42 @@ const {
     helpText,
     showLabel = true,
     floatingLabel = true,
+    onchange,
     multiple = false,
     size,
 } = Astro.props;
 
 // Normalize options to SelectOption format
 const normalizedOptions: SelectOption[] = options
-? options.map(opt =>
-    (typeof opt === 'string'
-        ? { value: opt, label: opt }
-        : opt)
-)
-: [];
+    ? _.map(options, (opt: SelectOption | string) =>
+        (_.isString(opt)
+            ? { value: opt, label: opt }
+            : opt as SelectOption)
+    )
+    : [];
 
 // Determine if we should show the label
 const shouldShowLabel = showLabel && label;
 const labelClass = floatingLabel ? 'floating-label select-label' : 'label';
 
 // Build select classes
-const selectClasses = [
+const selectClasses = _.compact([
     'select',
     'w-full',
     error ? 'select-error' : '',
     selectClass
-].filter(Boolean).join(' ');
+]).join(' ');
 
 // Container classes
-const containerClasses = [
+const containerClasses = _.compact([
     labelClass,
     className
-].filter(Boolean).join(' ');
+]).join(' ');
 ---
 
 <label class={containerClasses}>
     {shouldShowLabel && !floatingLabel && (
         <span class="label-text">
-            {label}
-            {required && <span class="text-error">*</span>}
-        </span>
-    )}
-    {shouldShowLabel && floatingLabel && (
-        <span>
             {label}
             {required && <span class="text-error">*</span>}
         </span>
@@ -92,13 +90,20 @@ const containerClasses = [
       x-model={xModel}
       multiple={multiple}
       size={size}
+      onchange={onchange}
     >
+        {shouldShowLabel && floatingLabel && (
+            <span>
+                {label}
+                {required && <span class="text-error">*</span>}
+            </span>
+        )}
         {placeholder && !multiple && (
             <option value="" disabled selected={!value}>
                 {placeholder}
             </option>
         )}
-        {normalizedOptions.map(option => (
+        {_.map(normalizedOptions, option => (
             <option
               value={option.value}
               disabled={option.disabled}

@@ -21,7 +21,7 @@ export interface Props {
               role="tab"
               class="tab"
               class="{ 'tab-active': activeBuildingTab === index }"
-              click="setActiveTab(index, building.buildingID)"
+              @click="setActiveTab(index, building.buildingID)"
               x-text="building.buildingName || building.buildingID"
             >
             </a>
@@ -32,7 +32,7 @@ export interface Props {
           role="tab"
           class="tab items-center"
           class="{ 'tab-active': activeBuildingTab === buildings.length }"
-          click="setActiveTab(buildings.length)"
+          @click="setActiveTab(buildings.length)"
         >
             <svg class="size-4 text-secondary me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -45,6 +45,7 @@ export interface Props {
 </div>
 
 <script>
+import _ from 'lodash';
 import type { AlpineComponent } from '../types/alpine';
 
 interface Building {
@@ -53,7 +54,7 @@ interface Building {
     street?: string
     city?: string
     state?: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 type BuildingsListData = AlpineComponent<{
@@ -77,7 +78,7 @@ function buildingsListData(): BuildingsListData {
                 if(stored === 'add-new-building') {
                     this.activeBuildingTab = this.buildings.length;
                 } else {
-                    const idx = this.buildings.findIndex((b: Building) => b.buildingID === stored);
+                    const idx = _.findIndex(this.buildings, { buildingID: stored });
                     if(idx !== -1) {
                         this.activeBuildingTab = idx;
                     }
@@ -85,7 +86,7 @@ function buildingsListData(): BuildingsListData {
             } else {
                 const hash = decodeURIComponent(window.location.hash.substring(1));
                 if(hash) {
-                    const index = this.buildings.findIndex((b: Building) => b.buildingID === hash);
+                    const index = _.findIndex(this.buildings, { buildingID: hash });
                     if(index !== -1) {
                         this.activeBuildingTab = index;
                     } else if(hash === 'add-new-building') {

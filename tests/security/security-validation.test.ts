@@ -24,6 +24,7 @@ import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { resetAllMocks } from '../data/test-setup';
 import { resetClients } from '../../data/clients';
 import { chain, fill, isObject, repeat } from 'lodash';
+import { generateBuildingId } from '../../src/utils/building-id.js';
 
 // Setup function for tests
 async function setupTestEnvironment() {
@@ -920,7 +921,7 @@ describe('Security Validation Tests', () => {
 
             for(const zip of validZips) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: `wgey4dDPEd8qEMGtGoMe${Date.now().toString().slice(-2)}${Math.random().toString(36).slice(2, 4)}`, // Valid short-uuid format
+                    buildingID: generateBuildingId(), // Valid short-uuid format
                     buildingName: 'Test Building',
                     street: '123 Main St',
                     city: 'Test City',

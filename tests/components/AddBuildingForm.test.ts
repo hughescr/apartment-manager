@@ -172,7 +172,7 @@ describe('AddBuildingForm Autocomplete Types', () => {
     });
 
     it('has proper TypeScript types for geolocation', () => {
-        expect(componentSrc).toContain('userLocation: { lat: number; lon: number } | null');
+        expect(componentSrc).toContain('userLocation: { lat: number, lon: number } | null');
         expect(componentSrc).toContain('locationStatus: \'unknown\' | \'granted\' | \'denied\' | \'unavailable\' | \'loading\'');
         expect(componentSrc).toContain('locationTooltip: string');
     });

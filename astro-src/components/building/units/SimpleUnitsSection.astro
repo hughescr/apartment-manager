@@ -2,9 +2,7 @@
 // SimpleUnitsSection.astro - Simplified units management for integrated floorplans & units tab
 // Focuses on individual unit management without bulk operations complexity
 
-export interface Props {
-    // No props needed - uses shared state from parent BuildingProvider
-}
+// No props needed - uses shared state from parent BuildingProvider
 ---
 
 <!-- Simplified Units Section with Listing Management -->
@@ -86,7 +84,7 @@ sq ft
                                   data-testid="'unit-status-' + unit.unitID"
                                   value="unit.vacancyClass || 'Unknown'"
                                   disabled="unit.savingField === 'vacancyClass'"
-                                  change="updateUnitStatus(unit, $event.target.value)"
+                                  @change="updateUnitStatus(unit, $event.target.value)"
                                 >
                                     <option value="Occupied">Occupied</option>
                                     <option value="Unoccupied">Available</option>
@@ -105,7 +103,7 @@ sq ft
                                       data-testid="'availability-toggle-' + unit.unitID"
                                       checked="unit.vacancyClass === 'Unoccupied'"
                                       disabled="unit.savingField === 'vacancyClass'"
-                                      change="toggleUnitAvailability(unit)"
+                                      @change="toggleUnitAvailability(unit)"
                                     />
                                 </label>
                             </div>
@@ -122,7 +120,7 @@ sq ft
                                     <span
                                       class="font-bold text-lg cursor-pointer hover:bg-base-200 px-2 py-1 rounded"
                                       data-testid="'inline-rent-' + unit.unitID"
-                                      click="unit.editingRent = true; $nextTick(() => $el.nextElementSibling.focus())"
+                                      @click="unit.editingRent = true; $nextTick(() => $el.nextElementSibling.focus())"
                                     >
                                         <span :data-testid="'unit-rent-' + unit.unitID" x-text="formatCurrency(unit.rent)"></span>
                                     </span>
@@ -136,7 +134,7 @@ sq ft
                                   value="unit.rent"
                                   min="0"
                                   max="25000"
-                                  blur="unit.editingRent = false"
+                                  @blur="unit.editingRent = false"
                                   keyup.enter="updateUnitRent(unit, $event.target.value)"
                                   keyup.escape="unit.editingRent = false"
                                 />

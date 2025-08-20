@@ -4,31 +4,37 @@
 // and visibility is controlled by parent's x-show directive
 ---
 
-<div class="add-building-form bg-base-100 border-base-300 p-4" 
-     x-data="addBuildingFormData()"
-     x-init="init()">
-     
+<div
+  class="add-building-form bg-base-100 border-base-300 p-4"
+  x-data="addBuildingFormData()"
+  x-init="init()"
+>
+
     <fieldset class="fieldset w-xl">
         <!-- Autocomplete dropdown using proper DaisyUI structure -->
-        <div class="dropdown w-full" 
-             :class="{ 'dropdown-open': showSuggestions }">
+        <div
+          class="dropdown w-full"
+          class="{ 'dropdown-open': showSuggestions }"
+        >
             <label class="floating-label mb-2 w-full relative">
                 <span>Street</span>
-                <input type="text" 
-                       name="street" 
-                       x-model="street" 
-                       placeholder="Street" 
-                       class="input w-full" 
-                       @input="handleStreetInput($event)"
-                       @keydown="handleKeydown($event)"
-                       @blur="updateBuildingNameFromAddress(); setTimeout(() => hideSuggestions(), 150)"
-                       @focus="street.length >= 3 && suggestions.length > 0 ? showSuggestions = true : null"
-                       :aria-expanded="showSuggestions"
-                       :aria-activedescendant="selectedIndex >= 0 ? `suggestion-${selectedIndex}` : null"
-                       autocomplete="off"
-                       role="combobox"
-                       aria-haspopup="listbox"/>
-                
+                <input
+                  type="text"
+                  name="street"
+                  x-model="street"
+                  placeholder="Street"
+                  class="input w-full"
+                  @input="handleStreetInput($event)"
+                  @keydown="handleKeydown($event)"
+                  @blur="updateBuildingNameFromAddress(); setTimeout(() => hideSuggestions(), 150)"
+                  @focus="street.length >= 3 && suggestions.length > 0 ? showSuggestions = true : null"
+                  :aria-expanded="showSuggestions"
+                  :aria-activedescendant="selectedIndex >= 0 ? `suggestion-${selectedIndex}` : null"
+                    autocomplete="off"
+                    role="combobox"
+                    aria-haspopup="listbox"
+                />
+
                 <!-- Status indicators -->
                 <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
                     <!-- Geolocation status indicator -->
@@ -52,28 +58,32 @@
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                 </div>
             </label>
-            
+
             <!-- Autocomplete dropdown using DaisyUI dropdown-content -->
-            <ul class="dropdown-content menu bg-base-100 rounded-box z-50 w-full max-h-60 overflow-y-auto shadow-lg border border-base-300" 
-                x-show="showSuggestions || (!loading && suggestions.length === 0 && street.length >= 3)" 
-                x-transition:enter="transition ease-out duration-100"
-                x-transition:enter-start="opacity-0 scale-95"
-                x-transition:enter-end="opacity-100 scale-100"
-                x-transition:leave="transition ease-in duration-75"
-                x-transition:leave-start="opacity-100 scale-100"
-                x-transition:leave-end="opacity-0 scale-95"
-                role="listbox" 
-                aria-label="Address suggestions">
-                
+            <ul
+              class="dropdown-content menu bg-base-100 rounded-box z-50 w-full max-h-60 overflow-y-auto shadow-lg border border-base-300"
+              x-show="showSuggestions || (!loading && suggestions.length === 0 && street.length >= 3)"
+              x-transition:enter="transition ease-out duration-100"
+              x-transition:enter-start="opacity-0 scale-95"
+              x-transition:enter-end="opacity-100 scale-100"
+              x-transition:leave="transition ease-in duration-75"
+              x-transition:leave-start="opacity-100 scale-100"
+              x-transition:leave-end="opacity-0 scale-95"
+              role="listbox"
+              aria-label="Address suggestions"
+            >
+
                 <template x-for="(suggestion, index) in suggestions" :key="suggestion.displayText + index">
                     <li>
-                        <a class="text-sm py-2 px-3 cursor-pointer rounded-btn"
-                           :class="{ 'bg-primary text-primary-content': selectedIndex === index }"
-                           :id="`suggestion-${index}`"
-                           :aria-selected="selectedIndex === index"
-                           role="option"
-                           @click="selectSuggestion(suggestion)"
-                           @mouseenter="selectedIndex = index">
+                        <a
+                          class="text-sm py-2 px-3 cursor-pointer rounded-btn"
+                          class="{ 'bg-primary text-primary-content': selectedIndex === index }"
+                          :id="`suggestion-${index}`"
+                          :aria-selected="selectedIndex === index"
+                            role="option"
+                            @click="selectSuggestion(suggestion)"
+                            @mouseenter="selectedIndex = index"
+                        >
                             <div class="flex-1">
                                 <div class="font-medium" x-text="suggestion.address.street || suggestion.displayText"></div>
                                 <div class="text-xs opacity-70" x-text="suggestion.address.city && suggestion.address.state ? `${suggestion.address.city}, ${suggestion.address.state} ${suggestion.address.postalCode || suggestion.address.postcode || ''}`.trim() : suggestion.address.formatted"></div>
@@ -81,7 +91,7 @@
                         </a>
                     </li>
                 </template>
-                
+
                 <!-- No results message -->
                 <li x-show="!loading && suggestions.length === 0 && street.length >= 3">
                     <span class="text-xs text-base-content/60 py-2 px-3">
@@ -89,46 +99,52 @@
                     </span>
                 </li>
             </ul>
-        
+        </div>
+
         <label class="floating-label mb-2">
             <span>City</span>
-            <input type="text" name="city" x-model="city" placeholder="City" class="input w-full"/>
+            <input type="text" name="city" x-model="city" placeholder="City" class="input w-full" />
         </label>
-        
+
         <label class="floating-label mb-2">
             <span>State</span>
-            <input type="text" name="state" x-model="state" placeholder="State" class="input w-full"/>
+            <input type="text" name="state" x-model="state" placeholder="State" class="input w-full" />
         </label>
-        
+
         <label class="floating-label mb-2">
             <span>Zip</span>
-            <input type="text" name="zip" x-model="zip" placeholder="Zip" class="input w-full"/>
+            <input type="text" name="zip" x-model="zip" placeholder="Zip" class="input w-full" />
         </label>
-        
+
         <div class="indicator w-full mt-4">
             <span class="indicator-item badge" style="z-index:2" x-show="buildingName === ''">Required</span>
             <label class="floating-label mb-6 w-full">
                 <span>Building Name</span>
-                <input type="text" 
-                       name="buildingName" 
-                       x-model="buildingName" 
-                       placeholder="Building Name (auto-generated from address)" 
-                       class="input input-xl w-full" 
-                       required />
+                <input
+                  type="text"
+                  name="buildingName"
+                  x-model="buildingName"
+                  placeholder="Building Name (auto-generated from address)"
+                  class="input input-xl w-full"
+                  required
+                />
             </label>
         </div>
-        
+
         <label class="floating-label mt-4">
             <span>Description</span>
-            <textarea name="description" 
-                      class="textarea w-full h-24" 
-                      placeholder="Brief property description highlighting key features and amenities that attract tenants..." 
-                      x-model="description"></textarea>
+            <textarea
+              name="description"
+              class="textarea w-full h-24"
+              placeholder="Brief property description highlighting key features and amenities that attract tenants..."
+              x-model="description"
+            >
+            </textarea>
             <div class="text-xs text-base-content/60 mt-1">
                 Used as marketing copy on rental listing sites (Apartments.com, Zillow) and in MITS feeds. Plain text only - no HTML or Markdown.
             </div>
         </label>
-        
+
         <!-- Website Fields Section -->
         <div class="mt-6">
             <h4 class="text-base font-semibold mb-4 flex items-center gap-2">
@@ -139,32 +155,44 @@
                     </svg>
                 </div>
             </h4>
-            
+
             <label class="floating-label mb-2">
                 <span>Property Website</span>
-                <input type="url" 
-                       name="propertyWebsite" 
-                       x-model="propertyWebsite" 
-                       placeholder="https://property-specific-site.com" 
-                       class="input w-full"/>
+                <input
+                  type="url"
+                  name="propertyWebsite"
+                  x-model="propertyWebsite"
+                  placeholder="https://property-specific-site.com"
+                  class="input w-full"
+                />
             </label>
-            
+
             <label class="floating-label mb-2">
                 <span>Management Company Website</span>
-                <input type="url" 
-                       name="managementWebsite" 
-                       x-model="managementWebsite" 
-                       placeholder="https://your-management-company.com" 
-                       class="input w-full"/>
+                <input
+                  type="url"
+                  name="managementWebsite"
+                  x-model="managementWebsite"
+                  placeholder="https://your-management-company.com"
+                  class="input w-full"
+                />
             </label>
-            
+
             <!-- Explanatory text -->
             <div class="text-sm text-base-content/70 mt-2 space-y-1">
-                <p><strong>Property Website:</strong> Specific to this building - shown on rental listings</p>
-                <p><strong>Management Website:</strong> Your company's main site - for corporate information</p>
+                <p>
+<strong>Property Website:</strong>
+{' '}
+Specific to this building - shown on rental listings
+                </p>
+                <p>
+<strong>Management Website:</strong>
+{' '}
+Your company's main site - for corporate information
+                </p>
             </div>
         </div>
-        
+
         <!-- Rental Type Section -->
         <div class="mt-6">
             <label class="floating-label select-label">
@@ -176,38 +204,54 @@
                     <option value="senior">Senior</option>
                 </select>
             </label>
-            
+
             <!-- Rental Type Explanations -->
             <div class="mt-3 text-sm space-y-2">
                 <div x-show="specialtyType === 'market-rate'" class="alert alert-info text-xs py-2">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span><strong>Market Rate:</strong> Standard apartments with no restrictions</span>
+                    <span>
+<strong>Market Rate:</strong>
+{' '}
+Standard apartments with no restrictions
+                    </span>
                 </div>
-                
+
                 <div x-show="specialtyType === 'affordable'" class="alert alert-warning text-xs py-2">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                     </svg>
-                    <span><strong>Affordable:</strong> Income-restricted housing (AMI requirements)</span>
+                    <span>
+<strong>Affordable:</strong>
+{' '}
+Income-restricted housing (AMI requirements)
+                    </span>
                 </div>
-                
+
                 <div x-show="specialtyType === 'student'" class="alert alert-info text-xs py-2">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span><strong>Student:</strong> Campus or university-affiliated housing</span>
+                    <span>
+<strong>Student:</strong>
+{' '}
+Campus or university-affiliated housing
+                    </span>
                 </div>
-                
+
                 <div x-show="specialtyType === 'senior'" class="alert alert-info text-xs py-2">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span><strong>Senior:</strong> Age-restricted housing (55+ or 62+ communities)</span>
+                    <span>
+<strong>Senior:</strong>
+{' '}
+Age-restricted housing (55+ or 62+ communities)
+                    </span>
                 </div>
             </div>
-            
+
             <div class="alert alert-warning mt-3 text-xs py-2">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
@@ -216,7 +260,7 @@
             </div>
         </div>
     </fieldset>
-    
+
     <div class="mt-2 space-x-2">
         <button class="btn btn-primary" @click="addBuilding()" :disabled="saving">
             <span x-show="saving" class="loading loading-spinner loading-sm"></span>
@@ -227,62 +271,63 @@
 </div>
 
 <script>
-import type { AlpineComponent } from "../types/alpine";
+import type { AlpineComponent } from '../types/alpine';
+import _ from 'lodash';
 
 interface AddressSuggestion {
-    displayText: string;
+    displayText: string
     address: {
-        street: string;
-        city: string;
-        state: string;
-        postcode: string;
-        postalCode?: string;
-        formatted: string;
-    };
+        street: string
+        city: string
+        state: string
+        postcode: string
+        postalCode?: string
+        formatted: string
+    }
     coordinates?: {
-        lat: number;
-        lng: number;
-    };
-    confidence?: number;
-    source: 'radar' | 'cache';
-    id: string;
+        lat: number
+        lng: number
+    }
+    confidence?: number
+    source: 'radar' | 'cache'
+    id: string
 }
 
 type AddBuildingFormData = AlpineComponent<{
-    buildingName: string;
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    description: string;
-    specialtyType: string;
-    propertyWebsite: string;
-    managementWebsite: string;
-    saving: boolean;
-    apiURL: string;
+    buildingName: string
+    street: string
+    city: string
+    state: string
+    zip: string
+    description: string
+    specialtyType: string
+    propertyWebsite: string
+    managementWebsite: string
+    saving: boolean
+    apiURL: string
     // Autocomplete state
-    suggestions: AddressSuggestion[];
-    showSuggestions: boolean;
-    loading: boolean;
-    selectedIndex: number;
-    debounceTimer: ReturnType<typeof setTimeout> | null;
+    suggestions: AddressSuggestion[]
+    showSuggestions: boolean
+    loading: boolean
+    selectedIndex: number
+    debounceTimer: ReturnType<typeof setTimeout> | null
     // Geolocation state
-    userLocation: { lat: number; lon: number } | null;
-    locationStatus: 'unknown' | 'granted' | 'denied' | 'unavailable' | 'loading';
-    locationTooltip: string;
-    init(): void;
-    addBuilding(): Promise<void>;
-    clearForm(): void;
-    updateBuildingNameFromAddress(): void;
+    userLocation: { lat: number, lon: number } | null
+    locationStatus: 'unknown' | 'granted' | 'denied' | 'unavailable' | 'loading'
+    locationTooltip: string
+    init(): void
+    addBuilding(): Promise<void>
+    clearForm(): void
+    updateBuildingNameFromAddress(): void
     // Autocomplete methods
-    handleStreetInput(event: Event): void;
-    searchAddresses(query: string): Promise<void>;
-    selectSuggestion(suggestion: AddressSuggestion): void;
-    navigateOptions(direction: 'up' | 'down'): void;
-    hideSuggestions(): void;
-    handleKeydown(event: KeyboardEvent): void;
+    handleStreetInput(event: Event): void
+    searchAddresses(query: string): Promise<void>
+    selectSuggestion(suggestion: AddressSuggestion): void
+    navigateOptions(direction: 'up' | 'down'): void
+    hideSuggestions(): void
+    handleKeydown(event: KeyboardEvent): void
     // Geolocation methods
-    getUserLocation(): Promise<void>;
+    getUserLocation(): Promise<void>
 }>;
 
 function addBuildingFormData(): AddBuildingFormData {
@@ -309,23 +354,22 @@ function addBuildingFormData(): AddBuildingFormData {
         userLocation: null,
         locationStatus: 'unknown',
         locationTooltip: '',
-        
+
         init() {
             this.apiURL = this.$root.parentElement?.dataset.apiUrl || '';
             // Request geolocation in the background
             this.getUserLocation();
         },
-        
-        
+
         async addBuilding() {
-            if (!this.buildingName) {
-                this.$dispatch('show-toast', { 
-                    message: 'Building name is required.', 
-                    type: 'error' 
+            if(!this.buildingName) {
+                this.$dispatch('show-toast', {
+                    message: 'Building name is required.',
+                    type: 'error'
                 });
                 return;
             }
-            
+
             this.saving = true;
             try {
                 const response = await fetch(`${this.apiURL}buildings`, {
@@ -345,36 +389,36 @@ function addBuildingFormData(): AddBuildingFormData {
                         }
                     }),
                 });
-                
+
                 this.saving = false;
-                
-                if (response.ok) {
+
+                if(response.ok) {
                     const result = await response.json();
-                    this.$dispatch('show-toast', { 
-                        message: 'Building added successfully!', 
-                        type: 'success' 
+                    this.$dispatch('show-toast', {
+                        message: 'Building added successfully!',
+                        type: 'success'
                     });
-                    
+
                     // Redirect to the new building using the returned buildingID
                     window.location.hash = result.buildingID;
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
                 } else {
-                    this.$dispatch('show-toast', { 
-                        message: 'Failed to add building.', 
-                        type: 'error' 
+                    this.$dispatch('show-toast', {
+                        message: 'Failed to add building.',
+                        type: 'error'
                     });
                 }
-            } catch (error) {
+            } catch(error) {
                 this.saving = false;
-                this.$dispatch('show-toast', { 
-                    message: 'Failed to add building: ' + (error as Error).message, 
-                    type: 'error' 
+                this.$dispatch('show-toast', {
+                    message: 'Failed to add building: ' + (error as Error).message,
+                    type: 'error'
                 });
             }
         },
-        
+
         clearForm() {
             this.buildingName = '';
             this.street = '';
@@ -396,55 +440,54 @@ function addBuildingFormData(): AddBuildingFormData {
             }
             // Don't clear geolocation state when clearing form
         },
-        
+
         updateBuildingNameFromAddress() {
-            if (this.street && !this.buildingName) {
+            if(this.street && !this.buildingName) {
                 // Simple address parsing to extract street number and main street name
-                const streetParts = this.street.trim().split(/\s+/);
-                if (streetParts.length >= 2) {
+                const streetParts = _.split(_.trim(this.street), /\s+/);
+                if(streetParts.length >= 2) {
                     const streetNumber = streetParts[0];
                     // Find the main street name (skip directional prefixes and street types)
                     const streetWords = streetParts.slice(1);
                     const skipWords = ['n', 'north', 's', 'south', 'e', 'east', 'w', 'west', 'ne', 'nw', 'se', 'sw',
-                                     'st', 'street', 'ave', 'avenue', 'rd', 'road', 'blvd', 'boulevard', 'pkwy', 'parkway',
-                                     'ln', 'lane', 'dr', 'drive', 'ct', 'court', 'pl', 'place', 'way'];
-                    
-                    const mainStreetWords = streetWords.filter(word => 
-                        !skipWords.includes(word.toLowerCase().replace(/[^a-z]/g, ''))
+                        'st', 'street', 'ave', 'avenue', 'rd', 'road', 'blvd', 'boulevard', 'pkwy', 'parkway',
+                        'ln', 'lane', 'dr', 'drive', 'ct', 'court', 'pl', 'place', 'way'];
+
+                    const mainStreetWords = _.filter(streetWords, word =>
+                        !skipWords.includes(_.replace(_.toLower(word), /[^a-z]/g, ''))
                     );
-                    
-                    if (mainStreetWords.length > 0) {
+
+                    if(mainStreetWords.length > 0) {
                         this.buildingName = `${streetNumber} ${mainStreetWords.join(' ')}`;
                     }
                 }
             }
         },
-        
+
         handleStreetInput(event: Event) {
             const target = event.target as HTMLInputElement;
-            const query = target.value.trim();
-            
+            const query = _.trim(target.value);
+
             // Clear existing timer
             if(this.debounceTimer) {
                 clearTimeout(this.debounceTimer);
             }
-            
+
             if(query.length < 3) {
                 this.hideSuggestions();
                 return;
             }
-            
+
             // Debounce API calls to 200ms
             this.debounceTimer = setTimeout(() => {
                 this.searchAddresses(query);
             }, 200);
         },
-        
-        
+
         async searchAddresses(query: string) {
             this.loading = true;
             this.selectedIndex = -1;
-            
+
             try {
                 // Build request with optional coordinates
                 const params = new URLSearchParams({ q: query, limit: '5' });
@@ -452,7 +495,7 @@ function addBuildingFormData(): AddBuildingFormData {
                     params.append('lat', this.userLocation.lat.toString());
                     params.append('lon', this.userLocation.lon.toString());
                 }
-                
+
                 const response = await fetch(`${this.apiURL}autocomplete/address?${params}`);
                 if(response.ok) {
                     const data = await response.json();
@@ -466,51 +509,55 @@ function addBuildingFormData(): AddBuildingFormData {
                     // Graceful error handling - hide autocomplete but don't break form
                     this.hideSuggestions();
                 }
-            } catch (error) {
+            } catch{
                 // Graceful error handling - autocomplete fails silently
                 this.hideSuggestions();
             } finally {
                 this.loading = false;
             }
         },
-        
+
         selectSuggestion(suggestion: AddressSuggestion) {
             // Auto-populate form fields
             this.street = suggestion.address.street || '';
             this.city = suggestion.address.city || '';
             this.state = suggestion.address.state || '';
             this.zip = suggestion.address.postalCode || suggestion.address.postcode || '';
-            
+
             // Update building name from the populated address
             this.updateBuildingNameFromAddress();
-            
+
             this.hideSuggestions();
         },
-        
+
         navigateOptions(direction: 'up' | 'down') {
-            if(!this.showSuggestions || this.suggestions.length === 0) return;
-            
+            if(!this.showSuggestions || this.suggestions.length === 0) {
+                return;
+            }
+
             if(direction === 'down') {
-                this.selectedIndex = this.selectedIndex < this.suggestions.length - 1 
-                    ? this.selectedIndex + 1 
+                this.selectedIndex = this.selectedIndex < this.suggestions.length - 1
+                    ? this.selectedIndex + 1
                     : 0;
             } else {
-                this.selectedIndex = this.selectedIndex > 0 
-                    ? this.selectedIndex - 1 
+                this.selectedIndex = this.selectedIndex > 0
+                    ? this.selectedIndex - 1
                     : this.suggestions.length - 1;
             }
         },
-        
+
         hideSuggestions() {
             this.showSuggestions = false;
             this.suggestions = [];
             this.selectedIndex = -1;
             this.loading = false;
         },
-        
+
         handleKeydown(event: KeyboardEvent) {
-            if(!this.showSuggestions) return;
-            
+            if(!this.showSuggestions) {
+                return;
+            }
+
             switch(event.key) {
                 case 'ArrowDown':
                     event.preventDefault();
@@ -531,17 +578,17 @@ function addBuildingFormData(): AddBuildingFormData {
                     break;
             }
         },
-        
+
         async getUserLocation() {
             if(!navigator.geolocation) {
                 this.locationStatus = 'unavailable';
                 this.locationTooltip = 'Geolocation not supported by browser';
                 return;
             }
-            
+
             this.locationStatus = 'loading';
             this.locationTooltip = 'Getting your location...';
-            
+
             try {
                 const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -550,33 +597,33 @@ function addBuildingFormData(): AddBuildingFormData {
                         maximumAge: 300000 // 5 minutes
                     });
                 });
-                
+
                 this.userLocation = {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude
                 };
                 this.locationStatus = 'granted';
                 this.locationTooltip = 'Location enabled - showing nearby results first';
-            } catch (error) {
-                console.log('Geolocation permission denied or unavailable:', error);
+            } catch{
+                // Geolocation permission denied or unavailable - silent fallback
                 this.locationStatus = 'denied';
                 this.locationTooltip = 'Location permission denied - showing general results';
             }
         },
-        
+
         // Add Alpine magic properties
-        $dispatch: (() => {}) as any,
-        $root: null as any,
-        $el: null as any,
-        $watch: (() => {}) as any,
-        $nextTick: (() => {}) as any
+        $dispatch: (() => undefined) as unknown,
+        $root: null as unknown,
+        $el: null as unknown,
+        $watch: (() => undefined) as unknown,
+        $nextTick: (() => undefined) as unknown
     } as AddBuildingFormData;
 }
 
 // Make available globally for Alpine.js
 declare global {
     interface Window {
-        addBuildingFormData: typeof addBuildingFormData;
+        addBuildingFormData: typeof addBuildingFormData
     }
 }
 

@@ -15,7 +15,9 @@ const websiteUrl = () => z.string().optional();
 
 const ContactInfoDraftSchema = z.object({
     name: z.string().optional(),
-    email: z.string().email('Invalid email address format').optional(),
+    email: z.string().optional().refine(email => !email || /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email), {
+        message: 'Invalid email address format'
+    }),
     phone: z.string().optional(),
     propertyWebsite: websiteUrl(),
     managementWebsite: websiteUrl(),

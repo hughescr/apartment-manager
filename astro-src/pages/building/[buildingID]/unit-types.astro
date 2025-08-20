@@ -7,6 +7,8 @@ import UnitTypeCard from '../../../components/UnitTypeCard.astro';
 import UnitTypeForm from '../../../components/UnitTypeForm.astro';
 import ModelAmenitiesManager from '../../../components/ModelAmenitiesManager.astro';
 import { Resource } from 'sst';
+import type { Building, UnitType } from '../../../types';
+import { map } from 'lodash';
 
 const { buildingID } = Astro.params;
 
@@ -19,8 +21,8 @@ const apiURL = Resource.API.url;
 const buildingsService = new BuildingsApiService(apiURL);
 const unitTypesService = new UnitTypesApiService(apiURL);
 
-let building: any = undefined;
-let unitTypes: any[] = [];
+let building: Building | undefined = undefined;
+let unitTypes: UnitType[] = [];
 let error: string | null = null;
 
 try {
@@ -39,7 +41,7 @@ try {
         error = unitTypesResponse.error || 'Failed to load unit types';
         unitTypes = [];
     }
-} catch(e) {
+} catch{
     error = 'Failed to load building data';
     building = undefined;
 }
@@ -94,8 +96,8 @@ Unit Types for
                 </div>
             )
 : (
-                unitTypes.map(unitType => (
-                    <UnitTypeCard unitType={unitType} buildingAmenities={building.propertyAmenities || []} />
+                map(unitTypes, unitType => (
+                    <UnitTypeCard unitType={unitType} buildingAmenities={building?.propertyAmenities || []} />
                 ))
             )}
         </div>

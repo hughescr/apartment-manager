@@ -2,8 +2,10 @@
 import { BaseInput } from '../../forms';
 import OfficeHoursEditor from '../editors/OfficeHoursEditor.astro';
 
+import type { BuildingData } from '../../../types';
+
 export interface Props {
-    building: any
+    building: BuildingData
     errors?: Record<string, string>
 }
 

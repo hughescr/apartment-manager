@@ -3,6 +3,7 @@ export type {
     BuildingData,
     UnitData,
     UnitTypeData,
+    UnitType,
     Unit,
     Building,
     Amenity,

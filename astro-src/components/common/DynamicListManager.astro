@@ -1,4 +1,5 @@
 ---
+import _ from 'lodash';
 import ValidationError from './ValidationError.astro';
 
 export interface FieldDefinition {
@@ -51,12 +52,146 @@ const {
 } = Astro.props;
 
 // Generate Alpine.js data methods
-const alpineDataKey = name.replace(/[^a-z0-9]/gi, '');
-const addMethodName = `add${alpineDataKey.charAt(0).toUpperCase() + alpineDataKey.slice(1)}`;
-const removeMethodName = `remove${alpineDataKey.charAt(0).toUpperCase() + alpineDataKey.slice(1)}`;
+const alpineDataKey = _.replace(name, /[^a-z0-9]/gi, '');
+const addMethodName = `add${_.toUpper(alpineDataKey.charAt(0)) + alpineDataKey.slice(1)}`;
+const removeMethodName = `remove${_.toUpper(alpineDataKey.charAt(0)) + alpineDataKey.slice(1)}`;
+
+// Helper functions for field rendering
+const createCommonAttrs = (field: FieldDefinition, fieldId: string, xModelPath: string, testId: string) => ({
+    ':name': `'${fieldId}-' + index`,
+    'x-model': xModelPath,
+    'class': field.type === 'textarea' ? 'textarea w-full' : 'input w-full',
+    ':data-testid': `'${testId}-' + index`,
+    ...(field.disabled && { ':disabled': field.disabled }),
+    ...(field.placeholder && { placeholder: field.placeholder })
+});
+
+const getInputType = (fieldType: string) => {
+    if(fieldType === 'number') {
+        return 'number';
+    }
+    if(fieldType === 'date') {
+        return 'date';
+    }
+    return 'text';
+};
+
+const createFieldLabel = (field: FieldDefinition) => (
+    <label class="label">
+        <span class="label-text">
+            {field.label}
+            {field.required && <span class="text-error">*</span>}
+        </span>
+    </label>
+);
+
+const createValidationError = (fieldId: string, field: FieldDefinition, errors: Record<string, string>) => (
+    <ValidationError
+      fieldName={`${fieldId}{index}${_.toUpper(field.name.charAt(0)) + field.name.slice(1)}`}
+      errors={errors}
+    />
+);
+
+const createHelpText = (field: FieldDefinition) => {
+    if(!field.helpText) {
+        return null;
+    }
+    return (
+        <div class="label">
+            <span class="label-text-alt">{field.helpText}</span>
+        </div>
+    );
+};
+
+const renderInputField = (field: FieldDefinition, commonAttrs: Record<string, unknown>, fieldId: string, errors: Record<string, string>) => (
+    <div class="form-control">
+        {createFieldLabel(field)}
+        <input
+          type={getInputType(field.type)}
+          {...commonAttrs}
+          {...(field.min && { min: field.min })}
+          {...(field.max && { max: field.max })}
+          {...(field.step && { step: field.step })}
+          {...(field.required && { required: true })}
+        />
+        {createValidationError(fieldId, field, errors)}
+        {createHelpText(field)}
+    </div>
+);
+
+const renderTextareaField = (field: FieldDefinition, commonAttrs: Record<string, unknown>, fieldId: string, errors: Record<string, string>) => (
+    <div class="form-control md:col-span-2">
+        {createFieldLabel(field)}
+        <textarea
+          {...commonAttrs}
+          rows={field.rows || 3}
+          {...(field.required && { required: true })}
+          class="textarea w-full resize-vertical"
+        >
+        </textarea>
+        {createValidationError(fieldId, field, errors)}
+        {createHelpText(field)}
+    </div>
+);
+
+const renderSelectField = (field: FieldDefinition, commonAttrs: Record<string, unknown>, fieldId: string, errors: Record<string, string>) => (
+    <div class="form-control">
+        {createFieldLabel(field)}
+        <select
+          {...commonAttrs}
+          class="select w-full"
+          {...(field.required && { required: true })}
+        >
+            {_.map(field.options, option => (
+                <option value={option.value}>{option.label}</option>
+            ))}
+        </select>
+        {createValidationError(fieldId, field, errors)}
+        {createHelpText(field)}
+    </div>
+);
+
+const renderToggleField = (field: FieldDefinition, xModelPath: string, fieldId: string, testId: string, errors: Record<string, string>) => (
+    <div class="form-control">
+        <label class="label cursor-pointer">
+            <span class="label-text">
+                {field.label}
+                {field.required && <span class="text-error">*</span>}
+            </span>
+            <input
+              type="checkbox"
+              class="toggle toggle-primary"
+              x-model={xModelPath}
+              name={`'${fieldId}-' + index`}
+              data-testid={`'${testId}-' + index`}
+              {...(field.disabled && { ':disabled': field.disabled })}
+            />
+        </label>
+        {createValidationError(fieldId, field, errors)}
+        {createHelpText(field)}
+    </div>
+);
+
+const renderField = (field: FieldDefinition, name: string, errors: Record<string, string>) => {
+    const fieldId = `${name}-${field.name}`;
+    const xModelPath = `item.${field.name}`;
+    const testId = `${fieldId}-input`;
+    const commonAttrs = createCommonAttrs(field, fieldId, xModelPath, testId);
+
+    if(field.type === 'text' || field.type === 'number' || field.type === 'date') {
+        return renderInputField(field, commonAttrs, fieldId, errors);
+    } else if(field.type === 'textarea') {
+        return renderTextareaField(field, commonAttrs, fieldId, errors);
+    } else if(field.type === 'select') {
+        return renderSelectField(field, commonAttrs, fieldId, errors);
+    } else if(field.type === 'toggle') {
+        return renderToggleField(field, xModelPath, fieldId, testId, errors);
+    }
+    return null;
+};
 
 // Create default item structure based on fields
-const defaultItem = fields.reduce((acc, field) => {
+const defaultItem = _.reduce(fields, (acc, field) => {
     switch(field.type) {
         case 'toggle':
             acc[field.name] = false;
@@ -71,7 +206,7 @@ const defaultItem = fields.reduce((acc, field) => {
             acc[field.name] = '';
     }
     return acc;
-}, {} as Record<string, any>);
+}, {} as Record<string, string | number | boolean>);
 ---
 
 <div class="dynamic-list-manager" data-name={name}>
@@ -94,9 +229,9 @@ const defaultItem = fields.reduce((acc, field) => {
             if (!${xModel}) ${xModel} = [];
             ${xModel}.push({
                 id: Date.now() + Math.random(),
-                ${Object.entries(defaultItem).map(([key, value]) =>
-                    (typeof value === 'string' ? `${key}: "${value}"` : `${key}: ${value}`)
-                ).join(', ')}
+                ${_.map(Object.entries(defaultItem), ([key, value]) => {
+                    return _.isString(value) ? `${key}: "${value}"` : `${key}: ${value}`;
+                }).join(', ')}
             });
         },
         ${removeMethodName}(index) {
@@ -112,7 +247,7 @@ const defaultItem = fields.reduce((acc, field) => {
                 <div class="flex justify-end mb-2">
                     <button
                       data-testid="`remove-${name}-item-` + index"
-                      click={`${removeMethodName}(index)`}
+                      onclick={`${removeMethodName}(index)`}
                       class={removeButtonClass}
                       type="button"
                     >
@@ -122,135 +257,7 @@ const defaultItem = fields.reduce((acc, field) => {
 
                 <!-- Dynamic Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {fields.map((field) => {
-                        const fieldId = `${name}-${field.name}`;
-                        const xModelPath = `item.${field.name}`;
-                        const testId = `${fieldId}-input`;
-
-                        // Common field attributes
-                        const commonAttrs = {
-                            ':name': `'${fieldId}-' + index`,
-                            'x-model': xModelPath,
-                            'class': field.type === 'textarea' ? 'textarea w-full' : 'input w-full',
-                            ':data-testid': `'${testId}-' + index`,
-                            ...(field.disabled && { ':disabled': field.disabled }),
-                            ...(field.placeholder && { placeholder: field.placeholder })
-                        };
-
-                        if(field.type === 'text' || field.type === 'number' || field.type === 'date') {
-                            return (
-                                <div class="form-control">
-                                    <label class="label">
-                                        <span class="label-text">
-                                            {field.label}
-                                            {field.required && <span class="text-error">*</span>}
-                                        </span>
-                                    </label>
-                                    <input
-                                      type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
-                                      {...commonAttrs}
-                                      {...(field.min && { min: field.min })}
-                                      {...(field.max && { max: field.max })}
-                                      {...(field.step && { step: field.step })}
-                                      {...(field.required && { required: true })}
-                                    />
-                                    <ValidationError
-                                      fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`}
-                                      errors={errors}
-                                    />
-                                    {field.helpText && (
-                                        <div class="label">
-                                            <span class="label-text-alt">{field.helpText}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        } else if(field.type === 'textarea') {
-                            return (
-                                <div class="form-control md:col-span-2">
-                                    <label class="label">
-                                        <span class="label-text">
-                                            {field.label}
-                                            {field.required && <span class="text-error">*</span>}
-                                        </span>
-                                    </label>
-                                    <textarea
-                                      {...commonAttrs}
-                                      rows={field.rows || 3}
-                                      {...(field.required && { required: true })}
-                                      class="textarea w-full resize-vertical"
-                                    >
-                                    </textarea>
-                                    <ValidationError
-                                      fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`}
-                                      errors={errors}
-                                    />
-                                    {field.helpText && (
-                                        <div class="label">
-                                            <span class="label-text-alt">{field.helpText}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        } else if(field.type === 'select') {
-                            return (
-                                <div class="form-control">
-                                    <label class="label">
-                                        <span class="label-text">
-                                            {field.label}
-                                            {field.required && <span class="text-error">*</span>}
-                                        </span>
-                                    </label>
-                                    <select
-                                      {...commonAttrs}
-                                      class="select w-full"
-                                      {...(field.required && { required: true })}
-                                    >
-                                        {field.options?.map(option => (
-                                            <option value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
-                                    <ValidationError
-                                      fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`}
-                                      errors={errors}
-                                    />
-                                    {field.helpText && (
-                                        <div class="label">
-                                            <span class="label-text-alt">{field.helpText}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        } else if(field.type === 'toggle') {
-                            return (
-                                <div class="form-control">
-                                    <label class="label cursor-pointer">
-                                        <span class="label-text">
-                                            {field.label}
-                                            {field.required && <span class="text-error">*</span>}
-                                        </span>
-                                        <input
-                                          type="checkbox"
-                                          class="toggle toggle-primary"
-                                          x-model={xModelPath}
-                                          name={`'${fieldId}-' + index`}
-                                          data-testid={`'${testId}-' + index`}
-                                          {...(field.disabled && { ':disabled': field.disabled })}
-                                        />
-                                    </label>
-                                    <ValidationError
-                                      fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`}
-                                      errors={errors}
-                                    />
-                                    {field.helpText && (
-                                        <div class="label">
-                                            <span class="label-text-alt">{field.helpText}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        }
-                    })}
+                    {_.map(fields, field => renderField(field, name, errors))}
                 </div>
             </div>
         </template>
@@ -267,7 +274,7 @@ const defaultItem = fields.reduce((acc, field) => {
 : (
                 <p>
 No
-{label.toLowerCase()}
+{_.toLower(label)}
 {' '}
 added yet. Click the button below to add your first entry.
                 </p>
@@ -277,7 +284,7 @@ added yet. Click the button below to add your first entry.
         <!-- Add Button -->
         {showAddButton && (
             <button
-              click={addMethodName + '()'}
+              onclick={addMethodName + '()'}
               class={addButtonClass}
               type="button"
               data-testid={`add-${name}-button`}

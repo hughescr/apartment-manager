@@ -4,9 +4,8 @@
 
 import SimpleUnitsSection from '../units/SimpleUnitsSection.astro';
 
-export interface Props {
-    // No props needed - uses shared state from parent BuildingProvider
-}
+// No props needed - uses shared state from parent BuildingProvider
+export type Props = Record<string, never>;
 ---
 
 <!-- Floorplans & Units Tab (integrates unit types with units list) -->

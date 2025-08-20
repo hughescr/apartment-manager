@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- Testing edge cases with invalid types */
-/* eslint-disable lodash/prefer-lodash-method -- Using native methods to test edge cases */
 // Note: This file intentionally uses 'any' types and native methods to test edge cases
 
+import { repeat, fill, chain } from 'lodash';
 import type {
     BuildingData,
     UnitTypeData,
@@ -23,7 +22,7 @@ export const nullUndefinedBuilding: BuildingData = {
     city: undefined,
     state: undefined,
     zip: undefined,
-    description: null as any, // Testing null where undefined expected
+    description: null as unknown as string, // Testing null where undefined expected
     yearBuilt: undefined,
     numberStories: undefined,
     totalUnits: undefined,
@@ -90,8 +89,8 @@ export const nullUndefinedUnitType: UnitTypeData = {
     modelName: 'Null Model',
     countAvailable: undefined,
     dateAvailable: undefined,
-    beds: null as any, // Testing null where number expected
-    baths: null as any,
+    beds: null as unknown as number, // Testing null where number expected
+    baths: null as unknown as number,
     maxOccupants: undefined,
     minRent: undefined,
     maxRent: undefined,
@@ -137,18 +136,18 @@ export const nullUndefinedUnit: UnitData = {
  */
 export const invalidTypesBuilding: BuildingData = {
     buildingID: 'building-invalid-001',
-    street: 123 as any, // Number instead of string
-    city: true as any, // Boolean instead of string
-    state: {} as any, // Object instead of string
-    zip: [] as any, // Array instead of string
-    yearBuilt: '2020' as any, // String instead of number
-    numberStories: '5' as any, // String instead of number
-    totalUnits: 'fifty' as any, // String instead of number
-    propertyType: 'invalid-type' as any, // Invalid enum value
-    roomsForRent: 'yes' as any, // String instead of boolean
-    photos: 'not-an-array' as any, // String instead of array
-    leaseLength: '12 months' as any, // String instead of number
-    applicationFee: '$75' as any // String instead of number
+    street: 123 as unknown as string, // Number instead of string
+    city: true as unknown as string, // Boolean instead of string
+    state: {} as unknown as string, // Object instead of string
+    zip: [] as unknown as string, // Array instead of string
+    yearBuilt: '2020' as unknown as number, // String instead of number
+    numberStories: '5' as unknown as number, // String instead of number
+    totalUnits: 'fifty' as unknown as number, // String instead of number
+    propertyType: 'invalid-type' as unknown as BuildingData['propertyType'], // Invalid enum value
+    roomsForRent: 'yes' as unknown as boolean, // String instead of boolean
+    photos: 'not-an-array' as unknown as BuildingData['photos'], // String instead of array
+    leaseLength: '12 months' as unknown as number, // String instead of number
+    applicationFee: '$75' as unknown as number // String instead of number
 };
 
 /**
@@ -157,19 +156,19 @@ export const invalidTypesBuilding: BuildingData = {
 export const invalidTypesUnitType: UnitTypeData = {
     buildingID: 'building-invalid-001',
     modelID: 'model-invalid-001',
-    modelName: 123 as any, // Number instead of string
-    beds: '2' as any, // String instead of number
-    baths: '1.5' as any, // String instead of number
-    minRent: '$2000' as any, // String with $ instead of number
-    maxRent: '2500.00' as any, // String instead of number
-    dateAvailable: 'January 1st' as any, // Invalid date format
-    modelAmenities: 'not-an-array' as any // String instead of array
+    modelName: 123 as unknown as string, // Number instead of string
+    beds: '2' as unknown as number, // String instead of number
+    baths: '1.5' as unknown as number, // String instead of number
+    minRent: '$2000' as unknown as number, // String with $ instead of number
+    maxRent: '2500.00' as unknown as number, // String instead of number
+    dateAvailable: 'January 1st' as unknown as UnitTypeData['dateAvailable'], // Invalid date format
+    modelAmenities: 'not-an-array' as unknown as UnitTypeData['modelAmenities'] // String instead of array
 };
 
 /**
  * Building with missing required fields
  */
-export const missingRequiredBuilding: any = {
+export const missingRequiredBuilding: Partial<BuildingData> = {
     // Missing buildingID - required field
     street: '789 Missing ID Lane',
     city: 'Errorville',
@@ -180,7 +179,7 @@ export const missingRequiredBuilding: any = {
 /**
  * Unit type with missing required fields
  */
-export const missingRequiredUnitType: any = {
+export const missingRequiredUnitType: Partial<UnitTypeData> = {
     // Missing buildingID and modelID
     modelName: 'Missing IDs Model',
     beds: 2,
@@ -190,7 +189,7 @@ export const missingRequiredUnitType: any = {
 /**
  * Unit with missing required fields
  */
-export const missingRequiredUnit: any = {
+export const missingRequiredUnit: Partial<UnitData> = {
     // Missing buildingID and unitID
     beds: 1,
     baths: 1,
@@ -255,22 +254,28 @@ Available: Now!`,
  */
 export const longStringsBuilding: BuildingData = {
     buildingID: 'building-long-001',
-    street: 'A'.repeat(500), // 500 character street name
-    city: 'B'.repeat(100), // 100 character city name
+    street: repeat('A', 500), // 500 character street name
+    city: repeat('B', 100), // 100 character city name
     state: 'CA',
     zip: '12345-6789-0000', // Unusually long ZIP
     description: 'Short description',
-    propertyDescription: 'Lorem ipsum '.repeat(500), // ~6000 characters
-    propertyLicenseNumber: 'LIC-'.repeat(50), // 200 characters
-    rentSpecials: Array(50).fill(null).map((_, i) => ({
-        title: `Special Offer ${i + 1}: ${' Deal'.repeat(20)}`,
-        description: 'Description '.repeat(100)
-    })),
-    propertyAmenities: Array(100).fill(null).map((_, i) => ({
-        name: `Amenity ${i + 1}: ${'Feature '.repeat(10)}`,
-        category: AmenityCategory.PROPERTY,
-        description: 'Long description '.repeat(50)
-    }))
+    propertyDescription: repeat('Lorem ipsum ', 500), // ~6000 characters
+    propertyLicenseNumber: repeat('LIC-', 50), // 200 characters
+    rentSpecials: chain(Array(50))
+        .fill(null)
+        .map((_, i) => ({
+            title: `Special Offer ${i + 1}: ${repeat(' Deal', 20)}`,
+            description: repeat('Description ', 100)
+        }))
+        .value(),
+    propertyAmenities: chain(Array(100))
+        .fill(null)
+        .map((_, i) => ({
+            name: `Amenity ${i + 1}: ${repeat('Feature ', 10)}`,
+            category: AmenityCategory.PROPERTY,
+            description: repeat('Long description ', 50)
+        }))
+        .value()
 };
 
 /**
@@ -318,7 +323,7 @@ const circularFee: Fee = {
     amount: 50
 };
 // Add circular reference
-(circularFee as any).circularRef = circularFee;
+(circularFee as unknown as Fee & { circularRef: Fee }).circularRef = circularFee;
 
 export const circularRefBuilding: BuildingData = {
     buildingID: 'building-circular-001',
@@ -341,7 +346,10 @@ export const deeplyNestedBuilding: BuildingData = {
     incomeRestrictions: {
         amiLimit: 80,
         maxIncomeByHouseholdSize: Object.fromEntries(
-            Array(20).fill(null).map((_, i) => [String(i + 1), (i + 1) * 30000])
+            chain(Array(20))
+                .fill(null)
+                .map((_, i) => [String(i + 1), (i + 1) * 30000])
+                .value()
         )
     },
     contactInfo: {
@@ -377,9 +385,9 @@ export const allStatusesUnit: UnitData = {
     manualReferences: {
         apartments_com: '',
         zillow: ' ', // Whitespace only
-        other_site: 'ID-'.repeat(100), // Very long ID
+        other_site: repeat('ID-', 100), // Very long ID
         another_site: '!!!SPECIAL###ID@@@',
-        fake_site: null as any // Null instead of string
+        fake_site: null as unknown as string // Null instead of string
     }
 };
 
@@ -394,15 +402,15 @@ export const invalidFeeBuilding: BuildingData = {
     zip: '22222',
     oneTimeFees: [
         {
-            type: 'invalid-fee-type' as any,
+            type: 'invalid-fee-type' as unknown as FeeType,
             amount: -100, // Negative amount
             description: '',
-            refundable: 'maybe' as any // String instead of boolean
+            refundable: 'maybe' as unknown as boolean // String instead of boolean
         },
         {
             type: FeeType.APPLICATION,
             amount: NaN, // Not a number
-            refundable: null as any
+            refundable: null as unknown as boolean
         },
         {
             type: FeeType.ADMIN,
@@ -425,7 +433,7 @@ export const edgeCasePetBuilding: BuildingData = {
         types: [], // Empty types array
         maxCount: 0, // Zero pets allowed despite allowed: true
         weightLimit: -1, // Negative weight
-        breedRestrictions: Array(100).fill('Breed'), // Many restrictions
+        breedRestrictions: fill(Array(100), 'Breed'), // Many restrictions
         deposit: 0.5, // Fractional deposit
         monthlyFee: -50, // Negative fee (credit?)
         oneTimeFee: 99999, // Extreme fee
@@ -445,16 +453,16 @@ export const invalidAmenitiesBuilding: BuildingData = {
     propertyAmenities: [
         {
             name: '', // Empty name
-            category: 'invalid-category' as any,
-            description: null as any
+            category: 'invalid-category' as unknown as AmenityCategory,
+            description: null as unknown as string
         },
         {
-            name: null as any, // Null name
+            name: null as unknown as string, // Null name
             category: AmenityCategory.UNIT
         },
         {
-            name: 123 as any, // Number instead of string
-            category: null as any
+            name: 123 as unknown as string, // Number instead of string
+            category: null as unknown as AmenityCategory
         }
     ] as Amenity[]
 };

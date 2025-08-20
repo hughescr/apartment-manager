@@ -4,9 +4,10 @@ import {
     CurrencyInput,
     DropdownSelect
 } from '../../forms';
+import { BuildingData } from '../../../types';
 
 export interface Props {
-    building: any
+    building: BuildingData
     errors: Record<string, string>
 }
 
@@ -149,7 +150,7 @@ Age-restricted (55+/62+) - appears in "Senior Living" sections, hidden from gene
                     <div class="border border-base-300 rounded-lg p-4 mb-4">
                         <div class="flex justify-end mb-2">
                             <button
-                              click="removeRentSpecial(index)"
+                              @click="removeRentSpecial(index)"
                               class="btn btn-ghost btn-sm text-error"
                             >
 Remove
@@ -212,7 +213,7 @@ Title
                     </div>
                 </template>
                 <button
-                  click="addRentSpecial()"
+                  @click="addRentSpecial()"
                   class="btn btn-primary btn-sm"
                 >
 Add Rent Special
@@ -257,7 +258,7 @@ Add Rent Special
                                       type="number"
                                       name="'income-size-' + size"
                                       value="building.incomeRestrictions && building.incomeRestrictions.maxIncomeByHouseholdSize ? building.incomeRestrictions.maxIncomeByHouseholdSize[size] || '' : ''"
-                                      input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
+                                      @input="(() => { if (!building.incomeRestrictions) building.incomeRestrictions = {}; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if ($event.target.value) { building.incomeRestrictions.maxIncomeByHouseholdSize[size] = parseFloat($event.target.value); } else { delete building.incomeRestrictions.maxIncomeByHouseholdSize[size]; } })()"
                                       placeholder="50000"
                                       class="input w-full"
                                       min="0"
