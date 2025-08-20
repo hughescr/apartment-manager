@@ -1,0 +1,287 @@
+---
+// This component provides floating save/undo controls that remain visible during scroll
+// Reads state from the Alpine.js context provided by BuildingProvider
+---
+
+<!-- Floating Controls Container - Only visible when there are unsaved changes -->
+<div
+  class="floating-controls-container"
+  x-show="showSave"
+  x-cloak
+  x-transition:enter="transition ease-out duration-300"
+  x-transition:enter-start="opacity-0 transform translate-y-4"
+  x-transition:enter-end="opacity-100 transform translate-y-0"
+  x-transition:leave="transition ease-in duration-200"
+  x-transition:leave-start="opacity-100 transform translate-y-0"
+  x-transition:leave-end="opacity-0 transform translate-y-4"
+>
+  <!-- Main Action Buttons -->
+  <div class="floating-controls-buttons">
+    <!-- Save Button (Primary) -->
+    <button
+      class="btn btn-primary floating-save-btn shadow-lg"
+      x-on:click="saveBuilding()"
+      :disabled="saving"
+        title="Save Changes (Ctrl+S)"
+    >
+      <span x-show="!saving" class="flex items-center">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+        </svg>
+        Save Changes
+      </span>
+      <span x-show="saving" class="flex items-center">
+        <span class="loading loading-spinner loading-sm mr-2"></span>
+        Saving...
+      </span>
+    </button>
+
+    <!-- Undo Button (Secondary) -->
+    <button
+      class="btn btn-outline btn-secondary floating-undo-btn shadow-lg"
+      x-on:click="undoChanges()"
+      :disabled="saving"
+        title="Undo Changes (Ctrl+Z)"
+    >
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+      </svg>
+      Undo Changes
+    </button>
+  </div>
+
+  <!-- Compact Unsaved Changes Indicator -->
+  <div
+    class="floating-unsaved-indicator"
+    x-show="showSave && !saving"
+    x-cloak
+  >
+    <div class="unsaved-badge">
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+      <span class="text-xs font-medium">Unsaved</span>
+    </div>
+  </div>
+
+  <!-- Success Toast (positioned near floating controls) -->
+  <div
+    x-show="lastSaveSuccess"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 transform translate-y-2 scale-95"
+    x-transition:enter-end="opacity-100 transform translate-y-0 scale-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100 transform translate-y-0 scale-100"
+    x-transition:leave-end="opacity-0 transform translate-y-2 scale-95"
+    class="floating-success-toast"
+    x-cloak
+  >
+    <div class="alert alert-success shadow-lg">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span class="text-sm font-medium">Changes saved!</span>
+    </div>
+  </div>
+</div>
+
+<!-- Browser Tab Title & Global State Management -->
+<div
+  x-data="floatingControlsManager()"
+  x-init="init()"
+  style="display: none;"
+>
+</div>
+
+<!-- Keyboard Shortcuts Handler -->
+<script>
+  document.addEventListener('alpine:init', () => {
+      Alpine.data('floatingControlsManager', () => ({
+          originalTitle: '',
+
+          init() {
+              // Store original page title
+              this.originalTitle = document.title;
+
+              // Watch for unsaved changes to update page title
+              this.$watch('$store.building.showSave', (hasUnsaved) => {
+                  this.updatePageTitle(hasUnsaved);
+              });
+
+              // Global keyboard shortcuts
+              document.addEventListener('keydown', (e) => {
+                  // Save shortcut (Ctrl+S or Cmd+S)
+                  if((e.ctrlKey || e.metaKey) && e.key === 's') {
+                      e.preventDefault();
+                      const buildingManager = this.$store.building;
+                      if(buildingManager && buildingManager.showSave && !buildingManager.saving) {
+                          buildingManager.saveBuilding();
+                      }
+                  }
+
+                  // Undo shortcut (Ctrl+Z or Cmd+Z)
+                  if((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                      e.preventDefault();
+                      const buildingManager = this.$store.building;
+                      if(buildingManager && buildingManager.showSave && !buildingManager.saving) {
+                          buildingManager.undoChanges();
+                      }
+                  }
+              });
+
+              // Listen for beforeunload to warn about unsaved changes
+              window.addEventListener('beforeunload', (e) => {
+                  const buildingManager = this.$store.building;
+                  if(buildingManager && buildingManager.showSave) {
+                      e.preventDefault();
+                      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                      return e.returnValue;
+                  }
+              });
+          },
+
+          updatePageTitle(hasUnsaved) {
+              if(hasUnsaved) {
+                  if(!document.title.startsWith('● ')) {
+                      document.title = '● ' + this.originalTitle;
+                  }
+              } else {
+                  document.title = this.originalTitle;
+              }
+          }
+      }));
+  });
+</script>
+
+<style>
+  .floating-controls-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    max-width: 200px;
+  }
+
+  .floating-controls-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .floating-save-btn,
+  .floating-undo-btn {
+    min-height: 44px;
+    min-width: 160px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+  }
+
+  .floating-save-btn:hover,
+  .floating-undo-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .floating-unsaved-indicator {
+    margin-top: 4px;
+  }
+
+  .unsaved-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgb(251 146 60);
+    color: rgb(255 255 255);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .floating-success-toast {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 8px;
+    min-width: 180px;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 640px) {
+    .floating-controls-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: none;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .floating-controls-buttons {
+      flex-direction: row;
+      gap: 12px;
+    }
+
+    .floating-save-btn,
+    .floating-undo-btn {
+      min-width: auto;
+      flex: 1;
+      max-width: 140px;
+    }
+
+    .floating-success-toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      right: auto;
+    }
+
+  }
+
+  /* Ensure floating controls don't interfere with other fixed elements */
+  .floating-controls-container {
+    pointer-events: auto;
+  }
+
+  .floating-controls-container > * {
+    pointer-events: auto;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .floating-save-btn,
+    .floating-undo-btn {
+      border: 2px solid;
+    }
+
+    .unsaved-badge {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .floating-save-btn:hover,
+    .floating-undo-btn:hover {
+      transform: none;
+    }
+
+    .floating-controls-container {
+      transition: none;
+    }
+  }
+</style>

@@ -11,6 +11,7 @@ export interface BuildingCoreState {
     apiURL: string
     saving: boolean
     showSave: boolean
+    lastSaveSuccess: boolean
     errors: Record<string, string>
 }
 
@@ -143,6 +144,12 @@ export class BuildingCore {
                     original: this.state.original
                 });
             });
+
+            // Show success indicator and auto-hide after 3 seconds
+            this.state.lastSaveSuccess = true;
+            setTimeout(() => {
+                this.state.lastSaveSuccess = false;
+            }, 3000);
 
             // Show appropriate success message based on warnings
             if(warnings && keys(warnings).length > 0) {

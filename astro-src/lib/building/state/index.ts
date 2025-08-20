@@ -51,6 +51,7 @@ function buildingStateObject(): any {
         activeSectionTab: 'building-info',
         showSave: false,
         saving: false,
+        lastSaveSuccess: false,
         geocoding: false,
         errors: {} as Record<string, string>,
         selectedPetTypes: [] as string[],

@@ -3,7 +3,7 @@
 import BuildingProvider from './building/BuildingProvider.astro';
 import TabNavigator from './building/TabNavigator.astro';
 import TabPanels from './building/TabPanels.astro';
-import SaveIndicator from './building/SaveIndicator.astro';
+import FloatingControls from './building/FloatingControls.astro';
 
 // Tab components
 import BuildingInfoTab from './building/tabs/BuildingInfoTab.astro';
@@ -56,10 +56,8 @@ const emptyUnitTypes: UnitTypeData[] = [];
           x-bind:data-initial-units="JSON.stringify(units)"
           x-bind:data-initial-unit-types="JSON.stringify(unitTypes)"
         >
-            <!-- Save indicator at the top -->
-            <div class="mb-4">
-                <SaveIndicator />
-            </div>
+            <!-- Floating Controls -->
+            <FloatingControls />
 
             <!-- Tab navigation -->
             <TabNavigator />
