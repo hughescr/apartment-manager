@@ -45,6 +45,8 @@ export default
             'n/no-unsupported-features/node-builtins': 'off',
             'n/no-unsupported-features/es-builtins': 'off',
             'n/no-unsupported-features/es-syntax': 'off',
+            'lodash/prefer-lodash-method': 'off',
+            'lodash/prefer-lodash-typecheck': 'off',
         },
     },
 
@@ -64,6 +66,8 @@ export default
             'n/no-unsupported-features/node-builtins': 'off',
             'n/no-unsupported-features/es-builtins': 'off',
             'n/no-unsupported-features/es-syntax': 'off',
+            'lodash/prefer-lodash-method': 'off',
+            'lodash/prefer-lodash-typecheck': 'off',
         },
     },
 
