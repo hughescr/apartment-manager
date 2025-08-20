@@ -82,7 +82,7 @@ if(typeof window !== 'undefined') {
                         </label>
                         <input
                           type="number"
-                          x-model={`${xModel}.maxCount`}
+                          x-model.number={`${xModel}.maxCount`}
                           class="input input-bordered"
                           min="1"
                           max="10"
@@ -96,7 +96,7 @@ if(typeof window !== 'undefined') {
                         </label>
                         <input
                           type="number"
-                          x-model={`${xModel}.weightLimit`}
+                          x-model.number={`${xModel}.weightLimit`}
                           class="input input-bordered"
                           min="0"
                           max="200"

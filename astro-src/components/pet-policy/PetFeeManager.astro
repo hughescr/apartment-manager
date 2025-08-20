@@ -22,7 +22,7 @@ const {
                     <span class="join-item btn btn-disabled">$</span>
                     <input
                       type="number"
-                      x-model={`${xModel}.deposit`}
+                      x-model.number={`${xModel}.deposit`}
                       class="input input-bordered join-item flex-1"
                       min="0"
                       max="5000"
@@ -44,7 +44,7 @@ const {
                     <span class="join-item btn btn-disabled">$</span>
                     <input
                       type="number"
-                      x-model={`${xModel}.oneTimeFee`}
+                      x-model.number={`${xModel}.oneTimeFee`}
                       class="input input-bordered join-item flex-1"
                       min="0"
                       max="5000"
@@ -66,7 +66,7 @@ const {
                     <span class="join-item btn btn-disabled">$</span>
                     <input
                       type="number"
-                      x-model={`${xModel}.monthlyFee`}
+                      x-model.number={`${xModel}.monthlyFee`}
                       class="input input-bordered join-item flex-1"
                       min="0"
                       max="500"
