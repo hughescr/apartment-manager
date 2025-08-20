@@ -41,6 +41,11 @@ export default
                 ecmaVersion: 2020,
             },
         },
+        rules: {
+            'n/no-unsupported-features/node-builtins': 'off',
+            'n/no-unsupported-features/es-builtins': 'off',
+            'n/no-unsupported-features/es-syntax': 'off',
+        },
     },
 
     { // Configure browser environment for TypeScript in Astro script tags
@@ -54,6 +59,11 @@ export default
                 sourceType: 'module',
                 ecmaVersion: 2020,
             },
+        },
+        rules: {
+            'n/no-unsupported-features/node-builtins': 'off',
+            'n/no-unsupported-features/es-builtins': 'off',
+            'n/no-unsupported-features/es-syntax': 'off',
         },
     },
 
