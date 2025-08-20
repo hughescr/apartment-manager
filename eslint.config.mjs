@@ -4,6 +4,7 @@ import packageJson from 'eslint-plugin-package-json';
 import tseslint from 'typescript-eslint';
 
 import eslintPluginAstro from 'eslint-plugin-astro';
+import globals from 'globals';
 
 export default
 [
@@ -26,6 +27,33 @@ export default
         rules: {
             '@stylistic/indent': 'off',
             '@stylistic/jsx-one-expression-per-line': ['error', { allow: 'non-jsx' }],
+        },
+    },
+
+    { // Configure browser environment for JavaScript in Astro script tags
+        files: ['**/*.astro/*.js'],
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+            },
+            parserOptions: {
+                sourceType: 'module',
+                ecmaVersion: 2020,
+            },
+        },
+    },
+
+    { // Configure browser environment for TypeScript in Astro script tags
+        files: ['**/*.astro/*.ts'],
+        languageOptions: {
+            parser: tseslint.parser,
+            globals: {
+                ...globals.browser,
+            },
+            parserOptions: {
+                sourceType: 'module',
+                ecmaVersion: 2020,
+            },
         },
     },
 
