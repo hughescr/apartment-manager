@@ -9,7 +9,7 @@ export default
 [
     {
         name: 'ignores',
-        ignores: ['coverage', 'node_modules', '.sst', 'sst-env.d.ts'],
+        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts'],
     },
 
     defaultConfig.configs.recommended,
