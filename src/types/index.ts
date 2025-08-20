@@ -94,7 +94,7 @@ export interface RentSpecial {
 
 export interface IncomeRestriction {
     amiLimit?: number // Area Median Income percentage (e.g., 80 for 80% AMI)
-    maxIncomeByHouseholdSize: Record<number, number>
+    maxIncomeByHouseholdSize: Record<string, number>
 }
 
 export interface Fee {

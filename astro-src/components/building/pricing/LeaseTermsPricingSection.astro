@@ -224,7 +224,7 @@ Add Rent Special
         <!-- Income Restrictions -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="font-semibold mb-4">Income Restrictions</h4>
-            <div x-data="{ hasRestrictions: !!(building.incomeRestrictions?.amiLimit), initRestrictions() { if (!building.incomeRestrictions) building.incomeRestrictions = { amiLimit: null, maxIncomeByHouseholdSize: {} }; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if (!this.hasRestrictions) { building.incomeRestrictions.amiLimit = null; } } }" x-init="initRestrictions()" x-effect="initRestrictions()">
+            <div x-data="{ hasRestrictions: !!(building.incomeRestrictions?.amiLimit), initRestrictions() { if (!building.incomeRestrictions) building.incomeRestrictions = { amiLimit: undefined, maxIncomeByHouseholdSize: {} }; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if (!this.hasRestrictions) { building.incomeRestrictions.amiLimit = undefined; } } }" x-init="initRestrictions()" x-effect="initRestrictions()">
                 <div class="form-control mb-4">
                     <label class="label cursor-pointer">
                         <span class="label-text">Has Income Restrictions</span>

@@ -87,11 +87,11 @@ const ScreeningCriteriaPublishedSchema = z.object({
     incomeRatio: z.number().min(0).max(10).optional(),
     maxOccupantsPerBedroom: z.number().int().min(0).max(5).optional(),
     backgroundCheckRequired: z.boolean().optional(),
-    evictionHistory: z.string().optional(),
-    criminalHistory: z.string().optional(),
-    references: z.string().optional(),
+    evictionHistory: z.boolean().optional(),
+    criminalHistory: z.boolean().optional(),
+    references: z.number().optional(),
     employmentVerification: z.boolean().optional(),
-    rentalHistory: z.string().optional(),
+    rentalHistory: z.boolean().optional(),
     notes: z.string().optional(),
 }).partial();
 
