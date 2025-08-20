@@ -218,7 +218,7 @@ selected units:
                   class="btn btn-primary"
                   data-testid="bulk-rent-confirm"
                   :disabled="!rentValue || !!errors.value || loading"
-                    click="performBulkRentUpdate()"
+                    @click="performBulkRentUpdate()"
                 >
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!loading">Update Rent</span>

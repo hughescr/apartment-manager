@@ -204,7 +204,9 @@ function buildingsComponentData(): BuildingsComponentData {
 
         showAndHideToast(message: string, type: string) {
             // Use global toast system instead of local toast
-            window.showToast(message, type);
+            // Ensure type is valid for showToast function
+            const validType = (type === 'error' || type === 'success' || type === 'warning' || type === 'info') ? type as ('error' | 'success' | 'warning' | 'info') : 'info';
+            window.showToast(message, validType);
         }
     } as BuildingsComponentData;
 }

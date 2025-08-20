@@ -1,0 +1,107 @@
+---
+export interface Props {
+    /** Current completion percentage (0-100) */
+    completion: number
+    /** Label for the indicator */
+    label?: string
+    /** Size variant */
+    size?: 'sm' | 'md' | 'lg'
+    /** Show percentage number */
+    showPercentage?: boolean
+}
+
+const {
+    completion = 0,
+    label = 'Data Completeness',
+    size = 'md',
+    showPercentage = true
+} = Astro.props;
+
+// Ensure completion is within bounds
+const clampedCompletion = Math.max(0, Math.min(100, completion));
+
+// Determine progress bar color based on completion
+const getProgressColor = (percent: number) => {
+    if(percent < 30) {
+        return 'progress-error';
+    }
+    if(percent < 70) {
+        return 'progress-warning';
+    }
+    return 'progress-success';
+};
+
+// Get size classes
+const getSizeClasses = (sizeVariant: string) => {
+    switch(sizeVariant) {
+        case 'sm': return 'progress-sm text-xs';
+        case 'lg': return 'progress-lg text-lg';
+        case 'md':
+        default: return 'text-sm';
+    }
+};
+
+const progressColor = getProgressColor(clampedCompletion);
+const sizeClasses = getSizeClasses(size);
+
+// Get text color based on progress color
+const getTextColor = (color: string) => {
+    if(color === 'progress-success') {
+        return 'text-success';
+    }
+    if(color === 'progress-warning') {
+        return 'text-warning';
+    }
+    return 'text-error';
+};
+
+const textColor = getTextColor(progressColor);
+---
+
+<div class="data-completeness-indicator">
+    <div class="flex items-center justify-between mb-2">
+        <span class={`font-medium text-base-content/80 ${sizeClasses}`}>
+            {label}
+        </span>
+        {showPercentage && (
+            <span class={`font-mono font-medium ${sizeClasses} ${textColor}`}>
+                {clampedCompletion}%
+            </span>
+        )}
+    </div>
+    <progress
+      class={`progress ${progressColor} ${sizeClasses} w-full`}
+      value={clampedCompletion}
+      max="100"
+    >
+        {clampedCompletion}%
+    </progress>
+
+    <!-- Optional completion message -->
+    {clampedCompletion === 100 && (
+        <div class="flex items-center gap-2 mt-2 text-success">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm font-medium">Complete</span>
+        </div>
+    )}
+
+    {clampedCompletion < 50 && (
+        <div class="flex items-center gap-2 mt-2 text-base-content/60">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-xs">Add more information to improve listing visibility</span>
+        </div>
+    )}
+</div>
+
+<style>
+.data-completeness-indicator {
+    /* Ensure smooth animations */
+    .progress {
+        transition: all 0.3s ease;
+    }
+}
+</style>

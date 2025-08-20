@@ -20,13 +20,13 @@ const utilityTypes = _.values(UtilityType);
 ---
 
 <!-- Application & Fees Section -->
-<div class="card bg-base-100">
-    <div class="card-body">
-        <h3 class="card-title text-lg mb-4">Application & Fees</h3>
+<div class="card bg-base-200">
+    <div class="card-body p-4 sm:p-6">
+        <h3 class="card-title text-xl font-bold mb-6">Application & Fees</h3>
 
         <!-- Utilities Included -->
         <div class="mb-6">
-            <h4 class="font-semibold mb-4">Utilities Included</h4>
+            <h4 class="text-lg font-semibold mb-4">Utilities Included</h4>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {_.map(utilityTypes, utility => (
                     <div class="form-control">
@@ -45,7 +45,7 @@ const utilityTypes = _.values(UtilityType);
 
         <!-- One-Time Fees -->
         <div class="border-t border-base-200 pt-4 mt-4 mb-6">
-            <h4 class="font-semibold mb-4">One-Time Fees</h4>
+            <h4 class="text-lg font-semibold mb-4">One-Time Fees</h4>
             <FeeListEditor
               name="oneTimeFees"
               xModel="building.oneTimeFees"
@@ -55,7 +55,7 @@ const utilityTypes = _.values(UtilityType);
 
         <!-- Monthly Fees -->
         <div class="border-t border-base-200 pt-4 mt-4">
-            <h4 class="font-semibold mb-4">Monthly Fees</h4>
+            <h4 class="text-lg font-semibold mb-4">Monthly Fees</h4>
             <FeeListEditor
               name="monthlyFees"
               xModel="building.monthlyFees"

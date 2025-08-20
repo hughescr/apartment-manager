@@ -20,8 +20,11 @@ import { TAB_CONFIGS } from '../../lib/building/types';
                 <li>
                     <button
                       @click={`activeSectionTab = '${tab.key}'`}
-                      class={`{'active': activeSectionTab === '${tab.key}'}`}
-                      class="min-h-[44px]"
+                      :class={`{
+                        'active bg-primary text-primary-content': activeSectionTab === '${tab.key}',
+                        'hover:bg-base-200': activeSectionTab !== '${tab.key}'
+                      }`}
+                        class="min-h-[44px] transition-all duration-200 cursor-pointer"
                     >
                         {tab.label}
                     </button>
@@ -31,24 +34,52 @@ import { TAB_CONFIGS } from '../../lib/building/types';
     </div>
 </div>
 
-<!-- Desktop: Horizontal Tabs -->
-<div class="hidden sm:flex tabs tabs-boxed mb-6 flex-wrap">
-    {_.map(TAB_CONFIGS, tab => (
-        <button
-          class="tab min-h-[44px]"
-          class={`{'tab-active': activeSectionTab === '${tab.key}'}`}
-          @click={`activeSectionTab = '${tab.key}'`}
-        >
-            {tab.mobileLabel
+<!-- Desktop: Enhanced Horizontal Tabs -->
+<div class="hidden sm:flex mb-6">
+    <div class="bg-base-200 rounded-lg p-1 inline-flex gap-1">
+        {_.map(TAB_CONFIGS, tab => (
+            <button
+              class="btn btn-sm transition-all duration-200 min-h-[44px] flex items-center gap-2"
+              :class={`{
+                'btn-primary shadow-md': activeSectionTab === '${tab.key}',
+                'btn-ghost hover:btn-primary': activeSectionTab !== '${tab.key}'
+              }`}
+                @click={`activeSectionTab = '${tab.key}'`}
+            >
+                <!-- Tab Icons -->
+                {tab.key === 'building-info' && (
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                )}
+                {tab.key === 'floorplans-units' && (
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                    </svg>
+                )}
+                {tab.key === 'pricing-policies' && (
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                )}
+                {tab.key === 'marketing' && (
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                    </svg>
+                )}
+
+                {tab.mobileLabel
 ? (
-                <>
-                    <span class="hidden md:inline">{tab.label}</span>
-                    <span class="md:hidden">{tab.mobileLabel}</span>
-                </>
-            )
+                    <>
+                        <span class="hidden lg:inline">{tab.label}</span>
+                        <span class="lg:hidden">{tab.mobileLabel}</span>
+                    </>
+                )
 : (
-                <span>{tab.label}</span>
-            )}
-        </button>
-    ))}
+                    <span>{tab.label}</span>
+                )}
+            </button>
+        ))}
+    </div>
 </div>

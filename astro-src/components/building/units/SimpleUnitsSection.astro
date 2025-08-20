@@ -84,7 +84,7 @@ sq ft
                                   data-testid="'unit-status-' + unit.unitID"
                                   :value="unit.vacancyClass || 'Unknown'"
                                     disabled="unit.savingField === 'vacancyClass'"
-                                    change="updateUnitStatus(unit, $event.target.value)"
+                                    @change="updateUnitStatus(unit, $event.target.value)"
                                 >
                                     <option value="Occupied">Occupied</option>
                                     <option value="Unoccupied">Available</option>
@@ -103,7 +103,7 @@ sq ft
                                       data-testid="'availability-toggle-' + unit.unitID"
                                       :checked="unit.vacancyClass === 'Unoccupied'"
                                         disabled="unit.savingField === 'vacancyClass'"
-                                        change="toggleUnitAvailability(unit)"
+                                        @change="toggleUnitAvailability(unit)"
                                     />
                                 </label>
                             </div>
@@ -134,7 +134,7 @@ sq ft
                                   :value="unit.rent"
                                     min="0"
                                     max="25000"
-                                    blur="unit.editingRent = false"
+                                    @blur="unit.editingRent = false"
                                     keyup.enter="updateUnitRent(unit, $event.target.value)"
                                     keyup.escape="unit.editingRent = false"
                                 />

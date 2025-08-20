@@ -51,16 +51,19 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
   x-data={`hoursEditor('${xModel}', '${parentPath}')`}
   x-id={`['${componentId}']`}
 >
-    <div class={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-4'}`}>
-        <h4 class={`font-semibold ${compact ? 'text-sm' : 'text-base'}`}>{title}</h4>
+    <div class={`${compact ? 'mb-2' : 'mb-4'}`}>
+        <h4 class={`font-semibold ${compact ? 'text-sm' : 'text-base'} ${compact ? 'mb-2' : 'mb-3'}`}>{title}</h4>
         {showBulkActions && (
-            <div class="flex gap-2">
+            <div class="flex gap-3">
                 <button
                   type="button"
-                  class={`btn btn-ghost ${compact ? 'btn-xs' : 'btn-sm'}`}
+                  class={`btn btn-primary ${compact ? 'btn-xs' : 'btn-sm'} gap-2 shadow-sm hover:shadow-md transition-all`}
                   @click={`setAllDays('${defaultOpenTime}', '${defaultCloseTime}')`}
                   title={`Set all days to ${defaultOpenTime}-${defaultCloseTime}`}
                 >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                     Set All
 {' '}
 {defaultOpenTime}
@@ -69,10 +72,13 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                 </button>
                 <button
                   type="button"
-                  class={`btn btn-ghost ${compact ? 'btn-xs' : 'btn-sm'}`}
+                  class={`btn btn-outline btn-error ${compact ? 'btn-xs' : 'btn-sm'} gap-2 shadow-sm hover:shadow-md transition-all`}
                   @click="clearAllDays()"
                   title="Clear all days"
                 >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                     Clear All
                 </button>
             </div>

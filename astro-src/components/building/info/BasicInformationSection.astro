@@ -23,28 +23,10 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
 ---
 
 <!-- Basic Information Section -->
-<div class="card bg-base-100 shadow-lg">
+<div class="card bg-base-200">
     <div class="card-body p-4 sm:p-6">
-        <h3 class="card-title text-lg mb-4">Basic Information</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div class="form-control">
-                <BaseInput
-                  name="buildingID"
-                  label="Building ID"
-                  xModel="building.buildingID"
-                  disabled={true}
-                  required={true}
-                />
-                <div class="label">
-                    <span class="label-text-alt text-base-content/60 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        Locked for data integrity - cannot be changed after creation
-                    </span>
-                </div>
-                <span x-show="errors.buildingID" class="label-text-alt text-error" x-text="errors.buildingID"></span>
-            </div>
+        <h3 class="card-title text-xl font-bold mb-6">Basic Information</h3>
+        <div class="form-control max-w-md">
             <DropdownSelect
               name="propertyType"
               label="Property Type"
@@ -54,42 +36,53 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
             />
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4">
-            <BaseInput
-              name="street"
-              label="Street Address"
-              xModel="building.street"
-              placeholder="123 Main St"
-              required={true}
-            />
-            <span x-show="errors.street" class="label-text-alt text-error" x-text="errors.street"></span>
-            <BaseInput
-              name="city"
-              label="City"
-              xModel="building.city"
-              placeholder="San Francisco"
-              required={true}
-            />
-            <span x-show="errors.city" class="label-text-alt text-error" x-text="errors.city"></span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <BaseInput
-              name="state"
-              label="State"
-              xModel="building.state"
-              placeholder="CA"
-              required={true}
-            />
-            <span x-show="errors.state" class="label-text-alt text-error" x-text="errors.state"></span>
-            <BaseInput
-              name="zip"
-              label="ZIP Code"
-              xModel="building.zip"
-              placeholder="94102"
-              required={true}
-            />
-            <span x-show="errors.zip" class="label-text-alt text-error" x-text="errors.zip"></span>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mt-6 items-end">
+            <div class="lg:col-span-2">
+                <BaseInput
+                  name="street"
+                  label="Street Address"
+                  xModel="building.street"
+                  placeholder="123 Main St"
+                  required={true}
+                  inputSize="full"
+                />
+                <span x-show="errors.street" class="label-text-alt text-error" x-text="errors.street"></span>
+            </div>
+            <div>
+                <BaseInput
+                  name="city"
+                  label="City"
+                  xModel="building.city"
+                  placeholder="San Francisco"
+                  required={true}
+                  inputSize="full"
+                />
+                <span x-show="errors.city" class="label-text-alt text-error" x-text="errors.city"></span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <BaseInput
+                      name="state"
+                      label="State"
+                      xModel="building.state"
+                      placeholder="CA"
+                      required={true}
+                      inputSize="xs"
+                    />
+                    <span x-show="errors.state" class="label-text-alt text-error" x-text="errors.state"></span>
+                </div>
+                <div>
+                    <BaseInput
+                      name="zip"
+                      label="ZIP Code"
+                      xModel="building.zip"
+                      placeholder="94102"
+                      required={true}
+                      inputSize="sm"
+                    />
+                    <span x-show="errors.zip" class="label-text-alt text-error" x-text="errors.zip"></span>
+                </div>
+            </div>
         </div>
 
         <!-- Location Map -->
@@ -106,35 +99,44 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
             />
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <BaseInput
-              name="yearBuilt"
-              label="Year Built"
-              type="number"
-              xModel="building.yearBuilt"
-              placeholder="2020"
-              min="1800"
-              max="2030"
-            />
-            <span x-show="errors.yearBuilt" class="label-text-alt text-error" x-text="errors.yearBuilt"></span>
-            <BaseInput
-              name="numberStories"
-              label="Number of Stories"
-              type="number"
-              xModel="building.numberStories"
-              placeholder="3"
-              min="1"
-            />
-            <span x-show="errors.numberStories" class="label-text-alt text-error" x-text="errors.numberStories"></span>
-            <BaseInput
-              name="totalUnits"
-              label="Total Units"
-              type="number"
-              xModel="building.totalUnits"
-              placeholder="24"
-              min="1"
-            />
-            <span x-show="errors.totalUnits" class="label-text-alt text-error" x-text="errors.totalUnits"></span>
+        <div class="flex flex-wrap gap-6 mt-6">
+            <div>
+                <BaseInput
+                  name="yearBuilt"
+                  label="Year Built"
+                  type="number"
+                  xModel="building.yearBuilt"
+                  placeholder="2020"
+                  min="1800"
+                  max="2030"
+                  inputSize="sm"
+                />
+                <span x-show="errors.yearBuilt" class="label-text-alt text-error" x-text="errors.yearBuilt"></span>
+            </div>
+            <div>
+                <BaseInput
+                  name="numberStories"
+                  label="Number of Stories"
+                  type="number"
+                  xModel="building.numberStories"
+                  placeholder="3"
+                  min="1"
+                  inputSize="xs"
+                />
+                <span x-show="errors.numberStories" class="label-text-alt text-error" x-text="errors.numberStories"></span>
+            </div>
+            <div>
+                <BaseInput
+                  name="totalUnits"
+                  label="Total Units"
+                  type="number"
+                  xModel="building.totalUnits"
+                  placeholder="24"
+                  min="1"
+                  inputSize="sm"
+                />
+                <span x-show="errors.totalUnits" class="label-text-alt text-error" x-text="errors.totalUnits"></span>
+            </div>
         </div>
 
         <div class="form-control">
@@ -143,43 +145,41 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
               label="Basic Description"
               xModel="building.description"
               placeholder="e.g., Modern 24-unit apartment complex with covered parking, built in 2020. Features energy-efficient appliances and central air conditioning."
-              rows={4}
+              rows={16}
               maxlength={1000}
+              showCharacterCount={true}
+              characterCountInside={true}
             />
 
-            <!-- Character Counter -->
-            <div class="label">
+            <!-- Help Text -->
+            <div class="label mt-4">
                 <div class="label-text-alt text-base-content/60">
-                    <div class="flex flex-col gap-1 text-sm">
-                        <div class="font-medium">Administrative Summary (Internal Use)</div>
-                        <ul class="list-disc list-inside space-y-0.5 text-xs leading-relaxed">
-                            <li>
-<strong>Purpose:</strong>
+                    <div class="text-sm">
+                        <div class="font-medium mb-1">Administrative Summary (Internal Use)</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs leading-snug">
+                            <div>
+                                <span class="font-medium">Purpose:</span>
 {' '}
 Brief summary for internal property management
-                            </li>
-                            <li>
-<strong>Format:</strong>
+                            </div>
+                            <div>
+                                <span class="font-medium">Format:</span>
 {' '}
 Plain text only (no HTML or Markdown)
-                            </li>
-                            <li>
-<strong>MITS Integration:</strong>
+                            </div>
+                            <div>
+                                <span class="font-medium">MITS Integration:</span>
 {' '}
 Appears as "ShortDescription" in property feeds
-                            </li>
-                            <li>
-<strong>Content:</strong>
+                            </div>
+                            <div>
+                                <span class="font-medium">Content:</span>
 {' '}
 Key features, year built, unit count, notable amenities
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <span class="label-text-alt" :class="{ 'text-warning': (building.description || '').length > 900, 'text-error': (building.description || '').length > 1000 }">
-                    <span x-text="(building.description || '').length">0</span>
-/1000 characters
-                </span>
             </div>
 
             <span x-show="errors.description" class="label-text-alt text-error" x-text="errors.description"></span>

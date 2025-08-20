@@ -11,18 +11,32 @@ import '../styles/global.css';
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <BaseHead title={title} />
     </head>
-    <body>
-        <nav
-          aria-label="Main navigation"
-          class="navbar bg-base-100"
-        >
-            <div class="flex-1">
-                <a class="btn btn-ghost normal-case text-xl" href="/">Apartment Manager</a>
+    <body class="flex">
+        <!-- Vertical Title -->
+        <div class="hidden lg:flex fixed left-0 top-0 h-full w-16 bg-base-200 items-center justify-center z-10">
+            <div class="transform -rotate-90 origin-center">
+                <h1 class="text-2xl font-bold text-base-content/80 whitespace-nowrap tracking-wider">
+                    APARTMENT MANAGER
+                </h1>
             </div>
-        </nav>
-        <main>
-            <slot />
-        </main>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 lg:ml-16">
+            <!-- Top Navigation (smaller on desktop, full on mobile) -->
+            <nav
+              aria-label="Main navigation"
+              class="navbar bg-base-100 lg:hidden"
+            >
+                <div class="flex-1">
+                    <a class="btn btn-ghost normal-case text-xl" href="/">Apartment Manager</a>
+                </div>
+            </nav>
+
+            <main>
+                <slot />
+            </main>
+        </div>
 
         <!-- Global Toast Container -->
         <div

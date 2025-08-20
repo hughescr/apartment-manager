@@ -21,6 +21,8 @@ export interface Props {
     showLabel?: boolean
     floatingLabel?: boolean
     resize?: 'none' | 'both' | 'horizontal' | 'vertical'
+    showCharacterCount?: boolean
+    characterCountInside?: boolean
 }
 
 const {
@@ -43,6 +45,8 @@ const {
     showLabel = true,
     floatingLabel = false,
     resize = 'vertical',
+    showCharacterCount = false,
+    characterCountInside = false,
 } = Astro.props;
 
 // Determine if we should show the label
@@ -54,6 +58,7 @@ const textareaClasses = _.compact([
     'w-full',
     error ? 'textarea-error' : '',
     `resize-${resize}`,
+    characterCountInside && maxlength ? 'pb-8' : '', // Extra padding for character count
     textareaClass
 ]).join(' ');
 
@@ -74,18 +79,37 @@ const containerClasses = _.compact([
         </label>
     )}
 
-    {floatingLabel
+    <div class="relative">
+        {floatingLabel
 ? (
-        <label class="floating-label textarea-label">
-            {shouldShowLabel && (
-                <span>
-                    {label}
-                    {required && <span class="text-error">*</span>}
-                </span>
-            )}
+            <label class="floating-label textarea-label">
+                {shouldShowLabel && (
+                    <span>
+                        {label}
+                        {required && <span class="text-error">*</span>}
+                    </span>
+                )}
+                <textarea
+                  name={name}
+                  placeholder={placeholder || label}
+                  class={textareaClasses}
+                  required={required}
+                  disabled={disabled}
+                  readonly={readonly}
+                  x-model={xModel}
+                  rows={rows}
+                  cols={cols}
+                  maxlength={maxlength}
+                  minlength={minlength}
+                >
+{value}
+                </textarea>
+            </label>
+        )
+: (
             <textarea
               name={name}
-              placeholder={placeholder || label}
+              placeholder={placeholder}
               class={textareaClasses}
               required={required}
               disabled={disabled}
@@ -98,24 +122,33 @@ const containerClasses = _.compact([
             >
 {value}
             </textarea>
-        </label>
-    )
-: (
-        <textarea
-          name={name}
-          placeholder={placeholder}
-          class={textareaClasses}
-          required={required}
-          disabled={disabled}
-          readonly={readonly}
-          x-model={xModel}
-          rows={rows}
-          cols={cols}
-          maxlength={maxlength}
-          minlength={minlength}
-        >
-{value}
-        </textarea>
+        )}
+
+        <!-- Character count inside textarea -->
+        {characterCountInside && showCharacterCount && maxlength && (
+            <div class="absolute bottom-2 right-3 text-xs font-mono text-base-content/60 bg-base-100/80 px-2 py-1 rounded">
+                <span x-text={`(${xModel} || '').length`}>0</span>
+                <span class="text-base-content/40">/{maxlength}</span>
+            </div>
+        )}
+    </div>
+
+    <!-- Character count outside textarea -->
+    {!characterCountInside && showCharacterCount && maxlength && (
+        <div class="label">
+            <div class="label-text-alt"></div>
+            <span
+              class="label-text-alt font-mono"
+              x-bind:class="{
+                'text-warning': (${xModel} || '').length > ${maxlength * 0.9},
+                'text-error': (${xModel} || '').length > ${maxlength}
+            }"
+            >
+                <span x-text={`(${xModel} || '').length`}>0</span>
+/
+{maxlength}
+            </span>
+        </div>
     )}
 
     {(error || helpText) && (
