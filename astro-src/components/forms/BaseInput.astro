@@ -99,7 +99,7 @@ const containerClasses = _.compact([
                   step={step}
                   pattern={pattern}
                   autocomplete={autocomplete}
-                  oninput={oninput}
+                  @input={oninput}
                 />
             </label>
         )
@@ -119,7 +119,7 @@ const containerClasses = _.compact([
               step={step}
               pattern={pattern}
               autocomplete={autocomplete}
-              oninput={oninput}
+              @input={oninput}
             />
         )}
     {(error || helpText) && (
