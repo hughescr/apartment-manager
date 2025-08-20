@@ -1,5 +1,4 @@
 ---
-import _ from 'lodash';
 
 export interface SelectOption {
     value: string | number
@@ -49,30 +48,29 @@ const {
 
 // Normalize options to SelectOption format
 const normalizedOptions: SelectOption[] = options
-    ? _.map(options, (opt: SelectOption | string) =>
-        (_.isString(opt)
+    ? options.map((opt: SelectOption | string) =>
+        (typeof opt === 'string'
             ? { value: opt, label: opt }
             : opt as SelectOption)
     )
     : [];
-
 // Determine if we should show the label
 const shouldShowLabel = showLabel && label;
 const labelClass = floatingLabel ? 'floating-label select-label' : 'label';
 
 // Build select classes
-const selectClasses = _.compact([
+const selectClasses = [
     'select',
     'w-full',
     error ? 'select-error' : '',
     selectClass
-]).join(' ');
+].filter(Boolean).join(' ');
 
 // Container classes
-const containerClasses = _.compact([
+const containerClasses = [
     labelClass,
     className
-]).join(' ');
+].filter(Boolean).join(' ');
 ---
 
 <label class={containerClasses}>
@@ -103,7 +101,7 @@ const containerClasses = _.compact([
                 {placeholder}
             </option>
         )}
-        {_.map(normalizedOptions, option => (
+        {normalizedOptions.map(option => (
             <option
               value={option.value}
               disabled={option.disabled}

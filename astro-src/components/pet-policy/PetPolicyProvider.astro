@@ -1,6 +1,5 @@
 ---
 import type { PetPolicyComponentProps } from '../../lib/pet-policy/petPolicyTypes';
-import { compact } from 'lodash';
 
 type Props = PetPolicyComponentProps;
 
@@ -17,10 +16,10 @@ const {
 } = Astro.props;
 
 // Container classes
-const containerClasses = compact([
+const containerClasses = [
     'pet-policy-provider',
     className
-]).join(' ');
+].filter(Boolean).join(' ');
 ---
 
 <script>

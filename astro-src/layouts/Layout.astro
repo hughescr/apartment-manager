@@ -1,7 +1,6 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
-import _ from 'lodash';
 const { title } = Astro.props;
 import '../styles/global.css';
 const navItems = [
@@ -45,11 +44,11 @@ const currentPath = Astro.url.pathname;
                     </svg>
                 </button>
                 <ul class="menu menu-horizontal px-1 hidden md:flex">
-                    {_.map(navItems, item => (
+                    {navItems.map(item => (
                         <li>
                             <a
                               href={item.href}
-                              class={_.startsWith(currentPath, item.href) ? 'active' : ''}
+                              class={currentPath.startsWith(item.href) ? 'active' : ''}
                             >
                                 {item.label}
                             </a>
@@ -63,11 +62,11 @@ const currentPath = Astro.url.pathname;
                   click.outside="open = false"
                   data-testid="mobile-menu"
                 >
-                    {_.map(navItems, item => (
+                    {navItems.map(item => (
                         <li>
                             <a
                               href={item.href}
-                              class={_.startsWith(currentPath, item.href) ? 'active' : ''}
+                              class={currentPath.startsWith(item.href) ? 'active' : ''}
                             >
                                 {item.label}
                             </a>

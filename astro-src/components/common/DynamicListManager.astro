@@ -1,5 +1,4 @@
 ---
-import _ from 'lodash';
 import ValidationError from './ValidationError.astro';
 
 export interface FieldDefinition {
@@ -52,9 +51,9 @@ const {
 } = Astro.props;
 
 // Generate Alpine.js data methods
-const alpineDataKey = _.replace(name, /[^a-z0-9]/gi, '');
-const addMethodName = `add${_.toUpper(alpineDataKey.charAt(0)) + alpineDataKey.slice(1)}`;
-const removeMethodName = `remove${_.toUpper(alpineDataKey.charAt(0)) + alpineDataKey.slice(1)}`;
+const alpineDataKey = name.replace(/[^a-z0-9]/gi, '');
+const addMethodName = `add${alpineDataKey.charAt(0).toUpperCase() + alpineDataKey.slice(1)}`;
+const removeMethodName = `remove${alpineDataKey.charAt(0).toUpperCase() + alpineDataKey.slice(1)}`;
 
 // Helper functions for field rendering
 const createCommonAttrs = (field: FieldDefinition, fieldId: string, xModelPath: string, testId: string) => ({
@@ -87,7 +86,7 @@ const createFieldLabel = (field: FieldDefinition) => (
 
 const createValidationError = (fieldId: string, field: FieldDefinition, errors: Record<string, string>) => (
     <ValidationError
-      fieldName={`${fieldId}{index}${_.toUpper(field.name.charAt(0)) + field.name.slice(1)}`}
+      fieldName={`${fieldId}{index}${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`}
       errors={errors}
     />
 );
@@ -142,7 +141,7 @@ const renderSelectField = (field: FieldDefinition, commonAttrs: Record<string, u
           class="select w-full"
           {...(field.required && { required: true })}
         >
-            {_.map(field.options, option => (
+            {field.options?.map(option => (
                 <option value={option.value}>{option.label}</option>
             ))}
         </select>
@@ -191,7 +190,7 @@ const renderField = (field: FieldDefinition, name: string, errors: Record<string
 };
 
 // Create default item structure based on fields
-const defaultItem = _.reduce(fields, (acc, field) => {
+const defaultItem = fields.reduce((acc, field) => {
     switch(field.type) {
         case 'toggle':
             acc[field.name] = false;
@@ -229,8 +228,8 @@ const defaultItem = _.reduce(fields, (acc, field) => {
             if (!${xModel}) ${xModel} = [];
             ${xModel}.push({
                 id: Date.now() + Math.random(),
-                ${_.map(Object.entries(defaultItem), ([key, value]) => {
-                    return _.isString(value) ? `${key}: "${value}"` : `${key}: ${value}`;
+                ${Object.entries(defaultItem).map(([key, value]) => {
+                    return typeof value === 'string' ? `${key}: "${value}"` : `${key}: ${value}`;
                 }).join(', ')}
             });
         },
@@ -257,7 +256,7 @@ const defaultItem = _.reduce(fields, (acc, field) => {
 
                 <!-- Dynamic Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {_.map(fields, field => renderField(field, name, errors))}
+                    {fields.map(field => renderField(field, name, errors))}
                 </div>
             </div>
         </template>
@@ -274,7 +273,7 @@ const defaultItem = _.reduce(fields, (acc, field) => {
 : (
                 <p>
 No
-{_.toLower(label)}
+{label.toLowerCase()}
 {' '}
 added yet. Click the button below to add your first entry.
                 </p>

@@ -1,4 +1,3 @@
-import { every, filter, find, findIndex, forEach, includes, toLower, trim } from 'lodash';
 import type { ExtendedUnitData } from '../types';
 
 export class UnitsStateManager {
@@ -12,7 +11,7 @@ export class UnitsStateManager {
 
         // Apply status filter
         if(statusFilter && statusFilter !== 'all') {
-            filtered = filter(filtered, (unit) => {
+            filtered = filtered.filter((unit) => {
                 switch(statusFilter) {
                     case 'available':
                         return unit.vacancyClass === 'Unoccupied' || unit.vacancyClass === 'Notice';
@@ -31,12 +30,12 @@ export class UnitsStateManager {
         }
 
         // Apply search query
-        if(searchQuery && trim(searchQuery) !== '') {
-            const query = toLower(searchQuery);
-            filtered = filter(filtered, (unit): unit is ExtendedUnitData => {
+        if(searchQuery && searchQuery.trim() !== '') {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter((unit): unit is ExtendedUnitData => {
                 return !!(
-                    includes(toLower(unit.unitID), query) ||
-                    (unit.description && includes(toLower(unit.description), query)) ||
+                    unit.unitID.toLowerCase().includes(query) ||
+                    (unit.description && unit.description.toLowerCase().includes(query)) ||
                     (unit.beds && unit.beds.toString().includes(query)) ||
                     (unit.baths && unit.baths.toString().includes(query)) ||
                     (unit.rent && unit.rent.toString().includes(query))
@@ -62,14 +61,14 @@ export class UnitsStateManager {
     }
 
     toggleSelectAll(filteredUnits: ExtendedUnitData[]): void {
-        const allSelected = every(filteredUnits, unit => this.selectedUnits.has(unit.unitID));
+        const allSelected = filteredUnits.every(unit => this.selectedUnits.has(unit.unitID));
 
         if(allSelected) {
             // Deselect all filtered units
-            forEach(filteredUnits, unit => this.selectedUnits.delete(unit.unitID));
+            filteredUnits.forEach(unit => this.selectedUnits.delete(unit.unitID));
         } else {
             // Select all filtered units
-            forEach(filteredUnits, unit => this.selectedUnits.add(unit.unitID));
+            filteredUnits.forEach(unit => this.selectedUnits.add(unit.unitID));
         }
     }
 
@@ -98,7 +97,7 @@ export class UnitsStateManager {
     }
 
     updateUnit(unitID: string, updates: Partial<ExtendedUnitData>): void {
-        const unitIndex = findIndex(this.units, ['unitID', unitID]);
+        const unitIndex = this.units.findIndex(unit => unit.unitID === unitID);
         if(unitIndex !== -1) {
             this.units[unitIndex] = {
                 ...this.units[unitIndex],
@@ -109,7 +108,7 @@ export class UnitsStateManager {
     }
 
     removeUnit(unitID: string): void {
-        const unitIndex = findIndex(this.units, ['unitID', unitID]);
+        const unitIndex = this.units.findIndex(unit => unit.unitID === unitID);
         if(unitIndex !== -1) {
             this.units.splice(unitIndex, 1);
             this.selectedUnits.delete(unitID);
@@ -124,7 +123,7 @@ export class UnitsStateManager {
     }
 
     getUnit(unitID: string): ExtendedUnitData | undefined {
-        return find(this.units, ['unitID', unitID]);
+        return this.units.find(unit => unit.unitID === unitID);
     }
 
     getAllUnits(): ExtendedUnitData[] {
@@ -145,7 +144,7 @@ export class UnitsStateManager {
             model: 0
         };
 
-        forEach(this.units, (unit) => {
+        this.units.forEach((unit) => {
             switch(unit.vacancyClass) {
                 case 'Occupied':
                     counts.occupied++;

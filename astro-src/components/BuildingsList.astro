@@ -45,7 +45,6 @@ export interface Props {
 </div>
 
 <script>
-import _ from 'lodash';
 import type { AlpineComponent } from '../types/alpine';
 
 interface Building {
@@ -78,7 +77,7 @@ function buildingsListData(): BuildingsListData {
                 if(stored === 'add-new-building') {
                     this.activeBuildingTab = this.buildings.length;
                 } else {
-                    const idx = _.findIndex(this.buildings, { buildingID: stored });
+                    const idx = this.buildings.findIndex(building => building.buildingID === stored);
                     if(idx !== -1) {
                         this.activeBuildingTab = idx;
                     }
@@ -86,7 +85,7 @@ function buildingsListData(): BuildingsListData {
             } else {
                 const hash = decodeURIComponent(window.location.hash.substring(1));
                 if(hash) {
-                    const index = _.findIndex(this.buildings, { buildingID: hash });
+                    const index = this.buildings.findIndex(building => building.buildingID === hash);
                     if(index !== -1) {
                         this.activeBuildingTab = index;
                     } else if(hash === 'add-new-building') {

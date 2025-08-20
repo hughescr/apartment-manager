@@ -1,5 +1,5 @@
 ---
-import _ from 'lodash';
+/* eslint-disable lodash/prefer-lodash-method -- Converting from lodash to native JavaScript for browser compatibility */
 import BaseInput from './BaseInput.astro';
 import BaseTextarea from './BaseTextarea.astro';
 
@@ -28,10 +28,10 @@ const {
 } = Astro.props;
 
 // Container classes
-const containerClasses = _.filter([
+const containerClasses = [
     'screening-criteria-form',
     className
-], _.identity).join(' ');
+].filter(Boolean).join(' ');
 
 // Create Alpine.js data string with proper xModel reference handling
 const xData = `{
@@ -181,6 +181,7 @@ const xData = `{
         return parts.join(', ');
     }
 }`;
+/* eslint-enable lodash/prefer-lodash-method -- Re-enable after lodash conversion complete */
 ---
 
 <div class={containerClasses} x-data={xData} x-init="init()">

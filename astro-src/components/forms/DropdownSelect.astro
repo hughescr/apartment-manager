@@ -1,5 +1,4 @@
 ---
-import _ from 'lodash';
 export interface SelectOption {
     value: string | number
     label: string
@@ -39,24 +38,23 @@ const {
 
 // Normalize options to SelectOption format
 const normalizedOptions: SelectOption[] = options
-    ? (_.map(options, opt =>
-        (_.isString(opt)
+    ? (options.map(opt =>
+        (typeof opt === 'string'
             ? { value: opt, label: opt }
             : opt)
     ) as SelectOption[])
     : [];
-
 // Determine if we should show the label
 const shouldShowLabel = showLabel && label;
 
 // Container classes
-const containerClasses = _.filter([
+const containerClasses = [
     'form-control',
     className
-], _.identity).join(' ');
+].filter(Boolean).join(' ');
 
 // Button classes - styled to look like a select input
-const buttonClasses = _.filter([
+const buttonClasses = [
     'btn',
     'btn-outline',
     'w-full',
@@ -69,7 +67,7 @@ const buttonClasses = _.filter([
     'hover:border-base-300',
     error ? 'border-error' : '',
     disabled ? 'btn-disabled' : ''
-], _.identity).join(' ');
+].filter(Boolean).join(' ');
 ---
 
 <div class={containerClasses}>
@@ -132,7 +130,7 @@ const buttonClasses = _.filter([
               class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1 border border-base-300 max-h-60 overflow-auto"
               role="listbox"
             >
-                {_.map(normalizedOptions, option => (
+                {normalizedOptions.map(option => (
                     <li>
                         <a
                           onclick={`selectOption('${option.value}')`}

@@ -1,6 +1,4 @@
 ---
-import _ from 'lodash';
-
 export interface Props {
     /** Alpine.js x-model for latitude binding */
     latModel: string
@@ -44,10 +42,10 @@ const {
 } = Astro.props;
 
 // Container classes
-const containerClasses = _.filter([
+const containerClasses = [
     'location-map-picker',
     className
-], _.identity).join(' ');
+].filter(cls => cls).join(' ');
 ---
 
 <div class={containerClasses}>
@@ -161,8 +159,6 @@ Location was estimated from the address. Click on the map to place the pin exact
 </div>
 
 <script>
-import _ from 'lodash';
-
 // Type declarations for Alpine.js magic properties and global variables
 declare global {
     interface Window {
@@ -234,7 +230,7 @@ function locationMapData(
             if(!path) {
                 return undefined;
             }
-            const parts = _.split(path, '.');
+            const parts = path.split('.');
             let current: Record<string, unknown> = this as Record<string, unknown>;
             for(const part of parts) {
                 if(current == null) {
@@ -250,9 +246,9 @@ function locationMapData(
             if(!path) {
                 return;
             }
-            const parts = _.split(path, '.');
-            const lastPart = _.last(parts);
-            const initialParts = _.initial(parts);
+            const parts = path.split('.');
+            const lastPart = parts[parts.length - 1];
+            const initialParts = parts.slice(0, -1);
             if(!lastPart) {
                 return;
             }
@@ -466,7 +462,7 @@ function locationMapData(
                 const city = addressModels.cityModel ? (this as LocationMapContext).getNestedProperty(addressModels.cityModel) : undefined;
                 const state = addressModels.stateModel ? (this as LocationMapContext).getNestedProperty(addressModels.stateModel) : undefined;
 
-                if(!address || !_.trim(address as string)) {
+                if(!address || !address.toString().trim()) {
                     (this as LocationMapContext).$dispatch('show-toast', {
                         message: 'Please enter an address first',
                         type: 'error'
@@ -475,9 +471,9 @@ function locationMapData(
                 }
 
                 const requestBody = {
-                    address: _.trim(address as string),
-                    ...(city ? { city: _.trim(city as string) } : {}),
-                    ...(state ? { state: _.trim(state as string) } : {})
+                    address: address.toString().trim(),
+                    ...(city ? { city: city.toString().trim() } : {}),
+                    ...(state ? { state: state.toString().trim() } : {})
                 };
 
                 const response = await fetch(`${apiUrl}geocoding`, {
@@ -555,7 +551,7 @@ function locationMapData(
 
             // Also handle visibility changes (for modals, hidden tabs, etc.)
             const observer = new IntersectionObserver((entries) => {
-                _.forEach(entries, (entry) => {
+                entries.forEach((entry) => {
                     if(entry.isIntersecting && this.map) {
                         setTimeout(() => {
                             if(this.map) {

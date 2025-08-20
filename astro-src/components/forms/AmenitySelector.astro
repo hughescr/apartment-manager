@@ -1,5 +1,4 @@
 ---
-import { compact } from 'lodash';
 import { AmenityCategory } from '../../../src/types';
 
 export interface Props {
@@ -49,13 +48,13 @@ const commonAmenities = {
 };
 
 // Container classes
-const containerClasses = compact([
+const containerClasses = [
     'amenity-selector',
     'flex',
     'flex-col',
     'gap-2',
     className
-]).join(' ');
+].filter(Boolean).join(' ');
 
 // Create Alpine.js data string with proper xModel reference handling
 const xData = `{
@@ -73,7 +72,7 @@ const xData = `{
         
         Object.entries(this.commonAmenities).forEach(([category, items]) => {
             if (this.selectedCategory === 'all' || this.selectedCategory === category) {
-                const filtered = _.filter(items, item => 
+                const filtered = items.filter(item => 
                     item.toLowerCase().includes(query)
                 );
                 if (filtered.length > 0) {
@@ -160,7 +159,7 @@ const xData = `{
     
     clearCategory(category) {
         let amenities = this.getModelValue();
-        amenities = _.filter(amenities, a => a.category !== category);
+        amenities = amenities.filter(a => a.category !== category);
         this.setModelValue(amenities);
     }
 }`;

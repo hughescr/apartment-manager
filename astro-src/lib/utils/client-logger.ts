@@ -9,7 +9,6 @@
  */
 
 /* eslint-disable no-console -- Safe logging wrapper that replaces console usage */
-import { toUpper, isObject, isArray, map, toLower, some, isError } from 'lodash';
 
 /**
  * Log levels with numeric priorities
@@ -31,7 +30,7 @@ function getCurrentLogLevel(): LogLevel {
     // Check for explicit log level in environment or URL parameters
     if(typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
-        const urlLogLevel = toUpper(urlParams.get('logLevel') || '') as LogLevel;
+        const urlLogLevel = (urlParams.get('logLevel') || '').toUpperCase() as LogLevel;
         if(urlLogLevel && urlLogLevel in LOG_LEVELS) {
             return urlLogLevel;
         }
@@ -62,12 +61,12 @@ function shouldLog(level: LogLevel): boolean {
  * Sanitize data for safe client-side logging
  */
 function sanitizeForClientLogging(data: unknown): unknown {
-    if(!data || !isObject(data)) {
+    if(!data || typeof data !== 'object') {
         return data;
     }
 
-    if(isArray(data)) {
-        return map(data, item => sanitizeForClientLogging(item));
+    if(Array.isArray(data)) {
+        return data.map(item => sanitizeForClientLogging(item));
     }
 
     const obj = data as Record<string, unknown>;
@@ -80,11 +79,11 @@ function sanitizeForClientLogging(data: unknown): unknown {
     const sanitized: Record<string, unknown> = {};
 
     for(const [key, value] of Object.entries(obj)) {
-        const keyLower = toLower(key);
+        const keyLower = key.toLowerCase();
 
-        if(some(sensitiveFields, sensitive => keyLower.includes(sensitive))) {
+        if(sensitiveFields.some(sensitive => keyLower.includes(sensitive))) {
             sanitized[key] = '[REDACTED]';
-        } else if(isObject(value) && value !== null) {
+        } else if(typeof value === 'object' && value !== null) {
             sanitized[key] = sanitizeForClientLogging(value);
         } else {
             sanitized[key] = value;
@@ -124,7 +123,7 @@ export const clientLogger = {
             return;
         }
 
-        if(isError(error)) {
+        if(error instanceof Error) {
             console.error(`[ERROR] ${message}`, {
                 message: error.message,
                 name: error.name,

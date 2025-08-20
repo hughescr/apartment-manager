@@ -1,5 +1,5 @@
 ---
-import _ from 'lodash';
+/* eslint-disable lodash/prefer-lodash-method, lodash/prefer-lodash-typecheck -- Converting from lodash to native JavaScript for browser compatibility */
 import { Resource } from 'sst';
 
 // Browser globals are available in client-side Alpine.js context
@@ -54,8 +54,8 @@ const {
 const uploadEndpoint = Resource.UploadAPI.url;
 
 // Normalize existing photos to Photo format
-const normalizedPhotos: Photo[] = _.map(existingPhotos, (photo: Photo | string) =>
-    (_.isString(photo)
+const normalizedPhotos: Photo[] = existingPhotos.map((photo: Photo | string) =>
+    (typeof photo === 'string'
         ? { url: photo }
         : photo)
 );
@@ -89,8 +89,8 @@ const xData = JSON.stringify({
     init() {
         // Sync with parent x-model
         this.$watch('photos', (value: Photo[]) => {
-            const urls = _.map(value, 'url');
-            const modelPath = _.split(this.xModel, '.');
+            const urls = value.map(photo => photo.url);
+            const modelPath = this.xModel.split('.');
             let target: Record<string, unknown> = globalThis as Record<string, unknown>;
             for(let i = 0; i < modelPath.length - 1; i++) {
                 target = target[modelPath[i]] as Record<string, unknown>;
@@ -100,13 +100,13 @@ const xData = JSON.stringify({
 
         // Initialize from existing data if any
         try {
-            const modelPath = _.split(this.xModel, '.');
+            const modelPath = this.xModel.split('.');
             let value: unknown = globalThis as Record<string, unknown>;
             for(const key of modelPath) {
                 value = (value as Record<string, unknown>)[key];
             }
-            if(value && _.isArray(value)) {
-                this.photos = _.map(value, url => ({ url }));
+            if(value && Array.isArray(value)) {
+                this.photos = value.map(url => ({ url }));
             }
         } catch{
             // Model doesn't exist yet
@@ -128,9 +128,9 @@ const xData = JSON.stringify({
         }
 
         // Validate and process each file
-        _.forEach(fileArray, (file) => {
+        fileArray.forEach((file) => {
             // Validate file type
-            if(!_.startsWith(file.type, 'image/')) {
+            if(!file.type.startsWith('image/')) {
                 this.errors.push(`${file.name} is not an image file`);
                 return;
             }
@@ -152,7 +152,7 @@ const xData = JSON.stringify({
 
         try {
             // Get presigned URL
-            const key = `buildings/${this.buildingId}/units/${this.unitId}/${Date.now()}-${_.replace(file.name, /[^a-z0-9.-]/gi, '_')}`;
+            const key = `buildings/${this.buildingId}/units/${this.unitId}/${Date.now()}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`;
 
             const presignedResponse = await fetch(`${this.uploadEndpoint}/presigned-url`, {
                 method: 'POST',
@@ -196,7 +196,7 @@ const xData = JSON.stringify({
                     });
 
                     delete this.uploadProgress[tempId];
-                    this.uploading = _.keys(this.uploadProgress).length > 0;
+                    this.uploading = Object.keys(this.uploadProgress).length > 0;
                 } else {
                     throw new Error('Upload failed');
                 }
@@ -205,17 +205,17 @@ const xData = JSON.stringify({
             xhr.addEventListener('error', () => {
                 this.errors.push(`Failed to upload ${file.name}`);
                 delete this.uploadProgress[tempId];
-                this.uploading = _.keys(this.uploadProgress).length > 0;
+                this.uploading = Object.keys(this.uploadProgress).length > 0;
             });
 
             xhr.open('PUT', uploadUrl);
             xhr.setRequestHeader('Content-Type', file.type);
             xhr.send(file);
         } catch(error) {
-            const errorMessage = _.isError(error) ? error.message : 'Unknown error';
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             this.errors.push(`Failed to upload ${file.name}: ${errorMessage}`);
             delete this.uploadProgress[tempId];
-            this.uploading = _.keys(this.uploadProgress).length > 0;
+            this.uploading = Object.keys(this.uploadProgress).length > 0;
         }
     },
 
@@ -255,6 +255,7 @@ const xData = JSON.stringify({
         this.dragOver = false;
     }
 });
+/* eslint-enable lodash/prefer-lodash-method, lodash/prefer-lodash-typecheck -- Re-enable after lodash conversion complete */
 ---
 
 <div class={`photo-uploader ${className}`} x-data={xData}>

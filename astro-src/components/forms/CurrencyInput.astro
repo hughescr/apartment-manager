@@ -1,5 +1,4 @@
 ---
-import { compact } from 'lodash';
 
 export interface Props {
     name: string
@@ -41,13 +40,13 @@ const {
 const shouldShowLabel = showLabel && label;
 
 // Container classes
-const containerClasses = compact([
+const containerClasses = [
     'form-control',
     className
-]).join(' ');
+].filter(Boolean).join(' ');
 
 // Build wrapper classes for the input container
-const wrapperClasses = compact([
+const wrapperClasses = [
     'input',
     'input-bordered',
     'flex',
@@ -55,7 +54,7 @@ const wrapperClasses = compact([
     'gap-2',
     error ? 'input-error' : '',
     disabled ? 'opacity-50 cursor-not-allowed' : ''
-]).join(' ');
+].filter(Boolean).join(' ');
 ---
 
 <div class={containerClasses}>

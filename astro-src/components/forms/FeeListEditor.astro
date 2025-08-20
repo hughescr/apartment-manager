@@ -1,5 +1,5 @@
 ---
-import _ from 'lodash';
+/* eslint-disable lodash/prefer-lodash-method -- Converting from lodash to native JavaScript for browser compatibility */
 import { FeeType } from '../../../src/types';
 
 export interface Props {
@@ -25,17 +25,17 @@ const {
     error,
     helpText,
     showLabel = true,
-    feeTypes = _.values(FeeType),
+    feeTypes = Object.values(FeeType),
 } = Astro.props;
 
 // Container classes
-const containerClasses = _.compact([
+const containerClasses = [
     'fee-list-editor',
     'flex',
     'flex-col',
     'gap-2',
     className
-]).join(' ');
+].filter(Boolean).join(' ');
 
 // Fee type labels for display
 const feeTypeLabels = {
@@ -220,7 +220,7 @@ fee(s)
                               x-on:change="updateFee(index, 'type', $event.target.value)"
                               disabled={disabled}
                             >
-                                {_.map(feeTypes, type => (
+                                {Object.values(feeTypes).map(type => (
                                     <option value={type}>
                                         {feeTypeLabels[type] || type}
                                     </option>
@@ -311,7 +311,7 @@ fee(s)
                       x-model="newFee.type"
                       disabled={disabled}
                     >
-                        {_.map(feeTypes, type => (
+                        {Object.values(feeTypes).map(type => (
                             <option value={type}>
                                 {feeTypeLabels[type] || type}
                             </option>

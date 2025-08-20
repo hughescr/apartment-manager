@@ -1,6 +1,6 @@
 ---
+/* eslint-disable lodash/prefer-lodash-method -- Converting from lodash to native JavaScript for browser compatibility */
 // Example component demonstrating usage of the form components
-import _ from 'lodash';
 import BaseInput from './BaseInput.astro';
 import BaseSelect from './BaseSelect.astro';
 import BaseTextarea from './BaseTextarea.astro';
@@ -25,15 +25,16 @@ const xData = JSON.stringify({
 });
 
 // Select options
-const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) => ({
+const propertyTypeOptions = Object.entries(PropertyType).map(([key, value]) => ({
     value,
-    label: _.toUpper(_.replace(_.toLower(_.replace(key, /_/g, ' ')), /\b\w/g, l => l))
+    label: key.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
 }));
 
-const utilityOptions = _.map(Object.entries(UtilityType), ([key, value]) => ({
+const utilityOptions = Object.entries(UtilityType).map(([key, value]) => ({
     value,
-    label: _.toUpper(_.replace(_.toLower(_.replace(key, /_/g, ' ')), /\b\w/g, l => l))
+    label: key.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
 }));
+/* eslint-enable lodash/prefer-lodash-method -- Re-enable after lodash conversion complete */
 ---
 
 <div class="max-w-2xl mx-auto p-6" x-data={xData}>

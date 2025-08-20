@@ -7,7 +7,6 @@ import {
     FeeType,
     BuildingData
 } from '../../../types';
-import { values, map, replace } from 'lodash';
 
 export interface Props {
     building: BuildingData
@@ -16,7 +15,7 @@ export interface Props {
 const { building: _building } = Astro.props;
 
 // Utility type options
-const utilityTypes = values(UtilityType);
+const utilityTypes = Object.values(UtilityType);
 ---
 
 <!-- Application & Fees Section -->
@@ -28,10 +27,10 @@ const utilityTypes = values(UtilityType);
         <div class="mb-6">
             <h4 class="font-semibold mb-4">Utilities Included</h4>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {map(utilityTypes, utility => (
+                {utilityTypes.map(utility => (
                     <div class="form-control">
                         <label class="label cursor-pointer">
-                            <span class="label-text capitalize">{replace(utility as string, '-', ' ')}</span>
+                            <span class="label-text capitalize">{(utility as string).replace('-', ' ')}</span>
                             <input
                               type="checkbox"
                               class="checkbox checkbox-primary"

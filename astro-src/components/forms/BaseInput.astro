@@ -1,5 +1,4 @@
 ---
-import _ from 'lodash';
 
 export interface Props {
     name: string
@@ -53,18 +52,18 @@ const {
 const shouldShowLabel = showLabel && label;
 
 // Build input classes
-const inputClasses = _.compact([
+const inputClasses = [
     'input',
     'w-full',
     error ? 'input-error' : '',
     inputClass
-]).join(' ');
+].filter(Boolean).join(' ');
 
 // Container classes
-const containerClasses = _.compact([
+const containerClasses = [
     'form-control',
     className
-]).join(' ');
+].filter(Boolean).join(' ');
 ---
 
 <div class={containerClasses}>

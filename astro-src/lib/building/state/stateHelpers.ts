@@ -2,7 +2,6 @@ import type { BuildingData, UnitTypeData } from '../../../types';
 import type { ExtendedUnitData } from '../types';
 import type { AlpineMagicProperties } from '../../alpine';
 import { BuildingFormatters } from '../utils/formatters';
-import { chain, compact, filter, forEach, isArray, isObject, isString, keys, reduce, toLower, trim } from 'lodash';
 
 export interface StateHelpersState {
     building: BuildingData | null
@@ -192,7 +191,7 @@ export class StateHelpers {
             available: 0
         };
 
-        forEach(this.state.units, (unit) => {
+        this.state.units.forEach((unit) => {
             switch(unit.vacancyClass) {
                 case 'Occupied':
                     counts.occupied++;
@@ -218,13 +217,12 @@ export class StateHelpers {
      * Get available unit types for dropdown
      */
     getAvailableUnitTypes(): { value: string, text: string }[] {
-        return chain(this.state.unitTypes)
+        return this.state.unitTypes
             .filter(ut => (ut.countAvailable ?? 0) > 0)
             .map(ut => ({
                 value: ut.modelID,
                 text: `${ut.modelID} - ${ut.modelName}`
-            }))
-            .value();
+            }));
     }
 
     /**
@@ -252,14 +250,14 @@ export class StateHelpers {
         if(obj == null) {
             return true;
         }
-        if(isString(obj)) {
-            return trim(obj) === '';
+        if(typeof obj === 'string') {
+            return obj.trim() === '';
         }
-        if(isArray(obj)) {
+        if(Array.isArray(obj)) {
             return obj.length === 0;
         }
-        if(isObject(obj)) {
-            return keys(obj).length === 0;
+        if(typeof obj === 'object') {
+            return Object.keys(obj).length === 0;
         }
         return false;
     }
@@ -280,7 +278,7 @@ export class StateHelpers {
      */
     handleKeyboardShortcut(event: KeyboardEvent): boolean {
         if(event.ctrlKey || event.metaKey) {
-            switch(toLower(event.key)) {
+            switch(event.key.toLowerCase()) {
                 case 's':
                     event.preventDefault();
                     this.emitEvent('shortcut:save');
@@ -316,12 +314,12 @@ export class StateHelpers {
             return '';
         }
 
-        const parts = compact([
+        const parts = [
             this.state.building.street,
             this.state.building.city,
             this.state.building.state,
             this.state.building.zip
-        ]);
+        ].filter(Boolean);
 
         return parts.join(', ');
     }
@@ -334,10 +332,9 @@ export class StateHelpers {
             return 0;
         }
 
-        const occupiedCount = filter(
-            this.state.units,
-            { vacancyClass: 'Occupied' }
-        ).length;
+        const occupiedCount = this.state.units
+            .filter(unit => unit.vacancyClass === 'Occupied')
+            .length;
 
         return Math.round((occupiedCount / this.state.units.length) * 100);
     }
@@ -346,13 +343,13 @@ export class StateHelpers {
      * Get average rent
      */
     getAverageRent(): number {
-        const unitsWithRent = filter(this.state.units, unit => unit.rent && unit.rent > 0) as ExtendedUnitData[];
+        const unitsWithRent = this.state.units.filter(unit => unit.rent && unit.rent > 0) as ExtendedUnitData[];
 
         if(unitsWithRent.length === 0) {
             return 0;
         }
 
-        const totalRent = reduce(unitsWithRent, (sum: number, unit: ExtendedUnitData) => sum + (unit.rent || 0), 0);
+        const totalRent = unitsWithRent.reduce((sum: number, unit: ExtendedUnitData) => sum + (unit.rent || 0), 0);
         return Math.round(totalRent / unitsWithRent.length);
     }
 }

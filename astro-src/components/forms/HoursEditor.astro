@@ -1,5 +1,4 @@
 ---
-import _ from 'lodash';
 import { DayOfWeek } from '../../types';
 
 export interface Props {
@@ -36,14 +35,14 @@ const {
 } = Astro.props;
 
 // Days of week for hours
-const daysOfWeek = _.values(DayOfWeek);
+const daysOfWeek = Object.values(DayOfWeek);
 
 // Create the parent path for initialization
-const parentPath = _(xModel).split('.').slice(0, -1).join('.');
+const parentPath = xModel.split('.').slice(0, -1).join('.');
 
 // Generate unique component ID for Alpine.js scope
 // Used in x-id attribute below
-const componentId = `hours_editor_${_.slice(Math.random().toString(36), 2, 11)}`;
+const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
 ---
 
 <div
@@ -80,7 +79,7 @@ const componentId = `hours_editor_${_.slice(Math.random().toString(36), 2, 11)}`
     </div>
 
     <div class={`space-y-1 ${compact ? 'max-w-xl' : 'max-w-2xl'}`}>
-        {_.map(daysOfWeek, (day, index) => (
+        {daysOfWeek.map((day, index) => (
             <div class={`flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50 transition-colors ${compact ? 'py-1' : ''}`}>
                 <!-- Checkbox -->
                 <input
@@ -187,8 +186,6 @@ const componentId = `hours_editor_${_.slice(Math.random().toString(36), 2, 11)}`
 </div>
 
 <script>
-import _ from 'lodash';
-
 // Define types for hours data structure
 interface DayHours {
     open: string
@@ -204,9 +201,9 @@ function hoursEditor(modelPath: string, parentPath: string) {
     return {
         // Helper to get nested property value
         getNestedProperty(path: string): unknown {
-            const keys = _.split(path, '.');
+            const keys = path.split('.');
             let value = this as Record<string, unknown>;
-            _.forEach(keys, (key) => {
+            keys.forEach((key) => {
                 value = value?.[key] as Record<string, unknown>;
             });
             return value;
@@ -214,14 +211,14 @@ function hoursEditor(modelPath: string, parentPath: string) {
 
         // Helper to set nested property value
         setNestedProperty(path: string, value: unknown): void {
-            const keys = _.split(path, '.');
+            const keys = path.split('.');
             let obj = this as Record<string, unknown>;
 
             // Initialize parent if needed
             if(parentPath && !this.getNestedProperty(parentPath)) {
-                const parentKeys = _.split(parentPath, '.');
+                const parentKeys = parentPath.split('.');
                 let parent = obj;
-                _.forEach(parentKeys, (key) => {
+                parentKeys.forEach((key) => {
                     if(!parent[key]) {
                         parent[key] = {};
                     }
@@ -293,7 +290,7 @@ function hoursEditor(modelPath: string, parentPath: string) {
             const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             if(hours?.[fromDay]) {
                 const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-                _.forEach(weekdays, (day) => {
+                weekdays.forEach((day) => {
                     hours[day] = { ...hours[fromDay] };
                 });
             }
@@ -310,7 +307,7 @@ function hoursEditor(modelPath: string, parentPath: string) {
         copyToAll(fromDay: string) {
             const hours = this.getNestedProperty(modelPath) as HoursData | null | undefined;
             if(hours?.[fromDay]) {
-                _.forEach(daysOfWeek, (day) => {
+                daysOfWeek.forEach((day) => {
                     hours[day] = { ...hours[fromDay] };
                 });
             }
@@ -318,7 +315,7 @@ function hoursEditor(modelPath: string, parentPath: string) {
 
         setAllDays(open: string, close: string) {
             const hours = (this.getNestedProperty(modelPath) || {}) as HoursData;
-            _.forEach(daysOfWeek, (day) => {
+            daysOfWeek.forEach((day) => {
                 hours[day] = { open, close };
             });
             this.setNestedProperty(modelPath, hours);

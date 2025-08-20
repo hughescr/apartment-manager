@@ -1,4 +1,3 @@
-import { isError, replace } from 'lodash';
 import type { UnitTypeData } from '../../../types';
 
 export interface ApiResponse<T> {
@@ -10,7 +9,7 @@ export interface ApiResponse<T> {
 export class UnitTypesApiService {
     constructor(private apiURL: string) {
         // Remove trailing slash if present to avoid double slashes in URLs
-        this.apiURL = replace(apiURL, /\/$/, '');
+        this.apiURL = apiURL.replace(/\/$/, '');
     }
 
     async getUnitTypes(buildingID: string): Promise<ApiResponse<UnitTypeData[]>> {
@@ -29,7 +28,7 @@ export class UnitTypesApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -50,7 +49,7 @@ export class UnitTypesApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -75,7 +74,7 @@ export class UnitTypesApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -100,7 +99,7 @@ export class UnitTypesApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -120,7 +119,7 @@ export class UnitTypesApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }

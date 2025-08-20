@@ -1,4 +1,3 @@
-import { isError, replace, trim } from 'lodash';
 import type { BuildingData, UnitData } from '../../../types';
 import type { ExtendedUnitData } from '../types';
 
@@ -18,7 +17,7 @@ export interface ApiResponse<T> {
 export class BuildingApiService {
     constructor(private apiURL: string) {
         // Remove trailing slash if present to avoid double slashes in URLs
-        this.apiURL = replace(apiURL, /\/$/, '');
+        this.apiURL = apiURL.replace(/\/$/, '');
     }
 
     async saveBuilding(building: BuildingData): Promise<ApiResponse<BuildingData>> {
@@ -36,7 +35,7 @@ export class BuildingApiService {
                 const responseText = await response.text();
                 let data;
 
-                if(trim(responseText)) {
+                if(responseText.trim()) {
                     try {
                         data = JSON.parse(responseText);
                     } catch{
@@ -56,7 +55,7 @@ export class BuildingApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -76,7 +75,7 @@ export class BuildingApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -101,7 +100,7 @@ export class BuildingApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -126,7 +125,7 @@ export class BuildingApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -146,7 +145,7 @@ export class BuildingApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -173,7 +172,7 @@ export class BuildingApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -198,7 +197,7 @@ export class BuildingApiService {
         } catch(error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error: error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }

@@ -121,7 +121,10 @@ const emptyUnitTypes: UnitTypeData[] = [];
 import type { AlpineComponent } from '../types/alpine';
 import type { BuildingData, UnitData, UnitTypeData } from '../types';
 import { createClientLogger } from '../lib/utils/client-logger';
-import { noop } from 'lodash';
+
+// Simple noop function replacement for lodash.noop
+// eslint-disable-next-line lodash/prefer-noop, @typescript-eslint/no-empty-function -- Replacing lodash.noop for browser compatibility
+const noop = () => {};
 
 const logger = createClientLogger('BuildingManager');
 

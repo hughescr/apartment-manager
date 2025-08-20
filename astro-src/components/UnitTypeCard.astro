@@ -1,6 +1,5 @@
 ---
 // astro-src/components/UnitTypeCard.astro
-import _ from 'lodash';
 import Saving from './Saving.astro';
 import { Resource } from 'sst';
 import type { UnitTypeData, Amenity } from '../../src/types';
@@ -52,8 +51,7 @@ declare global {
     }
 }
 ---
-<script define:vars={{ _ }} is:inline>
-
+<script is:inline>
 // Used by Alpine.js x-data attribute
 window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenitiesData, apiUrlData) {
     return {
@@ -162,7 +160,7 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
         // Deposit handling functions
         initializeDeposit() {
             // Convert legacy number deposits to enhanced object format
-            if(_.isNumber(this.unitType.deposit)) {
+            if(typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit)) {
                 this.unitType.deposit = {
                     amount: this.unitType.deposit,
                     refundable: true
@@ -178,7 +176,7 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
             if(!this.unitType.deposit) {
                 return null;
             }
-            if(_.isNumber(this.unitType.deposit)) {
+            if(typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit)) {
                 return this.unitType.deposit;
             }
             return this.unitType.deposit.amount;
@@ -200,7 +198,7 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
                     amount: amount,
                     refundable: true
                 };
-            } else if(_.isNumber(this.unitType.deposit)) {
+            } else if(typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit)) {
                 this.unitType.deposit = {
                     amount: amount,
                     refundable: true
@@ -214,14 +212,14 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
             if(!this.unitType.deposit) {
                 return true;
             }
-            if(_.isNumber(this.unitType.deposit)) {
+            if(typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit)) {
                 return true;
             }
             return this.unitType.deposit.refundable !== false;
         },
 
         setDepositRefundable(value) {
-            if(!this.unitType.deposit || _.isNumber(this.unitType.deposit)) {
+            if(!this.unitType.deposit || (typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit))) {
                 return;
             }
             this.unitType.deposit.refundable = value;
@@ -232,14 +230,14 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
         },
 
         getDepositPartialRefundPercentage() {
-            if(!this.unitType.deposit || _.isNumber(this.unitType.deposit)) {
+            if(!this.unitType.deposit || (typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit))) {
                 return null;
             }
             return this.unitType.deposit.partialRefundPercentage || null;
         },
 
         setDepositPartialRefundPercentage(value) {
-            if(!this.unitType.deposit || _.isNumber(this.unitType.deposit)) {
+            if(!this.unitType.deposit || (typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit))) {
                 return;
             }
             const percentage = parseFloat(value);

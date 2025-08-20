@@ -1,5 +1,5 @@
 ---
-import _ from 'lodash';
+
 import BaseInput from './BaseInput.astro';
 import BaseSelect from './BaseSelect.astro';
 
@@ -38,6 +38,7 @@ const {
     'class': className = '',
     onReset
 } = Astro.props;
+
 ---
 
 <div class={`form-control ${className}`}>
@@ -63,9 +64,9 @@ const {
             >
                 <option value="">
 Select
-{_.toLower(label)}
+{label.toLowerCase()}
                 </option>
-                {_.map(options, option => (
+                {options.map(option => (
                     <option value={option.value}>{option.label}</option>
                 ))}
             </BaseSelect>
