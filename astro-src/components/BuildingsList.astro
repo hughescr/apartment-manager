@@ -183,14 +183,10 @@ function buildingsListData(): BuildingsListData {
     } as BuildingsListData;
 }
 
-// Make available globally for Alpine.js
-declare global {
-    interface Window {
-        buildingsListData: typeof buildingsListData
-    }
-}
-
-window.buildingsListData = buildingsListData;
+// Register with Alpine
+document.addEventListener('alpine:init', () => {
+    Alpine.data('buildingsListData', buildingsListData);
+});
 </script>
 
 <style>

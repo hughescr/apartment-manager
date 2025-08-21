@@ -211,14 +211,10 @@ function buildingsComponentData(): BuildingsComponentData {
     } as BuildingsComponentData;
 }
 
-// Make available globally for Alpine.js
-declare global {
-    interface Window {
-        buildingsComponentData: typeof buildingsComponentData
-    }
-}
-
-window.buildingsComponentData = buildingsComponentData;
+// Register with Alpine
+document.addEventListener('alpine:init', () => {
+    Alpine.data('buildingsComponentData', buildingsComponentData);
+});
 </script>
 
 <style>

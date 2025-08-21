@@ -44,16 +44,10 @@ interface UnitTypeCardComponent {
     setDepositPartialRefundPercentage(value: string): void
 }
 
-// Declare the global window property for TypeScript
-declare global {
-    interface Window {
-        unitTypeCardData: (unitTypeData: UnitTypeData, buildingAmenitiesData: Amenity[], apiUrlData: string) => UnitTypeCardComponent
-    }
-}
 ---
 <script is:inline>
 // Used by Alpine.js x-data attribute
-window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenitiesData, apiUrlData) {
+function unitTypeCardData(unitTypeData, buildingAmenitiesData, apiUrlData) {
     return {
         unitType: unitTypeData,
         originalUnitType: JSON.parse(JSON.stringify(unitTypeData)), // Deep copy for original state
@@ -248,7 +242,11 @@ window.unitTypeCardData = function unitTypeCardData(unitTypeData, buildingAmenit
             this.unitType.deposit.partialRefundPercentage = percentage;
         }
     };
-};
+}
+
+document.addEventListener('alpine:init', () => {
+    Alpine.data('unitTypeCardData', unitTypeCardData);
+});
 </script>
 
 <div x-data="unitTypeCardData(unitType, _buildingAmenities, _apiURL)" x-init="init(); $watch('unitType', () => saveUnitType(this))" class="card bg-base-100 shadow-xl" :class="{'opacity-50': saving}" data-testid="unit-type-card">

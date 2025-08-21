@@ -235,14 +235,10 @@ function buildingManagerData(): BuildingManagerData {
     } as BuildingManagerData;
 }
 
-// Make available globally for Alpine.js
-declare global {
-    interface Window {
-        buildingManagerData: typeof buildingManagerData
-    }
-}
-
-window.buildingManagerData = buildingManagerData;
+// Register with Alpine
+document.addEventListener('alpine:init', () => {
+    Alpine.data('buildingManagerData', buildingManagerData);
+});
 </script>
 
 <style>

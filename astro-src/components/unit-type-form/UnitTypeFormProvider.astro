@@ -19,40 +19,15 @@ if(!_apiURL) {
     throw new Error('API URL not configured');
 } // Validate and mark as used for TypeScript
 
-// Declare the global window property for TypeScript
-declare global {
-    interface Window {
-        unitTypeFormData: (_apiUrlData: string, _buildingIdData: string) => UnitTypeFormState
-        unitTypeFormOnSuccess?: () => void
-    }
-}
 ---
-
-<script>
-// Import the state management function
+<script type="module">
 import { createUnitTypeFormState } from '../../lib/unit-type-form';
 
-// Declare global type for Alpine.js
-declare global {
-    interface Window {
-        createUnitTypeFormState: typeof createUnitTypeFormState
-    }
-}
-
-// Make the state creation function available globally for Alpine.js
-if(typeof window !== 'undefined') {
-    window.createUnitTypeFormState = createUnitTypeFormState;
-}
-</script>
-
-<script define:vars={{ _apiURL, buildingID }} is:inline>
-
-// Used by Alpine.js x-data attribute - wrapper for the state function
-
-window.unitTypeFormData = function unitTypeFormData(_apiUrlData, _buildingIdData) {
-    // Variables _apiURL and buildingID are injected by Astro's define:vars
-    return window.createUnitTypeFormState(_apiURL, buildingID);
-};
+document.addEventListener('alpine:init', () => {
+    Alpine.data('unitTypeFormData', (apiUrlData, buildingIdData) =>
+        createUnitTypeFormState(apiUrlData, buildingIdData)
+    );
+});
 </script>
 
 {onSuccess && (
@@ -66,7 +41,12 @@ window.unitTypeFormData = function unitTypeFormData(_apiUrlData, _buildingIdData
     </script>
 )}
 
-<div x-data="unitTypeFormData(_apiURL, buildingID)" class="unit-type-form">
+<div
+  x-data="unitTypeFormData($el.dataset.apiUrl, $el.dataset.buildingId)"
+  class="unit-type-form"
+  data-api-url={_apiURL}
+  data-building-id={buildingID}
+>
     <!-- Toggle Button -->
     <button
       class="btn btn-primary"

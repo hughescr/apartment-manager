@@ -420,16 +420,9 @@ function unitCardStateObject(): UnitCardState {
     };
 }
 
-/**
- * Global window function for Alpine.js to use
- */
-declare global {
-    interface Window {
-        unitCardData: typeof createUnitCardState
-    }
-}
-
-// Expose to global for Alpine.js usage
+// Register with Alpine
 if(typeof window !== 'undefined') {
-    window.unitCardData = createUnitCardState;
+    document.addEventListener('alpine:init', () => {
+        window.Alpine.data('unitCardData', createUnitCardState);
+    });
 }
