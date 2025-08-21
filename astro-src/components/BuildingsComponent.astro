@@ -68,8 +68,10 @@ try {
               data-building-id={building.buildingID}
               data-api-url={_apiURL}
               data-tab-index={i}
-              class="building-tab-content"
-              style={i === 0 ? '' : 'display: none;'}
+              x-show={`activeBuildingTab === ${i}`}
+              :class={`{ 'hidden': activeBuildingTab !== ${i} }`}
+                x-ref={`manager-${i}`}
+                x-cloak
             />
         ))}
     </div>
@@ -150,22 +152,13 @@ function buildingsComponentData(): BuildingsComponentData {
                 sessionStorage.setItem('activeBuildingTab', 'add-new-building');
             }
 
-            // Show the initially active tab based on data-tab-index
-            const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
-            _.forEach(allManagers, (manager) => {
-                const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
-                manager.style.display = managerTabIndex === this.activeBuildingTab ? '' : 'none';
-            });
-
             // Trigger lazy loading for the initially active building tab
             if(this.activeBuildingTab < this.buildings.length) {
-                const buildingID = this.buildings[this.activeBuildingTab].buildingID;
                 // Use setTimeout to ensure DOM and Alpine are ready
                 setTimeout(() => {
-                    const buildingElement = document.querySelector(`.building-manager[data-building-id="${buildingID}"]`) as HTMLElement;
-                    if(buildingElement) {
-                        buildingElement.dispatchEvent(new CustomEvent('trigger-load'));
-                    }
+                    const refs = (this as unknown as { $refs: Record<string, HTMLElement | undefined> }).$refs;
+                    const manager = refs[`manager-${this.activeBuildingTab}`];
+                    manager?.dispatchEvent(new CustomEvent('trigger-load'));
                 }, 200);  // Slightly longer delay to ensure Alpine components are initialized
             }
         },
@@ -174,20 +167,12 @@ function buildingsComponentData(): BuildingsComponentData {
             const { tabIndex, buildingID } = event.detail;
             this.activeBuildingTab = tabIndex;
 
-            // Show/hide building managers based on their data-tab-index
-            const allManagers = document.querySelectorAll('.building-manager') as NodeListOf<HTMLElement>;
-            _.forEach(allManagers, (manager) => {
-                const managerTabIndex = parseInt(manager.dataset.tabIndex || '-1');
-                manager.style.display = managerTabIndex === tabIndex ? '' : 'none';
-            });
-
             if(buildingID && tabIndex < this.buildings.length) {
                 history.pushState(null, '', `#${buildingID}`);
                 sessionStorage.setItem('activeBuildingTab', buildingID);
-                const buildingElement = document.querySelector(`.building-manager[data-building-id="${buildingID}"]`) as HTMLElement;
-                if(buildingElement) {
-                    buildingElement.dispatchEvent(new CustomEvent('trigger-load'));
-                }
+                const refs = (this as unknown as { $refs: Record<string, HTMLElement | undefined> }).$refs;
+                const manager = refs[`manager-${tabIndex}`];
+                manager?.dispatchEvent(new CustomEvent('trigger-load'));
             } else if(tabIndex === this.buildings.length) {
                 history.pushState(null, '', '#add-new-building');
                 sessionStorage.setItem('activeBuildingTab', 'add-new-building');
