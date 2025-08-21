@@ -620,14 +620,10 @@ function addBuildingFormData(): AddBuildingFormData {
     } as AddBuildingFormData;
 }
 
-// Make available globally for Alpine.js
-declare global {
-    interface Window {
-        addBuildingFormData: typeof addBuildingFormData
-    }
-}
-
-window.addBuildingFormData = addBuildingFormData;
+// Register with Alpine
+document.addEventListener('alpine:init', () => {
+    Alpine.data('addBuildingFormData', addBuildingFormData);
+});
 </script>
 
 <style>

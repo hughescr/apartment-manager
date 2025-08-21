@@ -63,7 +63,7 @@ const safeLog = {
     }
 };
 
-window.unitCardData = function unitCardData() {
+function unitCardData() {
     return {
         unit: null,
         originalUnit: null,
@@ -658,7 +658,11 @@ window.unitCardData = function unitCardData() {
             }
         }
     };
-};
+}
+
+document.addEventListener('alpine:init', () => {
+    Alpine.data('unitCardData', unitCardData);
+});
 </script>
 
 <li

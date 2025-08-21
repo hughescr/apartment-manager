@@ -26,7 +26,7 @@ const unitTypesMap = Object.fromEntries(
 
 <script is:inline>
 // Used by Alpine.js x-data attribute
-window.modelAmenitiesManagerData = function modelAmenitiesManagerData() {
+function modelAmenitiesManagerData() {
     return {
         apiURL: document.querySelector('[data-api-url]')?.dataset.apiUrl || '',
         buildingID: document.querySelector('[data-building-id]')?.dataset.buildingId || '',
@@ -164,7 +164,11 @@ window.modelAmenitiesManagerData = function modelAmenitiesManagerData() {
             return amenities.slice(0, 3).map(a => a.name).join(', ') + ' +' + (amenities.length - 3) + ' more';
         }
     };
-};
+}
+
+document.addEventListener('alpine:init', () => {
+    Alpine.data('modelAmenitiesManagerData', modelAmenitiesManagerData);
+});
 </script>
 
 <div x-data="modelAmenitiesManagerData()" class="model-amenities-manager" data-api-url={_apiURL} data-building-id={buildingID} data-unit-types={JSON.stringify(unitTypesMap)}>
