@@ -56,20 +56,22 @@ const containerClasses = filter([
     className
 ], identity).join(' ');
 
-// Button classes - styled to look like a select input
+// Button classes - styled to match DaisyUI input height exactly
 const buttonClasses = filter([
-    'btn',
-    'btn-outline',
+    'input',
+    'input-bordered',
+    'flex',
+    'items-center',
     'w-full',
     'justify-between',
     'font-normal',
-    'h-12',
-    'min-h-[3rem]',
-    'border-base-300',
-    'hover:bg-base-100',
-    'hover:border-base-300',
-    error ? 'border-error' : '',
-    disabled ? 'btn-disabled' : ''
+    'cursor-pointer',
+    'bg-base-100',
+    'hover:border-primary',
+    'focus:border-primary',
+    'focus:outline-none',
+    error ? 'input-error border-error' : '',
+    disabled ? 'input-disabled' : ''
 ], identity).join(' ');
 ---
 
