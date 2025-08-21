@@ -24,6 +24,7 @@ export interface Props {
     floatingLabel?: boolean
     inputClass?: string
     inputSize?: 'xs' | 'sm' | 'md' | 'lg' | 'full'
+    inputAttrs?: Record<string, unknown>
 }
 
 const {
@@ -43,6 +44,7 @@ const {
     autocomplete,
     'class': className = '',
     inputClass = '',
+    inputAttrs = {},
     error,
     helpText,
     oninput,
@@ -117,6 +119,7 @@ const containerClasses = _.compact([
                   pattern={pattern}
                   autocomplete={autocomplete}
                   @input={oninput}
+                  {...inputAttrs}
                 />
             </label>
         )
@@ -137,6 +140,7 @@ const containerClasses = _.compact([
               pattern={pattern}
               autocomplete={autocomplete}
               @input={oninput}
+              {...inputAttrs}
             />
         )}
     {(error || helpText) && (

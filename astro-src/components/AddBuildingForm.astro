@@ -1,4 +1,5 @@
 ---
+import { BaseInput, BaseSelect } from './forms';
 // AddBuildingForm.astro - Handles the add building form
 // No props needed - apiURL is retrieved from parent's data-api-url attribute
 // and visibility is controlled by parent's x-show directive
@@ -16,23 +17,26 @@
           class="dropdown w-full"
           class="{ 'dropdown-open': showSuggestions }"
         >
-            <label class="floating-label mb-2 w-full relative">
-                <span>Street</span>
-                <input
-                  type="text"
+            <div class="relative mb-2 w-full">
+                <BaseInput
                   name="street"
-                  x-model="street"
+                  label="Street"
+                  xModel="street"
                   placeholder="Street"
-                  class="input w-full"
-                  @input="handleStreetInput($event)"
-                  @keydown="handleKeydown($event)"
-                  @blur="updateBuildingNameFromAddress(); setTimeout(() => hideSuggestions(), 150)"
-                  @focus="street.length >= 3 && suggestions.length > 0 ? showSuggestions = true : null"
-                  :aria-expanded="showSuggestions"
-                  :aria-activedescendant="selectedIndex >= 0 ? `suggestion-${selectedIndex}` : null"
-                    autocomplete="off"
-                    role="combobox"
-                    aria-haspopup="listbox"
+                  floatingLabel={true}
+                  class="w-full"
+                  inputClass="w-full"
+                  inputAttrs={{
+                      '@input': 'handleStreetInput($event)',
+                      '@keydown': 'handleKeydown($event)',
+                      '@blur': 'updateBuildingNameFromAddress(); setTimeout(() => hideSuggestions(), 150)',
+                      '@focus': 'street.length >= 3 && suggestions.length > 0 ? showSuggestions = true : null',
+                      'x-bind:aria-expanded': 'showSuggestions',
+                      'x-bind:aria-activedescendant': 'selectedIndex >= 0 ? `suggestion-${selectedIndex}` : null',
+                      autocomplete: 'off',
+                      role: 'combobox',
+                      'aria-haspopup': 'listbox'
+                  }}
                 />
 
                 <!-- Status indicators -->
@@ -57,7 +61,7 @@
                     <!-- Search loading indicator -->
                     <span x-show="loading" class="loading loading-spinner loading-sm"></span>
                 </div>
-            </label>
+            </div>
 
             <!-- Autocomplete dropdown using DaisyUI dropdown-content -->
             <ul
@@ -101,35 +105,49 @@
             </ul>
         </div>
 
-        <label class="floating-label mb-2">
-            <span>City</span>
-            <input type="text" name="city" x-model="city" placeholder="City" class="input w-full" />
-        </label>
+          <BaseInput
+            name="city"
+            label="City"
+            xModel="city"
+            placeholder="City"
+            floatingLabel={true}
+            class="mb-2"
+            inputClass="w-full"
+          />
 
-        <label class="floating-label mb-2">
-            <span>State</span>
-            <input type="text" name="state" x-model="state" placeholder="State" class="input w-full" />
-        </label>
+          <BaseInput
+            name="state"
+            label="State"
+            xModel="state"
+            placeholder="State"
+            floatingLabel={true}
+            class="mb-2"
+            inputClass="w-full"
+          />
 
-        <label class="floating-label mb-2">
-            <span>Zip</span>
-            <input type="text" name="zip" x-model="zip" placeholder="Zip" class="input w-full" />
-        </label>
+          <BaseInput
+            name="zip"
+            label="Zip"
+            xModel="zip"
+            placeholder="Zip"
+            floatingLabel={true}
+            class="mb-2"
+            inputClass="w-full"
+          />
 
-        <div class="indicator w-full mt-4">
-            <span class="indicator-item badge z-10" x-show="buildingName === ''">Required</span>
-            <label class="floating-label mb-6 w-full">
-                <span>Building Name</span>
-                <input
-                  type="text"
-                  name="buildingName"
-                  x-model="buildingName"
-                  placeholder="Building Name (auto-generated from address)"
-                  class="input input-xl w-full"
-                  required
-                />
-            </label>
-        </div>
+          <div class="indicator w-full mt-4">
+              <span class="indicator-item badge z-10" x-show="buildingName === ''">Required</span>
+              <BaseInput
+                name="buildingName"
+                label="Building Name"
+                xModel="buildingName"
+                placeholder="Building Name (auto-generated from address)"
+                required={true}
+                floatingLabel={true}
+                class="mb-6 w-full"
+                inputClass="input-xl w-full"
+              />
+          </div>
 
         <label class="floating-label mt-4">
             <span>Description</span>
@@ -156,27 +174,27 @@
                 </div>
             </h4>
 
-            <label class="floating-label mb-2">
-                <span>Property Website</span>
-                <input
-                  type="url"
-                  name="propertyWebsite"
-                  x-model="propertyWebsite"
-                  placeholder="https://property-specific-site.com"
-                  class="input w-full"
-                />
-            </label>
+              <BaseInput
+                name="propertyWebsite"
+                label="Property Website"
+                xModel="propertyWebsite"
+                placeholder="https://property-specific-site.com"
+                type="url"
+                floatingLabel={true}
+                class="mb-2"
+                inputClass="w-full"
+              />
 
-            <label class="floating-label mb-2">
-                <span>Management Company Website</span>
-                <input
-                  type="url"
-                  name="managementWebsite"
-                  x-model="managementWebsite"
-                  placeholder="https://your-management-company.com"
-                  class="input w-full"
-                />
-            </label>
+              <BaseInput
+                name="managementWebsite"
+                label="Management Company Website"
+                xModel="managementWebsite"
+                placeholder="https://your-management-company.com"
+                type="url"
+                floatingLabel={true}
+                class="mb-2"
+                inputClass="w-full"
+              />
 
             <!-- Explanatory text -->
             <div class="text-sm text-base-content/70 mt-2 space-y-1">
@@ -195,15 +213,19 @@ Your company's main site - for corporate information
 
         <!-- Rental Type Section -->
         <div class="mt-6">
-            <label class="floating-label select-label">
-                <span>Rental Type</span>
-                <select name="specialtyType" x-model="specialtyType" class="select w-full">
-                    <option value="market-rate">Market Rate</option>
-                    <option value="affordable">Affordable</option>
-                    <option value="student">Student</option>
-                    <option value="senior">Senior</option>
-                </select>
-            </label>
+            <BaseSelect
+              name="specialtyType"
+              label="Rental Type"
+              xModel="specialtyType"
+              options={[
+                  { value: 'market-rate', label: 'Market Rate' },
+                  { value: 'affordable', label: 'Affordable' },
+                  { value: 'student', label: 'Student' },
+                  { value: 'senior', label: 'Senior' }
+              ]}
+              class="w-full"
+              selectClass="w-full"
+            />
 
             <!-- Rental Type Explanations -->
             <div class="mt-3 text-sm space-y-2">
