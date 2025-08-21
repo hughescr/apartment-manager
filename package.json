@@ -21,12 +21,12 @@
   "dependencies": {
     "@astrojs/alpinejs": "^0.4.8",
     "@astrojs/db": "^0.17.1",
-    "@aws-sdk/client-dynamodb": "^3.868.0",
-    "@aws-sdk/client-s3": "^3.864.0",
-    "@aws-sdk/client-ssm": "^3.864.0",
-    "@aws-sdk/lib-dynamodb": "^3.868.0",
-    "@aws-sdk/s3-request-presigner": "^3.864.0",
-    "@aws-sdk/util-dynamodb": "^3.868.0",
+    "@aws-sdk/client-dynamodb": "^3.873.0",
+    "@aws-sdk/client-s3": "^3.872.0",
+    "@aws-sdk/client-ssm": "^3.872.0",
+    "@aws-sdk/lib-dynamodb": "^3.872.0",
+    "@aws-sdk/s3-request-presigner": "^3.872.0",
+    "@aws-sdk/util-dynamodb": "^3.872.0",
     "@hughescr/logger": "^2.6.0",
     "@types/leaflet": "^1.9.20",
     "alpinejs": "^3.14.9",
@@ -68,7 +68,7 @@
     "jsdom": "^26.1.0",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.1"
+    "typescript-eslint": "^8.40.0"
   },
   "engines": {
     "node": ">=24.x"
