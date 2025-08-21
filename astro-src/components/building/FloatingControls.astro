@@ -99,12 +99,16 @@ interface BuildingContext {
 }
 
 function _initFloatingControls(this: BuildingContext) {
+    // Capture the Alpine context for use in event listeners
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- Required to preserve Alpine context in event listener callbacks
+    const alpineContext = this;
+
     // Store original page title on the parent context
-    this.originalTitle = this.originalTitle || document.title;
+    alpineContext.originalTitle = alpineContext.originalTitle || document.title;
 
     // Watch for unsaved changes to update page title
-    this.$watch('showSave', (hasUnsaved: boolean) => {
-        _updatePageTitle(hasUnsaved, this.originalTitle || document.title);
+    alpineContext.$watch('showSave', (hasUnsaved: boolean) => {
+        _updatePageTitle(hasUnsaved, alpineContext.originalTitle || document.title);
     });
 
     // Global keyboard shortcuts
@@ -112,27 +116,29 @@ function _initFloatingControls(this: BuildingContext) {
         // Save shortcut (Ctrl+S or Cmd+S)
         if((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
-            // Access current Alpine context (BuildingProvider)
-            if(this.showSave && !this.saving) {
-                this.saveBuilding();
+            // Use captured Alpine context
+            if(alpineContext.showSave && !alpineContext.saving) {
+                alpineContext.saveBuilding();
             }
         }
 
         // Undo shortcut (Ctrl+Z or Cmd+Z)
         if((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
             e.preventDefault();
-            // Access current Alpine context (BuildingProvider)
-            if(this.showSave && !this.saving) {
-                this.undoChanges();
+            // Use captured Alpine context
+            if(alpineContext.showSave && !alpineContext.saving) {
+                alpineContext.undoChanges();
             }
         }
     });
 
     // Listen for beforeunload to warn about unsaved changes
     window.addEventListener('beforeunload', (e) => {
-        // Access current Alpine context (BuildingProvider)
-        if(this.showSave) {
+        // Use captured Alpine context
+        if(alpineContext.showSave) {
             e.preventDefault();
+            // Set returnValue for cross-browser compatibility
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
             // Modern browsers ignore custom messages but still show warning
             return 'You have unsaved changes. Are you sure you want to leave?';
         }
