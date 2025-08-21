@@ -14,7 +14,7 @@
         <!-- Autocomplete dropdown using proper DaisyUI structure -->
         <div
           class="dropdown w-full"
-          class="{ 'dropdown-open': showSuggestions }"
+          :class="{ 'dropdown-open': showSuggestions }"
         >
             <label class="floating-label mb-2 w-full relative">
                 <span>Street</span>
@@ -77,7 +77,7 @@
                     <li>
                         <a
                           class="text-sm py-2 px-3 cursor-pointer rounded-btn"
-                          class="{ 'bg-primary text-primary-content': selectedIndex === index }"
+                          :class="{ 'bg-primary text-primary-content': selectedIndex === index }"
                           :id="`suggestion-${index}`"
                           :aria-selected="selectedIndex === index"
                             role="option"
