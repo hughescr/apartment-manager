@@ -1,5 +1,6 @@
 ---
 import _ from 'lodash';
+import crypto from 'node:crypto';
 
 export interface SelectOption {
     value: string | number
@@ -8,6 +9,7 @@ export interface SelectOption {
 }
 
 export interface Props {
+    id?: string
     name: string
     label?: string
     placeholder?: string
@@ -28,6 +30,7 @@ export interface Props {
 }
 
 const {
+    id,
     name,
     label,
     placeholder,
@@ -46,6 +49,8 @@ const {
     multiple = false,
     size,
 } = Astro.props;
+
+const selectId = id || crypto.randomUUID();
 
 // Normalize options to SelectOption format
 const normalizedOptions: SelectOption[] = options
@@ -72,7 +77,7 @@ const containerClasses = _.compact([
 ]).join(' ');
 ---
 
-<label class={containerClasses}>
+<label class={containerClasses} for={selectId}>
     {shouldShowLabel && !floatingLabel && (
         <span class="label-text">
             {label}
@@ -80,6 +85,7 @@ const containerClasses = _.compact([
         </span>
     )}
     <select
+      id={selectId}
       name={name}
       class={selectClasses}
       required={required}
