@@ -145,83 +145,44 @@ Age-restricted (55+/62+) - appears in "Senior Living" sections, hidden from gene
         <!-- Rent Specials -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="text-lg font-semibold mb-4">Rent Specials</h4>
-            <div>
+            <div class="space-y-4">
                 <template x-for="(special, index) in building.rentSpecials || []" :key="special.id || ('special-' + index)">
-                    <div class="border border-base-300 rounded-lg p-4 mb-4">
-                        <div class="flex justify-end mb-2">
-                            <button
-                              @click="removeRentSpecial(index)"
-                              class="btn btn-ghost btn-sm text-error"
-                            >
-Remove
-                            </button>
+                    <div class="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box">
+                        <input type="checkbox" checked />
+                        <div class="collapse-title flex justify-between items-center gap-2">
+                            <span x-text="special.title || ('Special ' + (index + 1))"></span>
+                            <button @click.stop="removeRentSpecial(index)" class="btn btn-ghost btn-xs text-error">Remove</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                            <!-- Title Input -->
-                            <label class="floating-label">
-                                <span>
-Title
-<span class="text-error">*</span>
-                                </span>
-                                <input
-                                  type="text"
-                                  name="'special-title-' + index"
-                                  x-model="special.title"
-                                  placeholder="Move-in Special"
-                                  class="input w-full"
-                                  class="errors['rentSpecial' + index + 'Title'] ? 'input-error' : ''"
-                                  required
-                                />
-                                <span x-show="errors['rentSpecial' + index + 'Title']" class="label-text-alt text-error" x-text="errors['rentSpecial' + index + 'Title']"></span>
-                            </label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <!-- Start Date Input -->
+                        <div class="collapse-content space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <label class="floating-label">
-                                    <span>Start Date</span>
-                                    <input
-                                      type="date"
-                                      name="'special-start-' + index"
-                                      x-model="special.startDate"
-                                      class="input w-full"
-                                    />
+                                    <span>Title<span class="text-error">*</span></span>
+                                    <input type="text" name="'special-title-' + index" x-model="special.title" placeholder="Move-in Special" class="input w-full" :class="errors['rentSpecial' + index + 'Title'] ? 'input-error' : ''" required />
+                                    <span x-show="errors['rentSpecial' + index + 'Title']" class="label-text-alt text-error" x-text="errors['rentSpecial' + index + 'Title']"></span>
                                 </label>
-                                <!-- End Date Input -->
-                                <label class="floating-label">
-                                    <span>End Date</span>
-                                    <input
-                                      type="date"
-                                      name="'special-end-' + index"
-                                      x-model="special.endDate"
-                                      class="input w-full"
-                                    />
-                                </label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="floating-label">
+                                        <span>Start Date</span>
+                                        <input type="date" name="'special-start-' + index" x-model="special.startDate" class="input w-full" />
+                                    </label>
+                                    <label class="floating-label">
+                                        <span>End Date</span>
+                                        <input type="date" name="'special-end-' + index" x-model="special.endDate" class="input w-full" />
+                                    </label>
+                                </div>
                             </div>
+                            <div x-show="errors['rentSpecial' + index + 'Dates']" class="text-error text-sm" x-text="errors['rentSpecial' + index + 'Dates']"></div>
+                            <label class="floating-label textarea-label">
+                                <span>Description</span>
+                                <textarea name="'special-desc-' + index" x-model="special.description" placeholder="Special details..." class="textarea w-full resize-vertical" rows="2"></textarea>
+                            </label>
                         </div>
-                        <div x-show="errors['rentSpecial' + index + 'Dates']" class="text-error text-sm mt-1" x-text="errors['rentSpecial' + index + 'Dates']"></div>
-                        <!-- Description Textarea -->
-                        <label class="floating-label textarea-label">
-                            <span>Description</span>
-                            <textarea
-                              name="'special-desc-' + index"
-                              x-model="special.description"
-                              placeholder="Special details..."
-                              class="textarea w-full resize-vertical"
-                              rows="2"
-                            >
-                            </textarea>
-                        </label>
                     </div>
                 </template>
-                <button
-                  @click="addRentSpecial()"
-                  class="btn btn-primary btn-sm"
-                >
-Add Rent Special
-                </button>
+                <button @click="addRentSpecial()" class="btn btn-primary btn-sm">Add Rent Special</button>
             </div>
         </div>
-
-        <!-- Income Restrictions -->
+<!-- Income Restrictions -->
         <div class="border-t border-base-200 pt-4 mt-4">
             <h4 class="text-lg font-semibold mb-4">Income Restrictions</h4>
             <div x-data="{ hasRestrictions: !!(building.incomeRestrictions?.amiLimit), initRestrictions() { if (!building.incomeRestrictions) building.incomeRestrictions = { amiLimit: undefined, maxIncomeByHouseholdSize: {} }; if (!building.incomeRestrictions.maxIncomeByHouseholdSize) building.incomeRestrictions.maxIncomeByHouseholdSize = {}; if (!this.hasRestrictions) { building.incomeRestrictions.amiLimit = undefined; } } }" x-init="initRestrictions()" x-effect="initRestrictions()">
