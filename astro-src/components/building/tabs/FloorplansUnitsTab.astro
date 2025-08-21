@@ -12,7 +12,7 @@ export type Props = Record<string, never>;
 <div x-show="activeSectionTab === 'floorplans-units'" class="space-y-6">
     <!-- Floorplans Section -->
     <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
+        <div class="card-body p-4 sm:p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="card-title text-xl">Floorplans (Unit Types)</h3>
                 <div class="badge badge-primary badge-lg" x-text="(unitTypes?.length || 0) + ' types'"></div>
@@ -96,7 +96,7 @@ export type Props = Record<string, never>;
 
     <!-- Units Section with Listing Management -->
     <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
+        <div class="card-body p-4 sm:p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="card-title text-xl">Units & Listing Management</h3>
                 <div class="badge badge-primary badge-lg" x-text="(units?.length || 0) + ' units'"></div>

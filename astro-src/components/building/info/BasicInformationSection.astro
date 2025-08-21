@@ -59,7 +59,7 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
                 />
                 <span x-show="errors.city" class="label-text-alt text-error" x-text="errors.city"></span>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="flex gap-3">
                 <div>
                     <BaseInput
                       name="state"
@@ -86,7 +86,7 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
         </div>
 
         <!-- Location Map -->
-        <div class="mt-6">
+        <div class="mt-4">
             <LocationMapPicker
               latModel="building.latitude"
               lngModel="building.longitude"
@@ -99,7 +99,7 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
             />
         </div>
 
-        <div class="flex flex-wrap gap-6 mt-6">
+        <div class="flex flex-wrap gap-4 sm:gap-6 mt-6">
             <div>
                 <BaseInput
                   name="yearBuilt"
@@ -156,7 +156,7 @@ const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) =
                 <div class="label-text-alt text-base-content/60">
                     <div class="text-sm">
                         <div class="font-medium mb-1">Administrative Summary (Internal Use)</div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs leading-snug">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs leading-snug">
                             <div>
                                 <span class="font-medium">Purpose:</span>
 {' '}

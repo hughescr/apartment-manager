@@ -271,12 +271,12 @@ amenities
         <template x-for="(amenities, category) in filteredCommonAmenities" :key="category">
             <div class="card bg-base-200">
                 <div class="card-body">
-                    <div class="flex justify-between items-center mb-3">
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
                         <h3 class="card-title text-base" x-text="category === 'unit' ? 'Unit Features' : category === 'property' ? 'Property' : 'Community'"></h3>
-                        <div class="btn-group btn-group-sm">
+                        <div class="flex gap-1">
                             <button
                               type="button"
-                              class="btn btn-outline btn-sm"
+                              class="btn btn-outline btn-xs"
                               x-on:click="selectAll(category)"
                               disabled={disabled}
                             >
@@ -284,7 +284,7 @@ amenities
                             </button>
                             <button
                               type="button"
-                              class="btn btn-outline btn-sm"
+                              class="btn btn-outline btn-xs"
                               x-on:click="clearCategory(category)"
                               disabled={disabled}
                             >
