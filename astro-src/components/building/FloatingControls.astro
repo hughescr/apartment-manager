@@ -137,8 +137,6 @@ function _initFloatingControls(this: BuildingContext) {
         // Use captured Alpine context
         if(alpineContext.showSave) {
             e.preventDefault();
-            // Set returnValue for cross-browser compatibility
-            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
             // Modern browsers ignore custom messages but still show warning
             return 'You have unsaved changes. Are you sure you want to leave?';
         }

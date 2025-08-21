@@ -1,5 +1,6 @@
 ---
 import type { BuildingData } from '../../../types';
+import { BaseTextarea } from '../../forms';
 
 export interface Props {
     building: BuildingData
@@ -10,7 +11,7 @@ const { building: _building, errors: _errors = {} } = Astro.props;
 ---
 
 <!-- Property Details Section -->
-<div class="card bg-base-100 shadow-lg">
+<div class="card bg-base-200 shadow-lg">
     <div class="card-body">
         <div class="flex justify-between items-center mb-4">
             <h3 class="card-title text-xl">Property Details & Marketing</h3>
@@ -20,19 +21,8 @@ const { building: _building, errors: _errors = {} } = Astro.props;
             Marketing descriptions and highlights that will be shown to prospective tenants on listing sites.
         </div>
 
-        <!-- Marketing Description and Property Highlights within same x-data scope -->
+        <!-- Property Highlights x-data scope -->
         <div x-data="{
-            get charCount() {
-                return (building.propertyDescription || '').length;
-            },
-            get isOverLimit() {
-                return this.charCount > 2000;
-            },
-            get charCountColor() {
-                if (this.charCount > 2000) return 'text-error';
-                if (this.charCount > 1800) return 'text-warning';
-                return 'text-base-content/70';
-            },
             addHighlight() {
                 if (!building.propertyHighlights) building.propertyHighlights = [];
                 building.propertyHighlights.push({ id: Date.now() + Math.random(), highlight: '' });
@@ -44,76 +34,58 @@ const { building: _building, errors: _errors = {} } = Astro.props;
         >
             <!-- Marketing Description -->
             <div class="mb-6">
-                <!-- Label with Public Indicator -->
-                <label class="label">
-                    <span class="label-text flex items-center gap-2">
-                        Marketing Description
-                        <span class="text-error">*</span>
-                        <div class="badge badge-info badge-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Public
-                        </div>
-                    </span>
-                    <span class="label-text-alt" :class="charCountColor" x-text="`${charCount}/2000`"></span>
-                </label>
-
-                <!-- Textarea -->
-                <textarea
+                <BaseTextarea
                   name="propertyDescription"
+                  label="Marketing Description"
                   placeholder="Discover luxury living at its finest! This stunning property offers spacious floor plans with premium finishes, state-of-the-art amenities, and an unbeatable location just minutes from downtown. Residents enjoy resort-style living with a sparkling pool, fitness center, and concierge services. Each home features gourmet kitchens, walk-in closets, and private balconies with breathtaking city views."
-                  class="textarea textarea-bordered w-full resize-vertical"
-                  class="{ 'textarea-error': isOverLimit }"
-                  x-model="building.propertyDescription"
-                  rows="6"
-                  maxlength="2000"
-                  required
-                >
-                </textarea>
+                  xModel="building.propertyDescription"
+                  rows={24}
+                  maxlength={2000}
+                  required={true}
+                  showCharacterCount={true}
+                  characterCountInside={true}
+                  resize="vertical"
+                />
 
-                <!-- Enhanced Help Text -->
-                <label class="label">
-                    <span class="label-text-alt text-base-content/70">
-                        <div class="space-y-1">
-                            <div class="font-medium">📋 Public marketing content for rental listings</div>
-                            <div class="text-xs space-y-0.5">
-                                <div>
-•
-<strong>Appears on:</strong>
+                <!-- Custom Help Text -->
+                <div class="mt-2 text-sm text-base-content/70 space-y-2">
+                    <div>
+                        <strong class="text-base-content/80">Where it appears:</strong>
 {' '}
-Apartments.com, Zillow, Rent.com, and other listing sites
-                                </div>
-                                <div>
-•
-<strong>MITS feeds:</strong>
+Apartments.com, Zillow, Rent.com, and other rental listing sites as the main property description
+                    </div>
+                    <div>
+                        <strong class="text-base-content/80">MITS Integration:</strong>
 {' '}
-Exported as LongDescription field
-                                </div>
-                                <div>
-•
-<strong>Format:</strong>
+Exported as the 'LongDescription' field in MITS data feeds that syndicate your listings across multiple platforms
+                    </div>
+                    <div>
+                        <strong class="text-base-content/80">Content Guidelines:</strong>
 {' '}
-Plain text only (no HTML/Markdown)
-                                </div>
-                                <div>
-•
-<strong>Content tips:</strong>
+Focus on lifestyle benefits, unique amenities, and neighborhood highlights that attract prospective tenants. Use plain text only (no HTML/Markdown formatting)
+                    </div>
+                    <div>
+                        <strong class="text-base-content/80">Best Practices:</strong>
 {' '}
-Highlight amenities, lifestyle benefits, neighborhood features
-                                </div>
-                            </div>
-                        </div>
-                    </span>
-                    <span class="label-text-alt" :class="isOverLimit ? 'text-error' : 'text-base-content/50'" x-show="isOverLimit">
-                        Exceeds 2000 character limit
-                    </span>
-                </label>
+Start with your strongest selling points, mention nearby attractions, transportation, and what makes living here special
+                    </div>
+                </div>
             </div>
 
             <!-- Property Highlights -->
             <div class="mb-6">
-                <h4 class="font-semibold mb-4">Property Highlights</h4>
+                <div class="flex items-center gap-3 mb-4">
+                    <h4 class="font-semibold">Property Highlights</h4>
+                    <div class="badge badge-info badge-outline badge-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Public
+                    </div>
+                </div>
+                <div class="text-sm text-base-content/70 mb-4">
+                    Key selling points displayed as bullet points on listing sites. Most platforms show 5-10 highlights prominently.
+                </div>
                 <template x-for="(item, index) in building.propertyHighlights || []" :key="item.id || ('highlight-' + index)">
                     <div class="flex gap-2 items-center mb-2">
                         <input
