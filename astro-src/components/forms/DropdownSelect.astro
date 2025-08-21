@@ -106,7 +106,7 @@ const buttonClasses = filter([
             }
         }`}
     >
-        <details x-ref="dropdownDetails">
+        <details x-ref="dropdownDetails" class="group">
             <summary
               tabindex="0"
               class={buttonClasses}
@@ -121,7 +121,7 @@ const buttonClasses = filter([
                     {placeholder}
                 </span>
                 <svg
-                  class="w-4 h-4 transition-transform"
+                  class="w-4 h-4 transition-transform group-open:rotate-180"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -137,7 +137,7 @@ const buttonClasses = filter([
 
             <ul
               tabindex="0"
-              class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1 border border-base-300 max-h-60 overflow-auto"
+              class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1 border border-base-300 max-h-60 overflow-auto left-0 right-0 top-full"
               role="listbox"
             >
                 {map(normalizedOptions, option => (
@@ -146,7 +146,7 @@ const buttonClasses = filter([
                           @click={`selectOption('${option.value}')`}
                           class:list={[
                                 'justify-between',
-                                option.disabled ? 'disabled' : ''
+                                option.disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                             ]}
                           class={`selectedValue === '${option.value}' ? 'active' : ''`}
                           role="option"
@@ -190,36 +190,4 @@ const buttonClasses = filter([
     )}
 </div>
 
-<style>
 
-    /* Ensure dropdown doesn't get cut off */
-    .dropdown-content {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-    }
-
-    /* Style disabled options */
-    .menu li a.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-
-    /* Ensure proper focus styles */
-    .dropdown summary:focus {
-        outline: 2px solid transparent;
-        outline-offset: 2px;
-    }
-
-    .dropdown summary:focus-visible {
-        box-shadow: 0 0 0 2px var(--fallback-b1, oklch(var(--b1))), 0 0 0 4px var(--fallback-p, oklch(var(--p)));
-    }
-
-    /* Rotate chevron when open */
-    details[open] summary svg {
-        transform: rotate(180deg);
-    }
-
-</style>

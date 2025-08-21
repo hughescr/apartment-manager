@@ -153,40 +153,4 @@ const containerClasses = _.compact([
     )}
 </div>
 
-<style>
 
-    /* Floating label styles to match building component pattern */
-    .floating-label {
-        position: relative;
-        display: block;
-    }
-
-    .floating-label span:first-of-type {
-        position: absolute;
-        top: 0.5rem;
-        left: 0.75rem;
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-        color: var(--fallback-bc, oklch(var(--bc) / 0.6));
-        pointer-events: none;
-        transition: all 0.2s ease;
-        background-color: var(--fallback-b1, oklch(var(--b1)));
-        padding: 0 0.25rem;
-    }
-
-    .floating-label input:focus ~ span:first-of-type,
-    .floating-label input:not(:placeholder-shown) ~ span:first-of-type {
-        top: -0.5rem;
-        font-size: 0.75rem;
-        color: var(--fallback-bc, oklch(var(--bc) / 0.8));
-    }
-
-    .floating-label input:focus ~ span:first-of-type {
-        color: var(--fallback-p, oklch(var(--p)));
-    }
-
-    .floating-label input.input-error:focus ~ span:first-of-type {
-        color: var(--fallback-er, oklch(var(--er)));
-    }
-
-</style>
