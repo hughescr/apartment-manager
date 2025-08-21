@@ -94,6 +94,11 @@ const buttonClasses = filter([
             selectOption(value) {
                 this.selectedValue = value;
                 ${xModel} = value;
+                // Dispatch a custom event to ensure reactivity
+                this.$dispatch('field-changed', { 
+                    field: '${xModel}', 
+                    value: value 
+                });
                 // Close dropdown after selection
                 this.$refs.dropdownDetails.removeAttribute('open');
             }

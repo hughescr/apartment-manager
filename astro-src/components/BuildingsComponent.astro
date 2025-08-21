@@ -39,6 +39,7 @@ try {
   @show-toast="showAndHideToast($event.detail.message, $event.detail.type)"
   @toast:show="showAndHideToast($event.detail.message, $event.detail.type)"
   @building-data-loaded="handleBuildingDataLoaded($event)"
+  @building:updated="handleBuildingUpdated($event)"
   data-buildings={JSON.stringify(buildings)}
   data-api-url={_apiURL}
 >
@@ -89,6 +90,7 @@ interface Building {
     street?: string
     city?: string
     state?: string
+    propertyType?: string
     [key: string]: unknown
 }
 
@@ -100,6 +102,7 @@ type BuildingsComponentData = AlpineComponent<{
     init(): void
     handleTabChange(event: CustomEvent<{ tabIndex: number, buildingID?: string }>): void
     handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, building: Building, units: unknown[], unitTypes: unknown[] }>): void
+    handleBuildingUpdated(event: CustomEvent<{ building: Building }>): void
     showAndHideToast(message: string, type: string): void
 }>;
 
@@ -199,6 +202,18 @@ function buildingsComponentData(): BuildingsComponentData {
             const index = _.findIndex(this.buildings, { buildingID: buildingID });
             if(index !== -1 && building) {
                 this.buildings[index] = building;
+            }
+        },
+
+        handleBuildingUpdated(event: CustomEvent<{ building: Building }>) {
+            const updatedBuilding = event.detail.building;
+            if(updatedBuilding) {
+                // Update the building in our local state
+                const index = _.findIndex(this.buildings, { buildingID: updatedBuilding.buildingID });
+                if(index !== -1) {
+                    // Update the building data to trigger reactivity
+                    this.buildings[index] = { ...this.buildings[index], ...updatedBuilding };
+                }
             }
         },
 
