@@ -27,30 +27,60 @@ export interface Props {
 
 const { building, apiURL } = Astro.props;
 
-// Note: For lazy loading, we'll initially pass empty arrays and load data client-side
-const emptyUnits: UnitData[] = [];
-const emptyUnitTypes: UnitTypeData[] = [];
+// Server-side fetch for building details, units and unit types
+const sanitizedURL = apiURL.replace(/\/$/, '');
+let fetchedBuilding: BuildingData | null = null;
+let units: UnitData[] = [];
+let unitTypes: UnitTypeData[] = [];
+let initialDataLoaded = false;
+
+try {
+    const [buildingRes, unitsRes, unitTypesRes] = await Promise.all([
+        fetch(`${sanitizedURL}/buildings/${building.buildingID}`),
+        fetch(`${sanitizedURL}/buildings/${building.buildingID}/units`),
+        fetch(`${sanitizedURL}/buildings/${building.buildingID}/unit-types`)
+    ]);
+
+    if(buildingRes.ok && unitsRes.ok && unitTypesRes.ok) {
+        [fetchedBuilding, units, unitTypes] = await Promise.all([
+            buildingRes.json(),
+            unitsRes.json(),
+            unitTypesRes.json()
+        ]);
+        initialDataLoaded = true;
+    }
+} catch {
+    // Fallback to client-side loading
+}
+
+const buildingData = fetchedBuilding || building;
 ---
 
 <div
   class="building-manager"
   x-data="buildingManagerData()"
   x-init="init()"
+  data-building-id={building.buildingID}
+  data-api-url={apiURL}
+  data-initial-building={JSON.stringify(buildingData)}
+  data-initial-units={JSON.stringify(units)}
+  data-initial-unit-types={JSON.stringify(unitTypes)}
+  data-initial-loaded={initialDataLoaded}
   {...Astro.props}
 >
 
-    <!-- Loading state -->
-    <div x-show="loading" class="flex justify-center items-center py-8">
-        <div class="loading loading-spinner loading-lg"></div>
-        <span class="ml-2">Loading building data...</span>
-    </div>
+    {!initialDataLoaded && (
+        <div x-show="loading" class="flex justify-center items-center py-8">
+            <div class="loading loading-spinner loading-lg"></div>
+            <span class="ml-2">Loading building data...</span>
+        </div>
+    )}
 
-    <!-- Building management interface -->
-    <div x-show="!loading && dataLoaded" x-transition.opacity.duration.300ms>
+    <div x-show="!loading && dataLoaded" x-transition.opacity.duration.300ms x-cloak>
         <BuildingProvider
-          building={building}
-          units={emptyUnits}
-          unitTypes={emptyUnitTypes}
+          building={buildingData}
+          units={units}
+          unitTypes={unitTypes}
           apiURL={apiURL}
           x-bind:data-building-data="JSON.stringify(building)"
           x-bind:data-initial-units="JSON.stringify(units)"
@@ -66,18 +96,18 @@ const emptyUnitTypes: UnitTypeData[] = [];
             <TabPanels>
                 <BuildingInfoTab
                   slot="building-info"
-                  building={building}
+                  building={buildingData}
                   apiUrl={apiURL}
                 />
                 <FloorplansUnitsTab />
                 <PricingPoliciesTab
                   slot="pricing-policies"
-                  building={building}
+                  building={buildingData}
                   errors={{}}
                 />
                 <MarketingTab
                   slot="marketing"
-                  building={building}
+                  building={buildingData}
                   apiUrl={apiURL}
                 />
             </TabPanels>
@@ -85,20 +115,20 @@ const emptyUnitTypes: UnitTypeData[] = [];
             <!-- Dialogs -->
             <AddUnitDialog
               building={{
-                    buildingID: building.buildingID,
-                    street: building.street || '',
-                    city: building.city || '',
-                    state: building.state || ''
+                    buildingID: buildingData.buildingID,
+                    street: buildingData.street || '',
+                    city: buildingData.city || '',
+                    state: buildingData.state || ''
                 }}
-              unitTypes={emptyUnitTypes}
+              unitTypes={unitTypes}
               apiUrl={apiURL}
             />
             <AddUnitTypeDialog
               building={{
-                    buildingID: building.buildingID,
-                    street: building.street || '',
-                    city: building.city || '',
-                    state: building.state || ''
+                    buildingID: buildingData.buildingID,
+                    street: buildingData.street || '',
+                    city: buildingData.city || '',
+                    state: buildingData.state || ''
                 }}
               apiUrl={apiURL}
             />
@@ -156,6 +186,33 @@ function buildingManagerData(): BuildingManagerData {
         init() {
             this.buildingID = this.$root.dataset.buildingId || '';
             this.apiURL = this.$root.dataset.apiUrl || '';
+
+            const initialBuilding = this.$root.dataset.initialBuilding;
+            const initialUnits = this.$root.dataset.initialUnits;
+            const initialUnitTypes = this.$root.dataset.initialUnitTypes;
+            const initialLoaded = this.$root.dataset.initialLoaded === 'true';
+
+            if(initialBuilding) {
+                try { this.building = JSON.parse(initialBuilding); } catch{}
+            }
+            if(initialUnits) {
+                try { this.units = JSON.parse(initialUnits); } catch{}
+            }
+            if(initialUnitTypes) {
+                try { this.unitTypes = JSON.parse(initialUnitTypes); } catch{}
+            }
+
+            this.dataLoaded = initialLoaded;
+            this.loading = !initialLoaded;
+
+            if(this.dataLoaded && this.building) {
+                this.$dispatch('building-data-loaded', {
+                    buildingID: this.buildingID,
+                    building: this.building,
+                    units: this.units,
+                    unitTypes: this.unitTypes
+                });
+            }
 
             // Listen for Alpine events to trigger loading
             this.$root.addEventListener('trigger-load', () => {
