@@ -120,7 +120,9 @@ export const mockAlpineContext = {
         callback();
         return Promise.resolve();
     }),
-    $dispatch: jest.fn()
+    $dispatch: jest.fn(),
+    $store: {},
+    $root: { dataset: {} } as HTMLElement
 } as AlpineMagicProperties;
 
 // Add watchers storage for testing
@@ -145,6 +147,8 @@ export const createMockAlpineContext = (overrides: Partial<AlpineMagicProperties
         return Promise.resolve();
     }),
     $dispatch: jest.fn(),
+    $store: {},
+    $root: { dataset: {} } as HTMLElement,
     ...overrides
 });
 

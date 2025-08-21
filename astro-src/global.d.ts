@@ -21,6 +21,15 @@ declare global {
         toastController?: {
             dismissToast: () => void
         }
+
+        /**
+         * Alpine.js framework instance
+         */
+        Alpine: {
+            store: (name: string, value?: unknown) => unknown
+            data: (name: string, callback: () => unknown) => void
+            start: () => void
+        }
     }
 }
 

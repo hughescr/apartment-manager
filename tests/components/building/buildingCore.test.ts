@@ -17,10 +17,13 @@ describe('BuildingCore', () => {
             apiURL: '',
             saving: false,
             showSave: false,
+            lastSaveSuccess: false,
             errors: {},
             $watch: noop,
             $nextTick: (callback: () => void) => callback(),
             $dispatch: noop,
+            $store: {},
+            $root: { dataset: {} } as HTMLElement,
             $el: (() => {
                 // Create a mock element that works in test environment
                 const el = { dataset: {} } as HTMLElement;

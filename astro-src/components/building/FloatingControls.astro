@@ -8,6 +8,7 @@
   class="floating-controls-container"
   x-show="showSave"
   x-cloak
+  x-init="_initFloatingControls()"
   x-transition:enter="transition ease-out duration-300"
   x-transition:enter-start="opacity-0 transform translate-y-4"
   x-transition:enter-end="opacity-100 transform translate-y-0"
@@ -85,72 +86,70 @@
   </div>
 </div>
 
-<!-- Browser Tab Title & Global State Management -->
-<div
-  x-data="floatingControlsManager()"
-  x-init="init()"
-  style="display: none;"
->
-</div>
-
-<!-- Keyboard Shortcuts Handler -->
 <script>
-  document.addEventListener('alpine:init', () => {
-      Alpine.data('floatingControlsManager', () => ({
-          originalTitle: '',
+// Define interface for the BuildingProvider Alpine context
+interface BuildingContext {
+    originalTitle?: string
+    showSave: boolean
+    saving: boolean
+    lastSaveSuccess: boolean
+    saveBuilding(): void
+    undoChanges(): void
+    $watch<T>(property: string, callback: (value: T) => void): void
+}
 
-          init() {
-              // Store original page title
-              this.originalTitle = document.title;
+function _initFloatingControls(this: BuildingContext) {
+    // Store original page title on the parent context
+    this.originalTitle = this.originalTitle || document.title;
 
-              // Watch for unsaved changes to update page title
-              this.$watch('$store.building.showSave', (hasUnsaved) => {
-                  this.updatePageTitle(hasUnsaved);
-              });
+    // Watch for unsaved changes to update page title
+    this.$watch('showSave', (hasUnsaved: boolean) => {
+        _updatePageTitle(hasUnsaved, this.originalTitle || document.title);
+    });
 
-              // Global keyboard shortcuts
-              document.addEventListener('keydown', (e) => {
-                  // Save shortcut (Ctrl+S or Cmd+S)
-                  if((e.ctrlKey || e.metaKey) && e.key === 's') {
-                      e.preventDefault();
-                      const buildingManager = this.$store.building;
-                      if(buildingManager && buildingManager.showSave && !buildingManager.saving) {
-                          buildingManager.saveBuilding();
-                      }
-                  }
+    // Global keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Save shortcut (Ctrl+S or Cmd+S)
+        if((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            // Access current Alpine context (BuildingProvider)
+            if(this.showSave && !this.saving) {
+                this.saveBuilding();
+            }
+        }
 
-                  // Undo shortcut (Ctrl+Z or Cmd+Z)
-                  if((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-                      e.preventDefault();
-                      const buildingManager = this.$store.building;
-                      if(buildingManager && buildingManager.showSave && !buildingManager.saving) {
-                          buildingManager.undoChanges();
-                      }
-                  }
-              });
+        // Undo shortcut (Ctrl+Z or Cmd+Z)
+        if((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault();
+            // Access current Alpine context (BuildingProvider)
+            if(this.showSave && !this.saving) {
+                this.undoChanges();
+            }
+        }
+    });
 
-              // Listen for beforeunload to warn about unsaved changes
-              window.addEventListener('beforeunload', (e) => {
-                  const buildingManager = this.$store.building;
-                  if(buildingManager && buildingManager.showSave) {
-                      e.preventDefault();
-                      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-                      return e.returnValue;
-                  }
-              });
-          },
+    // Listen for beforeunload to warn about unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+        // Access current Alpine context (BuildingProvider)
+        if(this.showSave) {
+            e.preventDefault();
+            // Modern browsers ignore custom messages but still show warning
+            return 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+}
+// Reference function to satisfy TypeScript "never read" check - function is used in Alpine template
+void _initFloatingControls;
 
-          updatePageTitle(hasUnsaved) {
-              if(hasUnsaved) {
-                  if(!document.title.startsWith('● ')) {
-                      document.title = '● ' + this.originalTitle;
-                  }
-              } else {
-                  document.title = this.originalTitle;
-              }
-          }
-      }));
-  });
+function _updatePageTitle(hasUnsaved: boolean, originalTitle: string) {
+    if(hasUnsaved) {
+        if(!document.title.startsWith('● ')) {
+            document.title = '● ' + originalTitle;
+        }
+    } else {
+        document.title = originalTitle;
+    }
+}
 </script>
 
 <style>

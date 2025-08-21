@@ -36,6 +36,7 @@ describe('BuildingCore', () => {
             apiURL: '/api/buildings/test',
             saving: false,
             showSave: false,
+            lastSaveSuccess: false,
             errors: {},
             ...createMockAlpineContext()
         };

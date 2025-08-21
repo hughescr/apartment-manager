@@ -125,7 +125,7 @@ function buildingsListData(): BuildingsListData {
             // Set up document-level event listener for building:updated
             // This is needed because the building form is not a child of BuildingsList
             document.addEventListener('building:updated', (event) => {
-                this.handleBuildingUpdated(event);
+                this.handleBuildingUpdated(event as CustomEvent<{ building: Building }>);
             });
 
             // Restore tab from session or URL hash
