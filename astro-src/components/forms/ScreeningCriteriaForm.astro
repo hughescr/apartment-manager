@@ -128,6 +128,32 @@ const xData = `{
                     rentalHistory: false
                 });
                 break;
+            case 'portland':
+                Object.assign(model, {
+                    incomeRatio: 2.5,
+                    minCreditScore: 500,
+                    maxOccupantsPerBedroom: 2,
+                    backgroundCheckRequired: true,
+                    evictionHistory: true,
+                    criminalHistory: true,
+                    references: 2,
+                    employmentVerification: true,
+                    rentalHistory: true
+                });
+                break;
+            case 'sanFrancisco':
+                Object.assign(model, {
+                    incomeRatio: 3,
+                    minCreditScore: 700,
+                    maxOccupantsPerBedroom: 2,
+                    backgroundCheckRequired: true,
+                    evictionHistory: true,
+                    criminalHistory: true,
+                    references: 2,
+                    employmentVerification: true,
+                    rentalHistory: true
+                });
+                break;
             case 'minimal':
                 Object.assign(model, {
                     incomeRatio: undefined,
@@ -233,6 +259,22 @@ const xData = `{
                   disabled={disabled}
                 >
                     Minimal
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline"
+                  x-on:click="applyPreset('portland')"
+                  disabled={disabled}
+                >
+                    Portland
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline"
+                  x-on:click="applyPreset('sanFrancisco')"
+                  disabled={disabled}
+                >
+                    San Francisco
                 </button>
             </div>
         </div>
