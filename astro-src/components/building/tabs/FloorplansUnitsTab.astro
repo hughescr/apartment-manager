@@ -15,7 +15,15 @@ export type Props = Record<string, never>;
         <div class="card-body p-4 sm:p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="card-title text-xl">Floorplans (Unit Types)</h3>
-                <div class="badge badge-primary badge-lg" x-text="(unitTypes?.length || 0) + ' types'"></div>
+                <div class="flex items-center gap-2">
+                    <div class="badge badge-primary badge-lg" x-text="(unitTypes?.length || 0) + ' types'"></div>
+                    <button @click="openAddUnitTypeDialog()" class="btn btn-primary btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Floorplan
+                    </button>
+                </div>
             </div>
             <div class="text-base-content/70 mb-4">
                 Define unit types that serve as templates for individual units. Units can inherit settings from their floorplan and override them as needed.

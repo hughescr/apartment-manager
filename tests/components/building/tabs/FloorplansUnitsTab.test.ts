@@ -10,6 +10,9 @@ import {
     jest,
     resetAllMocks
 } from '../test-setup';
+import { UnitTypeManagement } from '../../../../astro-src/lib/building/state/unitTypeManagement';
+import type { UnitTypeManagementState } from '../../../../astro-src/lib/building/state/unitTypeManagement';
+import type { UnitTypeData } from '../../../../astro-src/types';
 
 describe('FloorplansUnitsTab Component Logic', () => {
     let mockBuildingData: ReturnType<typeof createTestBuildingData>;
@@ -211,6 +214,21 @@ describe('FloorplansUnitsTab Component Logic', () => {
                     expect(typeof unit.baths).toBe('number');
                 }
             });
+        });
+    });
+
+    describe('Unit type dialog controls', () => {
+        it('should toggle add unit type dialog state', () => {
+            const state: UnitTypeManagementState = {
+                unitTypes: [],
+                showAddUnitTypeDialog: false,
+                newUnitType: {} as Partial<UnitTypeData>
+            };
+            const management = new UnitTypeManagement(state);
+            management.openAddUnitTypeDialog();
+            expect(state.showAddUnitTypeDialog).toBe(true);
+            management.closeAddUnitTypeDialog();
+            expect(state.showAddUnitTypeDialog).toBe(false);
         });
     });
 
