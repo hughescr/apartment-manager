@@ -1,7 +1,9 @@
 ---
 import _ from 'lodash';
+import crypto from 'node:crypto';
 
 export interface Props {
+    id?: string
     name: string
     label?: string
     placeholder?: string
@@ -27,6 +29,7 @@ export interface Props {
 }
 
 const {
+    id,
     name,
     label,
     placeholder,
@@ -50,6 +53,8 @@ const {
     floatingLabel = false,
     inputSize = 'full',
 } = Astro.props;
+
+const inputId = id || crypto.randomUUID();
 
 // Determine if we should show the label
 const shouldShowLabel = showLabel && label;
@@ -84,7 +89,7 @@ const containerClasses = _.compact([
 
 <div class={containerClasses}>
     {shouldShowLabel && !floatingLabel && (
-        <label class="label">
+        <label class="label" for={inputId}>
             <span class="label-text">
                 {label}
                 {required && <span class="text-error font-bold text-sm">*</span>}
@@ -94,7 +99,7 @@ const containerClasses = _.compact([
 
     {floatingLabel
         ? (
-            <label class="floating-label">
+            <label class="floating-label" for={inputId}>
                 {shouldShowLabel && (
                     <span>
                         {label}
@@ -102,6 +107,7 @@ const containerClasses = _.compact([
                     </span>
                 )}
                 <input
+                  id={inputId}
                   type={type}
                   name={name}
                   placeholder={placeholder || label}
@@ -122,6 +128,7 @@ const containerClasses = _.compact([
         )
         : (
             <input
+              id={inputId}
               type={type}
               name={name}
               placeholder={placeholder}
