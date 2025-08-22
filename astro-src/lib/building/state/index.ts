@@ -54,6 +54,7 @@ function buildingStateObject(): any {
         lastSaveSuccess: false,
         geocoding: false,
         errors: {} as Record<string, string>,
+        expandedRentSpecials: {} as Record<string, boolean>,
         selectedPetTypes: [] as string[],
 
         // Units tab state

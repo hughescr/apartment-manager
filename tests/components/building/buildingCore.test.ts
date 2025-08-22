@@ -19,6 +19,7 @@ describe('BuildingCore', () => {
             showSave: false,
             lastSaveSuccess: false,
             errors: {},
+            expandedRentSpecials: {},
             $watch: noop,
             $nextTick: (callback: () => void) => callback(),
             $dispatch: noop,

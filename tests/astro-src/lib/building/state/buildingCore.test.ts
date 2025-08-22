@@ -38,6 +38,7 @@ describe('BuildingCore', () => {
             showSave: false,
             lastSaveSuccess: false,
             errors: {},
+            expandedRentSpecials: {},
             ...createMockAlpineContext()
         };
 

@@ -13,6 +13,7 @@ export interface BuildingCoreState {
     showSave: boolean
     lastSaveSuccess: boolean
     errors: Record<string, string>
+    expandedRentSpecials: Record<string, boolean>
 }
 
 /**
@@ -45,6 +46,23 @@ export class BuildingCore {
         // Only set original if building data is actually loaded
         if(this.state.building) {
             this.state.original = JSON.parse(JSON.stringify(this.state.building));
+            // Initialize expanded state for existing rent specials
+            this.initializeRentSpecialStates();
+        }
+    }
+
+    /**
+     * Initialize expanded state for existing rent specials
+     * Call this when building data is loaded to set up collapse states
+     */
+    private initializeRentSpecialStates(): void {
+        if(this.state.building?.rentSpecials) {
+            // Initialize expanded state for all existing rent specials (default to collapsed)
+            this.state.building.rentSpecials.forEach((special) => {
+                if(special.id && !(special.id in this.state.expandedRentSpecials)) {
+                    this.state.expandedRentSpecials[special.id] = false;
+                }
+            });
         }
     }
 
@@ -273,13 +291,17 @@ export class BuildingCore {
         }
 
         // Add new rent special with unique ID
-        this.state.building.rentSpecials.push({
+        const newSpecial = {
             id: Date.now() + Math.random(),
             title: '',
             description: '',
             startDate: '',
             endDate: ''
-        });
+        };
+        this.state.building.rentSpecials.push(newSpecial);
+
+        // Initialize expanded state for the new rent special (default to expanded for editing)
+        this.state.expandedRentSpecials[newSpecial.id] = true;
     }
 
     /**
@@ -288,6 +310,12 @@ export class BuildingCore {
     removeRentSpecial(index: number): void {
         if(!this.state.building?.rentSpecials) {
             return;
+        }
+
+        // Get the rent special being removed to clean up its expanded state
+        const removedSpecial = this.state.building.rentSpecials[index];
+        if(removedSpecial?.id) {
+            delete this.state.expandedRentSpecials[removedSpecial.id];
         }
 
         this.state.building.rentSpecials.splice(index, 1);
