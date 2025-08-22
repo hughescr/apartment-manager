@@ -22,7 +22,7 @@
     </div>
 
     <!-- Search and Filter (simplified) -->
-    <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+    <div class="flex flex-col sm:flex-row gap-4 sm:items-end">
         <!-- Status Filter -->
         <div class="form-control w-full sm:w-auto">
             <label class="label pb-1">
@@ -46,15 +46,15 @@
             <label class="label pb-1">
                 <span class="label-text text-sm font-medium">Search Units</span>
             </label>
-            <div class="input-group">
+            <div class="join">
                 <input
                   type="text"
                   placeholder="Search unit number..."
-                  class="input input-bordered w-full"
+                  class="input input-bordered join-item w-full sm:w-64"
                   data-testid="search-units"
                   x-model="searchQuery"
                 />
-                <button class="btn btn-square">
+                <button class="btn btn-bordered join-item">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -209,7 +209,7 @@ sq ft
         </template>
 
         <!-- No units message -->
-        <div x-show="filteredUnits.length === 0" class="card bg-base-200">
+        <div x-show="filteredUnits.length === 0" class="card bg-base-100">
             <div class="card-body text-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h2M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
