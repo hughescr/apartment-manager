@@ -25,10 +25,10 @@ const ARRAY_FIELDS = [
 function prepareUpdatesWithArrayReplacement(updates: Partial<BuildingData> & Record<string, unknown>): Record<string, unknown> {
     const preparedUpdates = { ...updates };
 
-    // Apply $set() to ALL array fields to ensure complete replacement (not partial update)
+    // Apply $set() only to EMPTY array fields for complete replacement
     for(const field of ARRAY_FIELDS) {
-        if(field in updates && isArray(updates[field])) {
-            (preparedUpdates as Record<string, unknown>)[field] = $set(updates[field]);
+        if(field in updates && isArray(updates[field]) && updates[field].length === 0) {
+            (preparedUpdates as Record<string, unknown>)[field] = $set([]);
         }
     }
 
