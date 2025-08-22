@@ -693,6 +693,15 @@ document.addEventListener('alpine:init', () => {
             </div>
             <div class="flex items-center gap-2">
                 <Saving />
+                <!-- Assign Unit Type button - only show for units without modelID -->
+                <button
+                  x-show="!unit.modelID"
+                  class="btn btn-secondary btn-sm"
+                  x-on:click="$parent.openAssignUnitTypeDialog(unit)"
+                  data-testid="assign-unit-type-btn"
+                >
+                    Assign Unit Type
+                </button>
                 <button class="btn btn-error btn-sm" x-on:click="deleteUnit()">Delete</button>
             </div>
         </div>

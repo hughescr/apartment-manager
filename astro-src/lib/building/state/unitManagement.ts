@@ -14,7 +14,21 @@ export interface UnitManagementState {
     statusFilter: string
     searchQuery: string
     showAddUnitDialog: boolean
+    showBulkCreateDialog: boolean
+    showAssignUnitTypeDialog: boolean
     newUnit: { unitID: string, modelID: string }
+    bulkCreateData: {
+        modelID: string
+        count: number
+        unitNumbers: string[]
+        vacancyClass: string
+    }
+    assignUnitTypeData: {
+        selectedUnit: ExtendedUnitData | null
+        selectedModelID: string
+        keepCustomValues: Record<string, boolean>
+        loading: boolean
+    }
     bulkOperation: {
         loading: boolean
         statusValue: string
@@ -129,6 +143,120 @@ export class UnitManagement {
     }
 
     /**
+     * Open/close bulk create units dialog
+     */
+    openBulkCreateDialog(modelID?: string): void {
+        this.state.showBulkCreateDialog = true;
+        this.state.bulkCreateData = {
+            modelID: modelID || '',
+            count: 5,
+            unitNumbers: [],
+            vacancyClass: 'Unoccupied'
+        };
+    }
+
+    closeBulkCreateDialog(): void {
+        this.state.showBulkCreateDialog = false;
+        this.state.bulkCreateData = {
+            modelID: '',
+            count: 5,
+            unitNumbers: [],
+            vacancyClass: 'Unoccupied'
+        };
+    }
+
+    /**
+     * Open assign unit type dialog
+     */
+    openAssignUnitTypeDialog(unit: ExtendedUnitData): void {
+        this.state.showAssignUnitTypeDialog = true;
+        this.state.assignUnitTypeData = {
+            selectedUnit: unit,
+            selectedModelID: '',
+            keepCustomValues: {},
+            loading: false
+        };
+    }
+
+    /**
+     * Close assign unit type dialog
+     */
+    closeAssignUnitTypeDialog(): void {
+        this.state.showAssignUnitTypeDialog = false;
+        this.state.assignUnitTypeData = {
+            selectedUnit: null,
+            selectedModelID: '',
+            keepCustomValues: {},
+            loading: false
+        };
+    }
+
+    /**
+     * Assign unit type to a one-off unit
+     */
+    async assignUnitType(assignmentData: { selectedModelID: string, keepCustomValues: Record<string, boolean> }): Promise<void> {
+        if(!this.state.assignUnitTypeData.selectedUnit || !assignmentData.selectedModelID || !this.apiService || !this.state.building) {
+            return;
+        }
+
+        const unit = this.state.assignUnitTypeData.selectedUnit;
+        this.state.assignUnitTypeData.loading = true;
+
+        try {
+            // Create updated unit data
+            const updatedUnit = {
+                ...unit,
+                modelID: assignmentData.selectedModelID,
+                lastUpdated: new Date().toISOString()
+            };
+
+            // Reset fields to null if they should inherit from the unit type
+            const inheritableFields = ['beds', 'baths', 'sqft', 'rent', 'deposit', 'minLeaseTerm', 'maxLeaseTerm', 'maxOccupants', 'perPersonRent'];
+
+            inheritableFields.forEach((field) => {
+                // If we're not keeping the custom value, clear it so it inherits
+                if(!assignmentData.keepCustomValues[field]) {
+                    // Only clear if the unit currently has a value
+                    if(unit[field as keyof ExtendedUnitData] !== null && unit[field as keyof ExtendedUnitData] !== undefined) {
+                        (updatedUnit as any)[field] = null;
+                    }
+                }
+            });
+
+            const result = await this.apiService.updateUnit(this.state.building.buildingID, updatedUnit);
+
+            if(!result.success) {
+                throw new Error(result.error || 'Failed to assign unit type');
+            }
+
+            // Update local state
+            this.unitsManager.updateUnit(unit.unitID, {
+                modelID: assignmentData.selectedModelID,
+                ...Object.fromEntries(
+                    inheritableFields
+                        .filter(field => !assignmentData.keepCustomValues[field])
+                        .map(field => [field, null])
+                ),
+                lastUpdated: new Date().toISOString()
+            });
+            this.updateFilteredUnits();
+            this.closeAssignUnitTypeDialog();
+
+            this.state.$dispatch('toast:show', {
+                message: `Unit ${unit.unitID} successfully assigned to unit type`,
+                type: 'success'
+            });
+        } catch(error) {
+            this.state.$dispatch('toast:show', {
+                message: 'Failed to assign unit type: ' + (isError(error) ? error.message : 'Unknown error'),
+                type: 'error'
+            });
+        } finally {
+            this.state.assignUnitTypeData.loading = false;
+        }
+    }
+
+    /**
      * Add new unit
      */
     async addUnit(): Promise<void> {
@@ -157,6 +285,82 @@ export class UnitManagement {
         } catch(error) {
             this.state.$dispatch('toast:show', {
                 message: 'Failed to add unit: ' + (isError(error) ? error.message : 'Unknown error'),
+                type: 'error'
+            });
+        }
+    }
+
+    /**
+     * Bulk create multiple units
+     */
+    async performBulkCreateUnits(): Promise<void> {
+        if(!this.state.bulkCreateData.unitNumbers.length || !this.state.bulkCreateData.modelID || !this.apiService || !this.state.building) {
+            return;
+        }
+
+        try {
+            const { results, errors } = await this.createUnitsFromNumbers();
+            this.finalizeBulkCreation(results, errors);
+        } catch(error) {
+            this.state.$dispatch('toast:show', {
+                message: 'Failed to create units: ' + (isError(error) ? error.message : 'Unknown error'),
+                type: 'error'
+            });
+        }
+    }
+
+    /**
+     * Create units from the unit numbers list
+     */
+    private async createUnitsFromNumbers(): Promise<{ results: ExtendedUnitData[], errors: { unitNumber: string, error: string }[] }> {
+        const results: ExtendedUnitData[] = [];
+        const errors: { unitNumber: string, error: string }[] = [];
+
+        for(const unitNumber of this.state.bulkCreateData.unitNumbers) {
+            try {
+                const result = await this.apiService!.addUnit(this.state.building!.buildingID, {
+                    unitID: unitNumber,
+                    modelID: this.state.bulkCreateData.modelID,
+                    vacancyClass: this.state.bulkCreateData.vacancyClass as VacancyClass
+                });
+
+                if(!result.success || !result.data) {
+                    throw new Error(result.error || `Failed to create unit ${unitNumber}`);
+                }
+
+                results.push(result.data);
+                this.unitsManager.addUnit(result.data);
+            } catch(error) {
+                errors.push({
+                    unitNumber,
+                    error: isError(error) ? error.message : 'Unknown error'
+                });
+            }
+        }
+
+        return { results, errors };
+    }
+
+    /**
+     * Finalize bulk creation and show appropriate messages
+     */
+    private finalizeBulkCreation(results: ExtendedUnitData[], errors: { unitNumber: string, error: string }[]): void {
+        this.updateFilteredUnits();
+        this.closeBulkCreateDialog();
+
+        if(results.length > 0) {
+            const hasErrors = errors.length > 0;
+            const isFullSuccess = results.length === this.state.bulkCreateData.unitNumbers.length;
+
+            this.state.$dispatch('toast:show', {
+                message: `Successfully created ${results.length} units${hasErrors ? ` (${errors.length} failed)` : ''}`,
+                type: isFullSuccess ? 'success' : 'warning'
+            });
+        }
+
+        if(errors.length > 0 && results.length === 0) {
+            this.state.$dispatch('toast:show', {
+                message: 'Failed to create units. Please check for duplicate unit numbers.',
                 type: 'error'
             });
         }

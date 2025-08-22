@@ -7,6 +7,20 @@
 
 <!-- Simplified Units Section with Listing Management -->
 <div class="space-y-6">
+    <!-- Units Header -->
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="card-title">Units</h3>
+        <div class="flex items-center gap-2">
+            <div class="badge badge-primary" x-text="(filteredUnits?.length || 0) + ' units'"></div>
+            <button class="btn btn-primary btn-sm" @click="$parent.openAddUnitDialog()" x-show="(filteredUnits?.length || 0) > 0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Unit
+            </button>
+        </div>
+    </div>
+
     <!-- Search and Filter (simplified) -->
     <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
         <!-- Status Filter -->
@@ -57,7 +71,36 @@
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <!-- Left: Unit info -->
                         <div class="flex flex-col">
-                            <h4 class="font-bold text-lg" x-text="'Unit ' + (unit.unitNumber || unit.unitID)"></h4>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h4 class="font-bold text-lg" x-text="'Unit ' + (unit.unitNumber || unit.unitID)"></h4>
+
+                                <!-- Type indicator badges -->
+                                <div class="flex items-center gap-1">
+                                    <!-- Typed unit badge (has modelID) -->
+                                    <div
+                                      x-show="unit.modelID"
+                                      class="badge badge-info badge-sm gap-1 tooltip tooltip-top"
+                                      data-tip="This unit follows a predefined floorplan template"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Template
+                                    </div>
+
+                                    <!-- One-off unit badge (no modelID) -->
+                                    <div
+                                      x-show="!unit.modelID"
+                                      class="badge badge-warning badge-sm gap-1 tooltip tooltip-top"
+                                      data-tip="This is a custom unit with unique specifications"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                                        </svg>
+                                        Custom
+                                    </div>
+                                </div>
+                            </div>
                             <div class="flex items-center gap-2 text-sm text-base-content/70">
                                 <span x-text="unit.beds + ' bed, ' + unit.baths + ' bath'"></span>
                                 <span x-show="unit.sqft">
@@ -67,9 +110,15 @@
 sq ft
                                 </span>
                             </div>
+                            <!-- Enhanced floorplan info for typed units -->
                             <div x-show="unit.modelID" class="text-xs text-base-content/60 mt-1">
-                                <span>Floorplan: </span>
-                                <span x-text="unitTypes.find(ut => ut.modelID === unit.modelID)?.modelName || unit.modelID"></span>
+                                <span class="font-medium">Floorplan: </span>
+                                <span class="font-semibold text-info" x-text="unitTypes.find(ut => ut.modelID === unit.modelID)?.modelName || unit.modelID"></span>
+                            </div>
+
+                            <!-- Info for one-off units -->
+                            <div x-show="!unit.modelID" class="text-xs text-warning mt-1 font-medium">
+                                Custom unit specifications
                             </div>
                         </div>
 

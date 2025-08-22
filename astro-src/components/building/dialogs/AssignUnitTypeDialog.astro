@@ -1,0 +1,353 @@
+---
+import ValidationError from '../../common/ValidationError.astro';
+import _ from 'lodash';
+
+// No props needed - uses shared state from parent BuildingProvider
+export type Props = Record<string, never>;
+
+const dialogId = 'assign-unit-type-dialog';
+---
+
+<dialog class="modal" :class="{'modal-open': showAssignUnitTypeDialog}" data-testid={dialogId}>
+    <div class="modal-box max-w-4xl">
+        <h3 class="font-bold text-lg mb-4">Assign Unit Type</h3>
+        <p class="mb-6 text-base-content/70">
+            Convert this one-off unit to use a unit type template. This will allow the unit to inherit default values
+            from the selected unit type while preserving any custom values you want to keep.
+        </p>
+
+        <form
+          submit.prevent="submitAssignUnitType()"
+          class="space-y-6"
+          x-data="{
+                assignmentData: {
+                    selectedModelID: '',
+                    keepCustomValues: {}
+                },
+                errors: {},
+                loading: false,
+                selectedUnitType: null,
+
+                init() {
+                    // Access the current unit from parent's assignUnitTypeData
+                    this.$watch('$parent.assignUnitTypeData.selectedUnit', (unit) => {
+                        if (unit) {
+                            this.initializeKeepCustomValues(unit);
+                        }
+                    });
+                },
+
+                getCurrentUnit() {
+                    return $parent.assignUnitTypeData?.selectedUnit || null;
+                },
+
+                getUnitTypes() {
+                    return $parent.unitTypes || [];
+                },
+
+                onUnitTypeChange() {
+                    if(!this.assignmentData.selectedModelID) {
+                        this.selectedUnitType = null;
+                        return;
+                    }
+
+                    this.selectedUnitType = this.getUnitTypes().find(ut =>
+                        ut.modelID === this.assignmentData.selectedModelID
+                    );
+
+                    // Initialize keepCustomValues for all fields that have custom values
+                    const currentUnit = this.getCurrentUnit();
+                    if (currentUnit) {
+                        this.initializeKeepCustomValues(currentUnit);
+                    }
+                },
+
+                initializeKeepCustomValues(unit) {
+                    this.assignmentData.keepCustomValues = {};
+                    const inheritableFields = ['beds', 'baths', 'sqft', 'rent', 'deposit', 'minLeaseTerm', 'maxLeaseTerm', 'maxOccupants', 'perPersonRent'];
+
+                    inheritableFields.forEach(field => {
+                        const unitValue = unit[field];
+                        const hasCustomValue = unitValue !== null && unitValue !== undefined && unitValue !== '';
+                        this.assignmentData.keepCustomValues[field] = hasCustomValue;
+                    });
+                },
+
+                getUnitValue(field) {
+                    const currentUnit = this.getCurrentUnit();
+                    if (!currentUnit) return 'None';
+                    const value = currentUnit[field];
+                    if(field === 'deposit') {
+                        if(_.isObject(value) && value?.amount) {
+                            return `$${value.amount}`;
+                        }
+                        if(_.isNumber(value)) {
+                            return `$${value}`;
+                        }
+                        return 'None';
+                    }
+                    if(field === 'rent' && value) {
+                        return `$${value}`;
+                    }
+                    if((field === 'minLeaseTerm' || field === 'maxLeaseTerm') && value) {
+                        return `${value} months`;
+                    }
+                    if(field === 'perPersonRent' && value) {
+                        return `$${value}`;
+                    }
+                    return value || 'None';
+                },
+
+                getInheritedValue(field) {
+                    if(!this.selectedUnitType) {
+                        return 'None';
+                    }
+
+                    const unitType = this.selectedUnitType;
+                    if(field === 'rent') {
+                        if(unitType.minRent && unitType.maxRent) {
+                            return `$${unitType.minRent} - $${unitType.maxRent}`;
+                        }
+                        if(unitType.minRent) {
+                            return `$${unitType.minRent}+`;
+                        }
+                        if(unitType.maxRent) {
+                            return `Up to $${unitType.maxRent}`;
+                        }
+                        return 'None';
+                    }
+                    if(field === 'deposit') {
+                        const deposit = unitType.deposit;
+                        if(_.isObject(deposit) && deposit?.amount) {
+                            return `$${deposit.amount}`;
+                        }
+                        if(_.isNumber(deposit)) {
+                            return `$${deposit}`;
+                        }
+                        return 'None';
+                    }
+                    if((field === 'minLeaseTerm' || field === 'maxLeaseTerm') && unitType[field]) {
+                        return `${unitType[field]} months`;
+                    }
+                    if(field === 'perPersonRent' && unitType[field]) {
+                        return `$${unitType[field]}`;
+                    }
+
+                    return unitType[field] || 'None';
+                },
+
+                getFinalValue(field) {
+                    if(this.assignmentData.keepCustomValues[field]) {
+                        return this.getUnitValue(field);
+                    }
+                    return this.getInheritedValue(field);
+                },
+
+                hasCustomValue(field) {
+                    const currentUnit = this.getCurrentUnit();
+                    if (!currentUnit) return false;
+                    const value = currentUnit[field];
+                    return value !== null && value !== undefined && value !== '';
+                },
+
+                async submitAssignUnitType() {
+                    this.loading = true;
+                    this.errors = {};
+
+                    try {
+                        if(!this.assignmentData.selectedModelID) {
+                            this.errors.modelID = 'Please select a unit type';
+                            this.loading = false;
+                            return;
+                        }
+
+                        // Call parent's assign unit type method
+                        await $parent.assignUnitType(this.assignmentData);
+
+                        // Close dialog on success
+                        $parent.showAssignUnitTypeDialog = false;
+                        this.assignmentData = {
+                            selectedModelID: '',
+                            keepCustomValues: {}
+                        };
+                        this.selectedUnitType = null;
+                    } catch (error) {
+                        console.error('Assign unit type error:', error);
+                        this.errors.general = 'Failed to assign unit type. Please try again.';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                unitTypes: []
+            }"
+        >
+            <!-- General Error Display -->
+            <div x-show="errors.general" class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-text="errors.general"></span>
+            </div>
+
+            <!-- Unit Type Selection -->
+            <div>
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">
+Select Unit Type
+<span class="text-error">*</span>
+                        </span>
+                        <span class="label-text-alt text-base-content/60">The unit will inherit default values from this unit type</span>
+                    </label>
+                    <select
+                      class="select select-bordered w-full"
+                      x-model="assignmentData.selectedModelID"
+                      @change="onUnitTypeChange()"
+                      data-testid="select-unit-type"
+                    >
+                        <option value="">Choose a unit type to assign...</option>
+                        <template x-for="unitType in getUnitTypes()" :key="unitType.modelID">
+                            <option :value="unitType.modelID" x-text="`${unitType.modelName} (${unitType.beds} bed/${unitType.baths} bath${unitType.sqft ? `, ${unitType.sqft} sq ft` : ''})`"></option>
+                        </template>
+                    </select>
+                </div>
+                <ValidationError fieldName="modelID" errors={{}} />
+            </div>
+
+            <!-- Preview Section (only show when unit type is selected) -->
+            <div x-show="selectedUnitType" x-transition class="bg-base-200 p-6 rounded-lg">
+                <h4 class="font-semibold text-lg mb-4">Preview Changes</h4>
+                <p class="text-sm text-base-content/70 mb-4">
+                    Review what will change when you assign this unit type. You can choose to keep your current custom values
+                    or use the template defaults for each field.
+                </p>
+
+                <!-- Property Comparison Table -->
+                <div class="overflow-x-auto">
+                    <table class="table table-compact w-full">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Current Value</th>
+                                <th>Template Value</th>
+                                <th>Final Value</th>
+                                <th>Keep Custom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="field in ['beds', 'baths', 'sqft', 'rent', 'deposit', 'minLeaseTerm', 'maxLeaseTerm', 'maxOccupants', 'perPersonRent']">
+                                <tr x-show="hasCustomValue(field) || getInheritedValue(field) !== 'None'">
+                                    <td class="font-medium" x-text="field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')"></td>
+                                    <td>
+                                        <span
+                                          class="badge"
+                                          :class="hasCustomValue(field) ? 'badge-primary' : 'badge-ghost'"
+                                            x-text="getUnitValue(field)"
+                                        >
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span
+                                          class="badge badge-secondary"
+                                          x-text="getInheritedValue(field)"
+                                        >
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span
+                                          class="badge badge-accent font-semibold"
+                                          x-text="getFinalValue(field)"
+                                        >
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <input
+                                          type="checkbox"
+                                          class="checkbox checkbox-sm"
+                                          x-model="assignmentData.keepCustomValues[field]"
+                                          :disabled="!hasCustomValue(field)"
+                                            x-show="hasCustomValue(field)"
+                                        />
+                                        <span x-show="!hasCustomValue(field)" class="text-sm text-base-content/50">N/A</span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Amenities Comparison -->
+                <div x-show="selectedUnitType && (getCurrentUnit()?.unitAmenities?.length > 0 || selectedUnitType.modelAmenities?.length > 0)" class="mt-6">
+                    <h5 class="font-medium mb-2">Amenities</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <h6 class="font-medium text-primary mb-2">Current Unit Amenities</h6>
+                            <div x-show="!getCurrentUnit()?.unitAmenities || getCurrentUnit()?.unitAmenities.length === 0" class="text-base-content/50">
+                                None (using inherited amenities)
+                            </div>
+                            <div class="flex flex-wrap gap-1" x-show="getCurrentUnit()?.unitAmenities?.length > 0">
+                                <template x-for="amenity in (getCurrentUnit()?.unitAmenities || [])">
+                                    <span class="badge badge-primary badge-sm" x-text="amenity.name"></span>
+                                </template>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="font-medium text-secondary mb-2">Template Amenities</h6>
+                            <div x-show="!selectedUnitType.modelAmenities || selectedUnitType.modelAmenities.length === 0" class="text-base-content/50">
+                                None defined
+                            </div>
+                            <div class="flex flex-wrap gap-1" x-show="selectedUnitType.modelAmenities?.length > 0">
+                                <template x-for="amenity in (selectedUnitType.modelAmenities || [])">
+                                    <span class="badge badge-secondary badge-sm" x-text="amenity.name"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-info/10 rounded-lg">
+                        <p class="text-sm text-info-content">
+                            <strong>Note:</strong>
+{' '}
+Unit-specific amenities will be preserved. The unit will inherit template amenities
+                            only if no unit-specific amenities are defined.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="mt-6 p-4 bg-success/10 rounded-lg">
+                    <h5 class="font-medium text-success-content mb-2">What will happen:</h5>
+                    <ul class="text-sm text-success-content space-y-1">
+                        <li>• The unit will be assigned to the selected unit type template</li>
+                        <li>• Fields with "Keep Custom" checked will retain their current values</li>
+                        <li>• Other fields will inherit values from the template</li>
+                        <li>• Unit-specific amenities will be preserved if they exist</li>
+                        <li>• You can always edit individual values after assignment</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Dialog Actions -->
+            <div class="modal-action">
+                <button
+                  type="button"
+                  class="btn"
+                  @click="showAssignUnitTypeDialog = false"
+                  :disabled="loading"
+                    data-testid="cancel-assign-unit-type"
+                >
+                    Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="loading || !assignmentData.selectedModelID"
+                    data-testid="confirm-assign-unit-type"
+                >
+                    <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+                    <span x-show="!loading">Assign Unit Type</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>

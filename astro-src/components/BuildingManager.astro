@@ -49,7 +49,7 @@ try {
         ]);
         initialDataLoaded = true;
     }
-} catch {
+} catch{
     // Fallback to client-side loading
 }
 
@@ -99,7 +99,7 @@ const buildingData = fetchedBuilding || building;
                   building={buildingData}
                   apiUrl={apiURL}
                 />
-                <FloorplansUnitsTab />
+                <FloorplansUnitsTab slot="floorplans-units" />
                 <PricingPoliciesTab
                   slot="pricing-policies"
                   building={buildingData}
