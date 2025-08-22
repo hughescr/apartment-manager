@@ -125,7 +125,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
                     <div class="flex gap-1 ml-auto">
                         {/* Copy to next day button */}
                         {index < daysOfWeek.length - 1 && (
-                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? 'Copy ${day}'s hours to ${daysOfWeek[index + 1]} only' : ''`}>
+                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? 'Copy ${day} hours to ${daysOfWeek[index + 1]} only' : ''`}>
                                 <button
                                   type="button"
                                   class="btn btn-xs btn-ghost"
@@ -141,7 +141,7 @@ const componentId = `hours_editor_${Math.random().toString(36).slice(2, 11)}`;
 
                         {/* Copy to all below button */}
                         {index < daysOfWeek.length - 1 && (
-                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? 'Apply ${day}'s hours to all remaining days' : ''`}>
+                            <div class="tooltip tooltip-top" :data-tip={`isDayOpen('${day}') ? 'Apply ${day} hours to all remaining days' : ''`}>
                                 <button
                                   type="button"
                                   class="btn btn-xs btn-ghost"
