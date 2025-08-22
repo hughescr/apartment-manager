@@ -1,4 +1,5 @@
 /// <reference types="astro/client" />
+/// <reference types="@types/alpinejs" />
 
 declare global {
     interface Window {
@@ -25,12 +26,13 @@ declare global {
         /**
          * Alpine.js framework instance
          */
-        Alpine: {
-            store: (name: string, value?: unknown) => unknown
-            data: (name: string, callback: () => unknown) => void
-            start: () => void
-        }
+        Alpine: import('alpinejs').Alpine
     }
+
+    /**
+     * Alpine.js global variable (accessible in script tags)
+     */
+    const Alpine: import('alpinejs').Alpine;
 }
 
 export {};

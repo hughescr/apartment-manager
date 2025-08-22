@@ -48,6 +48,7 @@
     "@esbuild/darwin-arm64": "^0.25.9",
     "@hughescr/eslint-config-default": "^3.0.4",
     "@tailwindcss/vite": "^4.1.12",
+    "@types/alpinejs": "^3.13.11",
     "@types/aws-lambda": "^8.10.152",
     "@types/bun": "^1.2.20",
     "@types/jest": "^30.0.0",

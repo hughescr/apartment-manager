@@ -19,31 +19,6 @@ if(!unitType.modelAmenities) {
     unitType.modelAmenities = [];
 }
 
-// Type definitions for Alpine.js component
-interface UnitTypeCardComponent {
-    unitType: UnitTypeData
-    originalUnitType: UnitTypeData
-    apiURL: string
-    saving: boolean
-    expandedAmenities: boolean
-    buildingAmenities: Amenity[]
-    init(): void
-    getEffectiveAmenities(): Amenity[]
-    resetToInheritedAmenities(): void
-    isDirty(): boolean
-    saveUnitType(myThis?: UnitTypeCardComponent): Promise<void>
-    deleteUnitType(): Promise<void>
-    formatCurrency(value: number): string
-    formatDate(dateString: string): string
-    initializeDeposit(): void
-    getDepositAmount(): number | null
-    setDepositAmount(value: string): void
-    getDepositRefundable(): boolean
-    setDepositRefundable(value: boolean): void
-    getDepositPartialRefundPercentage(): number | null
-    setDepositPartialRefundPercentage(value: string): void
-}
-
 ---
 <script is:inline>
 // Used by Alpine.js x-data attribute

@@ -1,7 +1,6 @@
 ---
 // astro-src/components/unit-type-form/UnitTypeFormProvider.astro
 import { Resource } from 'sst';
-import type { UnitTypeFormState } from '../../lib/unit-type-form/state/unitTypeFormState';
 
 // Import child components
 import UnitTypeBasicInfo from './UnitTypeBasicInfo.astro';
@@ -20,7 +19,7 @@ if(!_apiURL) {
 } // Validate and mark as used for TypeScript
 
 ---
-<script type="module">
+<script type="module" is:inline>
 import { createUnitTypeFormState } from '../../lib/unit-type-form';
 
 document.addEventListener('alpine:init', () => {
