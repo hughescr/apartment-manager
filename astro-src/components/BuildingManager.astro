@@ -20,40 +20,18 @@ import type { BuildingData, UnitData, UnitTypeData } from '../types';
 
 export interface Props {
     building: BuildingData
+    units: UnitData[]
+    unitTypes: UnitTypeData[]
     apiURL: string
     'class'?: string
     style?: string
 }
 
-const { building, apiURL } = Astro.props;
+const { building, units, unitTypes, apiURL } = Astro.props;
 
-// Server-side fetch for building details, units and unit types
-const sanitizedURL = apiURL.replace(/\/$/, '');
-let fetchedBuilding: BuildingData | null = null;
-let units: UnitData[] = [];
-let unitTypes: UnitTypeData[] = [];
-let initialDataLoaded = false;
-
-try {
-    const [buildingRes, unitsRes, unitTypesRes] = await Promise.all([
-        fetch(`${sanitizedURL}/buildings/${building.buildingID}`),
-        fetch(`${sanitizedURL}/buildings/${building.buildingID}/units`),
-        fetch(`${sanitizedURL}/buildings/${building.buildingID}/unit-types`)
-    ]);
-
-    if(buildingRes.ok && unitsRes.ok && unitTypesRes.ok) {
-        [fetchedBuilding, units, unitTypes] = await Promise.all([
-            buildingRes.json(),
-            unitsRes.json(),
-            unitTypesRes.json()
-        ]);
-        initialDataLoaded = true;
-    }
-} catch{
-    // Fallback to client-side loading
-}
-
-const buildingData = fetchedBuilding || building;
+// Data is now pre-loaded from parent component - no SSR API calls needed
+const buildingData = building;
+const initialDataLoaded = true;
 ---
 
 <div
@@ -65,7 +43,7 @@ const buildingData = fetchedBuilding || building;
   data-initial-building={JSON.stringify(buildingData)}
   data-initial-units={JSON.stringify(units)}
   data-initial-unit-types={JSON.stringify(unitTypes)}
-  data-initial-loaded={initialDataLoaded}
+  data-initial-loaded={true}
   {...Astro.props}
 >
 
@@ -148,13 +126,9 @@ const buildingData = fetchedBuilding || building;
 <script>
 import type { AlpineComponent } from '../types/alpine';
 import type { BuildingData, UnitData, UnitTypeData } from '../types';
-import { createClientLogger } from '../lib/utils/client-logger';
-
 // Simple noop function replacement for lodash.noop
 // eslint-disable-next-line lodash/prefer-noop, @typescript-eslint/no-empty-function -- Replacing lodash.noop for browser compatibility
 const noop = () => {};
-
-const logger = createClientLogger('BuildingManager');
 
 type BuildingManagerData = AlpineComponent<{
     loading: boolean
@@ -193,13 +167,25 @@ function buildingManagerData(): BuildingManagerData {
             const initialLoaded = this.$root.dataset.initialLoaded === 'true';
 
             if(initialBuilding) {
-                try { this.building = JSON.parse(initialBuilding); } catch{}
+                try {
+                    this.building = JSON.parse(initialBuilding);
+                } catch{
+                    // Ignore parsing errors - use default values
+                }
             }
             if(initialUnits) {
-                try { this.units = JSON.parse(initialUnits); } catch{}
+                try {
+                    this.units = JSON.parse(initialUnits);
+                } catch{
+                    // Ignore parsing errors - use default values
+                }
             }
             if(initialUnitTypes) {
-                try { this.unitTypes = JSON.parse(initialUnitTypes); } catch{}
+                try {
+                    this.unitTypes = JSON.parse(initialUnitTypes);
+                } catch{
+                    // Ignore parsing errors - use default values
+                }
             }
 
             this.dataLoaded = initialLoaded;
@@ -214,74 +200,24 @@ function buildingManagerData(): BuildingManagerData {
                 });
             }
 
-            // Listen for Alpine events to trigger loading
+            // Data is already pre-loaded, no need for lazy loading logic
+            // Keep event listener for backward compatibility but it's no longer needed
+            // eslint-disable-next-line lodash/prefer-noop -- Need to maintain backward compatibility
             this.$root.addEventListener('trigger-load', () => {
-                if(!this.dataLoaded && !this.loading) {
-                    this.loadBuildingData();
-                }
+                // Data already loaded - nothing to do
             });
-
-            // Check if we should load immediately (for initially visible tab)
-            // Use a small delay to ensure Alpine is fully initialized
-            setTimeout(() => {
-                const isVisible = this.$root.style.display !== 'none';
-                if(isVisible && !this.dataLoaded && !this.loading) {
-                    this.loadBuildingData();
-                }
-            }, 100);
         },
 
         async loadBuildingData() {
-            if(this.dataLoaded || this.loading) {
-                return;
-            }
-
-            this.loading = true;
-            this.error = false;
-
-            try {
-                // Load full building data, units and unit types in parallel
-                const [buildingResponse, unitsResponse, unitTypesResponse] = await Promise.all([
-                    fetch(`${this.apiURL}buildings/${this.buildingID}`),
-                    fetch(`${this.apiURL}buildings/${this.buildingID}/units`),
-                    fetch(`${this.apiURL}buildings/${this.buildingID}/unit-types`)
-                ]);
-
-                if(!buildingResponse.ok || !unitsResponse.ok || !unitTypesResponse.ok) {
-                    throw new Error('Failed to fetch building data');
-                }
-
-                const [building, units, unitTypes] = await Promise.all([
-                    buildingResponse.json(),
-                    unitsResponse.json(),
-                    unitTypesResponse.json()
-                ]);
-
-                this.building = building;
-                this.units = units;
-                this.unitTypes = unitTypes;
-                this.dataLoaded = true;
-                this.loading = false;
-
-                // Update the BuildingProvider component with new data
-                this.$dispatch('building-data-loaded', {
-                    buildingID: this.buildingID,
-                    building: building,
-                    units: units,
-                    unitTypes: unitTypes
-                });
-            } catch(error) {
-                this.loading = false;
-                this.error = true;
-                this.errorMessage = (error as Error).message;
-                logger.error('Failed to load building data', error);
-            }
+            // Data is pre-loaded from parent component - this method is no longer needed
+            // but kept for backward compatibility
+            return;
         },
 
         retryLoad() {
+            // Data is pre-loaded - retry not applicable
             this.error = false;
             this.errorMessage = '';
-            this.loadBuildingData();
         },
 
         // Add Alpine magic properties

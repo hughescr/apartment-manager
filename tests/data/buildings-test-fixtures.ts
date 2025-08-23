@@ -3,7 +3,7 @@
  * Contains test data, helper functions, and expected result generators.
  */
 
-import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek, BuildingData } from '../../src/types';
+import { PropertyType, UtilityType, FeeType, PetType, ParkingType, StorageType, AmenityCategory, DayOfWeek, BuildingData, UnitData, UnitTypeData, VacancyClass } from '../../src/types';
 import { getDefaultBuildingData } from '../../src/types';
 import { fill, merge, repeat } from 'lodash';
 
@@ -214,6 +214,76 @@ export const complexTourBuilding = {
             [DayOfWeek.SUNDAY]: { open: '12:00', close: '16:00' }
         }
     }
+};
+
+/**
+ * Standard test unit for testing unit-related functionality.
+ */
+export const testUnit: UnitData = {
+    buildingID: 'eEUxh8XdGF1RsxfmwHPpYD', // Same as testBuilding
+    unitID: '101',
+    unitNumber: '101',
+    description: 'One bedroom apartment',
+    beds: 1,
+    baths: 1,
+    sqft: 650,
+    rent: 1500,
+    occupied: false,
+    availableDate: '2024-02-01',
+    modelID: 'studio',
+    maxOccupants: 2,
+    perPersonRent: 750,
+    deposit: 1000,
+    minLeaseTerm: 6,
+    maxLeaseTerm: 12,
+    unitDescription: 'Modern studio apartment with updated fixtures',
+    unitRentSpecial: {
+        title: 'Unit Special',
+        description: 'First month half price'
+    },
+    unitAmenities: [
+        { name: 'In-unit Laundry', category: AmenityCategory.UNIT },
+        { name: 'Balcony', category: AmenityCategory.UNIT }
+    ],
+    photos: ['https://s3.example.com/unit1.jpg', 'https://s3.example.com/unit2.jpg'],
+    features: ['Hardwood floors', 'Granite counters'],
+    notes: 'Recently renovated',
+    vacancyClass: 'Unoccupied' as VacancyClass,
+    vacateDate: '2024-01-15',
+    madeReadyDate: '2024-01-20',
+    feedInclusion: {
+        'apartments.com': true,
+        'zillow.com': false
+    },
+    manualReferences: {
+        'apartments.com': 'APT123'
+    }
+};
+
+/**
+ * Standard test unit type for testing unit type functionality.
+ */
+export const testUnitType: UnitTypeData = {
+    buildingID: 'eEUxh8XdGF1RsxfmwHPpYD', // Same as testBuilding
+    modelID: 'studio',
+    modelName: 'Studio Apartment',
+    countAvailable: 3,
+    dateAvailable: '2024-02-01',
+    beds: 0,
+    baths: 1,
+    maxOccupants: 2,
+    minRent: 1200,
+    maxRent: 1500,
+    perPersonRent: 750,
+    minSqft: 400,
+    maxSqft: 550,
+    deposit: 800,
+    minLeaseTerm: 6,
+    maxLeaseTerm: 12,
+    modelAmenities: [
+        { name: 'Murphy Bed', category: AmenityCategory.UNIT },
+        { name: 'Kitchenette', category: AmenityCategory.UNIT }
+    ]
 };
 
 /**

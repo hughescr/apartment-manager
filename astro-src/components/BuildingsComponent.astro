@@ -4,31 +4,41 @@ import _ from 'lodash';
 import BuildingsList from './BuildingsList.astro';
 import AddBuildingForm from './AddBuildingForm.astro';
 import BuildingManager from './BuildingManager.astro';
-import { BuildingsApiService } from '../lib/buildings/services/buildingsApiService';
 import { Resource } from 'sst';
-import type { Building } from '../types';
+import type { BuildingData, UnitData, UnitTypeData } from '../types';
 
-// Only fetch basic building list via API - units/unit types loaded lazily
+// Fetch all data in a single API call for optimal performance
 const _apiURL = Resource.API.url;
 if(!_apiURL) {
     throw new Error('API URL not configured');
 } // Validate and mark as used for TypeScript
-const buildingsService = new BuildingsApiService(_apiURL);
 
-let buildings: Building[] = [];
+interface AllDataResponse {
+    buildings: BuildingData[]
+    unitsByBuilding: Record<string, UnitData[]>
+    unitTypesByBuilding: Record<string, UnitTypeData[]>
+}
+
+let buildings: BuildingData[] = [];
+let unitsByBuilding: Record<string, UnitData[]> = {};
+let unitTypesByBuilding: Record<string, UnitTypeData[]> = {};
 let error: string | null = null;
 
 try {
-    const buildingsResponse = await buildingsService.getBuildings();
-    if(buildingsResponse.success && buildingsResponse.data) {
-        buildings = buildingsResponse.data;
-    } else {
-        error = buildingsResponse.error || 'Failed to load buildings';
-        buildings = [];
+    const response = await fetch(`${_.replace(_apiURL, /\/$/, '')}/all-data`);
+    if(!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-} catch{
-    error = 'Failed to load buildings';
+
+    const allData: AllDataResponse = await response.json();
+    buildings = allData.buildings || [];
+    unitsByBuilding = allData.unitsByBuilding || {};
+    unitTypesByBuilding = allData.unitTypesByBuilding || {};
+} catch(err) {
+    error = _.isError(err) ? err.message : 'Failed to load apartment data';
     buildings = [];
+    unitsByBuilding = {};
+    unitTypesByBuilding = {};
 }
 ---
 
@@ -64,6 +74,8 @@ try {
         {_.map(buildings, (building, i) => (
             <BuildingManager
               building={building}
+              units={unitsByBuilding[building.buildingID] || []}
+              unitTypes={unitTypesByBuilding[building.buildingID] || []}
               apiURL={_apiURL}
               data-building-id={building.buildingID}
               data-api-url={_apiURL}
@@ -86,25 +98,17 @@ try {
 import _ from 'lodash';
 import type { AlpineComponent } from '../types/alpine';
 
-interface Building {
-    buildingID: string
-    buildingName?: string
-    street?: string
-    city?: string
-    state?: string
-    propertyType?: string
-    [key: string]: unknown
-}
+import type { BuildingData } from '../types';
 
 type BuildingsComponentData = AlpineComponent<{
     activeBuildingTab: number
     // Toast properties removed - now uses global toast system
-    buildings: Building[]
+    buildings: BuildingData[]
     apiURL: string
     init(): void
     handleTabChange(event: CustomEvent<{ tabIndex: number, buildingID?: string }>): void
-    handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, building: Building, units: unknown[], unitTypes: unknown[] }>): void
-    handleBuildingUpdated(event: CustomEvent<{ building: Building }>): void
+    handleBuildingDataLoaded(event: CustomEvent<{ buildingID: string, building: BuildingData, units: unknown[], unitTypes: unknown[] }>): void
+    handleBuildingUpdated(event: CustomEvent<{ building: BuildingData }>): void
     showAndHideToast(message: string, type: string): void
 }>;
 
@@ -112,7 +116,7 @@ function buildingsComponentData(): BuildingsComponentData {
     return {
         activeBuildingTab: 0,
         // Toast properties removed - now uses global toast system
-        buildings: [] as Building[],
+        buildings: [] as BuildingData[],
         apiURL: '',
 
         init() {

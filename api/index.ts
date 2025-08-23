@@ -7,11 +7,15 @@ import * as credentials from './credentials';
 import * as feed from './feed';
 import * as geocoding from './geocoding';
 import * as autocomplete from './autocomplete';
+import * as allData from './all-data';
 import { noop, split, every, startsWith, endsWith, forEach, keys } from 'lodash';
 
 const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
     '/version': {
         GET: version.get,
+    },
+    '/all-data': {
+        GET: allData.get,
     },
     '/buildings': {
         GET: buildings.list,
