@@ -73,7 +73,15 @@ export class UnitTypeCrud {
      * Create a new unit type with default values
      */
     static createNewUnitType(buildingID: string, partial: Partial<UnitTypeData> = {}): UnitTypeData {
-        return {
+        // Filter out null values from partial to avoid overriding undefined defaults
+        const filteredPartial: Partial<UnitTypeData> = {};
+        for(const [key, value] of Object.entries(partial)) {
+            if(value !== null) {
+                (filteredPartial as Record<string, unknown>)[key] = value;
+            }
+        }
+
+        const unitType: UnitTypeData = {
             buildingID,
             modelID: '',
             modelName: '',
@@ -86,7 +94,50 @@ export class UnitTypeCrud {
             countAvailable: 1,
             modelAmenities: [],
             updatedAt: new Date(),
-            ...partial
+            ...filteredPartial
         };
+
+        // Final cleanup: remove only optional undefined values for API serialization
+        // Keep required fields even if they're empty strings
+        const cleanedUnitType: UnitTypeData = {
+            ...unitType
+        };
+
+        // Remove only optional undefined fields that shouldn't be sent to API
+        if(cleanedUnitType.minSqft === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).minSqft;
+        }
+        if(cleanedUnitType.maxSqft === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).maxSqft;
+        }
+        if(cleanedUnitType.minRent === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).minRent;
+        }
+        if(cleanedUnitType.maxRent === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).maxRent;
+        }
+        if(cleanedUnitType.countAvailable === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).countAvailable;
+        }
+        if(cleanedUnitType.dateAvailable === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).dateAvailable;
+        }
+        if(cleanedUnitType.maxOccupants === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).maxOccupants;
+        }
+        if(cleanedUnitType.perPersonRent === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).perPersonRent;
+        }
+        if(cleanedUnitType.deposit === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).deposit;
+        }
+        if(cleanedUnitType.minLeaseTerm === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).minLeaseTerm;
+        }
+        if(cleanedUnitType.maxLeaseTerm === undefined) {
+            delete (cleanedUnitType as unknown as Record<string, unknown>).maxLeaseTerm;
+        }
+
+        return cleanedUnitType;
     }
 }

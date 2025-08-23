@@ -1,15 +1,18 @@
-import type { UnitTypeData } from '../../../types';
+import type { UnitTypeData, BuildingData } from '../../../types';
 import type { AlpineMagicProperties } from '../../alpine';
 import { BuildingDataParser } from './dataParser';
 import { UnitTypeCrud } from './unitTypeCrud';
 import { validateUnitType } from './unitTypeValidation';
 import { UnitTypeHelpers } from './unitTypeHelpers';
+import { BuildingApiService } from '../services/buildingApiService';
 import { values } from 'lodash';
 
 export interface UnitTypeManagementState {
     unitTypes: UnitTypeData[]
     showAddUnitTypeDialog: boolean
     newUnitType: Partial<UnitTypeData>
+    building: BuildingData | null
+    apiURL: string
 }
 
 /**
@@ -17,6 +20,8 @@ export interface UnitTypeManagementState {
  * Handles unit type operations, CRUD, and state management
  */
 export class UnitTypeManagement {
+    private apiService: BuildingApiService | null = null;
+
     constructor(private state: UnitTypeManagementState & AlpineMagicProperties) {}
 
     /**
@@ -24,6 +29,11 @@ export class UnitTypeManagement {
      */
     initializeUnitTypesData(element: HTMLElement): void {
         this.state.unitTypes = BuildingDataParser.parseUnitTypesData(element);
+
+        // Initialize API service if URL is available
+        if(this.state.apiURL) {
+            this.apiService = new BuildingApiService(this.state.apiURL);
+        }
     }
 
     /**
@@ -40,7 +50,7 @@ export class UnitTypeManagement {
             maxSqft: undefined,
             minRent: undefined,
             maxRent: undefined,
-            buildingID: ''
+            buildingID: this.state.building?.buildingID || ''
         };
     }
 
@@ -55,7 +65,7 @@ export class UnitTypeManagement {
     /**
      * Add new unit type
      */
-    addUnitType(): void {
+    async addUnitType(): Promise<void> {
         // Validate the new unit type
         const validation = validateUnitType(this.state.newUnitType);
         if(!validation.isValid) {
@@ -67,56 +77,157 @@ export class UnitTypeManagement {
             return;
         }
 
-        // Create unit type with defaults
-        const unitType = UnitTypeCrud.createNewUnitType(
-            this.state.newUnitType.buildingID || '',
-            this.state.newUnitType
-        );
-
-        // Add to collection
-        this.state.unitTypes = UnitTypeCrud.addUnitType(this.state.unitTypes, unitType);
-        this.closeAddUnitTypeDialog();
-
-        this.state.$dispatch('toast:show', {
-            message: 'Unit type added successfully',
-            type: 'success'
-        });
-
-        this.state.$dispatch('unit-types:updated', {
-            unitTypes: this.state.unitTypes
-        });
-    }
-
-    /**
-     * Update unit type
-     */
-    updateUnitType(modelID: string, updates: Partial<UnitTypeData>): void {
-        this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
-
-        this.state.$dispatch('unit-types:updated', {
-            unitTypes: this.state.unitTypes
-        });
-    }
-
-    /**
-     * Delete unit type
-     */
-    deleteUnitType(modelID: string): void {
-        if(!confirm(`Are you sure you want to delete unit type ${modelID}?`)) {
+        // Ensure we have the building ID
+        const buildingID = this.state.building?.buildingID;
+        if(!buildingID) {
+            this.state.$dispatch('toast:show', {
+                message: 'Building ID not available',
+                type: 'error'
+            });
             return;
         }
 
-        const initialLength = this.state.unitTypes.length;
-        this.state.unitTypes = UnitTypeCrud.removeUnitType(this.state.unitTypes, modelID);
+        try {
+            // Create unit type with defaults
+            const unitType = UnitTypeCrud.createNewUnitType(
+                buildingID,
+                this.state.newUnitType
+            );
 
-        if(this.state.unitTypes.length < initialLength) {
+            // Call API if available
+            if(this.apiService) {
+                const response = await this.apiService.addUnitType(buildingID, unitType);
+                if(!response.success) {
+                    this.state.$dispatch('toast:show', {
+                        message: response.error || 'Failed to save unit type',
+                        type: 'error'
+                    });
+                    return;
+                }
+
+                // Use the response data if available, otherwise use the local unit type
+                const savedUnitType = response.data || unitType;
+
+                // Add to local collection
+                this.state.unitTypes = UnitTypeCrud.addUnitType(this.state.unitTypes, savedUnitType);
+            } else {
+                // Fallback: just update local state if no API
+                this.state.unitTypes = UnitTypeCrud.addUnitType(this.state.unitTypes, unitType);
+            }
+
+            this.closeAddUnitTypeDialog();
+
             this.state.$dispatch('toast:show', {
-                message: 'Unit type deleted successfully',
+                message: 'Unit type added successfully',
                 type: 'success'
             });
 
             this.state.$dispatch('unit-types:updated', {
                 unitTypes: this.state.unitTypes
+            });
+        } catch(error) {
+            this.state.$dispatch('toast:show', {
+                message: error instanceof Error ? error.message : 'An unexpected error occurred',
+                type: 'error'
+            });
+        }
+    }
+
+    /**
+     * Update unit type
+     */
+    async updateUnitType(modelID: string, updates: Partial<UnitTypeData>): Promise<void> {
+        const buildingID = this.state.building?.buildingID;
+        if(!buildingID) {
+            this.state.$dispatch('toast:show', {
+                message: 'Building ID not available',
+                type: 'error'
+            });
+            return;
+        }
+
+        try {
+            // Call API if available
+            if(this.apiService) {
+                const response = await this.apiService.updateUnitType(buildingID, modelID, updates);
+                if(!response.success) {
+                    this.state.$dispatch('toast:show', {
+                        message: response.error || 'Failed to update unit type',
+                        type: 'error'
+                    });
+                    return;
+                }
+
+                // Update local state with response data if available
+                if(response.data) {
+                    this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, response.data);
+                } else {
+                    this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
+                }
+            } else {
+                // Fallback: just update local state if no API
+                this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
+            }
+
+            this.state.$dispatch('unit-types:updated', {
+                unitTypes: this.state.unitTypes
+            });
+        } catch(error) {
+            this.state.$dispatch('toast:show', {
+                message: error instanceof Error ? error.message : 'An unexpected error occurred',
+                type: 'error'
+            });
+        }
+    }
+
+    /**
+     * Delete unit type
+     */
+    async deleteUnitType(modelID: string): Promise<void> {
+        if(!confirm(`Are you sure you want to delete unit type ${modelID}?`)) {
+            return;
+        }
+
+        const buildingID = this.state.building?.buildingID;
+        if(!buildingID) {
+            this.state.$dispatch('toast:show', {
+                message: 'Building ID not available',
+                type: 'error'
+            });
+            return;
+        }
+
+        try {
+            // Call API if available
+            if(this.apiService) {
+                const response = await this.apiService.deleteUnitType(buildingID, modelID);
+                if(!response.success) {
+                    this.state.$dispatch('toast:show', {
+                        message: response.error || 'Failed to delete unit type',
+                        type: 'error'
+                    });
+                    return;
+                }
+            }
+
+            // Remove from local state
+            const initialLength = this.state.unitTypes.length;
+            this.state.unitTypes = UnitTypeCrud.removeUnitType(this.state.unitTypes, modelID);
+
+            if(this.state.unitTypes.length < initialLength) {
+                this.state.$dispatch('toast:show', {
+                    message: 'Unit type deleted successfully',
+                    type: 'success'
+                });
+
+                this.state.$dispatch('unit-types:updated', {
+                    unitTypes: this.state.unitTypes
+                });
+            }
+        } catch(error) {
+            this.state.$dispatch('toast:show', {
+                message: error instanceof Error ? error.message : 'An unexpected error occurred',
+                type: 'error'
             });
         }
     }

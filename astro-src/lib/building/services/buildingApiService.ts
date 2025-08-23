@@ -1,4 +1,4 @@
-import type { BuildingData, UnitData } from '../../../types';
+import type { BuildingData, UnitData, UnitType } from '../../../types';
 import type { ExtendedUnitData } from '../types';
 
 export interface BulkUpdateData {
@@ -193,6 +193,77 @@ export class BuildingApiService {
             } else {
                 const error = await response.text();
                 return { success: false, error: error || `Failed to update ${field}` };
+            }
+        } catch(error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Network error occurred'
+            };
+        }
+    }
+
+    // Unit Type Management Methods
+    async addUnitType(buildingId: string, unitType: UnitType): Promise<ApiResponse<UnitType>> {
+        try {
+            const response = await fetch(`${this.apiURL}/buildings/${buildingId}/unit-types`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(unitType)
+            });
+
+            if(response.ok) {
+                const data = await response.json();
+                return { success: true, data };
+            } else {
+                const error = await response.text();
+                return { success: false, error: error || 'Failed to add unit type' };
+            }
+        } catch(error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Network error occurred'
+            };
+        }
+    }
+
+    async updateUnitType(buildingId: string, unitTypeId: string, unitType: Partial<UnitType>): Promise<ApiResponse<UnitType>> {
+        try {
+            const response = await fetch(`${this.apiURL}/buildings/${buildingId}/unit-types/${unitTypeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(unitType)
+            });
+
+            if(response.ok) {
+                const data = await response.json();
+                return { success: true, data };
+            } else {
+                const error = await response.text();
+                return { success: false, error: error || 'Failed to update unit type' };
+            }
+        } catch(error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Network error occurred'
+            };
+        }
+    }
+
+    async deleteUnitType(buildingId: string, unitTypeId: string): Promise<ApiResponse<void>> {
+        try {
+            const response = await fetch(`${this.apiURL}/buildings/${buildingId}/unit-types/${unitTypeId}`, {
+                method: 'DELETE'
+            });
+
+            if(response.ok) {
+                return { success: true };
+            } else {
+                const error = await response.text();
+                return { success: false, error: error || 'Failed to delete unit type' };
             }
         } catch(error) {
             return {

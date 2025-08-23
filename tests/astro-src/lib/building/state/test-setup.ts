@@ -11,7 +11,7 @@ import { PropertyType, PetType, FeeType, AmenityCategory, ParkingType, StorageTy
 import { replace, toUpper } from 'lodash';
 
 // Set test environment
-process.env.BUN_ENV = 'test';
+import { generateBuildingId } from '../../../../../src/utils/building-id.js';
 process.env.SST_STAGE = 'test';
 
 // Import the actual logger to spy on it
@@ -164,7 +164,7 @@ export const triggerWatcher = (property: string, value: unknown): void => {
 // Test data factory functions for state management
 // Note: Uses string dates for consistency with JSON serialization
 export const createTestBuildingData = (overrides: Partial<BuildingData> = {}): BuildingData => ({
-    buildingID: 'test-building-state',
+    buildingID: generateBuildingId(), // Use valid short-uuid format
     buildingName: '123 State Test Street',
     street: '123 State Test Street',
     city: 'State Test City',
@@ -299,7 +299,7 @@ export const createTestBuildingData = (overrides: Partial<BuildingData> = {}): B
 
 export const createTestExtendedUnitData = (overrides: Partial<ExtendedUnitData> = {}): ExtendedUnitData => ({
     unitID: 'unit-state-101',
-    buildingID: 'test-building-state',
+    buildingID: generateBuildingId(), // Use valid short-uuid format
     modelID: 'model-1bd',
     unitNumber: '101',
     beds: 1,
@@ -340,7 +340,7 @@ export const createTestExtendedUnitData = (overrides: Partial<ExtendedUnitData> 
 
 export const createTestUnitTypeData = (overrides: Partial<UnitTypeData> = {}): UnitTypeData => ({
     modelID: 'model-state-1bd',
-    buildingID: 'test-building-state',
+    buildingID: generateBuildingId(), // Use valid short-uuid format
     modelName: '1 Bedroom 1 Bath State Test',
     beds: 1,
     baths: 1,

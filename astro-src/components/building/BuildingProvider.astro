@@ -116,6 +116,8 @@ if(typeof window !== 'undefined') {
   x-data="createBuildingState()"
   class="{'opacity-50': saving}"
   @building-data-loaded="handleBuildingDataUpdate($event)"
+  @add-unit-type="newUnitType = $event.detail; addUnitType()"
+  @close-add-unit-type-dialog="closeAddUnitTypeDialog()"
   data-building-data={JSON.stringify(building)}
   data-initial-units={JSON.stringify(safeUnits)}
   data-initial-unit-types={JSON.stringify(safeUnitTypes)}

@@ -1,14 +1,13 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getUnitTypes, getUnitType, createUnitType, updateUnitType, deleteUnitType } from '../data/unitTypes';
 import { UnitTypeData } from '../src/types/index';
-import { forEach, keys, trim } from 'lodash';
+import { forEach } from 'lodash';
 import { sanitizeObject } from './security-validation';
 import { UnitTypeInput } from './validation/unitTypeSchema';
 import { validateForSave } from './validation/helpers';
 import { logger } from '@hughescr/logger';
 import {
     validateMultipleIds,
-    parseAndValidateRequest,
     createSuccessResponse,
     createNotFoundResponse,
     createNoContentResponse
@@ -26,43 +25,64 @@ export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyS
 };
 
 export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
-    // Parse and validate input using shared utility
-    const parseResult = parseAndValidateRequest<UnitTypeInput>(
-        evt.body || null,
-        'unitType',
-        'unit type creation request parsing',
-        { httpMethod: evt.requestContext.http.method },
-        true // Use simple error format for backward compatibility
-    );
-    if(!parseResult.success) {
-        return parseResult.response!;
+    // Extract building ID from path parameters
+    const buildingID = evt.pathParameters?.buildingID ?? '';
+
+    // Validate the building ID from path parameters first
+    const buildingIdValidation = validateMultipleIds([
+        { value: buildingID, fieldName: 'buildingID' }
+    ]);
+    if(!buildingIdValidation.valid) {
+        return buildingIdValidation.response!;
     }
 
-    const unitTypeData = parseResult.data as UnitTypeInput;
-
-    // Additional validation: ensure required fields for creation are provided
-    const errors: Record<string, string> = {};
-    if(!unitTypeData?.buildingID || trim(unitTypeData.buildingID) === '') {
-        errors.buildingID = 'Building ID is required for creation';
+    // Parse request body first
+    let rawData;
+    try {
+        rawData = JSON.parse(evt.body || '{}');
+    } catch(parseError) {
+        logger.warn('Failed to parse unit type creation request body', {
+            error: parseError,
+            context: 'unit type creation request parsing',
+            httpMethod: evt.requestContext.http.method,
+            buildingID
+        });
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Invalid request body' }),
+        };
     }
-    if(!unitTypeData?.modelID || trim(unitTypeData.modelID) === '') {
-        errors.modelID = 'Model ID is required for creation';
-    }
 
-    if(keys(errors).length > 0) {
+    const data = sanitizeObject(rawData);
+
+    // Add building ID from path parameters to data for validation
+    const dataWithBuildingId = {
+        ...data,
+        buildingID
+    };
+
+    // Now validate the complete data including building ID
+    const validation = validateForSave('unitType', dataWithBuildingId);
+    if(!validation.success) {
+        const errors: Record<string, string> = {};
+        forEach(validation.errors, (err) => {
+            errors[err.field] = err.message;
+        });
         return {
             statusCode: 400,
             body: JSON.stringify({ error: 'Validation failed', errors }),
         };
     }
 
+    const unitTypeData = validation.data as UnitTypeInput;
+
     // Check if unit type already exists
-    const existing = await getUnitType(unitTypeData!.buildingID, unitTypeData!.modelID);
+    const existing = await getUnitType(unitTypeData.buildingID, unitTypeData.modelID);
     if(existing) {
         return { statusCode: 409, body: JSON.stringify({ error: 'Unit type already exists' }) };
     }
 
-    const newUnitType = await createUnitType(unitTypeData! as UnitTypeData);
+    const newUnitType = await createUnitType(unitTypeData as UnitTypeData);
     return createSuccessResponse(newUnitType, 201);
 };
 

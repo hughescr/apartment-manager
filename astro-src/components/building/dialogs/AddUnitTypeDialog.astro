@@ -41,7 +41,7 @@ const {
         </p>
 
         <form
-          submit.prevent="submitAddUnitType()"
+          @submit.prevent="submitAddUnitType()"
           class="space-y-6"
           x-data="{
                 newUnitType: {
@@ -111,9 +111,8 @@ const {
                             return;
                         }
 
-                        // Use parent's add unit type method
-                        $parent.newUnitType = this.newUnitType;
-                        await $parent.addUnitType();
+                        // Use parent's add unit type method via dispatch
+                        $dispatch('add-unit-type', this.newUnitType);
 
                         // Reset form and close dialog
                         this.newUnitType = {
@@ -127,7 +126,7 @@ const {
                             maxRent: null,
                             buildingID: '{building.buildingID}'
                         };
-                        $parent.showAddUnitTypeDialog = false;
+                        $dispatch('close-add-unit-type-dialog');
                     } catch (error) {
                         console.error('Add unit type error:', error);
                         this.errors.general = 'Failed to add floorplan. Please try again.';
@@ -259,7 +258,7 @@ const {
                 <button
                   type="button"
                   class="btn"
-                  @click="showAddUnitTypeDialog = false"
+                  @click="$dispatch('close-add-unit-type-dialog')"
                   :disabled="loading"
                     data-testid="cancel-add-unit-type"
                 >
