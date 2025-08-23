@@ -86,20 +86,11 @@ function unitTypeCardData(unitTypeData, buildingAmenitiesData, apiUrlData) {
         },
 
         async deleteUnitType() {
-            if(!confirm('Are you sure you want to delete this unit type?')) {
-                return;
-            }
-            try {
-                const response = await fetch(this.apiURL + 'buildings/' + this.unitType.buildingID + '/unit-types/' + this.unitType.modelID, { method: 'DELETE' });
-                if(response.ok) {
-                    // Reload the page or remove the card from the DOM
-                    window.location.reload(); // Simplest for now
-                } else {
-                    // Delete operation failed
-                }
-            } catch{
-                // Network error during delete operation
-            }
+            // Dispatch event to parent BuildingProvider to handle deletion
+            // The parent has proper state management and will update the UI correctly
+            this.$dispatch('delete-unit-type', {
+                modelID: this.unitType.modelID
+            });
         },
 
         formatCurrency(value) {

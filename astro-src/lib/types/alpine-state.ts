@@ -48,11 +48,13 @@ export interface BuildingAlpineState extends BaseAlpineState {
     // Dialog states
     showAddUnitDialog: boolean
     showAddUnitTypeDialog: boolean
+    showEditUnitTypeDialog: boolean
     showBulkStatusDialog: boolean
     showBulkRentDialog: boolean
 
     // Form states
     newUnit: NewUnitForm
+    selectedUnitType: UnitTypeData | null
     bulkOperation: BulkOperationState
 
     // Methods
@@ -70,6 +72,8 @@ export interface BuildingAlpineState extends BaseAlpineState {
     openAddUnitDialog(): void
     openAddUnitTypeDialog(): void
     closeAddUnitTypeDialog(): void
+    editUnitType(unitType: UnitTypeData): void
+    closeEditUnitTypeDialog(): void
     addUnitType(): void
     addUnit(): Promise<void>
     toggleSelectAll(): void

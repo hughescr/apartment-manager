@@ -1,0 +1,252 @@
+---
+import { BaseInput } from '../../forms';
+import ValidationError from '../../common/ValidationError.astro';
+
+// No props needed - uses shared state from parent BuildingProvider
+export interface Props {
+    dialogId?: string
+}
+
+const { dialogId = 'edit-unit-type-dialog' } = Astro.props;
+---
+
+<dialog class="modal" :class="{'modal-open': showEditUnitTypeDialog}" data-testid={dialogId}>
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Edit Floorplan (Unit Type)</h3>
+        <p class="mb-6 text-base-content/70">
+            Edit floorplan for
+            <strong x-show="building">
+                <span x-text="building?.street"></span>
+,
+<span x-text="building?.city"></span>
+,
+<span x-text="building?.state"></span>
+            </strong>
+.
+            Changes will apply to the unit type template but won't affect individual unit customizations.
+        </p>
+
+        <form
+          @submit.prevent="submitEditUnitType()"
+          class="space-y-6"
+          x-data="{
+                editUnitType: selectedUnitType ? {...selectedUnitType} : {},
+                errors: {},
+                loading: false,
+
+                generateModelID() {
+                    if (this.editUnitType.modelName && this.editUnitType.modelName.trim()) {
+                        // Only auto-generate if the current modelID matches the pattern of being auto-generated
+                        // Otherwise preserve the existing modelID to avoid breaking references
+                        const currentName = (selectedUnitType?.modelName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                        if (!selectedUnitType?.modelID || selectedUnitType.modelID === currentName) {
+                            const id = this.editUnitType.modelName
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/^-+|-+$/g, '');
+                            this.editUnitType.modelID = id || '';
+                        }
+                    }
+                },
+
+                async submitEditUnitType() {
+                    this.loading = true;
+                    this.errors = {};
+
+                    try {
+                        // Client-side validation
+                        if (!this.editUnitType.modelName || !this.editUnitType.modelName.trim()) {
+                            this.errors.modelName = 'Floorplan name is required';
+                        }
+                        if (!this.editUnitType.modelID || !this.editUnitType.modelID.trim()) {
+                            this.errors.modelID = 'Model ID is required';
+                        }
+                        if (this.editUnitType.beds < 0) {
+                            this.errors.beds = 'Bedrooms must be 0 or greater';
+                        }
+                        if (this.editUnitType.baths < 0.5) {
+                            this.errors.baths = 'Bathrooms must be 0.5 or greater';
+                        }
+                        if (this.editUnitType.minSqft && this.editUnitType.minSqft < 0) {
+                            this.errors.minSqft = 'Minimum square feet must be 0 or greater';
+                        }
+                        if (this.editUnitType.maxSqft && this.editUnitType.maxSqft < 0) {
+                            this.errors.maxSqft = 'Maximum square feet must be 0 or greater';
+                        }
+                        if (this.editUnitType.minSqft && this.editUnitType.maxSqft && this.editUnitType.minSqft > this.editUnitType.maxSqft) {
+                            this.errors.maxSqft = 'Maximum square feet must be greater than minimum';
+                        }
+                        if (this.editUnitType.minRent && this.editUnitType.minRent < 0) {
+                            this.errors.minRent = 'Minimum rent must be 0 or greater';
+                        }
+                        if (this.editUnitType.maxRent && this.editUnitType.maxRent < 0) {
+                            this.errors.maxRent = 'Maximum rent must be 0 or greater';
+                        }
+                        if (this.editUnitType.minRent && this.editUnitType.maxRent && this.editUnitType.minRent > this.editUnitType.maxRent) {
+                            this.errors.maxRent = 'Maximum rent must be greater than minimum';
+                        }
+
+                        if (Object.keys(this.errors).length > 0) {
+                            this.loading = false;
+                            return;
+                        }
+
+                        // Use parent's update unit type method
+                        await $dispatch('update-unit-type', {
+                            modelID: selectedUnitType.modelID,
+                            updates: this.editUnitType
+                        });
+
+                        // Close dialog
+                        $dispatch('close-edit-unit-type-dialog');
+                    } catch (error) {
+                        console.error('Edit unit type error:', error);
+                        this.errors.general = 'Failed to update floorplan. Please try again.';
+                        $dispatch('show-toast', {
+                            message: 'Failed to update floorplan. Please try again.',
+                            type: 'error'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }"
+          x-init="$watch('selectedUnitType', () => editUnitType = selectedUnitType ? {...selectedUnitType} : {})"
+        >
+            <!-- General Error Display -->
+            <div x-show="errors.general" class="alert alert-error" data-testid="edit-unit-type-general-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-text="errors.general"></span>
+            </div>
+
+            <!-- Basic Unit Type Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                  name="modelName"
+                  label="Floorplan Name"
+                  xModel="editUnitType.modelName"
+                  placeholder="1 Bedroom Classic"
+                  required={true}
+                  helpText="Descriptive name for this unit type"
+                  @input="generateModelID()"
+                />
+                <ValidationError fieldName="modelName" errors={{}} />
+
+                <BaseInput
+                  name="modelID"
+                  label="Model ID"
+                  xModel="editUnitType.modelID"
+                  placeholder="1br-classic"
+                  required={true}
+                  helpText="Unique identifier (changing this may affect unit assignments)"
+                />
+                <ValidationError fieldName="modelID" errors={{}} />
+            </div>
+
+            <!-- Room Configuration -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                  name="beds"
+                  label="Bedrooms"
+                  type="number"
+                  xModel="editUnitType.beds"
+                  min="0"
+                  max="10"
+                  required={true}
+                  helpText="Number of bedrooms (0 for studio)"
+                />
+                <ValidationError fieldName="beds" errors={{}} />
+
+                <BaseInput
+                  name="baths"
+                  label="Bathrooms"
+                  type="number"
+                  xModel="editUnitType.baths"
+                  min="0.5"
+                  max="10"
+                  step="0.5"
+                  required={true}
+                />
+                <ValidationError fieldName="baths" errors={{}} />
+            </div>
+
+            <!-- Square Footage Range -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                  name="minSqft"
+                  label="Minimum Square Feet"
+                  type="number"
+                  xModel="editUnitType.minSqft"
+                  min="100"
+                  max="10000"
+                  placeholder="750"
+                  helpText="Optional - smallest unit of this type"
+                />
+                <ValidationError fieldName="minSqft" errors={{}} />
+
+                <BaseInput
+                  name="maxSqft"
+                  label="Maximum Square Feet"
+                  type="number"
+                  xModel="editUnitType.maxSqft"
+                  min="100"
+                  max="10000"
+                  placeholder="950"
+                  helpText="Optional - largest unit of this type"
+                />
+                <ValidationError fieldName="maxSqft" errors={{}} />
+            </div>
+
+            <!-- Rent Range -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                  name="minRent"
+                  label="Minimum Rent"
+                  type="number"
+                  xModel="editUnitType.minRent"
+                  min="0"
+                  max="25000"
+                  placeholder="2000"
+                  helpText="Optional - lowest rent for this type"
+                />
+                <ValidationError fieldName="minRent" errors={{}} />
+
+                <BaseInput
+                  name="maxRent"
+                  label="Maximum Rent"
+                  type="number"
+                  xModel="editUnitType.maxRent"
+                  min="0"
+                  max="25000"
+                  placeholder="2500"
+                  helpText="Optional - highest rent for this type"
+                />
+                <ValidationError fieldName="maxRent" errors={{}} />
+            </div>
+
+            <!-- Dialog Actions -->
+            <div class="modal-action">
+                <button
+                  type="button"
+                  class="btn"
+                  @click="$dispatch('close-edit-unit-type-dialog')"
+                  :disabled="loading"
+                    data-testid="cancel-edit-unit-type"
+                >
+                    Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="loading"
+                    data-testid="confirm-edit-unit-type"
+                >
+                    <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+                    <span x-show="!loading">Save Changes</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>

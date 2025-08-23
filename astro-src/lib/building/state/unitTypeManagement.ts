@@ -157,17 +157,30 @@ export class UnitTypeManagement {
                     });
                     return;
                 }
-
                 // Update local state with response data if available
                 if(response.data) {
-                    this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, response.data);
+                    const updatedUnitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, response.data);
+                    // Force reactivity by creating a new array reference
+                    this.state.unitTypes.length = 0;
+                    this.state.unitTypes.push(...updatedUnitTypes);
                 } else {
-                    this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
+                    const updatedUnitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
+                    // Force reactivity by creating a new array reference
+                    this.state.unitTypes.length = 0;
+                    this.state.unitTypes.push(...updatedUnitTypes);
                 }
             } else {
                 // Fallback: just update local state if no API
-                this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
+                const updatedUnitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
+                // Force reactivity by creating a new array reference
+                this.state.unitTypes.length = 0;
+                this.state.unitTypes.push(...updatedUnitTypes);
             }
+
+            this.state.$dispatch('toast:show', {
+                message: 'Unit type updated successfully',
+                type: 'success'
+            });
 
             this.state.$dispatch('unit-types:updated', {
                 unitTypes: this.state.unitTypes
@@ -212,7 +225,11 @@ export class UnitTypeManagement {
 
             // Remove from local state
             const initialLength = this.state.unitTypes.length;
-            this.state.unitTypes = UnitTypeCrud.removeUnitType(this.state.unitTypes, modelID);
+            const updatedUnitTypes = UnitTypeCrud.removeUnitType(this.state.unitTypes, modelID);
+
+            // Force reactivity by creating a new array reference
+            this.state.unitTypes.length = 0;
+            this.state.unitTypes.push(...updatedUnitTypes);
 
             if(this.state.unitTypes.length < initialLength) {
                 this.state.$dispatch('toast:show', {

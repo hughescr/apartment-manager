@@ -64,10 +64,12 @@ function buildingStateObject(): any {
         searchQuery: '',
         showAddUnitDialog: false,
         showAddUnitTypeDialog: false,
+        showEditUnitTypeDialog: false,
         showBulkStatusDialog: false,
         showBulkRentDialog: false,
         newUnit: { unitID: '', modelID: '' },
         newUnitType: {} as Partial<UnitTypeData>,
+        selectedUnitType: null as UnitTypeData | null,
         bulkOperation: {
             loading: false,
             statusValue: '',
@@ -252,6 +254,24 @@ function buildingStateObject(): any {
 
         addUnitType() {
             this._unitTypeManagement?.addUnitType();
+        },
+
+        async updateUnitType(modelID: string, updates: Partial<UnitTypeData>) {
+            await this._unitTypeManagement?.updateUnitType(modelID, updates);
+        },
+
+        async deleteUnitType(modelID: string) {
+            await this._unitTypeManagement?.deleteUnitType(modelID);
+        },
+
+        editUnitType(unitType: UnitTypeData) {
+            this.selectedUnitType = unitType;
+            this.showEditUnitTypeDialog = true;
+        },
+
+        closeEditUnitTypeDialog() {
+            this.showEditUnitTypeDialog = false;
+            this.selectedUnitType = null;
         },
 
         async addUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {

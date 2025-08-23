@@ -117,7 +117,11 @@ if(typeof window !== 'undefined') {
   class="{'opacity-50': saving}"
   @building-data-loaded="handleBuildingDataUpdate($event)"
   @add-unit-type="newUnitType = $event.detail; addUnitType()"
+  @edit-unit-type="editUnitType($event.detail)"
+  @update-unit-type="updateUnitType($event.detail.modelID, $event.detail.updates)"
+  @delete-unit-type="deleteUnitType($event.detail.modelID)"
   @close-add-unit-type-dialog="closeAddUnitTypeDialog()"
+  @close-edit-unit-type-dialog="closeEditUnitTypeDialog()"
   data-building-data={JSON.stringify(building)}
   data-initial-units={JSON.stringify(safeUnits)}
   data-initial-unit-types={JSON.stringify(safeUnitTypes)}

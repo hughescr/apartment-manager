@@ -47,11 +47,13 @@ function createTypedBuildingState(): BuildingStateWithMagic {
         // Dialog states
         showAddUnitDialog: false,
         showAddUnitTypeDialog: false,
+        showEditUnitTypeDialog: false,
         showBulkStatusDialog: false,
         showBulkRentDialog: false,
 
         // Form states
         newUnit: { unitID: '', modelID: '' },
+        selectedUnitType: null,
         bulkOperation: {
             loading: false,
             statusValue: '',
@@ -108,6 +110,8 @@ function createTypedBuildingState(): BuildingStateWithMagic {
         openAddUnitDialog: noop,
         openAddUnitTypeDialog: noop,
         closeAddUnitTypeDialog: noop,
+        editUnitType: noop,
+        closeEditUnitTypeDialog: noop,
         addUnitType: noop,
         addUnit: async () => Promise.resolve(),
         toggleSelectAll: noop,

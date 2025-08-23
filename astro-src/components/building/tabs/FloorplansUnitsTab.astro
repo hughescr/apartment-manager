@@ -5,6 +5,7 @@
 import SimpleUnitsSection from '../units/SimpleUnitsSection.astro';
 import BulkCreateUnitsDialog from '../dialogs/BulkCreateUnitsDialog.astro';
 import AssignUnitTypeDialog from '../dialogs/AssignUnitTypeDialog.astro';
+import EditUnitTypeDialog from '../dialogs/EditUnitTypeDialog.astro';
 
 // No props needed - uses shared state from parent BuildingProvider
 export interface Props { slot?: string }
@@ -136,4 +137,7 @@ export interface Props { slot?: string }
 
     <!-- Assign Unit Type Dialog -->
     <AssignUnitTypeDialog />
+
+    <!-- Edit Unit Type Dialog -->
+    <EditUnitTypeDialog />
 </div>
