@@ -1,0 +1,70 @@
+---
+// Multi-Building MITS Feed Component
+// Converted from src/mits/generator.ts
+
+import type { BuildingData, UnitTypeData, UnitData } from '../../../src/types';
+import { formatDate } from './MITSUtils.astro';
+import { map } from 'lodash';
+import MITS from './MITS.astro';
+
+export interface Props {
+    buildings: BuildingData[]
+    unitTypesByBuilding: Record<string, UnitTypeData[]>
+    unitsByBuilding: Record<string, UnitData[]>
+    coordsByBuilding: Record<string, { latitude: number, longitude: number }>
+    rentalTypesByBuilding: Record<string, string>
+    siteName: 'apartments_com' | 'zillow'
+    lastUpdate: Date | string | undefined
+}
+
+const {
+    buildings,
+    unitTypesByBuilding,
+    unitsByBuilding,
+    coordsByBuilding,
+    rentalTypesByBuilding,
+    siteName,
+    lastUpdate
+} = Astro.props;
+
+const MITS_NAMESPACE = 'http://www.mitsproject.org/namespace';
+const formattedLastUpdate = formatDate(lastUpdate || new Date());
+
+// Process buildings data for rendering - using lodash map to satisfy ESLint
+const buildingData = map(buildings, building => ({
+    building,
+    unitTypes: unitTypesByBuilding[building.buildingID] || [],
+    units: unitsByBuilding[building.buildingID] || [],
+    coords: coordsByBuilding[building.buildingID] || { latitude: 34.0522, longitude: -118.2437 },
+    rentalType: rentalTypesByBuilding[building.buildingID] || 'Market Rate'
+}));
+---
+
+<Fragment>{`<?xml version="1.0" encoding="UTF-8"?>
+<PhysicalProperties xmlns="${MITS_NAMESPACE}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">`}
+</Fragment>
+
+{map(buildingData, element => (
+    <Fragment>
+        <Fragment>{`
+    <PhysicalProperty>`}
+        </Fragment>
+
+        <MITS
+          building={element.building}
+          unitTypes={element.unitTypes}
+          units={element.units}
+          coords={element.coords}
+          rentalType={element.rentalType}
+          siteName={siteName}
+          lastUpdate={lastUpdate}
+        />
+
+        <Fragment>{`</PhysicalProperty>`}</Fragment>
+    </Fragment>
+))}
+
+<Fragment>{`
+    <LastUpdate>${formattedLastUpdate}</LastUpdate>
+</PhysicalProperties>`}
+</Fragment>

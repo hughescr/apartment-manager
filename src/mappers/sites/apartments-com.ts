@@ -28,7 +28,7 @@ import {
     transformPhotoUrls,
     categorizeFees
 } from '../transformers/index.js';
-// import fieldMappingsV2 from '../field-mappings-v2.json'; // Reserved for future field mapping features
+// import fieldMappingsV2 from '../field-mappings.json'; // Reserved for future field mapping features
 
 /** Enhanced deposit structure with refundability and partial refund options */
 interface Deposit {

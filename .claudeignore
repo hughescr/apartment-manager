@@ -1,0 +1,36 @@
+# Directories to exclude from Claude Code analysis
+.sst/
+node_modules/
+dist/
+build/
+.turbo/
+
+# Files to exclude
+bun.lock
+*.min.js
+*.bundle.js
+*.map
+.DS_Store
+
+# Temporary and generated files
+*.tmp
+*.temp
+*.log
+*.cache
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs & coverage
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+coverage/
+*.lcov
+

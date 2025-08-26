@@ -393,8 +393,9 @@ const resetAllMocks = () => {
     // Clear all function mocks
     jest.clearAllMocks();
 
-    // Reset fetch mock
+    // Reset fetch mock - use both clear and reset for complete cleanup
     mockFetch.mockClear();
+    mockFetch.mockReset();
 
     // Reset crypto mock
     mockRandomUUID.mockClear();

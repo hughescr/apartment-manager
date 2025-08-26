@@ -2,9 +2,13 @@
 import './test-setup';
 import { jest, resetAllMocks } from '../data/test-setup';
 
-import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
+import { describe, it, expect, beforeEach, beforeAll, afterEach } from 'bun:test';
 import { get } from '../../api/version';
 import _ from 'lodash';
+
+// Mock setTimeout to eliminate delays
+const mockSetTimeout = jest.fn();
+const originalSetTimeout = global.setTimeout;
 
 describe('Version API - /version endpoint', () => {
     beforeAll(() => {
@@ -12,8 +16,21 @@ describe('Version API - /version endpoint', () => {
     });
 
     beforeEach(() => {
+        // Mock setTimeout to resolve immediately (no delays)
+        mockSetTimeout.mockImplementation((callback: () => void) => {
+            callback();
+            return 'mock-timeout-id';
+        });
+        global.setTimeout = mockSetTimeout as unknown as typeof setTimeout;
+
         jest.clearAllMocks();
         jest.restoreAllMocks();
+    });
+
+    afterEach(() => {
+        // Restore original setTimeout
+        global.setTimeout = originalSetTimeout;
+        mockSetTimeout.mockClear();
     });
 
     describe('Happy path: successful version response', () => {
@@ -249,8 +266,7 @@ describe('Version API - /version endpoint', () => {
         it('should be stateless and return identical data', async () => {
             const firstCall = await get();
 
-            // Wait a small amount of time
-            await new Promise(resolve => setTimeout(resolve, 10));
+            // No need to wait - mocked setTimeout executes immediately
 
             const secondCall = await get();
 

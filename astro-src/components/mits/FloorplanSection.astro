@@ -1,0 +1,107 @@
+---
+// Floorplan Section Component
+// Converted from src/mits/generator.ts
+
+import type { UnitTypeData } from '../../../src/types';
+import { escapeXML, generateRoomInfo } from './MITSUtils.astro';
+import { isNumber } from 'lodash';
+
+export interface Props {
+    unitType: UnitTypeData
+}
+
+const { unitType } = Astro.props;
+
+// Enhanced unit type data types for future-proofing
+interface EnhancedDeposit {
+    amount: number
+    refundable?: boolean
+    partialRefundPercentage?: number
+}
+
+type EnhancedUnitTypeData = UnitTypeData & {
+    deposit?: number | EnhancedDeposit
+};
+
+const enhancedUnitType = unitType as EnhancedUnitTypeData;
+
+// Extract deposit amount with backward compatibility
+function extractDepositAmount(deposit: number | EnhancedDeposit | undefined): number | undefined {
+    if(deposit === undefined || deposit === null) {
+        return undefined;
+    }
+    if(isNumber(deposit)) {
+        return deposit;
+    }
+    return deposit.amount;
+}
+
+// Check if deposit is refundable (enhanced deposits only)
+function isDepositRefundable(deposit: number | EnhancedDeposit | undefined): boolean | undefined {
+    if(deposit === undefined || deposit === null || isNumber(deposit)) {
+        return undefined;
+    }
+    return deposit.refundable;
+}
+
+const floorplanXML = `
+    <Floorplan>
+        <Identification>
+            <FloorplanID>${escapeXML(unitType.modelID)}</FloorplanID>
+            <Name>${escapeXML(unitType.modelName)}</Name>${
+                unitType.countAvailable
+                    ? `
+            <UnitsAvailable>${unitType.countAvailable}</UnitsAvailable>`
+                    : ''
+            }
+        </Identification>${generateRoomInfo(unitType.beds, unitType.baths)}${
+            (unitType.minSqft || unitType.maxSqft)
+                ? `
+        <SquareFeet>${
+            unitType.minSqft
+                ? `
+            <Min>${unitType.minSqft}</Min>`
+                : ''
+        }${
+            unitType.maxSqft
+                ? `
+            <Max>${unitType.maxSqft}</Max>`
+                : ''
+        }
+        </SquareFeet>`
+                : ''
+        }${
+            (unitType.minRent || unitType.maxRent)
+                ? `
+        <MarketRent>${
+            unitType.minRent
+                ? `
+            <Min>${unitType.minRent}</Min>`
+                : ''
+        }${
+            unitType.maxRent
+                ? `
+            <Max>${unitType.maxRent}</Max>`
+                : ''
+        }
+        </MarketRent>`
+                : ''
+        }${
+            extractDepositAmount(enhancedUnitType.deposit)
+                ? `
+        <Deposit>
+            <Amount>
+                <Value>${extractDepositAmount(enhancedUnitType.deposit)}</Value>
+            </Amount>${
+                isDepositRefundable(enhancedUnitType.deposit) !== undefined
+                    ? `
+            <Refundable>${isDepositRefundable(enhancedUnitType.deposit)}</Refundable>`
+                    : ''
+            }
+        </Deposit>`
+                : ''
+        }
+    </Floorplan>`;
+---
+
+<Fragment set:html={floorplanXML} />

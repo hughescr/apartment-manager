@@ -1,0 +1,111 @@
+---
+// Main MITS Feed Component
+// Converted from src/mits/generator.ts
+
+import type { BuildingData, UnitTypeData, UnitData } from '../../../src/types';
+import { formatDate } from './MITSUtils.astro';
+import { filter, map } from 'lodash';
+
+import PropertyIdentification from './PropertyIdentification.astro';
+import PropertyInformation from './PropertyInformation.astro';
+import PropertyManagement from './PropertyManagement.astro';
+import PropertyPolicy from './PropertyPolicy.astro';
+import PropertyAmenities from './PropertyAmenities.astro';
+import FloorplanSection from './FloorplanSection.astro';
+import UnitSection from './UnitSection.astro';
+
+export interface Props {
+    building: BuildingData
+    unitTypes: UnitTypeData[]
+    units: UnitData[]
+    coords: { latitude: number, longitude: number }
+    rentalType: string
+    siteName: 'apartments_com' | 'zillow'
+    lastUpdate: Date | string | undefined
+}
+
+const { building, unitTypes, units, coords, rentalType, siteName, lastUpdate } = Astro.props;
+
+// Enhanced unit data types for future-proofing
+interface EnhancedUnitData extends UnitData {
+    vacancyClass?: 'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
+    feedInclusion?: Record<string, boolean>
+}
+
+// Filter units for the specified site and vacancy class
+const siteUnits = filter(units, (unit) => {
+    // Check if unit is included in feed for this site
+    const enhancedUnit = unit as EnhancedUnitData;
+    const includedInFeed = enhancedUnit.feedInclusion && enhancedUnit.feedInclusion[siteName] === true;
+    if(!includedInFeed) {
+        return false;
+    }
+
+    // Filter out units with 'Down' vacancy class
+    if(enhancedUnit.vacancyClass === 'Down') {
+        return false;
+    }
+
+    // Note: 'Notice' units are included in feeds by default
+    return true;
+}) as UnitData[];
+
+const MITS_NAMESPACE = 'http://www.mitsproject.org/namespace';
+const formattedLastUpdate = formatDate(lastUpdate || new Date());
+---
+
+<Fragment>{`<?xml version="1.0" encoding="UTF-8"?>
+<PhysicalProperty xmlns="${MITS_NAMESPACE}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">`}
+</Fragment>
+
+<PropertyIdentification
+  building={building}
+  coords={coords}
+  rentalType={rentalType}
+/>
+
+<PropertyInformation
+  building={building}
+  unitCount={siteUnits.length}
+/>
+
+<PropertyManagement
+  building={building}
+/>
+
+<PropertyPolicy
+  building={building}
+/>
+
+<PropertyAmenities
+  building={building}
+/>
+
+{map(unitTypes, unitType => (
+    <FloorplanSection unitType={unitType} />
+))}
+
+{siteUnits.length > 0 && (
+    <>
+        <Fragment>{`
+    
+    <ILSUnit>
+        <Units>`}
+        </Fragment>
+
+        {map(siteUnits, unit => (
+            <UnitSection unit={unit} />
+        ))}
+
+        <Fragment>{`
+        </Units>
+    </ILSUnit>`}
+        </Fragment>
+    </>
+)}
+
+<Fragment>{`
+    
+    <LastUpdate>${formattedLastUpdate}</LastUpdate>
+</PhysicalProperty>`}
+</Fragment>

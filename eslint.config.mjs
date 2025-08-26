@@ -10,7 +10,7 @@ export default
 [
     {
         name: 'ignores',
-        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts'],
+        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts', '*.md'],
     },
 
     defaultConfig.configs.recommended,

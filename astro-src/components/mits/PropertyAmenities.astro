@@ -1,0 +1,34 @@
+---
+// Property Amenities Section Component
+// Converted from src/mits/generator.ts
+
+import type { BuildingData } from '../../../src/types';
+import { escapeXML } from './MITSUtils.astro';
+
+export interface Props {
+    building: BuildingData
+}
+
+const { building } = Astro.props;
+
+// Generate property amenities
+function generateAmenities(building: BuildingData): string {
+    if(!building.propertyAmenities || building.propertyAmenities.length === 0) {
+        return '';
+    }
+
+    let amenities = '';
+    for(const amenity of building.propertyAmenities) {
+        amenities += `
+    <Amenity>
+        <AmenityType>${escapeXML(amenity.name)}</AmenityType>
+    </Amenity>`;
+    }
+
+    return amenities;
+}
+
+const amenitiesXML = generateAmenities(building);
+---
+
+<Fragment set:html={amenitiesXML} />

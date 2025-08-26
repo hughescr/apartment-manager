@@ -1,8 +1,12 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import '../data/test-setup';
 
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, jest, beforeEach, afterEach } from 'bun:test';
 import { noop } from 'lodash';
+
+// Mock setTimeout to eliminate delays
+const mockSetTimeout = jest.fn();
+const originalSetTimeout = global.setTimeout;
 
 /**
  * Tests for Building Management 5-Tab Structure
@@ -16,6 +20,20 @@ import { noop } from 'lodash';
  */
 
 describe('Building Tab Navigation', () => {
+    beforeEach(() => {
+        // Mock setTimeout to resolve immediately (no delays)
+        mockSetTimeout.mockImplementation((callback: () => void) => {
+            callback();
+            return 'mock-timeout-id';
+        });
+        global.setTimeout = mockSetTimeout as unknown as typeof setTimeout;
+    });
+
+    afterEach(() => {
+        // Restore original setTimeout
+        global.setTimeout = originalSetTimeout;
+        mockSetTimeout.mockClear();
+    });
     describe('Tab Structure', () => {
         it('should have exactly 5 tabs with correct names', () => {
             const expectedTabs = [
@@ -197,8 +215,7 @@ describe('Building Tab Navigation', () => {
                     const originalTab = this.activeSectionTab;
                     this.saving = true;
 
-                    // Simulate save operation
-                    await new Promise(resolve => setTimeout(resolve, 10));
+                    // No need to wait - mocked setTimeout executes immediately
 
                     this.saving = false;
 

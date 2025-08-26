@@ -22,7 +22,12 @@ export interface UnitTypeManagementState {
 export class UnitTypeManagement {
     private apiService: BuildingApiService | null = null;
 
-    constructor(private state: UnitTypeManagementState & AlpineMagicProperties) {}
+    constructor(private state: UnitTypeManagementState & AlpineMagicProperties) {
+        // Initialize API service if URL is available
+        if(this.state.apiURL) {
+            this.apiService = new BuildingApiService(this.state.apiURL);
+        }
+    }
 
     /**
      * Initialize unit types data from HTML dataset
@@ -102,6 +107,7 @@ export class UnitTypeManagement {
                         message: response.error || 'Failed to save unit type',
                         type: 'error'
                     });
+                    // Keep dialog open for retry
                     return;
                 }
 
@@ -130,6 +136,7 @@ export class UnitTypeManagement {
                 message: error instanceof Error ? error.message : 'An unexpected error occurred',
                 type: 'error'
             });
+            // Keep dialog open for retry on network errors
         }
     }
 

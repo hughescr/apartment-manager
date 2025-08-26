@@ -1,0 +1,63 @@
+---
+// MITS Utility Functions for XML Generation
+// Converted from src/mits/generator.ts
+
+import { replace, isString } from 'lodash';
+
+// XML escape function for security
+export function escapeXML(str: string | undefined | null): string {
+    if(!str) {
+        return '';
+    }
+    let result = str.toString();
+    result = replace(result, /&/g, '&amp;');
+    result = replace(result, /</g, '&lt;');
+    result = replace(result, />/g, '&gt;');
+    result = replace(result, /"/g, '&quot;');
+    result = replace(result, /'/g, '&apos;');
+    return result;
+}
+
+// Format date to ISO 8601
+export function formatDate(date: Date | string | undefined): string {
+    if(!date) {
+        return new Date().toISOString();
+    }
+    if(isString(date)) {
+        // If already ISO format, return as-is
+        if(date.match(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})?Z?)?$/)) {
+            return date.includes('T') ? date : `${date}T00:00:00Z`;
+        }
+        const newDate = new Date(date);
+        return newDate.toISOString();
+    }
+    return date.toISOString();
+}
+
+// Generate room information
+export function generateRoomInfo(beds: number, baths: number): string {
+    let rooms = '';
+
+    // Bedrooms (0 beds = studio, don't include bedroom entry)
+    if(beds > 0) {
+        rooms += `
+        <Room>
+            <RoomType>bedroom</RoomType>
+            <Count>${beds}</Count>
+        </Room>`;
+    }
+
+    // Bathrooms
+    if(baths > 0) {
+        rooms += `
+        <Room>
+            <RoomType>bathroom</RoomType>
+            <Count>${Math.floor(baths)}</Count>
+        </Room>`;
+    }
+
+    return rooms;
+}
+---
+
+<!-- This component contains utility functions and doesn't render anything -->

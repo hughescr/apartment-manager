@@ -218,7 +218,7 @@ export class UnitManagement {
                 if(!assignmentData.keepCustomValues[field]) {
                     // Only clear if the unit currently has a value
                     if(unit[field as keyof ExtendedUnitData] !== null && unit[field as keyof ExtendedUnitData] !== undefined) {
-                        (updatedUnit as any)[field] = null;
+                        (updatedUnit as Record<string, unknown>)[field] = null;
                     }
                 }
             });

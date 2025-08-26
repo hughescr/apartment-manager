@@ -41,6 +41,7 @@
         "site-build",
         "sst.config.ts",
         ".sst",
-        ".astro"
+        ".astro",
+		"coverage"
     ]
 }

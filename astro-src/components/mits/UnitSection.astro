@@ -1,0 +1,104 @@
+---
+// Unit Section Component
+// Converted from src/mits/generator.ts
+
+import type { UnitData } from '../../../src/types';
+import { escapeXML } from './MITSUtils.astro';
+import { split } from 'lodash';
+
+export interface Props {
+    unit: UnitData
+}
+
+const { unit } = Astro.props;
+
+// Enhanced unit data types for future-proofing
+interface EnhancedUnitData extends UnitData {
+    vacancyClass?: 'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
+    vacateDate?: string
+    madeReadyDate?: string
+}
+
+// Helper function to generate unit identification XML
+function generateUnitIdentificationXML(unit: UnitData): string {
+    return `
+                <Identification>
+                    <UnitID>${escapeXML(unit.unitID)}</UnitID>${
+                        unit.unitNumber
+                            ? `
+                    <UnitNumber>${escapeXML(unit.unitNumber)}</UnitNumber>`
+                            : ''
+                    }${
+                        unit.modelID
+                            ? `
+                    <FloorplanID>${escapeXML(unit.modelID)}</FloorplanID>`
+                            : ''
+                    }
+                </Identification>`;
+}
+
+// Helper function to generate unit details XML (beds, baths, sqft, rent)
+function generateUnitDetailsXML(unit: UnitData): string {
+    const bedsXML = unit.beds !== undefined
+        ? `
+                <UnitBedrooms>${unit.beds}</UnitBedrooms>`
+        : '';
+
+    const bathsXML = unit.baths !== undefined
+        ? `
+                <UnitBathrooms>${unit.baths}</UnitBathrooms>`
+        : '';
+
+    const sqftXML = unit.sqft
+        ? `
+                <MinSquareFeet>${unit.sqft}</MinSquareFeet>
+                <MaxSquareFeet>${unit.sqft}</MaxSquareFeet>`
+        : '';
+
+    const rentXML = unit.rent
+        ? `
+                <MarketRent>${unit.rent}</MarketRent>`
+        : '';
+
+    return bedsXML + bathsXML + sqftXML + rentXML;
+}
+
+// Helper function to generate unit availability XML
+function generateUnitAvailabilityXML(unit: UnitData): string {
+    const enhancedUnit = unit as EnhancedUnitData;
+
+    // Use new vacancy date fields with fallbacks
+    const vacateDate = enhancedUnit.vacateDate || unit.availableDate || split(new Date().toISOString(), 'T')[0];
+    const madeReadyDate = enhancedUnit.madeReadyDate || unit.availableDate || vacateDate;
+    const availableDate = unit.availableDate || madeReadyDate;
+
+    // Use new vacancyClass field with backward compatibility
+    const vacancyClass = enhancedUnit.vacancyClass || (unit.occupied ? 'Occupied' : 'Unoccupied');
+
+    return `
+                <Availability>${
+                    enhancedUnit.vacateDate
+                        ? `
+                    <VacateDate>${vacateDate}</VacateDate>`
+                        : ''
+                }
+                    <VacancyClass>${vacancyClass}</VacancyClass>${
+                        enhancedUnit.madeReadyDate
+                            ? `
+                    <MadeReadyDate>${madeReadyDate}</MadeReadyDate>`
+                            : ''
+                    }${
+                        unit.availableDate
+                            ? `
+                    <AvailableDate>${availableDate}</AvailableDate>`
+                            : ''
+                    }
+                </Availability>`;
+}
+
+const unitXML = `
+            <Unit>${generateUnitIdentificationXML(unit)}${generateUnitDetailsXML(unit)}${generateUnitAvailabilityXML(unit)}
+            </Unit>`;
+---
+
+<Fragment set:html={unitXML} />

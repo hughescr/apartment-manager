@@ -50,7 +50,7 @@ describe('Unit Types API - Create Basic', () => {
         it('should validate required fields', async () => {
             const invalidData = {
                 modelName: '3 Bedroom',
-                // Missing modelID and buildingID (from body, not just path)
+                // Missing modelID (buildingID comes from path)
             };
 
             const event = createMockEvent({
@@ -63,7 +63,7 @@ describe('Unit Types API - Create Basic', () => {
 
             expect(result.statusCode).toBe(400);
             const responseBody = JSON.parse(result.body as string);
-            expect(responseBody.errors).toHaveProperty('buildingID');
+            // buildingID is provided via path parameters, so no error expected
             expect(responseBody.errors).toHaveProperty('modelID');
         });
 

@@ -1,0 +1,57 @@
+---
+// Property Policy Section Component
+// Converted from src/mits/generator.ts
+
+import type { BuildingData } from '../../../src/types';
+import { escapeXML } from './MITSUtils.astro';
+
+export interface Props {
+    building: BuildingData
+}
+
+const { building } = Astro.props;
+
+// Generate pet policy
+function generatePetPolicy(petPolicies: BuildingData['petPolicies']): string {
+    if(!petPolicies) {
+        return '';
+    }
+
+    return `
+        <Pet>
+            <Allowed>${petPolicies.allowed || false}</Allowed>${
+                petPolicies.deposit
+                    ? `
+            <Deposit>${petPolicies.deposit}</Deposit>`
+                    : ''
+            }${
+                petPolicies.monthlyFee
+                    ? `
+            <Fee>${petPolicies.monthlyFee}</Fee>`
+                    : ''
+            }${
+                petPolicies.notes
+                    ? `
+            <Comment>${escapeXML(petPolicies.notes)}</Comment>`
+                    : ''
+            }
+        </Pet>`;
+}
+
+// Generate the policy section if there are policies to include
+const hasPolicies = building.petPolicies || building.applicationFee;
+
+const policyXML = hasPolicies
+? `
+    
+    <Policy>${generatePetPolicy(building.petPolicies)}${
+        building.applicationFee
+            ? `
+        <ApplicationFee>${building.applicationFee}</ApplicationFee>`
+            : ''
+    }
+    </Policy>`
+: '';
+---
+
+<Fragment set:html={policyXML} />

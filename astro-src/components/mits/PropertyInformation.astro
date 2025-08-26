@@ -1,0 +1,77 @@
+---
+// Property Information Section Component
+// Converted from src/mits/generator.ts
+
+import type { BuildingData } from '../../../src/types';
+import { escapeXML } from './MITSUtils.astro';
+
+export interface Props {
+    building: BuildingData
+    unitCount: number
+}
+
+const { building, unitCount } = Astro.props;
+
+// Enhanced building data types for future-proofing
+interface EnhancedBuildingData extends BuildingData {
+    contactInfo?: {
+        propertyWebsite?: string
+        managementWebsite?: string
+        website?: string
+        name?: string
+        phone?: string
+        email?: string
+    }
+}
+
+const enhancedBuilding = building as EnhancedBuildingData;
+
+// Generate information fields
+const yearBuiltXML = building.yearBuilt
+    ? `
+        <YearBuilt>${building.yearBuilt}</YearBuilt>`
+    : '';
+
+const shortDescriptionXML = building.description
+    ? `
+        <ShortDescription>${escapeXML(building.description)}</ShortDescription>`
+    : '';
+
+const longDescriptionXML = building.propertyDescription
+    ? `
+        <LongDescription>${escapeXML(building.propertyDescription)}</LongDescription>`
+    : '';
+
+const phoneXML = building.contactInfo?.phone
+    ? `
+        <PhoneNumber>${escapeXML(building.contactInfo.phone)}</PhoneNumber>`
+    : '';
+
+const emailXML = building.contactInfo?.email
+    ? `
+        <Email>${escapeXML(building.contactInfo.email)}</Email>`
+    : '';
+
+const websiteXML = (enhancedBuilding.contactInfo?.propertyWebsite || enhancedBuilding.contactInfo?.website)
+    ? `
+        <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite || enhancedBuilding.contactInfo.website)}</WebSite>`
+    : '';
+
+const unitCountXML = unitCount > 0
+    ? `
+        <UnitCount>${unitCount}</UnitCount>`
+    : '';
+
+// Generate the complete information section if there's any data to include
+const hasInformation = building.buildingName || building.yearBuilt || building.description || unitCount > 0;
+
+const informationXML = hasInformation
+? `
+    
+    <Information>
+        <StructureType>Apartment</StructureType>${yearBuiltXML}${shortDescriptionXML}${longDescriptionXML}${phoneXML}${emailXML}${websiteXML}${unitCountXML}
+    </Information>`
+: '';
+---
+
+<Fragment set:html={informationXML} />

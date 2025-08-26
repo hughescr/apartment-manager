@@ -36,21 +36,21 @@
             this.showToast = false;
         }
     }"
-    @show-toast.window="showAndHideToast($event.detail.message, $event.detail.type || $event.detail.toastType)"
-    @toast:show.window="showAndHideToast($event.detail.message, $event.detail.type || $event.detail.toastType)"
+  show-toast.window="showAndHideToast($event.detail.message, $event.detail.type || $event.detail.toastType)"
+  toast:show.window="showAndHideToast($event.detail.message, $event.detail.type || $event.detail.toastType)"
   class="toast toast-top toast-end"
   x-show="showToast"
   x-transition.opacity
 >
     <div
-        class="alert cursor-pointer relative pr-12"
-        x-bind:class="{
+      class="alert cursor-pointer relative pr-12"
+      x-bind:class="{
             'alert-error': toastType === 'error',
             'alert-success': toastType === 'success',
             'alert-warning': toastType === 'warning',
             'alert-info': toastType === 'info'
         }"
-        @click="window.toastController?.dismissToast?.()"
+      @click="window.toastController?.dismissToast?.()"
       role="status"
       x-bind:aria-live="toastType === 'error' ? 'assertive' : 'polite'"
     >
@@ -70,6 +70,6 @@
             >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-        </button>
+          </button>
     </div>
 </div>

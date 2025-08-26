@@ -1,0 +1,68 @@
+---
+// Property Identification Section Component
+// Converted from src/mits/generator.ts
+
+import type { BuildingData } from '../../../src/types';
+import { escapeXML } from './MITSUtils.astro';
+
+export interface Props {
+    building: BuildingData
+    coords: { latitude: number, longitude: number }
+    rentalType: string
+}
+
+const { building, coords, rentalType } = Astro.props;
+
+// Enhanced building data types for future-proofing
+interface EnhancedBuildingData extends BuildingData {
+    latitude?: number
+    longitude?: number
+    specialtyType?: string
+    contactInfo?: {
+        propertyWebsite?: string
+        managementWebsite?: string
+        website?: string
+        name?: string
+        phone?: string
+        email?: string
+    }
+}
+
+const enhancedBuilding = building as EnhancedBuildingData;
+
+// Address is required by MITS spec, always provide it
+const address = building.street || 'Address Not Provided';
+const city = building.city || 'City Not Provided';
+const state = building.state || 'CA';
+const zip = building.zip || '00000';
+// Generate the property identification XML
+const propertyXML = `    <Property_ID>
+        <Identification>
+            <PropertyID>${escapeXML(building.buildingID)}</PropertyID>${
+                building.buildingName
+                    ? `
+            <MarketingName>${escapeXML(building.buildingName)}</MarketingName>`
+                    : ''
+            }${
+                (enhancedBuilding.contactInfo?.propertyWebsite || enhancedBuilding.contactInfo?.website)
+                    ? `
+            <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite || enhancedBuilding.contactInfo.website)}</WebSite>`
+                    : ''
+            }
+        </Identification>
+        <Address>
+            <Address>${escapeXML(address)}</Address>
+            <City>${escapeXML(city)}</City>
+            <State>${escapeXML(state)}</State>
+            <PostalCode>${escapeXML(zip)}</PostalCode>
+            <Country>US</Country>
+        </Address>
+        <ILS_Identification>
+            <RentalType>${rentalType}</RentalType>
+            <Latitude>${coords.latitude}</Latitude>
+            <Longitude>${coords.longitude}</Longitude>
+        </ILS_Identification>
+    </Property_ID>`;
+---
+
+<Fragment set:html={propertyXML} />

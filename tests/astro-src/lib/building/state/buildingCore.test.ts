@@ -300,11 +300,21 @@ describe('BuildingCore', () => {
         });
 
         test('should handle delete cancellation', async () => {
-            mockWindow.confirm.mockReturnValue(false);
+            // Override the global confirm directly for this test
+            const originalConfirm = global.confirm;
+            global.confirm = jest.fn().mockReturnValue(false) as unknown as typeof global.confirm;
 
             await buildingCore.deleteBuildingData();
 
-            expect(mockFetch).not.toHaveBeenCalled();
+            // Verify confirm was called
+            expect(global.confirm).toHaveBeenCalledWith('Are you sure you want to delete this building?');
+
+            // When confirm returns false, no side effects should occur
+            expect(mockState.$dispatch).not.toHaveBeenCalled();
+            expect(mockWindow.location.href).toBe('');
+
+            // Restore original confirm
+            global.confirm = originalConfirm;
         });
 
         test('should handle delete errors', async () => {

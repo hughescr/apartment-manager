@@ -1,0 +1,60 @@
+---
+// Property Management Section Component
+// Converted from src/mits/generator.ts
+
+import type { BuildingData } from '../../../src/types';
+import { escapeXML } from './MITSUtils.astro';
+
+export interface Props {
+    building: BuildingData
+}
+
+const { building } = Astro.props;
+
+// Enhanced building data types for future-proofing
+interface EnhancedBuildingData extends BuildingData {
+    contactInfo?: {
+        propertyWebsite?: string
+        managementWebsite?: string
+        website?: string
+        name?: string
+        phone?: string
+        email?: string
+    }
+}
+
+const enhancedBuilding = building as EnhancedBuildingData;
+
+const managementName = enhancedBuilding.contactInfo?.name || building.buildingName || 'Property Management';
+const managementEmail = enhancedBuilding.contactInfo?.email || '';
+const managementPhone = enhancedBuilding.contactInfo?.phone || '';
+const managementWebsite = enhancedBuilding.contactInfo?.managementWebsite;
+
+const managementXML = `
+    
+    <Management>
+        <CompanyName>${escapeXML(managementName)}</CompanyName>${
+            managementName
+                ? `
+        <Name>${escapeXML(managementName)}</Name>`
+                : ''
+        }${
+            managementEmail
+                ? `
+        <Email>${escapeXML(managementEmail)}</Email>`
+                : ''
+        }${
+            managementPhone
+                ? `
+        <Phone>${escapeXML(managementPhone)}</Phone>`
+                : ''
+        }${
+            managementWebsite
+                ? `
+        <WebSite>${escapeXML(managementWebsite)}</WebSite>`
+                : ''
+        }
+    </Management>`;
+---
+
+<Fragment set:html={managementXML} />
