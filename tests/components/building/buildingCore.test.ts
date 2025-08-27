@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { noop } from 'lodash';
 import './test-setup'; // Import test setup for DOM mocking
+import { setupFakeTimers, teardownFakeTimers, tick } from '../../utils/timer-acceleration';
 import { BuildingCore } from '../../../astro-src/lib/building/state/buildingCore';
 import type { BuildingCoreState } from '../../../astro-src/lib/building/state/buildingCore';
 import type { AlpineMagicProperties } from '../../../astro-src/lib/alpine';
@@ -10,6 +11,9 @@ describe('BuildingCore', () => {
     let buildingCore: BuildingCore;
 
     beforeEach(() => {
+        // Setup fake timers for all tests
+        setupFakeTimers();
+
         // Mock Alpine.js state
         mockState = {
             building: null,
@@ -40,6 +44,9 @@ describe('BuildingCore', () => {
         if(buildingCore) {
             buildingCore.destroy();
         }
+
+        // Teardown fake timers
+        teardownFakeTimers();
     });
 
     describe('timeout cleanup', () => {
@@ -85,16 +92,15 @@ describe('BuildingCore', () => {
             done();
         });
 
-        it('should handle destroy gracefully when timeout has already completed', (done) => {
+        it('should handle destroy gracefully when timeout has already completed', () => {
             // Setup watchers
             buildingCore.setupBuildingWatchers();
 
-            // Wait for timeout to complete
-            setTimeout(() => {
-                // Destroy after timeout completes - should not throw error
-                expect(() => buildingCore.destroy()).not.toThrow();
-                done();
-            }, 150); // Wait longer than the 100ms timeout
+            // Advance time to let timeout complete
+            tick(150); // Wait longer than the 100ms timeout
+
+            // Destroy after timeout completes - should not throw error
+            expect(() => buildingCore.destroy()).not.toThrow();
         });
 
         it('should handle multiple destroy calls gracefully', () => {
@@ -110,10 +116,10 @@ describe('BuildingCore', () => {
     });
 
     describe('original functionality', () => {
-        it('should maintain original setTimeout behavior when not destroyed', (done) => {
+        it('should maintain original setTimeout behavior when not destroyed', () => {
             let timeoutExecuted = false;
 
-            // Track when the timeout callback executes
+            // Mock the timeout callback to track execution
             const originalSetTimeout = global.setTimeout;
             global.setTimeout = ((callback: () => void, delay: number) => {
                 const wrappedCallback = () => {
@@ -126,14 +132,14 @@ describe('BuildingCore', () => {
 
             buildingCore.setupBuildingWatchers();
 
-            // Wait for timeout to complete and verify it executed
-            return setTimeout(() => {
-                expect(timeoutExecuted).toBe(true);
+            // Advance time to let timeout execute
+            tick(150);
 
-                // Restore original function
-                global.setTimeout = originalSetTimeout;
-                done();
-            }, 150);
+            // Verify timeout executed
+            expect(timeoutExecuted).toBe(true);
+
+            // Restore original function
+            global.setTimeout = originalSetTimeout;
         });
     });
 });

@@ -90,9 +90,9 @@ export const mockWindow = {
     location: {
         reload: jest.fn(),
         href: ''
-    },
-    setTimeout: mockSetTimeout,
-    clearTimeout: mockClearTimeout
+    }
+    // Note: setTimeout and clearTimeout removed to allow fake timers to work properly
+    // mockSetTimeout and mockClearTimeout are still available for direct use if needed
 } as {
     createBuildingState: jest.Mock
     buildingProviderData: jest.Mock
@@ -101,8 +101,6 @@ export const mockWindow = {
         reload: jest.Mock
         href: string
     }
-    setTimeout: typeof mockSetTimeout
-    clearTimeout: typeof mockClearTimeout
 };
 
 // Setup global window and confirm mocks

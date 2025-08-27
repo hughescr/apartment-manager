@@ -144,8 +144,20 @@ describe('Timer Acceleration Utility', () => {
     });
 
     describe('Isolated Timer Accelerator', () => {
+        let accelerator: ReturnType<typeof createTimerAccelerator>;
+
+        beforeEach(() => {
+            accelerator = createTimerAccelerator();
+        });
+
+        afterEach(() => {
+            // Always cleanup any installed timer accelerator to prevent test pollution
+            if(accelerator && accelerator.isInstalled) {
+                accelerator.uninstall();
+            }
+        });
+
         test('should work independently of global state', async () => {
-            const accelerator = createTimerAccelerator();
             accelerator.install();
 
             let called = false;
@@ -161,19 +173,18 @@ describe('Timer Acceleration Utility', () => {
         });
 
         test('should throw error when not installed', () => {
-            const accelerator = createTimerAccelerator();
-
             expect(() => accelerator.tick(100)).toThrow('Timer accelerator not installed');
             expect(() => accelerator.now()).toThrow('Timer accelerator not installed');
         });
 
         test('should throw error when installing twice', () => {
-            const accelerator = createTimerAccelerator();
             accelerator.install();
 
-            expect(() => accelerator.install()).toThrow('Timer accelerator already installed');
-
-            accelerator.uninstall();
+            try {
+                expect(() => accelerator.install()).toThrow('Timer accelerator already installed');
+            } finally {
+                accelerator.uninstall();
+            }
         });
     });
 

@@ -9,12 +9,11 @@ interface TimerAcceleratorOptions {
 
 /**
  * Default timer configuration for @sinonjs/fake-timers
- * Uses type assertion to bypass TypeScript's overly restrictive types
  */
-const DEFAULT_TIMER_CONFIG = {
+const DEFAULT_TIMER_CONFIG: FakeTimers.FakeTimerInstallOpts = {
     shouldClearNativeTimers: true,
-    toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'],
-} as unknown as FakeTimers.FakeTimerInstallOpts;
+    toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] as FakeTimers.FakeMethod[],
+};
 
 /**
  * Timer acceleration utility for tests
@@ -59,7 +58,11 @@ export class TimerAccelerator {
             throw new Error('Timer accelerator already installed. Call uninstall() first.');
         }
 
-        const config = { ...DEFAULT_TIMER_CONFIG, ...options };
+        const config: FakeTimers.FakeTimerInstallOpts = {
+            ...DEFAULT_TIMER_CONFIG,
+            ...(options.shouldClearNativeTimers !== undefined && { shouldClearNativeTimers: options.shouldClearNativeTimers }),
+            ...(options.toFake && { toFake: options.toFake as FakeTimers.FakeMethod[] }),
+        };
         this.clock = FakeTimers.install(config);
 
         return this.clock;
