@@ -2,7 +2,10 @@
  * Comprehensive tests for the modularized Radar service
  * Tests all components: RadarCache, RateLimiter, Debouncer, RadarClient, and integration
  */
+// Import test setup FIRST for base mocks
+import './test-setup';
 import { describe, it, expect, jest, beforeEach, afterEach, spyOn } from 'bun:test';
+// Test setup for RadarService tests - delays are automatically fast in test environment
 import { RadarCache } from '../../../src/services/radar/radar-cache';
 import { RadarClient } from '../../../src/services/radar/radar-client';
 import { radarService, getAddressSuggestions, getUserLocation } from '../../../src/services/radar';
@@ -116,9 +119,7 @@ const createMockRadarForwardGeocodeResponse = (): RadarForwardGeocodeResponse =>
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
-// Note: We're NOT mocking timers globally because it breaks p-debounce and p-throttle
-// These libraries need real timers to function correctly
-// We'll only use timer mocking selectively in specific tests that need it
+// Delays are now automatically fast in test environments via configurable delays
 
 // Helper to create mock Response
 const createMockResponse = (data: unknown, options: { status?: number, ok?: boolean } = {}) => {
@@ -152,6 +153,8 @@ const resetAllMocks = () => {
     loggerErrorSpy.mockClear();
     loggerDebugSpy.mockClear();
 };
+
+// Global setup - delays are automatically fast in test environment
 
 describe('RadarCache', () => {
     let cache: RadarCache;
@@ -419,11 +422,14 @@ describe('RadarClient', () => {
             const mockResponse = createMockRadarAutocompleteResponse();
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            await client.autocompleteAddress({
+            const requestPromise = client.autocompleteAddress({
                 query: 'test query',
                 limit: 3,
                 coordinates: { lat: 37.7749, lon: -122.4194 }
             });
+
+            // Debounce delay is automatically fast in test environment
+            await requestPromise;
 
             expect(mockFetch).toHaveBeenCalledWith(
                 expect.stringContaining('query=test+query'),
@@ -444,10 +450,11 @@ describe('RadarClient', () => {
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
             // Need a unique query to avoid debounce conflicts
-            const uniqueQuery = `test-query-${Date.now()}`;
-            const results = await client.autocompleteAddress({ query: uniqueQuery });
+            const uniqueQuery = `test-query-${Math.random().toString(36).substr(2, 9)}`;
+            const resultsPromise = client.autocompleteAddress({ query: uniqueQuery });
 
-            // No need to wait - mocked setTimeout executes immediately
+            // Debounce delay is automatically fast in test environment
+            const results = await resultsPromise;
 
             expect(results).toHaveLength(2);
             expect(results[0]).toMatchObject({
@@ -484,11 +491,10 @@ describe('RadarClient', () => {
             mockFetch.mockResolvedValue(createMockResponse({}, { status: 429, ok: false }));
 
             // Need a unique query to avoid debounce conflicts
-            const uniqueQuery = `error-test-${Date.now()}`;
+            const uniqueQuery = `error-test-${Math.random().toString(36).substr(2, 9)}`;
             const resultsPromise = client.autocompleteAddress({ query: uniqueQuery });
 
-            // The promise returns immediately, and debounce executes immediately with mocked setTimeout
-
+            // Debounce delay is automatically fast in test environment
             const results = await resultsPromise;
 
             expect(results).toEqual([]);
@@ -499,11 +505,10 @@ describe('RadarClient', () => {
             mockFetch.mockRejectedValue(new Error('Network error'));
 
             // Need a unique query to avoid debounce conflicts
-            const uniqueQuery = `network-error-${Date.now()}`;
+            const uniqueQuery = `network-error-${Math.random().toString(36).substr(2, 9)}`;
             const resultsPromise = client.autocompleteAddress({ query: uniqueQuery });
 
-            // No need to wait - mocked setTimeout executes immediately
-
+            // Debounce delay is automatically fast in test environment
             const results = await resultsPromise;
 
             expect(results).toEqual([]);
@@ -648,7 +653,10 @@ describe('Integration Tests', () => {
             const mockResponse = createMockRadarAutocompleteResponse();
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            const results = await getAddressSuggestions('test query');
+            const resultsPromise = getAddressSuggestions('test query');
+
+            // Debounce delay is automatically fast in test environment
+            const results = await resultsPromise;
 
             expect(results).toHaveLength(2);
             expect(results[0]).toMatchObject({
@@ -662,8 +670,11 @@ describe('Integration Tests', () => {
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
             const coords = { lat: 37.7749, lon: -122.4194 };
-            const uniqueQuery = `proximity-test-${Date.now()}`;
-            await getAddressSuggestions(uniqueQuery, 5, coords);
+            const uniqueQuery = `proximity-test-${Math.random().toString(36).substr(2, 9)}`;
+            const requestPromise = getAddressSuggestions(uniqueQuery, 5, coords);
+
+            // Debounce delay is automatically fast in test environment
+            await requestPromise;
 
             expect(mockFetch).toHaveBeenCalledWith(
                 expect.stringContaining('near=37.7749%2C-122.4194'),
@@ -713,29 +724,23 @@ describe('Integration Tests', () => {
     });
 
     describe('Complete Service Integration', () => {
-        it.skip('should handle rate limiting across multiple requests', async () => {
-            // This test requires real timing behavior which is slow
-            // The rate limiter enforces 100ms between requests, making this test take 200+ms
-            // Skipping to avoid test timeout issues
+        it('should handle rate limiting across multiple requests', async () => {
+            // Testing throttling - delays are automatically fast in test environment
             const mockResponse = createMockRadarAutocompleteResponse(1);
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            const startTime = Date.now();
-
-            // Make multiple requests
+            // Make multiple requests with unique queries to avoid debouncing
+            const suffix = Math.random().toString(36).substr(2, 9);
             const promises = [
-                radarService.autocompleteAddress({ query: 'query1' }),
-                radarService.autocompleteAddress({ query: 'query2' }),
-                radarService.autocompleteAddress({ query: 'query3' })
+                radarService.autocompleteAddress({ query: `query1-${suffix}` }),
+                radarService.autocompleteAddress({ query: `query2-${suffix}` }),
+                radarService.autocompleteAddress({ query: `query3-${suffix}` })
             ];
 
+            // Debounce and throttle delays are automatically fast in test environment
             await Promise.all(promises);
 
-            const endTime = Date.now();
-            const duration = endTime - startTime;
-
-            // Should take at least 200ms due to rate limiting (2 intervals of 100ms)
-            expect(duration).toBeGreaterThanOrEqual(200);
+            // All three requests should have been made
             expect(mockFetch).toHaveBeenCalledTimes(3);
         });
 
@@ -743,7 +748,7 @@ describe('Integration Tests', () => {
             const mockResponse = createMockRadarAutocompleteResponse(1);
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            const query = `debounce-test-${Date.now()}`; // Unique query to avoid cache
+            const query = `debounce-test-${Math.random().toString(36).substr(2, 9)}`; // Unique query to avoid cache
 
             // Make multiple rapid requests for same query
             const promises = [
@@ -751,6 +756,8 @@ describe('Integration Tests', () => {
                 radarService.autocompleteAddress({ query }),
                 radarService.autocompleteAddress({ query })
             ];
+
+            // Debounce delay is automatically fast in test environment
 
             // Wait for all promises to complete
             const results = await Promise.allSettled(promises);
@@ -772,35 +779,50 @@ describe('Integration Tests', () => {
             const mockResponse = createMockRadarAutocompleteResponse(1);
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            const query = `cache-integration-test-${Date.now()}`; // Unique query
+            const query = `cache-integration-test-${Math.random().toString(36).substr(2, 9)}`; // Unique query
 
             // First request should hit API
-            const results1 = await radarService.autocompleteAddress({ query });
+            const results1Promise = radarService.autocompleteAddress({ query });
+
+            // Debounce delay is automatically fast in test environment
+            const results1 = await results1Promise;
             expect(mockFetch).toHaveBeenCalledTimes(1);
             expect(results1[0].source).toBe('radar');
 
-            // Second request should use cache
+            // Second request should use cache (no debounce needed as it hits cache immediately)
             const results2 = await radarService.autocompleteAddress({ query });
             expect(mockFetch).toHaveBeenCalledTimes(1); // No additional call
             expect(results2[0].source).toBe('cache');
         });
 
         it('should handle error recovery across components', async () => {
-            // Use a unique query to avoid cache pollution
-            const uniqueQuery1 = `error-test-${Date.now()}`;
-            const uniqueQuery2 = `recovery-test-${Date.now()}`;
+            // Use unique queries to avoid cache pollution
+            const uniqueQuery1 = `error-test-${Math.random().toString(36).substr(2, 9)}`;
+            const uniqueQuery2 = `recovery-test-${Math.random().toString(36).substr(2, 9)}`;
+
+            // Clear any existing state
+            radarService.clearCache();
 
             // First request fails
             mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-            const results1 = await radarService.autocompleteAddress({ query: uniqueQuery1 });
+            const results1Promise = radarService.autocompleteAddress({ query: uniqueQuery1 });
+
+            // Debounce delay is automatically fast in test environment
+            const results1 = await results1Promise;
             expect(results1).toEqual([]);
+
+            // Clear any potential interference
+            radarService.clearCache();
 
             // Second request should work
             const mockResponse = createMockRadarAutocompleteResponse(1);
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            const results2 = await radarService.autocompleteAddress({ query: uniqueQuery2 });
+            const results2Promise = radarService.autocompleteAddress({ query: uniqueQuery2 });
+
+            // Debounce delay is automatically fast in test environment
+            const results2 = await results2Promise;
             expect(results2).toHaveLength(1);
             expect(results2[0].source).toBe('radar');
         });

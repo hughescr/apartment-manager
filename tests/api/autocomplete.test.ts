@@ -93,6 +93,40 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
         jest.clearAllMocks();
         jest.restoreAllMocks();
 
+        // Mock RadarService for consistent test results
+        const mockRadarService = {
+            autocompleteAddress: jest.fn().mockResolvedValue([
+                {
+                    displayText: '123 Test St, Test City, CA, USA',
+                    components: {
+                        street: '123 Test St',
+                        city: 'Test City',
+                        state: 'CA',
+                        postalCode: '90210'
+                    },
+                    coordinates: {
+                        lat: 34.0522,
+                        lon: -118.2437
+                    },
+                    confidence: 0.8,
+                    source: 'radar',
+                    id: 'test-id'
+                }
+            ]),
+            getLocationFromIP: jest.fn().mockResolvedValue({
+                lat: 37.7749,
+                lon: -122.4194,
+                source: 'ip'
+            })
+        };
+
+        // Override the global radarService if it exists
+        if(typeof globalThis !== 'undefined') {
+            (globalThis as typeof globalThis & { mockRadarService?: typeof mockRadarService }).mockRadarService = mockRadarService;
+        }
+
+        // Delays are automatically fast in test environment
+
         // Reset fetch mock
         mockFetch.mockClear();
         mockFetch.mockReset();
@@ -129,6 +163,8 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
     afterEach(() => {
         mockFetch.mockClear();
+
+        // No cleanup needed for service mocks
     });
 
     afterAll(() => {
@@ -153,6 +189,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should process as regular search query, not execute SQL
@@ -175,6 +212,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should process as regular search query
@@ -199,6 +237,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should process as regular search query, not execute scripts
@@ -220,6 +259,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should process as regular search query
@@ -243,6 +283,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should process as regular search query
@@ -340,6 +381,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     expect(result.statusCode).toBe(200);
@@ -416,6 +458,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     if(limit === '{"$where": "1"}') {
@@ -449,6 +492,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should succeed but ignore invalid coordinates
@@ -474,6 +518,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should succeed but ignore invalid coordinates
@@ -501,6 +546,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should succeed but ignore invalid coordinates
@@ -556,6 +602,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
+
                     const body = JSON.parse(result.body!);
 
                     // Should process normally despite malicious IP header
@@ -879,8 +926,8 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                 for(const test of nullByteTests) {
                     const event = createMockEvent('GET', '/autocomplete/address', test);
-                    const result = await callAddressAutocomplete(event);
 
+                    const result = await callAddressAutocomplete(event);
                     // Should either succeed (sanitized) or fail gracefully
                     expect([200, 400].includes(result.statusCode)).toBe(true);
 

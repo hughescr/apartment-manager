@@ -85,7 +85,7 @@ export class BuildingCore {
         }, { deep: true });
         // Mark initial setup as complete after a short delay to allow for data loading
         this.state.$nextTick(() => {
-            this.initTimeoutId = (typeof window !== 'undefined' ? window.setTimeout : setTimeout)(() => {
+            this.initTimeoutId = setTimeout(() => {
                 initialSetupComplete = true;
                 // If original hasn't been set yet but building has data, set it now
                 if(!this.state.original && this.state.building) {
@@ -328,7 +328,7 @@ export class BuildingCore {
     destroy(): void {
         // Clear any pending initialization timeout
         if(this.initTimeoutId !== null) {
-            (typeof window !== 'undefined' ? window.clearTimeout : clearTimeout)(this.initTimeoutId);
+            clearTimeout(this.initTimeoutId);
             this.initTimeoutId = null;
         }
     }

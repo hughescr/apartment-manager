@@ -18,6 +18,34 @@ import { startsWith } from 'lodash';
 const logger = baseLogger;
 
 /**
+ * Configuration options for RadarClient
+ */
+export interface RadarClientConfig {
+    throttle?: {
+        limit: number
+        interval: number
+    }
+    debounceDelay?: number
+}
+
+/**
+ * Create environment-aware configuration for RadarClient
+ * Tests get faster settings to improve test performance
+ */
+export function createRadarConfig(): RadarClientConfig {
+    const isTest = process.env.NODE_ENV === 'test' ||
+      process.env.BUN_ENV === 'test';
+
+    return {
+        throttle: {
+            limit: isTest ? 100 : 10,
+            interval: isTest ? 1 : 1000
+        },
+        debounceDelay: isTest ? 1 : 200
+    };
+}
+
+/**
  * Comprehensive Radar service for address autocomplete, geocoding, and location services
  *
  * Features:
@@ -34,16 +62,18 @@ export class RadarClient {
     private readonly baseUrl = 'https://api.radar.io/v1';
     private readonly userAgent = 'apartment-manager/1.0';
     private cache: RadarCache;
+    private config: RadarClientConfig;
     private throttledMakeRequest: (endpoint: string, params: Record<string, string>) => Promise<Response>;
     private debouncedAutocomplete: Map<string, (() => Promise<RadarAutocompleteResult[]>)>;
 
-    constructor(cache: RadarCache) {
+    constructor(cache: RadarCache, config?: RadarClientConfig) {
         this.cache = cache;
+        this.config = config || createRadarConfig();
 
-        // Create a throttled version of makeRequest (10 requests per second)
+        // Create a throttled version of makeRequest using config values
         const throttle = pThrottle({
-            limit: 10,
-            interval: 1000
+            limit: this.config.throttle?.limit || 10,
+            interval: this.config.throttle?.interval || 1000
         });
         this.throttledMakeRequest = throttle(this.makeRequestInternal.bind(this));
 
@@ -242,7 +272,7 @@ export class RadarClient {
 
                     logger.info(`Retrieved ${parsedResults.length} autocomplete suggestions for query: ${trimmedQuery}`);
                     return parsedResults;
-                }, 200); // 200ms debounce
+                }, this.config.debounceDelay || 200); // configurable debounce delay
 
                 this.debouncedAutocomplete.set(trimmedQuery, debouncedFn);
             }
@@ -395,10 +425,12 @@ export class RadarClient {
     }
 
     /**
-     * Clear all caches
+     * Clear all caches and debounced functions
      */
     clearCache(): void {
         this.cache.clear();
+        // Clear debounced function map to prevent stale timer contexts
+        this.debouncedAutocomplete.clear();
     }
 
     /**

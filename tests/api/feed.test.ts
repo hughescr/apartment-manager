@@ -388,27 +388,45 @@ describe('Feed API - /feed/{site}/live endpoint', () => {
         });
 
         it('should handle large XML responses', async () => {
-            const event = createAPIGatewayEvent('zillow');
-            const buildings = Array.from({ length: 10 }, (_, i) =>
-                createTestBuilding(`building-${i}`, `Building ${i}`)
-            );
+            // Mock setTimeout to immediately resolve instead of delaying
+            const originalSetTimeout = global.setTimeout;
+            const mockSetTimeout = jest.fn((callback: () => void) => {
+                // Call callback immediately instead of waiting
+                callback();
+                return {} as NodeJS.Timeout; // Return a mock timer ID
+            });
+            global.setTimeout = mockSetTimeout as typeof setTimeout;
 
-            // Mock DynamoDB responses for multiple buildings
-            let mockChain = dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(buildings)); // getBuildings
+            try {
+                const event = createAPIGatewayEvent('zillow');
+                const buildings = Array.from({ length: 10 }, (_, i) =>
+                    createTestBuilding(`building-${i}`, `Building ${i}`)
+                );
 
-            // Mock unit types and units for each building
-            for(const _building of buildings) {
-                mockChain = mockChain
-                    .mockResolvedValueOnce(mockQueryResponse([])) // getUnitTypes
-                    .mockResolvedValueOnce(mockQueryResponse([])); // getUnits
+                // Mock DynamoDB responses for multiple buildings
+                let mockChain = dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(buildings)); // getBuildings
+
+                // Mock unit types and units for each building
+                for(const _building of buildings) {
+                    mockChain = mockChain
+                        .mockResolvedValueOnce(mockQueryResponse([])) // getUnitTypes
+                        .mockResolvedValueOnce(mockQueryResponse([])); // getUnits
+                }
+
+                // The 100ms delay will be skipped due to our setTimeout mock
+                const result = await live(event);
+
+                expect(result.statusCode).toBe(200);
+                expect(result.body).toContain('<?xml');
+                expect(result.body).toBeDefined();
+                expect(result.body!.length).toBeGreaterThan(100); // Should contain XML for multiple buildings
+
+                // Verify that setTimeout was called (indicating the delay code path was hit)
+                expect(mockSetTimeout).toHaveBeenCalled();
+            } finally {
+                // Restore original setTimeout
+                global.setTimeout = originalSetTimeout;
             }
-
-            const result = await live(event);
-
-            expect(result.statusCode).toBe(200);
-            expect(result.body).toContain('<?xml');
-            expect(result.body).toBeDefined();
-            expect(result.body!.length).toBeGreaterThan(100); // Should contain XML for multiple buildings
         });
     });
 
