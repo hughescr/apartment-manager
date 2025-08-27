@@ -127,7 +127,7 @@ describe('Timer Mocking Investigation', () => {
         test('Compare simple debounce with p-debounce', async () => {
             // Simple debounce that uses setTimeout directly
             function simpleDebounce<T extends (...args: unknown[]) => unknown>(fn: T, delay: number): T {
-                let timeoutId: NodeJS.Timeout | number;
+                let timeoutId: NodeJS.Timeout | number | Timer;
                 return ((...args: Parameters<T>) => {
                     clearTimeout(timeoutId);
                     return new Promise((resolve) => {

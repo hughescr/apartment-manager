@@ -450,7 +450,7 @@ describe('RadarClient', () => {
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
             // Need a unique query to avoid debounce conflicts
-            const uniqueQuery = `test-query-${Math.random().toString(36).substr(2, 9)}`;
+            const uniqueQuery = `test-query-${Math.random().toString(36).substring(2, 11)}`;
             const resultsPromise = client.autocompleteAddress({ query: uniqueQuery });
 
             // Debounce delay is automatically fast in test environment
@@ -491,7 +491,7 @@ describe('RadarClient', () => {
             mockFetch.mockResolvedValue(createMockResponse({}, { status: 429, ok: false }));
 
             // Need a unique query to avoid debounce conflicts
-            const uniqueQuery = `error-test-${Math.random().toString(36).substr(2, 9)}`;
+            const uniqueQuery = `error-test-${Math.random().toString(36).substring(2, 11)}`;
             const resultsPromise = client.autocompleteAddress({ query: uniqueQuery });
 
             // Debounce delay is automatically fast in test environment
@@ -505,7 +505,7 @@ describe('RadarClient', () => {
             mockFetch.mockRejectedValue(new Error('Network error'));
 
             // Need a unique query to avoid debounce conflicts
-            const uniqueQuery = `network-error-${Math.random().toString(36).substr(2, 9)}`;
+            const uniqueQuery = `network-error-${Math.random().toString(36).substring(2, 11)}`;
             const resultsPromise = client.autocompleteAddress({ query: uniqueQuery });
 
             // Debounce delay is automatically fast in test environment
@@ -670,7 +670,7 @@ describe('Integration Tests', () => {
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
             const coords = { lat: 37.7749, lon: -122.4194 };
-            const uniqueQuery = `proximity-test-${Math.random().toString(36).substr(2, 9)}`;
+            const uniqueQuery = `proximity-test-${Math.random().toString(36).substring(2, 11)}`;
             const requestPromise = getAddressSuggestions(uniqueQuery, 5, coords);
 
             // Debounce delay is automatically fast in test environment
@@ -730,7 +730,7 @@ describe('Integration Tests', () => {
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
             // Make multiple requests with unique queries to avoid debouncing
-            const suffix = Math.random().toString(36).substr(2, 9);
+            const suffix = Math.random().toString(36).substring(2, 11);
             const promises = [
                 radarService.autocompleteAddress({ query: `query1-${suffix}` }),
                 radarService.autocompleteAddress({ query: `query2-${suffix}` }),
@@ -748,7 +748,7 @@ describe('Integration Tests', () => {
             const mockResponse = createMockRadarAutocompleteResponse(1);
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            const query = `debounce-test-${Math.random().toString(36).substr(2, 9)}`; // Unique query to avoid cache
+            const query = `debounce-test-${Math.random().toString(36).substring(2, 11)}`; // Unique query to avoid cache
 
             // Make multiple rapid requests for same query
             const promises = [
@@ -779,7 +779,7 @@ describe('Integration Tests', () => {
             const mockResponse = createMockRadarAutocompleteResponse(1);
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
-            const query = `cache-integration-test-${Math.random().toString(36).substr(2, 9)}`; // Unique query
+            const query = `cache-integration-test-${Math.random().toString(36).substring(2, 11)}`; // Unique query
 
             // First request should hit API
             const results1Promise = radarService.autocompleteAddress({ query });
@@ -797,8 +797,8 @@ describe('Integration Tests', () => {
 
         it('should handle error recovery across components', async () => {
             // Use unique queries to avoid cache pollution
-            const uniqueQuery1 = `error-test-${Math.random().toString(36).substr(2, 9)}`;
-            const uniqueQuery2 = `recovery-test-${Math.random().toString(36).substr(2, 9)}`;
+            const uniqueQuery1 = `error-test-${Math.random().toString(36).substring(2, 11)}`;
+            const uniqueQuery2 = `recovery-test-${Math.random().toString(36).substring(2, 11)}`;
 
             // Clear any existing state
             radarService.clearCache();

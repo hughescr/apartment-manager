@@ -395,7 +395,7 @@ describe('Feed API - /feed/{site}/live endpoint', () => {
                 callback();
                 return {} as NodeJS.Timeout; // Return a mock timer ID
             });
-            global.setTimeout = mockSetTimeout as typeof setTimeout;
+            global.setTimeout = mockSetTimeout as unknown as typeof setTimeout;
 
             try {
                 const event = createAPIGatewayEvent('zillow');
