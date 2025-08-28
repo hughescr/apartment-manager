@@ -16,6 +16,8 @@ export interface UnitManagementState {
     showAddUnitDialog: boolean
     showBulkCreateDialog: boolean
     showAssignUnitTypeDialog: boolean
+    showEditUnitDialog: boolean
+    editingUnit: ExtendedUnitData | null
     newUnit: { unitID: string, modelID: string }
     bulkCreateData: {
         modelID: string
@@ -147,6 +149,19 @@ export class UnitManagement {
     closeAddUnitDialog(): void {
         this.state.showAddUnitDialog = false;
         this.state.newUnit = { unitID: '', modelID: '' };
+    }
+
+    /**
+     * Open/close edit unit dialog
+     */
+    openEditUnitDialog(unit: ExtendedUnitData): void {
+        this.state.showEditUnitDialog = true;
+        this.state.editingUnit = { ...unit };
+    }
+
+    closeEditUnitDialog(): void {
+        this.state.showEditUnitDialog = false;
+        this.state.editingUnit = null;
     }
 
     /**
@@ -536,6 +551,81 @@ export class UnitManagement {
             });
         } finally {
             unit.savingField = null;
+        }
+    }
+
+    /**
+     * Update unit with form data
+     */
+    async updateUnit(unitId: string, updatedData: Partial<ExtendedUnitData>): Promise<void> {
+        if(!this.apiService || !this.state.building || !this.state.editingUnit) {
+            return;
+        }
+
+        try {
+            const updatedUnit = {
+                ...this.state.editingUnit,
+                ...updatedData,
+                lastUpdated: new Date().toISOString()
+            };
+
+            const result = await this.apiService.updateUnit(this.state.building.buildingID, updatedUnit);
+
+            if(!result.success) {
+                throw new Error(result.error || 'Failed to update unit');
+            }
+
+            // Update local state
+            this.unitsManager.updateUnit(unitId, {
+                ...updatedData,
+                lastUpdated: new Date().toISOString()
+            });
+            this.updateFilteredUnits();
+            this.closeEditUnitDialog();
+
+            this.state.$dispatch('toast:show', {
+                message: `Unit ${this.state.editingUnit.unitNumber || unitId} updated successfully`,
+                type: 'success'
+            });
+        } catch(error) {
+            this.state.$dispatch('toast:show', {
+                message: 'Failed to update unit: ' + (isError(error) ? error.message : 'Unknown error'),
+                type: 'error'
+            });
+            throw error;
+        }
+    }
+
+    /**
+     * Delete unit
+     */
+    async deleteUnit(unitId: string): Promise<void> {
+        if(!this.apiService || !this.state.building || !this.state.editingUnit) {
+            return;
+        }
+
+        try {
+            const result = await this.apiService.deleteUnit(this.state.building.buildingID, unitId);
+
+            if(!result.success) {
+                throw new Error(result.error || 'Failed to delete unit');
+            }
+
+            // Update local state
+            this.unitsManager.removeUnit(unitId);
+            this.updateFilteredUnits();
+            this.closeEditUnitDialog();
+
+            this.state.$dispatch('toast:show', {
+                message: `Unit ${this.state.editingUnit.unitNumber || unitId} deleted successfully`,
+                type: 'success'
+            });
+        } catch(error) {
+            this.state.$dispatch('toast:show', {
+                message: 'Failed to delete unit: ' + (isError(error) ? error.message : 'Unknown error'),
+                type: 'error'
+            });
+            throw error;
         }
     }
 }

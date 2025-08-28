@@ -11,7 +11,7 @@
 3. **Edit existing files** - Don't create new ones unless required
 4. **Use `bunx`/`bun`** - Not `npx`/`npm`
 5. **Fix TypeScript errors** - No `@ts-ignore`
-6. **Use MCP tools** - Not direct `eslint`/`tsc` commands
+6. **Use MCP tools** - Not direct `tsc` commands
 7. **Test-driven development** - Tests before features
 8. **Never use `mock.module()`** - Causes permanent test pollution
 9. **Use test-setup.ts patterns** - See existing examples
@@ -27,7 +27,6 @@
 | `cat`/`head`/`tail` | `Read` |
 | `ls` | `LS` |
 | `tsc` | `mcp__language-server__diagnostics` |
-| `eslint` | `mcp__eslint__lint-files` |
 | `curl`/`wget` | `mcp__web-fetch` |
 | `tmux` | `mcp__tmux` tools |
 | `mock.module()` | test-setup.ts patterns |
@@ -36,7 +35,7 @@
 
 ### **PRIMARY TOOLS (Use First)**
 **Files**: `Glob` (find), `Grep` (search), `Read` (view), `LS` (list)  
-**Code**: `mcp__language-server__diagnostics` (TypeScript), `mcp__eslint__lint-files` (lint)  
+**Code**: `mcp__language-server__diagnostics` (TypeScript)
 **Edit**: `mcp__language-server__edit_file` (TypeScript files - immediate validation)  
 **Web**: `mcp__web-fetch__get_markdown_summary` (articles), `mcp__web-fetch__get_rendered_html` (SPAs)  
 **Search**: `mcp__search__brave_search` (general), `mcp__search__perplexity_search` (complex analysis)  
@@ -152,7 +151,7 @@ Always interpret user requests as delegation opportunities:
 
 **Delegation:** Primary agent implementing instead of delegating to sub-agents  
 **Commands:** Use `bun run sst-dev` (not `bun run dev`), `bun`/`bunx` (not `npm`/`npx`)  
-**Quality:** Check tmux outputs (not direct `tsc`/`eslint`/`bun test`)  
+**Quality:** Check tmux outputs (not direct `tsc`/`bun test`)  
 **TypeScript:** Fix errors properly (no `@ts-ignore`), ignore `.sst/` errors  
 **Files:** Edit existing files, don't create new ones unless required
 
@@ -165,7 +164,7 @@ Always interpret user requests as delegation opportunities:
 ## Development Guidelines
 
 **TypeScript:** Strict checking, ignore `.sst/` errors, fix issues properly  
-**ESLint:** Use `mcp__eslint__lint-files`, check rules with `bunx eslint --print-config`  
+**ESLint:** Check rules with `bunx eslint --print-config`  
 **Testing:** TDD mandatory, tests before features, check tmux test output  
 **Critical rules:** `if(condition)` not `if (condition)`, 4 spaces not 2
 

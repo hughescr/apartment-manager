@@ -65,6 +65,8 @@ function buildingStateObject(): any {
         showAddUnitDialog: false,
         showAddUnitTypeDialog: false,
         showEditUnitTypeDialog: false,
+        showEditUnitDialog: false,
+        editingUnit: null as ExtendedUnitData | null,
         showBulkStatusDialog: false,
         showBulkRentDialog: false,
         newUnit: { unitID: '', modelID: '' },
@@ -79,6 +81,7 @@ function buildingStateObject(): any {
             successfulUnits: undefined
         },
         showBulkCreateDialog: false,
+        showAssignUnitTypeDialog: false,
         bulkCreateData: {
             modelID: '',
             count: null,
@@ -89,6 +92,12 @@ function buildingStateObject(): any {
             customUnitNumbers: '',
             unitNumbers: [],
             vacancyClass: 'Unoccupied'
+        },
+        assignUnitTypeData: {
+            selectedUnit: null as ExtendedUnitData | null,
+            selectedModelID: '',
+            keepCustomValues: {} as Record<string, boolean>,
+            loading: false
         },
 
         // Module instances (created in init)
@@ -290,6 +299,34 @@ function buildingStateObject(): any {
 
         async addUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             await this._unitManagement?.addUnit();
+        },
+
+        openEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
+            this._unitManagement?.openEditUnitDialog(unit);
+        },
+
+        closeEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            this._unitManagement?.closeEditUnitDialog();
+        },
+
+        async updateUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitId: string, updatedData: Partial<ExtendedUnitData>) {
+            await this._unitManagement?.updateUnit(unitId, updatedData);
+        },
+
+        async deleteUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitId: string) {
+            await this._unitManagement?.deleteUnit(unitId);
+        },
+
+        openAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
+            this._unitManagement?.openAssignUnitTypeDialog(unit);
+        },
+
+        closeAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            this._unitManagement?.closeAssignUnitTypeDialog();
+        },
+
+        async assignUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, assignmentData: { selectedModelID: string, keepCustomValues: Record<string, boolean> }) {
+            await this._unitManagement?.assignUnitType(assignmentData);
         },
 
         openBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, modelID?: string) {

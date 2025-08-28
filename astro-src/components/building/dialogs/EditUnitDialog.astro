@@ -1,0 +1,323 @@
+---
+import { BaseInput, BaseSelect } from '../../forms';
+import ValidationError from '../../common/ValidationError.astro';
+
+// No props needed - uses shared state from parent BuildingProvider
+export type Props = Record<string, never>;
+
+const dialogId = 'edit-unit-dialog';
+
+// Status options
+const statusOptions = [
+    { value: 'Unoccupied', label: 'Unoccupied - Available for rent' },
+    { value: 'Occupied', label: 'Occupied - Currently rented' },
+    { value: 'Notice', label: 'Notice - Tenant gave notice' },
+    { value: 'Down', label: 'Down - Maintenance/renovation' }
+];
+---
+
+<dialog class="modal" :class="{'modal-open': showEditUnitDialog}" data-testid={dialogId}>
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Edit Unit</h3>
+        <p class="mb-6 text-base-content/70" x-show="editingUnit">
+            Edit unit
+            <span class="font-bold" x-text="editingUnit?.unitNumber || editingUnit?.unitID"></span>
+            in
+            <strong x-show="building">
+                <span x-text="building?.street"></span>
+,
+<span x-text="building?.city"></span>
+,
+<span x-text="building?.state"></span>
+            </strong>
+.
+            Units can inherit properties from a unit type or be configured independently.
+        </p>
+
+        <form
+          x-show="editingUnit"
+          submit.prevent="submitEditUnit()"
+          class="space-y-6"
+          x-data="{
+                editUnit: {},
+                errors: {},
+                loading: false,
+
+                // Compute unit type options
+                get unitTypeOptions() {
+                    const options = (unitTypes || []).map(ut => ({
+                        value: ut.modelID,
+                        label: `${ut.modelName} (${ut.beds} bed/${ut.baths} bath${ut.sqft ? `, ${ut.sqft} sq ft` : ''})`
+                    }));
+                    // Add option for no unit type (custom unit)
+                    options.unshift({ value: '', label: 'None (Custom Unit)' });
+                    return options;
+                },
+
+                // Initialize form data from editingUnit
+                initializeForm() {
+                    if(editingUnit) {
+                        this.editUnit = {
+                            unitID: editingUnit.unitID,
+                            unitNumber: editingUnit.unitNumber || editingUnit.unitID,
+                            modelID: editingUnit.modelID || '',
+                            beds: editingUnit.beds || 0,
+                            baths: editingUnit.baths || 1,
+                            sqft: editingUnit.sqft || null,
+                            rent: editingUnit.rent || 0,
+                            vacancyClass: editingUnit.vacancyClass || 'Unoccupied',
+                            description: editingUnit.description || ''
+                        };
+                    }
+                },
+
+                // Watch for unit type changes to populate inherited values
+                onUnitTypeChange() {
+                    const selectedType = unitTypes.find(ut => ut.modelID === this.editUnit.modelID);
+                    if (selectedType) {
+                        this.editUnit.beds = selectedType.beds;
+                        this.editUnit.baths = selectedType.baths;
+                        if (selectedType.sqft) {
+                            this.editUnit.sqft = selectedType.sqft;
+                        }
+                    } else {
+                        // Keep current values for custom units
+                        // User can manually adjust if needed
+                    }
+                },
+
+                async submitEditUnit() {
+                    this.loading = true;
+                    this.errors = {};
+
+                    try {
+                        // Client-side validation
+                        if (!this.editUnit.unitNumber.trim()) {
+                            this.errors.unitNumber = 'Unit number is required';
+                        }
+                        if (this.editUnit.beds < 0) {
+                            this.errors.beds = 'Bedrooms must be 0 or greater';
+                        }
+                        if (this.editUnit.baths < 0.5) {
+                            this.errors.baths = 'Bathrooms must be 0.5 or greater';
+                        }
+                        if (this.editUnit.rent < 0) {
+                            this.errors.rent = 'Rent must be 0 or greater';
+                        }
+                        if (this.editUnit.rent > 25000) {
+                            this.errors.rent = 'Rent must be less than $25,000';
+                        }
+
+                        if (Object.keys(this.errors).length > 0) {
+                            this.loading = false;
+                            return;
+                        }
+
+                        // Dispatch update event with unit ID and changes
+                        $dispatch('update-unit', {
+                            unitId: editingUnit.unitID,
+                            updatedData: this.editUnit
+                        });
+                    } catch (error) {
+                        console.error('Edit unit error:', error);
+                        this.errors.general = 'Failed to update unit. Please try again.';
+                        $dispatch('show-toast', {
+                            message: 'Failed to update unit. Please try again.',
+                            type: 'error'
+                        });
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async confirmDeleteUnit() {
+                    if(!editingUnit) return;
+
+                    const unitDisplayName = editingUnit.unitNumber || editingUnit.unitID;
+                    if(confirm(`Are you sure you want to delete Unit ${unitDisplayName}?\\n\\nThis action cannot be undone.`)) {
+                        this.loading = true;
+                        try {
+                            $dispatch('delete-unit', {
+                                unitId: editingUnit.unitID
+                            });
+                        } catch(error) {
+                            console.error('Delete unit error:', error);
+                            $dispatch('show-toast', {
+                                message: 'Failed to delete unit. Please try again.',
+                                type: 'error'
+                            });
+                        } finally {
+                            this.loading = false;
+                        }
+                    }
+                },
+
+                unitTypes: JSON.parse($el.dataset.unitTypes || '[]')
+            }"
+          x-init="initializeForm()"
+          x-effect="initializeForm()"
+        >
+            <!-- General Error Display -->
+            <div x-show="errors.general" class="alert alert-error" data-testid="edit-unit-general-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-text="errors.general"></span>
+            </div>
+
+            <!-- Basic Unit Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                  name="unitNumber"
+                  label="Unit Number"
+                  xModel="editUnit.unitNumber"
+                  placeholder="101"
+                  required={true}
+                  helpText="Unique identifier for this unit"
+                />
+                <ValidationError fieldName="unitNumber" errors={{}} />
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Unit Type (Optional)</span>
+                    </label>
+                    <select
+                      class="select select-bordered"
+                      :class="{'select-error': errors.modelID}"
+                        x-model="editUnit.modelID"
+                        change="onUnitTypeChange()"
+                        data-testid="unit-type-select"
+                    >
+                        <option value="">None (Custom Unit)</option>
+                        <template x-for="unitType in unitTypes" :key="unitType.modelID">
+                            <option :value="unitType.modelID" x-text="unitType.modelName + ' (' + unitType.beds + ' bed/' + unitType.baths + ' bath' + (unitType.sqft ? ', ' + unitType.sqft + ' sq ft' : '') + ')'"></option>
+                        </template>
+                    </select>
+                    <div class="label">
+                        <span class="label-text-alt">Choose to inherit properties from a unit type</span>
+                        <span x-show="errors.modelID" class="label-text-alt text-error" x-text="errors.modelID"></span>
+                    </div>
+                </div>
+                <ValidationError fieldName="modelID" errors={{}} />
+            </div>
+
+            <!-- Unit Specifications -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <BaseInput
+                  name="beds"
+                  label="Bedrooms"
+                  type="number"
+                  xModel="editUnit.beds"
+                  min="0"
+                  max="10"
+                  required={true}
+                  helpText="Number of bedrooms (0 for studio)"
+                />
+                <ValidationError fieldName="beds" errors={{}} />
+
+                <BaseInput
+                  name="baths"
+                  label="Bathrooms"
+                  type="number"
+                  xModel="editUnit.baths"
+                  min="0.5"
+                  max="10"
+                  step="0.5"
+                  required={true}
+                />
+                <ValidationError fieldName="baths" errors={{}} />
+
+                <BaseInput
+                  name="sqft"
+                  label="Square Feet"
+                  type="number"
+                  xModel="editUnit.sqft"
+                  min="100"
+                  max="10000"
+                  placeholder="750"
+                  helpText="Optional - unit size"
+                />
+                <ValidationError fieldName="sqft" errors={{}} />
+            </div>
+
+            <!-- Rent and Status -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BaseInput
+                  name="rent"
+                  label="Monthly Rent"
+                  type="number"
+                  xModel="editUnit.rent"
+                  min="0"
+                  max="25000"
+                  placeholder="2500"
+                  required={true}
+                  helpText="Monthly rental amount in USD"
+                />
+                <ValidationError fieldName="rent" errors={{}} />
+
+                <BaseSelect
+                  name="vacancyClass"
+                  label="Status"
+                  xModel="editUnit.vacancyClass"
+                  options={statusOptions}
+                  required={true}
+                />
+                <ValidationError fieldName="vacancyClass" errors={{}} />
+            </div>
+
+            <!-- Unit Description -->
+            <div>
+                <label class="label">
+                    <span class="label-text">Unit Description (Optional)</span>
+                </label>
+                <textarea
+                  name="description"
+                  x-model="editUnit.description"
+                  class="textarea textarea-bordered w-full"
+                  rows="3"
+                  placeholder="Unit-specific details, features, or notes..."
+                  data-testid="unit-description-input"
+                >
+                </textarea>
+                <ValidationError fieldName="description" errors={{}} />
+            </div>
+
+            <!-- Dialog Actions -->
+            <div class="modal-action justify-between">
+                <button
+                  type="button"
+                  class="btn btn-error"
+                  @click="confirmDeleteUnit()"
+                  :disabled="loading"
+                    data-testid="delete-unit"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Unit
+                </button>
+
+                <div class="flex gap-2">
+                    <button
+                      type="button"
+                      class="btn"
+                      @click="$dispatch('close-edit-unit-dialog')"
+                      :disabled="loading"
+                        data-testid="cancel-edit-unit"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      :disabled="loading"
+                        data-testid="confirm-edit-unit"
+                    >
+                        <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+                        <span x-show="!loading">Save Changes</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</dialog>

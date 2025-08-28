@@ -121,6 +121,10 @@ if(typeof window !== 'undefined') {
   @delete-unit-type="deleteUnitType($event.detail.modelID)"
   @close-add-unit-type-dialog="closeAddUnitTypeDialog()"
   @close-edit-unit-type-dialog="closeEditUnitTypeDialog()"
+  @edit-unit="openEditUnitDialog($event.detail)"
+  @update-unit="updateUnit($event.detail.unitId, $event.detail.updatedData)"
+  @delete-unit="deleteUnit($event.detail.unitId)"
+  @close-edit-unit-dialog="closeEditUnitDialog()"
   data-building-data={JSON.stringify(building)}
   data-initial-units={JSON.stringify(safeUnits)}
   data-initial-unit-types={JSON.stringify(safeUnitTypes)}
