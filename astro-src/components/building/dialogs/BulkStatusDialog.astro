@@ -51,12 +51,12 @@ selected units:
 
                     try {
                         // Use parent's bulk operation method
-                        $parent.bulkOperation.statusValue = this.statusValue;
-                        await $parent.performBulkStatusUpdate();
+                        bulkOperation.statusValue = this.statusValue;
+                        await performBulkStatusUpdate();
 
                         // Reset and close
                         this.statusValue = '';
-                        $parent.showBulkStatusDialog = false;
+                        showBulkStatusDialog = false;
                     } catch (error) {
                         console.error('Bulk status update error:', error);
                         this.errors.general = 'Failed to update units. Please try again.';

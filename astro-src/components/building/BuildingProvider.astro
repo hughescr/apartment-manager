@@ -98,22 +98,21 @@ const safeUnitTypes = unitTypes || [];
 // Import the state management function directly
 import { createBuildingState } from '../../lib/building/state';
 
-// Declare global type for Alpine.js
-declare global {
-    interface Window {
-        createBuildingState: typeof createBuildingState
-    }
-}
-
-// Make the state creation function available globally for Alpine.js
+// Make the function available globally for Alpine
 if(typeof window !== 'undefined') {
-    window.createBuildingState = createBuildingState;
+    // Store the function on window for Alpine to use
+    (window as Window & { buildingStateData?: typeof createBuildingState }).buildingStateData = createBuildingState;
+
+    // Also register with Alpine when it initializes
+    document.addEventListener('alpine:init', () => {
+        window.Alpine.data('buildingStateData', createBuildingState);
+    });
 }
 </script>
 
 <div
   class="building-provider"
-  x-data="createBuildingState()"
+  x-data="buildingStateData()"
   class="{'opacity-50': saving}"
   @building-data-loaded="handleBuildingDataUpdate($event)"
   @add-unit-type="newUnitType = $event.detail; addUnitType()"

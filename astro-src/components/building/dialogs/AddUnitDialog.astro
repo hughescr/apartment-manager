@@ -120,8 +120,8 @@ const statusOptions = [
                         }
 
                         // Use parent's add unit method
-                        $parent.newUnit = this.newUnit;
-                        await $parent.addUnit();
+                        newUnit = this.newUnit;
+                        await addUnit();
 
                         // Reset form and close dialog
                         this.newUnit = {
@@ -134,7 +134,7 @@ const statusOptions = [
                             vacancyClass: 'Unoccupied',
                             description: ''
                         };
-                        $parent.showAddUnitDialog = false;
+                        showAddUnitDialog = false;
                     } catch (error) {
                         console.error('Add unit error:', error);
                         this.errors.general = 'Failed to add unit. Please try again.';

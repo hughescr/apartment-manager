@@ -30,7 +30,7 @@ const dialogId = 'assign-unit-type-dialog';
 
                 init() {
                     // Access the current unit from parent's assignUnitTypeData
-                    this.$watch('$parent.assignUnitTypeData.selectedUnit', (unit) => {
+                    this.$watch('assignUnitTypeData.selectedUnit', (unit) => {
                         if (unit) {
                             this.initializeKeepCustomValues(unit);
                         }
@@ -38,11 +38,11 @@ const dialogId = 'assign-unit-type-dialog';
                 },
 
                 getCurrentUnit() {
-                    return $parent.assignUnitTypeData?.selectedUnit || null;
+                    return assignUnitTypeData?.selectedUnit || null;
                 },
 
                 getUnitTypes() {
-                    return $parent.unitTypes || [];
+                    return unitTypes || [];
                 },
 
                 onUnitTypeChange() {
@@ -162,10 +162,10 @@ const dialogId = 'assign-unit-type-dialog';
                         }
 
                         // Call parent's assign unit type method
-                        await $parent.assignUnitType(this.assignmentData);
+                        await assignUnitType(this.assignmentData);
 
                         // Close dialog on success
-                        $parent.showAssignUnitTypeDialog = false;
+                        showAssignUnitTypeDialog = false;
                         this.assignmentData = {
                             selectedModelID: '',
                             keepCustomValues: {}

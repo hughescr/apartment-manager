@@ -76,6 +76,18 @@ function buildingStateObject(): any {
             rentUpdateType: 'absolute' as 'absolute' | 'percentage',
             rentValue: 0
         },
+        showBulkCreateDialog: false,
+        bulkCreateData: {
+            modelID: '',
+            count: null,
+            patternType: 'numeric',
+            startingNumber: '101',
+            prefix: '',
+            suffix: '',
+            customUnitNumbers: '',
+            unitNumbers: [],
+            vacancyClass: 'Unoccupied'
+        },
 
         // Module instances (created in init)
         _buildingCore: null as BuildingCore | null,
@@ -240,36 +252,36 @@ function buildingStateObject(): any {
         },
 
         // Unit Management Methods
-        openAddUnitDialog() {
+        openAddUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this._unitManagement?.openAddUnitDialog();
         },
 
-        openAddUnitTypeDialog() {
+        openAddUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this._unitTypeManagement?.openAddUnitTypeDialog();
         },
 
-        closeAddUnitTypeDialog() {
+        closeAddUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this._unitTypeManagement?.closeAddUnitTypeDialog();
         },
 
-        addUnitType() {
+        addUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this._unitTypeManagement?.addUnitType();
         },
 
-        async updateUnitType(modelID: string, updates: Partial<UnitTypeData>) {
+        async updateUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, modelID: string, updates: Partial<UnitTypeData>) {
             await this._unitTypeManagement?.updateUnitType(modelID, updates);
         },
 
-        async deleteUnitType(modelID: string) {
+        async deleteUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, modelID: string) {
             await this._unitTypeManagement?.deleteUnitType(modelID);
         },
 
-        editUnitType(unitType: UnitTypeData) {
+        editUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitType: UnitTypeData) {
             this.selectedUnitType = unitType;
             this.showEditUnitTypeDialog = true;
         },
 
-        closeEditUnitTypeDialog() {
+        closeEditUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this.showEditUnitTypeDialog = false;
             this.selectedUnitType = null;
         },
@@ -278,20 +290,32 @@ function buildingStateObject(): any {
             await this._unitManagement?.addUnit();
         },
 
+        openBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, modelID?: string) {
+            this._unitManagement?.openBulkCreateDialog(modelID);
+        },
+
+        closeBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            this._unitManagement?.closeBulkCreateDialog();
+        },
+
+        async performBulkCreateUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            await this._unitManagement?.performBulkCreateUnits();
+        },
+
         // Unit Selection Methods
-        toggleSelectAll() {
+        toggleSelectAll(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this._unitManagement?.toggleSelectAll();
         },
 
-        isUnitSelected(unitID: string) {
+        isUnitSelected(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitID: string) {
             return this._unitManagement?.isUnitSelected(unitID) || false;
         },
 
-        toggleUnitSelection(unitID: string) {
+        toggleUnitSelection(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitID: string) {
             this._unitManagement?.toggleUnitSelection(unitID);
         },
 
-        getSelectedCount() {
+        getSelectedCount(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             return this._unitManagement?.getSelectedCount() || 0;
         },
 
@@ -313,28 +337,28 @@ function buildingStateObject(): any {
         },
 
         // Formatting helper methods - delegate to StateHelpers
-        formatCurrency(amount: number | null | undefined) {
+        formatCurrency(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, amount: number | null | undefined) {
             return this._stateHelpers?.formatCurrency(amount) || '$0';
         },
 
-        formatRelativeTime(dateString: string | undefined) {
+        formatRelativeTime(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, dateString: string | undefined) {
             return this._stateHelpers?.formatRelativeTime(dateString) || 'Never';
         },
 
-        getStatusBadgeClass(status: string | undefined) {
+        getStatusBadgeClass(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, status: string | undefined) {
             return this._stateHelpers?.getStatusBadgeClass(status) || 'badge-ghost';
         },
 
-        getTabDisplayName(tabKey: string) {
+        getTabDisplayName(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, tabKey: string) {
             return this._stateHelpers?.getTabDisplayName(tabKey) || tabKey;
         },
 
         // Rent Special Methods
-        addRentSpecial() {
+        addRentSpecial(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this._buildingCore?.addRentSpecial();
         },
 
-        removeRentSpecial(index: number) {
+        removeRentSpecial(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, index: number) {
             this._buildingCore?.removeRentSpecial(index);
         }
     };

@@ -697,7 +697,7 @@ document.addEventListener('alpine:init', () => {
                 <button
                   x-show="!unit.modelID"
                   class="btn btn-secondary btn-sm"
-                  x-on:click="$parent.openAssignUnitTypeDialog(unit)"
+                  x-on:click="$root.openAssignUnitTypeDialog(unit)"
                   data-testid="assign-unit-type-btn"
                 >
                     Assign Unit Type

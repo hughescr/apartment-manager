@@ -19,7 +19,7 @@ export interface UnitManagementState {
     newUnit: { unitID: string, modelID: string }
     bulkCreateData: {
         modelID: string
-        count: number
+        count: number | null
         unitNumbers: string[]
         vacancyClass: string
     }
@@ -149,7 +149,12 @@ export class UnitManagement {
         this.state.showBulkCreateDialog = true;
         this.state.bulkCreateData = {
             modelID: modelID || '',
-            count: 5,
+            count: null,
+            patternType: 'numeric',
+            startingNumber: '101',
+            prefix: '',
+            suffix: '',
+            customUnitNumbers: '',
             unitNumbers: [],
             vacancyClass: 'Unoccupied'
         };
@@ -159,7 +164,12 @@ export class UnitManagement {
         this.state.showBulkCreateDialog = false;
         this.state.bulkCreateData = {
             modelID: '',
-            count: 5,
+            count: null,
+            patternType: 'numeric',
+            startingNumber: '101',
+            prefix: '',
+            suffix: '',
+            customUnitNumbers: '',
             unitNumbers: [],
             vacancyClass: 'Unoccupied'
         };

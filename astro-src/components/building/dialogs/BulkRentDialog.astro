@@ -106,15 +106,15 @@ selected units:
 
                     try {
                         // Use parent's bulk operation method
-                        $parent.bulkOperation.rentUpdateType = this.rentUpdateType;
-                        $parent.bulkOperation.rentValue = parseFloat(this.rentValue);
-                        await $parent.performBulkRentUpdate();
+                        bulkOperation.rentUpdateType = this.rentUpdateType;
+                        bulkOperation.rentValue = parseFloat(this.rentValue);
+                        await performBulkRentUpdate();
 
                         // Reset and close
                         this.rentUpdateType = 'absolute';
                         this.rentValue = '';
                         this.errors = {};
-                        $parent.showBulkRentDialog = false;
+                        showBulkRentDialog = false;
                     } catch (error) {
                         console.error('Bulk rent update error:', error);
                         this.errors.general = 'Failed to update rents. Please try again.';
