@@ -46,10 +46,11 @@ const dateString = () => z.string().refine(
 // Base schema without refinements
 const UnitSchemaBase = z.looseObject({
     // Required fields for identification
+    // buildingID is optional in request body since it comes from URL path parameter during creation
     buildingID: z.string().min(1, 'Building ID is required').max(255).refine((id) => {
         // Use proper building ID validation for short-uuid format
         return isValidBuildingId(id);
-    }, 'Building ID must be a valid building ID format'),
+    }, 'Building ID must be a valid building ID format').optional(),
     unitID: z.string().min(1, 'Unit ID is required').max(255).regex(/^[\w-]+$/, 'Unit ID can only contain letters, numbers, underscores, and hyphens'),
 
     // Optional descriptive fields (work-in-progress support)

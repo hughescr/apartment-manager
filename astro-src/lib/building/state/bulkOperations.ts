@@ -16,6 +16,8 @@ export interface BulkOperationsState {
         statusValue: string
         rentUpdateType: 'absolute' | 'percentage'
         rentValue: number
+        errors?: { unitNumber: string, error: string }[]
+        successfulUnits?: string[]
     }
     apiURL: string
 }

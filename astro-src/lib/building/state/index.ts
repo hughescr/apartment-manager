@@ -74,7 +74,9 @@ function buildingStateObject(): any {
             loading: false,
             statusValue: '',
             rentUpdateType: 'absolute' as 'absolute' | 'percentage',
-            rentValue: 0
+            rentValue: 0,
+            errors: undefined,
+            successfulUnits: undefined
         },
         showBulkCreateDialog: false,
         bulkCreateData: {
@@ -296,6 +298,10 @@ function buildingStateObject(): any {
 
         closeBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             this._unitManagement?.closeBulkCreateDialog();
+        },
+
+        closeBulkCreateDialogWithPreservedState(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            this._unitManagement?.closeBulkCreateDialogWithPreservedState();
         },
 
         async performBulkCreateUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {

@@ -92,6 +92,80 @@ const dialogId = 'bulk-create-units-dialog';
                 <span x-text="errors.general"></span>
             </div>
 
+            <!-- Bulk Operation Results Display -->
+            <div x-show="bulkOperation.errors && bulkOperation.errors.length > 0" class="card bg-base-200/50 p-4" data-testid="bulk-create-results">
+                <h4 class="font-semibold mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Creation Results
+                </h4>
+
+                <!-- Success Summary -->
+                <div x-show="bulkOperation.successfulUnits && bulkOperation.successfulUnits.length > 0" class="mb-3">
+                    <div class="alert alert-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <span x-text="`Successfully created ${bulkOperation.successfulUnits?.length || 0} units`"></span>
+                            <div x-show="bulkOperation.successfulUnits && bulkOperation.successfulUnits.length > 0" class="text-sm mt-1">
+                                <strong>Created units:</strong>
+                                <template x-for="unit in (bulkOperation.successfulUnits || []).slice(0, 10)" :key="unit">
+                                    <span class="badge badge-success badge-sm ml-1" x-text="unit"></span>
+                                </template>
+                                <span x-show="(bulkOperation.successfulUnits?.length || 0) > 10" class="badge badge-ghost badge-sm ml-1" x-text="`+${(bulkOperation.successfulUnits?.length || 0) - 10} more`"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Details -->
+                <div class="alert alert-error">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <span x-text="`${bulkOperation.errors?.length || 0} units failed to create`"></span>
+                        <div class="mt-2 space-y-1 max-h-32 overflow-y-auto">
+                            <template x-for="error in (bulkOperation.errors || [])" :key="error.unitNumber">
+                                <div class="text-sm flex items-start justify-between bg-base-100/50 rounded p-2">
+                                    <span class="font-medium" x-text="error.unitNumber"></span>
+                                    <span class="text-right flex-1 ml-2" x-text="error.error"></span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="mt-2 text-sm">
+                            <div class="flex items-start gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-0.5 text-info flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <strong>Next Steps:</strong>
+{' '}
+Fix the errors above and click "Try Again" to create the units.
+<span x-show="!bulkOperation.successfulUnits || bulkOperation.successfulUnits.length === 0">
+                                        Your form data has been preserved for easy retry.
+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clear Errors Button -->
+                <div class="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      @click="bulkOperation.errors = undefined; bulkOperation.successfulUnits = undefined"
+                      data-testid="clear-bulk-errors"
+                    >
+                        Clear Results
+                    </button>
+                </div>
+            </div>
+
             <!-- Floorplan Selection and Count -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="form-control">
@@ -294,11 +368,12 @@ const dialogId = 'bulk-create-units-dialog';
                 <button
                   type="button"
                   class="btn"
-                  @click="showBulkCreateDialog = false"
+                  @click="bulkOperation.errors && bulkOperation.errors.length > 0 ? closeBulkCreateDialogWithPreservedState() : (showBulkCreateDialog = false)"
                   :disabled="bulkOperation.loading"
                     data-testid="cancel-bulk-create"
                 >
-                    Cancel
+                    <span x-show="!bulkOperation.errors || bulkOperation.errors.length === 0">Cancel</span>
+                    <span x-show="bulkOperation.errors && bulkOperation.errors.length > 0">Close</span>
                 </button>
                 <button
                   type="button"
@@ -309,10 +384,16 @@ const dialogId = 'bulk-create-units-dialog';
                 >
                     <span x-show="bulkOperation.loading" class="loading loading-spinner loading-sm"></span>
                     <span x-show="!bulkOperation.loading">
-Create
-<span x-text="previewUnits.length"></span>
-{' '}
-Units
+                        <span x-show="!bulkOperation.errors || bulkOperation.errors.length === 0">
+                            Create
+                            <span x-text="previewUnits.length"></span>
+                            {' '}
+                            Units
+                        </span>
+                        <span x-show="bulkOperation.errors && bulkOperation.errors.length > 0">
+                            Try Again
+                            <span x-text="`(${previewUnits.length} units)`"></span>
+                        </span>
                     </span>
                 </button>
             </div>

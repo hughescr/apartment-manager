@@ -20,6 +20,11 @@ export interface UnitManagementState {
     bulkCreateData: {
         modelID: string
         count: number | null
+        patternType: 'numeric' | 'alpha-numeric' | 'custom'
+        startingNumber: string
+        prefix: string
+        suffix: string
+        customUnitNumbers: string
         unitNumbers: string[]
         vacancyClass: string
     }
@@ -34,6 +39,8 @@ export interface UnitManagementState {
         statusValue: string
         rentUpdateType: 'absolute' | 'percentage'
         rentValue: number
+        errors?: { unitNumber: string, error: string }[]
+        successfulUnits?: string[]
     }
     apiURL: string
 }
@@ -147,7 +154,8 @@ export class UnitManagement {
      */
     openBulkCreateDialog(modelID?: string): void {
         this.state.showBulkCreateDialog = true;
-        this.state.bulkCreateData = {
+        // Use Object.assign to avoid type checking issues
+        Object.assign(this.state.bulkCreateData, {
             modelID: modelID || '',
             count: null,
             patternType: 'numeric',
@@ -157,22 +165,46 @@ export class UnitManagement {
             customUnitNumbers: '',
             unitNumbers: [],
             vacancyClass: 'Unoccupied'
-        };
+        });
     }
 
     closeBulkCreateDialog(): void {
         this.state.showBulkCreateDialog = false;
-        this.state.bulkCreateData = {
+        // Use Object.assign to avoid type checking issues
+        Object.assign(this.state.bulkCreateData, {
             modelID: '',
             count: null,
-            patternType: 'numeric',
+            patternType: 'numeric' as const,
             startingNumber: '101',
             prefix: '',
             suffix: '',
             customUnitNumbers: '',
             unitNumbers: [],
             vacancyClass: 'Unoccupied'
-        };
+        });
+        // Clear any previous errors and loading state
+        if('errors' in this.state.bulkOperation) {
+            this.state.bulkOperation.errors = undefined;
+        }
+        if('successfulUnits' in this.state.bulkOperation) {
+            this.state.bulkOperation.successfulUnits = undefined;
+        }
+        this.state.bulkOperation.loading = false;
+    }
+
+    /**
+     * Close dialog with preserved form state (used when there are errors to review)
+     */
+    closeBulkCreateDialogWithPreservedState(): void {
+        this.state.showBulkCreateDialog = false;
+        // Clear results but preserve form data for retry
+        if('errors' in this.state.bulkOperation) {
+            this.state.bulkOperation.errors = undefined;
+        }
+        if('successfulUnits' in this.state.bulkOperation) {
+            this.state.bulkOperation.successfulUnits = undefined;
+        }
+        this.state.bulkOperation.loading = false;
     }
 
     /**
@@ -308,10 +340,20 @@ export class UnitManagement {
             return;
         }
 
+        // Initialize loading state and clear previous errors
+        this.state.bulkOperation.loading = true;
+        if('errors' in this.state.bulkOperation) {
+            this.state.bulkOperation.errors = undefined;
+        }
+        if('successfulUnits' in this.state.bulkOperation) {
+            this.state.bulkOperation.successfulUnits = undefined;
+        }
+
         try {
             const { results, errors } = await this.createUnitsFromNumbers();
             this.finalizeBulkCreation(results, errors);
         } catch(error) {
+            this.state.bulkOperation.loading = false;
             this.state.$dispatch('toast:show', {
                 message: 'Failed to create units: ' + (isError(error) ? error.message : 'Unknown error'),
                 type: 'error'
@@ -330,6 +372,7 @@ export class UnitManagement {
             try {
                 const result = await this.apiService!.addUnit(this.state.building!.buildingID, {
                     unitID: unitNumber,
+                    unitNumber: unitNumber,
                     modelID: this.state.bulkCreateData.modelID,
                     vacancyClass: this.state.bulkCreateData.vacancyClass as VacancyClass
                 });
@@ -356,22 +399,46 @@ export class UnitManagement {
      */
     private finalizeBulkCreation(results: ExtendedUnitData[], errors: { unitNumber: string, error: string }[]): void {
         this.updateFilteredUnits();
-        this.closeBulkCreateDialog();
 
-        if(results.length > 0) {
-            const hasErrors = errors.length > 0;
-            const isFullSuccess = results.length === this.state.bulkCreateData.unitNumbers.length;
-
-            this.state.$dispatch('toast:show', {
-                message: `Successfully created ${results.length} units${hasErrors ? ` (${errors.length} failed)` : ''}`,
-                type: isFullSuccess ? 'success' : 'warning'
-            });
+        // Store errors in state for dialog display
+        if('errors' in this.state.bulkOperation) {
+            this.state.bulkOperation.errors = errors;
         }
+        if('successfulUnits' in this.state.bulkOperation) {
+            this.state.bulkOperation.successfulUnits = results
+                .map(r => r.unitNumber)
+                .filter((unitNumber): unitNumber is string => unitNumber != null);
+        }
+        this.state.bulkOperation.loading = false;
 
-        if(errors.length > 0 && results.length === 0) {
+        const successCount = results.length;
+        const totalAttempted = this.state.bulkCreateData.unitNumbers.length;
+        const isFullSuccess = successCount === totalAttempted;
+        const isCompleteFailure = successCount === 0;
+
+        if(isCompleteFailure) {
+            // All units failed - keep dialog open with error details and preserve form state
             this.state.$dispatch('toast:show', {
-                message: 'Failed to create units. Please check for duplicate unit numbers.',
-                type: 'error'
+                message: 'All units failed to create. Please review the errors in the dialog and try again.',
+                type: 'error',
+                duration: 6000
+            });
+
+            // Dialog stays open, form state is preserved for retry
+        } else if(isFullSuccess) {
+            // Complete success - close dialog and reset form
+            this.closeBulkCreateDialog();
+            this.state.$dispatch('toast:show', {
+                message: `Successfully created all ${successCount} units`,
+                type: 'success'
+            });
+        } else {
+            // Partial success - close dialog but show warning toast
+            this.closeBulkCreateDialog();
+            this.state.$dispatch('toast:show', {
+                message: `Created ${successCount} of ${totalAttempted} units (${errors.length} failed). Check the units list for details.`,
+                type: 'warning',
+                duration: 8000
             });
         }
     }
