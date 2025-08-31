@@ -94,22 +94,6 @@ const safeUnits = units || [];
 const safeUnitTypes = unitTypes || [];
 ---
 
-<script>
-// Import the state management function directly
-import { createBuildingState } from '../../lib/building/state';
-
-// Make the function available globally for Alpine
-if(typeof window !== 'undefined') {
-    // Store the function on window for Alpine to use
-    (window as Window & { buildingStateData?: typeof createBuildingState }).buildingStateData = createBuildingState;
-
-    // Also register with Alpine when it initializes
-    document.addEventListener('alpine:init', () => {
-        window.Alpine.data('buildingStateData', createBuildingState);
-    });
-}
-</script>
-
 <div
   class="building-provider"
   x-data="buildingStateData()"

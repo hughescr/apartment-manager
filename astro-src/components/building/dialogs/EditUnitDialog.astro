@@ -1,6 +1,5 @@
 ---
 import { BaseInput, BaseSelect } from '../../forms';
-import ValidationError from '../../common/ValidationError.astro';
 
 // No props needed - uses shared state from parent BuildingProvider
 export type Props = Record<string, never>;
@@ -36,16 +35,27 @@ const statusOptions = [
 
         <form
           x-show="editingUnit"
-          submit.prevent="submitEditUnit()"
+          @submit.prevent="submitEditUnit()"
           class="space-y-6"
           x-data="{
                 editUnit: {},
                 errors: {},
                 loading: false,
 
-                // Compute unit type options
+                // Access unit types from parent Alpine.js context
+                getUnitTypes() {
+                    return unitTypes || [];
+                },
+
+                // Get current building data
+                getBuildingData() {
+                    return building || null;
+                },
+
+                // Compute unit type options for BaseSelect component
                 get unitTypeOptions() {
-                    const options = (unitTypes || []).map(ut => ({
+                    const unitTypesList = this.getUnitTypes();
+                    const options = unitTypesList.map(ut => ({
                         value: ut.modelID,
                         label: `${ut.modelName} (${ut.beds} bed/${ut.baths} bath${ut.sqft ? `, ${ut.sqft} sq ft` : ''})`
                     }));
@@ -71,18 +81,170 @@ const statusOptions = [
                     }
                 },
 
+                // Get selected unit type safely
+                get selectedUnitType() {
+                    if (!this.editUnit.modelID) return null;
+                    const unitTypesList = this.getUnitTypes();
+                    return unitTypesList.find(ut => ut.modelID === this.editUnit.modelID) || null;
+                },
+
+                // Check if a field is inherited
+                isFieldInherited(fieldName) {
+                    const unitData = this.editUnit;
+                    const unitType = this.selectedUnitType;
+                    return this.inheritanceManager.isInherited(unitData, unitType, fieldName);
+                },
+
+                // Get inherited value for a field
+                getInheritedValue(fieldName) {
+                    const unitType = this.selectedUnitType;
+                    return this.inheritanceManager.getInheritedValue(unitType, fieldName);
+                },
+
+                // Get effective value (unit value or inherited value)
+                getEffectiveValue(fieldName) {
+                    const unitData = this.editUnit;
+                    const unitType = this.selectedUnitType;
+                    return this.inheritanceManager.getEffectiveValue(unitData, unitType, fieldName);
+                },
+
+                // Get placeholder text for inherited values
+                getFieldPlaceholder(fieldName, defaultPlaceholder = '') {
+                    const inheritedValue = this.getInheritedValue(fieldName);
+                    if (inheritedValue !== null && inheritedValue !== undefined) {
+                        return `Inherited: ${inheritedValue}`;
+                    }
+                    return defaultPlaceholder;
+                },
+
+                // Get inheritance badge text
+                getInheritanceBadge(fieldName) {
+                    if (this.isFieldInherited(fieldName)) {
+                        return 'Inherited from floorplan';
+                    } else if (this.selectedUnitType && this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
+                        return 'Custom override';
+                    }
+                    return null;
+                },
+
+                // Clear a specific field override to allow inheritance
+                clearOverride(fieldName) {
+                    if (this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
+                        // Set field to null to trigger inheritance
+                        this.editUnit[fieldName] = null;
+
+                        // For beds and baths, we need special handling to avoid 0 values
+                        if (fieldName === 'beds' && this.selectedUnitType && !this.selectedUnitType.beds) {
+                            this.editUnit.beds = null;
+                        }
+                        if (fieldName === 'baths' && this.selectedUnitType && !this.selectedUnitType.baths) {
+                            this.editUnit.baths = null;
+                        }
+                    }
+                },
+
+                // Reset all overridden fields to inherit from floorplan
+                resetAllToFloorplan() {
+                    const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
+                    const overriddenFields = [];
+
+                    // Check which fields are currently overridden
+                    inheritableFields.forEach(field => {
+                        if (!this.isFieldInherited(field) && this.selectedUnitType) {
+                            overriddenFields.push(field);
+                        }
+                    });
+
+                    if (overriddenFields.length === 0) {
+                        $dispatch('show-toast', {
+                            message: 'No overridden fields to reset',
+                            type: 'info'
+                        });
+                        return;
+                    }
+
+                    const fieldNames = overriddenFields.join(', ');
+                    const confirmed = confirm(`Are you sure you want to reset ${overriddenFields.length} field(s) to inherit from the floorplan?\n\nFields: ${fieldNames}\n\nThis will clear your custom values.`);
+
+                    if (confirmed) {
+                        overriddenFields.forEach(field => {
+                            this.clearOverride(field);
+                        });
+
+                        $dispatch('show-toast', {
+                            message: `Reset ${overriddenFields.length} field(s) to floorplan values`,
+                            type: 'success'
+                        });
+                    }
+                },
+
+                // Check if unit has any overridden fields that can be reset
+                hasOverriddenFields() {
+                    if (!this.selectedUnitType) return false;
+                    const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
+                    return inheritableFields.some(field => !this.isFieldInherited(field));
+                },
+
+                // Preview what values will change when selecting a new unit type
+                previewUnitTypeChange(newModelID) {
+                    if (!newModelID) return;
+
+                    const newUnitType = this.getUnitTypes().find(ut => ut.modelID === newModelID);
+                    if (!newUnitType) return;
+
+                    const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
+                    const changes = [];
+
+                    inheritableFields.forEach(field => {
+                        const currentValue = this.getEffectiveValue(field);
+                        const newInheritedValue = this.inheritanceManager.getInheritedValue(newUnitType, field);
+                        const willInherit = (this.editUnit[field] === null || this.editUnit[field] === undefined || this.editUnit[field] === '');
+
+                        if (willInherit && newInheritedValue !== null && currentValue !== newInheritedValue) {
+                            changes.push({
+                                field: field,
+                                from: currentValue || 'Not set',
+                                to: newInheritedValue
+                            });
+                        }
+                    });
+
+                    if (changes.length > 0) {
+                        const changesList = changes.map(c => `${c.field}: ${c.from} → ${c.to}`).join('\n');
+                        const confirmed = confirm(`Changing to ${newUnitType.modelName} will update these inherited values:\n\n${changesList}\n\nContinue?`);
+
+                        if (!confirmed) {
+                            // Reset the select to previous value
+                            return false;
+                        }
+                    }
+
+                    return true;
+                },
+
                 // Watch for unit type changes to populate inherited values
                 onUnitTypeChange() {
-                    const selectedType = unitTypes.find(ut => ut.modelID === this.editUnit.modelID);
+                    const selectedType = this.selectedUnitType;
                     if (selectedType) {
-                        this.editUnit.beds = selectedType.beds;
-                        this.editUnit.baths = selectedType.baths;
-                        if (selectedType.sqft) {
-                            this.editUnit.sqft = selectedType.sqft;
+                        // Reset inheritable fields to allow inheritance
+                        // Only set values if unit doesn't have explicit values
+                        if (!this.editUnit.beds) {
+                            this.editUnit.beds = null; // Allow inheritance
+                        }
+                        if (!this.editUnit.baths) {
+                            this.editUnit.baths = null; // Allow inheritance
+                        }
+                        if (!this.editUnit.sqft) {
+                            this.editUnit.sqft = null; // Allow inheritance
+                        }
+                        if (!this.editUnit.rent) {
+                            this.editUnit.rent = null; // Allow inheritance
                         }
                     } else {
-                        // Keep current values for custom units
-                        // User can manually adjust if needed
+                        // For custom units, ensure we have default values
+                        if (!this.editUnit.beds) this.editUnit.beds = 1;
+                        if (!this.editUnit.baths) this.editUnit.baths = 1;
+                        if (!this.editUnit.rent) this.editUnit.rent = 0;
                     }
                 },
 
@@ -92,7 +254,7 @@ const statusOptions = [
 
                     try {
                         // Client-side validation
-                        if (!this.editUnit.unitNumber.trim()) {
+                        if (!this.editUnit.unitNumber || !this.editUnit.unitNumber.trim()) {
                             this.errors.unitNumber = 'Unit number is required';
                         }
                         if (this.editUnit.beds < 0) {
@@ -152,10 +314,9 @@ const statusOptions = [
                     }
                 },
 
-                unitTypes: JSON.parse($el.dataset.unitTypes || '[]')
+                // Note: unitTypes is accessed from parent Alpine.js context, not from dataset
             }"
           x-init="initializeForm()"
-          x-effect="initializeForm()"
         >
             <!-- General Error Display -->
             <div x-show="errors.general" class="alert alert-error" data-testid="edit-unit-general-error">
@@ -175,7 +336,6 @@ const statusOptions = [
                   required={true}
                   helpText="Unique identifier for this unit"
                 />
-                <ValidationError fieldName="unitNumber" errors={{}} />
 
                 <div class="form-control">
                     <label class="label">
@@ -185,11 +345,11 @@ const statusOptions = [
                       class="select select-bordered"
                       :class="{'select-error': errors.modelID}"
                         x-model="editUnit.modelID"
-                        change="onUnitTypeChange()"
+                        @change="if (previewUnitTypeChange($event.target.value)) { onUnitTypeChange(); } else { $event.target.value = editUnit.modelID; }"
                         data-testid="unit-type-select"
                     >
                         <option value="">None (Custom Unit)</option>
-                        <template x-for="unitType in unitTypes" :key="unitType.modelID">
+                        <template x-for="unitType in getUnitTypes()" :key="unitType.modelID">
                             <option :value="unitType.modelID" x-text="unitType.modelName + ' (' + unitType.beds + ' bed/' + unitType.baths + ' bath' + (unitType.sqft ? ', ' + unitType.sqft + ' sq ft' : '') + ')'"></option>
                         </template>
                     </select>
@@ -198,62 +358,196 @@ const statusOptions = [
                         <span x-show="errors.modelID" class="label-text-alt text-error" x-text="errors.modelID"></span>
                     </div>
                 </div>
-                <ValidationError fieldName="modelID" errors={{}} />
             </div>
 
             <!-- Unit Specifications -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <BaseInput
-                  name="beds"
-                  label="Bedrooms"
-                  type="number"
-                  xModel="editUnit.beds"
-                  min="0"
-                  max="10"
-                  required={true}
-                  helpText="Number of bedrooms (0 for studio)"
-                />
-                <ValidationError fieldName="beds" errors={{}} />
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Bedrooms</span>
+                        <div class="flex items-center gap-2">
+                            <span
+                              x-show="getInheritanceBadge('beds')"
+                              class="badge badge-sm"
+                              :class="{
+                                'badge-info': isFieldInherited('beds'),
+                                'badge-warning': !isFieldInherited('beds') && getInheritanceBadge('beds')
+                            }"
+                                x-text="getInheritanceBadge('beds')"
+                            >
+                            </span>
+                            <button
+                              x-show="!isFieldInherited('beds') && selectedUnitType && getInheritanceBadge('beds')"
+                              type="button"
+                              class="btn btn-ghost btn-xs"
+                              @click="clearOverride('beds')"
+                              title="Use floorplan value"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                                </svg>
+                                Use floorplan
+                            </button>
+                        </div>
+                    </label>
+                    <input
+                      type="number"
+                      name="beds"
+                      x-model="editUnit.beds"
+                      :placeholder="getFieldPlaceholder('beds', '1')"
+                        class="input input-bordered"
+                        class="{'input-error': errors.beds}"
+                        min="0"
+                        max="10"
+                        required
+                        data-testid="beds-input"
+                    />
+                    <div class="label">
+                        <span class="label-text-alt">Number of bedrooms (0 for studio)</span>
+                        <span x-show="errors.beds" class="label-text-alt text-error" x-text="errors.beds"></span>
+                    </div>
+                </div>
 
-                <BaseInput
-                  name="baths"
-                  label="Bathrooms"
-                  type="number"
-                  xModel="editUnit.baths"
-                  min="0.5"
-                  max="10"
-                  step="0.5"
-                  required={true}
-                />
-                <ValidationError fieldName="baths" errors={{}} />
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Bathrooms</span>
+                        <div class="flex items-center gap-2">
+                            <span
+                              x-show="getInheritanceBadge('baths')"
+                              class="badge badge-sm"
+                              :class="{
+                                'badge-info': isFieldInherited('baths'),
+                                'badge-warning': !isFieldInherited('baths') && getInheritanceBadge('baths')
+                            }"
+                                x-text="getInheritanceBadge('baths')"
+                            >
+                            </span>
+                            <button
+                              x-show="!isFieldInherited('baths') && selectedUnitType && getInheritanceBadge('baths')"
+                              type="button"
+                              class="btn btn-ghost btn-xs"
+                              @click="clearOverride('baths')"
+                              title="Use floorplan value"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                                </svg>
+                                Use floorplan
+                            </button>
+                        </div>
+                    </label>
+                    <input
+                      type="number"
+                      name="baths"
+                      x-model="editUnit.baths"
+                      :placeholder="getFieldPlaceholder('baths', '1')"
+                        class="input input-bordered"
+                        class="{'input-error': errors.baths}"
+                        min="0.5"
+                        max="10"
+                        step="0.5"
+                        required
+                        data-testid="baths-input"
+                    />
+                    <div class="label">
+                        <span class="label-text-alt">Number of bathrooms</span>
+                        <span x-show="errors.baths" class="label-text-alt text-error" x-text="errors.baths"></span>
+                    </div>
+                </div>
 
-                <BaseInput
-                  name="sqft"
-                  label="Square Feet"
-                  type="number"
-                  xModel="editUnit.sqft"
-                  min="100"
-                  max="10000"
-                  placeholder="750"
-                  helpText="Optional - unit size"
-                />
-                <ValidationError fieldName="sqft" errors={{}} />
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Square Feet</span>
+                        <div class="flex items-center gap-2">
+                            <span
+                              x-show="getInheritanceBadge('sqft')"
+                              class="badge badge-sm"
+                              :class="{
+                                'badge-info': isFieldInherited('sqft'),
+                                'badge-warning': !isFieldInherited('sqft') && getInheritanceBadge('sqft')
+                            }"
+                                x-text="getInheritanceBadge('sqft')"
+                            >
+                            </span>
+                            <button
+                              x-show="!isFieldInherited('sqft') && selectedUnitType && getInheritanceBadge('sqft')"
+                              type="button"
+                              class="btn btn-ghost btn-xs"
+                              @click="clearOverride('sqft')"
+                              title="Use floorplan value"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                                </svg>
+                                Use floorplan
+                            </button>
+                        </div>
+                    </label>
+                    <input
+                      type="number"
+                      name="sqft"
+                      x-model="editUnit.sqft"
+                      :placeholder="getFieldPlaceholder('sqft', '750')"
+                        class="input input-bordered"
+                        class="{'input-error': errors.sqft}"
+                        min="100"
+                        max="10000"
+                        data-testid="sqft-input"
+                    />
+                    <div class="label">
+                        <span class="label-text-alt">Optional - unit size</span>
+                        <span x-show="errors.sqft" class="label-text-alt text-error" x-text="errors.sqft"></span>
+                    </div>
+                </div>
             </div>
 
             <!-- Rent and Status -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BaseInput
-                  name="rent"
-                  label="Monthly Rent"
-                  type="number"
-                  xModel="editUnit.rent"
-                  min="0"
-                  max="25000"
-                  placeholder="2500"
-                  required={true}
-                  helpText="Monthly rental amount in USD"
-                />
-                <ValidationError fieldName="rent" errors={{}} />
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Monthly Rent</span>
+                        <div class="flex items-center gap-2">
+                            <span
+                              x-show="getInheritanceBadge('rent')"
+                              class="badge badge-sm"
+                              :class="{
+                                'badge-info': isFieldInherited('rent'),
+                                'badge-warning': !isFieldInherited('rent') && getInheritanceBadge('rent')
+                            }"
+                                x-text="getInheritanceBadge('rent')"
+                            >
+                            </span>
+                            <button
+                              x-show="!isFieldInherited('rent') && selectedUnitType && getInheritanceBadge('rent')"
+                              type="button"
+                              class="btn btn-ghost btn-xs"
+                              @click="clearOverride('rent')"
+                              title="Use floorplan value"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                                </svg>
+                                Use floorplan
+                            </button>
+                        </div>
+                    </label>
+                    <input
+                      type="number"
+                      name="rent"
+                      x-model="editUnit.rent"
+                      :placeholder="getFieldPlaceholder('rent', '2500')"
+                        class="input input-bordered"
+                        class="{'input-error': errors.rent}"
+                        min="0"
+                        max="25000"
+                        required
+                        data-testid="rent-input"
+                    />
+                    <div class="label">
+                        <span class="label-text-alt">Monthly rental amount in USD</span>
+                        <span x-show="errors.rent" class="label-text-alt text-error" x-text="errors.rent"></span>
+                    </div>
+                </div>
 
                 <BaseSelect
                   name="vacancyClass"
@@ -262,7 +556,6 @@ const statusOptions = [
                   options={statusOptions}
                   required={true}
                 />
-                <ValidationError fieldName="vacancyClass" errors={{}} />
             </div>
 
             <!-- Unit Description -->
@@ -279,7 +572,27 @@ const statusOptions = [
                   data-testid="unit-description-input"
                 >
                 </textarea>
-                <ValidationError fieldName="description" errors={{}} />
+            </div>
+
+            <!-- Bulk Override Actions -->
+            <div x-show="selectedUnitType && hasOverriddenFields()" class="border-t pt-4">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-base-content/70">
+                        Some fields have custom values that override the floorplan.
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-outline btn-sm"
+                      @click="resetAllToFloorplan()"
+                      :disabled="loading"
+                        data-testid="reset-all-to-floorplan"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Reset all to floorplan
+                    </button>
+                </div>
             </div>
 
             <!-- Dialog Actions -->

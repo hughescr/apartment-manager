@@ -40,6 +40,7 @@ interface UnitWithUpdate extends UnitData {
     updatedAt: Date
 }
 import { chain, filter, isNumber, isString, map, max, maxBy, replace, split, toLower } from 'lodash';
+import { inheritanceResolver } from '../mappers/inheritance-resolver.js';
 import type {
     MITSPhysicalProperty as _MITSPhysicalProperty,
     MITSFeedOptions,
@@ -543,7 +544,7 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     }
 
     // Filter units for the specified site and vacancy class
-    const siteUnits = filter(units, (unit) => {
+    const filteredUnits = filter(units, (unit) => {
         // Check if unit is included in feed for this site
         const includedInFeed = unit.feedInclusion && unit.feedInclusion[siteName] === true;
         if(!includedInFeed) {
@@ -561,6 +562,15 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
 
         return true;
     }) as UnitData[];
+
+    // Create a unit type lookup for efficient inheritance resolution
+    const unitTypeMap = new Map(map(unitTypes, ut => [ut.modelID, ut]));
+
+    // Resolve inheritance for all units before XML generation
+    const siteUnits = map(filteredUnits, (unit) => {
+        const unitType = unitTypeMap.get(unit.modelID);
+        return inheritanceResolver.resolveUnitValues(unit, unitType, building);
+    });
 
     // Find the most recent updatedAt timestamp from all data
     let mostRecentUpdate: Date | undefined;
@@ -628,7 +638,7 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
         xml += generateFloorplan(unitType);
     }
 
-    // Add units
+    // Add units (now using resolved unit data)
     xml += generateUnitsXML(siteUnits);
 
     // Close the document
@@ -684,7 +694,7 @@ export async function generateMultiBuildingMITSFeed(options: MultiBuildingFeedOp
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <PhysicalProperties xmlns="${MITS_NAMESPACE}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">`;
 
-    // Generate XML for each building
+    // Generate XML for each building (inheritance resolution is handled in generateMITSFeedForBuilding)
     for(const building of buildings) {
         const unitTypes = unitTypesByBuilding[building.buildingID] || [];
         const units = unitsByBuilding[building.buildingID] || [];

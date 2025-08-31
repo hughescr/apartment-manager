@@ -5,6 +5,7 @@ import { UnitsStateManager } from './unitsStateManager';
 import { BuildingDataParser } from './dataParser';
 import { BuildingApiService } from '../services/buildingApiService';
 import { trim, isError } from 'lodash';
+import { logger } from '@hughescr/logger';
 
 export interface UnitManagementState {
     building: BuildingData | null
@@ -558,7 +559,20 @@ export class UnitManagement {
      * Update unit with form data
      */
     async updateUnit(unitId: string, updatedData: Partial<ExtendedUnitData>): Promise<void> {
+        logger.info('UnitManagement.updateUnit called', {
+            unitId,
+            updatedData: JSON.stringify(updatedData, null, 2),
+            editingUnit: this.state.editingUnit ? JSON.stringify(this.state.editingUnit, null, 2) : null,
+            apiService: !!this.apiService,
+            building: !!this.state.building
+        });
+
         if(!this.apiService || !this.state.building || !this.state.editingUnit) {
+            logger.error('UnitManagement.updateUnit: Missing required dependencies', {
+                hasApiService: !!this.apiService,
+                hasBuilding: !!this.state.building,
+                hasEditingUnit: !!this.state.editingUnit
+            });
             return;
         }
 
@@ -569,7 +583,16 @@ export class UnitManagement {
                 lastUpdated: new Date().toISOString()
             };
 
+            logger.info('UnitManagement.updateUnit: Prepared unit data for API call', {
+                updatedUnit: JSON.stringify(updatedUnit, null, 2),
+                buildingID: this.state.building.buildingID
+            });
+
             const result = await this.apiService.updateUnit(this.state.building.buildingID, updatedUnit);
+
+            logger.info('UnitManagement.updateUnit: API call result', {
+                result: JSON.stringify(result, null, 2)
+            });
 
             if(!result.success) {
                 throw new Error(result.error || 'Failed to update unit');
@@ -588,6 +611,11 @@ export class UnitManagement {
                 type: 'success'
             });
         } catch(error) {
+            logger.error('UnitManagement.updateUnit: Error occurred', {
+                error,
+                unitId,
+                updatedData
+            });
             this.state.$dispatch('toast:show', {
                 message: 'Failed to update unit: ' + (isError(error) ? error.message : 'Unknown error'),
                 type: 'error'

@@ -64,7 +64,7 @@ export const UnitDraftSchema = z.looseObject({
         ];
 
         return !some(maliciousPatterns, pattern => pattern.test(id));
-    }, 'Unit ID contains invalid or potentially dangerous characters'),
+    }, 'Unit ID contains invalid or potentially dangerous characters').optional(),
     unitNumber: z.string().min(1, 'Unit number is required'),
 
     // All other fields are optional for draft state

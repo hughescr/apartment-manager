@@ -91,8 +91,8 @@ export async function generateMITSFeedWithAstro(options: MITSFeedOptions): Promi
     // Find most recent update timestamp (for future Astro component use)
     findMostRecentUpdate([building], { [building.buildingID]: unitTypes }, { [building.buildingID]: units });
 
-    // For now, fall back to the original implementation
-    // Note: Replace with Astro component rendering when SSR setup is available
+    // For now, fall back to the original implementation which now includes inheritance resolution
+    // Note: When SSR setup is available, Astro components will receive already-resolved units
     const originalGenerator = await import('./generator');
     return originalGenerator.generateMITSFeedForBuilding(options);
 }

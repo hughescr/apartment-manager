@@ -7,7 +7,7 @@ import { escapeXML } from './MITSUtils.astro';
 import { split } from 'lodash';
 
 export interface Props {
-    unit: UnitData
+    unit: UnitData // Should be resolved with inheritance already applied
 }
 
 const { unit } = Astro.props;
@@ -38,6 +38,7 @@ function generateUnitIdentificationXML(unit: UnitData): string {
 }
 
 // Helper function to generate unit details XML (beds, baths, sqft, rent)
+// Now works with resolved unit data that includes inherited values
 function generateUnitDetailsXML(unit: UnitData): string {
     const bedsXML = unit.beds !== undefined
         ? `

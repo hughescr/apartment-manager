@@ -219,13 +219,30 @@ function prepareUnitDataForDB(updates: Partial<UnitData>, buildingID: string, un
 // Helper function to try UpdateItemCommand
 async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Promise<UnitData | undefined> {
     const UnitEntity = getUnitEntity() as typeof Unit;
+
+    logger.info('tryUpdateItemCommand: Starting DynamoDB update', {
+        updatesForDB: JSON.stringify(updatesForDB, null, 2),
+        context: 'tryUpdateItemCommand_start'
+    });
+
     const { Attributes } = await UnitEntity.build(UpdateItemCommand)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox .item() requires any for library compatibility
         .item(updatesForDB as any)
         .options({ returnValues: 'ALL_NEW' })
         .send();
 
+    logger.info('tryUpdateItemCommand: DynamoDB update completed', {
+        hasAttributes: !!Attributes,
+        attributes: Attributes ? JSON.stringify(Attributes, null, 2) : 'null',
+        context: 'tryUpdateItemCommand_completed'
+    });
+
     if(!Attributes) {
+        logger.warn('tryUpdateItemCommand: No attributes returned - item may not exist', {
+            buildingID: updatesForDB.buildingID,
+            unitID: updatesForDB.unitID,
+            context: 'tryUpdateItemCommand_no_attributes'
+        });
         return undefined;
     }
 
@@ -235,7 +252,14 @@ async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Prom
         unitID: replace((Attributes as Record<string, unknown>)?.unitID as string || '', /^UNIT#/, '') || (Attributes as Record<string, unknown>)?.unitID as string
     };
 
-    return convertRawItemToUnitData(rawItem);
+    const convertedResult = convertRawItemToUnitData(rawItem);
+
+    logger.info('tryUpdateItemCommand: Successfully converted result', {
+        convertedResult: JSON.stringify(convertedResult, null, 2),
+        context: 'tryUpdateItemCommand_success'
+    });
+
+    return convertedResult;
 }
 
 // Helper function to fallback to PutItemCommand with merge logic
@@ -298,20 +322,82 @@ async function fallbackToPutItemCommand(
 }
 
 export async function updateUnit(buildingID: string, unitID: string, updates: Partial<UnitData>) {
+    logger.info('updateUnit called', {
+        buildingID,
+        unitID,
+        updates: JSON.stringify(updates, null, 2),
+        context: 'updateUnit_start'
+    });
+
     const { feedLastPulled, feedLastModified, feedInclusion, manualReferences, ...restUpdates } = updates;
     const updatesForDB = prepareUnitDataForDB(updates, buildingID, unitID);
 
+    logger.info('Prepared updates for DB', {
+        buildingID,
+        unitID,
+        updatesForDB: JSON.stringify(updatesForDB, null, 2),
+        context: 'updateUnit_prepared_data'
+    });
+
     try {
         // Try UpdateItemCommand first for backward compatibility with existing tests and behavior
-        return await tryUpdateItemCommand(updatesForDB);
+        logger.info('Attempting UpdateItemCommand', { buildingID, unitID, context: 'updateUnit_trying_update' });
+        const updateResult = await tryUpdateItemCommand(updatesForDB);
+
+        if(updateResult) {
+            logger.info('UpdateItemCommand successful', {
+                buildingID,
+                unitID,
+                result: JSON.stringify(updateResult, null, 2),
+                context: 'updateUnit_update_success'
+            });
+            return updateResult;
+        } else {
+            logger.warn('UpdateItemCommand returned undefined - item may not exist, falling back to PutItemCommand', {
+                buildingID,
+                unitID,
+                context: 'updateUnit_update_undefined_fallback'
+            });
+
+            // Fall back to PutItemCommand with merge logic when UpdateItemCommand returns undefined
+            logger.info('Attempting PutItemCommand fallback', { buildingID, unitID, context: 'updateUnit_trying_put' });
+            const putResult = await fallbackToPutItemCommand(buildingID, unitID, restUpdates, feedLastPulled, feedLastModified, feedInclusion, manualReferences);
+
+            logger.info('PutItemCommand fallback successful', {
+                buildingID,
+                unitID,
+                result: JSON.stringify(putResult, null, 2),
+                context: 'updateUnit_put_success'
+            });
+            return putResult;
+        }
     } catch(error) {
         // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
-        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic:', error);
+        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic', {
+            error,
+            buildingID,
+            unitID,
+            context: 'updateUnit_update_failed'
+        });
 
         try {
-            return await fallbackToPutItemCommand(buildingID, unitID, restUpdates, feedLastPulled, feedLastModified, feedInclusion, manualReferences);
+            logger.info('Attempting PutItemCommand fallback', { buildingID, unitID, context: 'updateUnit_trying_put' });
+            const putResult = await fallbackToPutItemCommand(buildingID, unitID, restUpdates, feedLastPulled, feedLastModified, feedInclusion, manualReferences);
+
+            logger.info('PutItemCommand fallback successful', {
+                buildingID,
+                unitID,
+                result: JSON.stringify(putResult, null, 2),
+                context: 'updateUnit_put_success'
+            });
+            return putResult;
         } catch(fallbackError) {
-            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed:', fallbackError);
+            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed', {
+                fallbackError,
+                buildingID,
+                unitID,
+                context: 'updateUnit_both_failed'
+            });
             throw fallbackError;
         }
     }

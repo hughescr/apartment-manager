@@ -9,7 +9,11 @@ import { UnitTypeManagement, type UnitTypeManagementState } from './unitTypeMana
 import { FormValidation, type FormValidationState } from './formValidation';
 import { ApiHelpers, type ApiHelpersState } from './apiHelpers';
 import { StateHelpers, type StateHelpersState } from './stateHelpers';
-import { noop, map } from 'lodash';
+import { FieldInheritanceManager } from '../../unit-card/fieldInheritance';
+// Native JavaScript implementations to avoid Node.js dependencies in browser
+// eslint-disable-next-line lodash/prefer-noop -- avoiding lodash dependency for browser compatibility
+const noop = (): void => { /* intentionally empty */ };
+const map = <T, U>(array: T[], iteratee: (item: T) => U): U[] => array.map(iteratee);
 
 /**
  * Combined state interface that includes all module states
@@ -108,11 +112,15 @@ function buildingStateObject(): any {
         _formValidation: null as FormValidation | null,
         _apiHelpers: null as ApiHelpers | null,
         _stateHelpers: null as StateHelpers | null,
+        inheritanceManager: new FieldInheritanceManager(),
 
         /**
          * Initialize the component state and all modules
          */
         init(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            // Initialize inheritance manager
+            this.inheritanceManager = new FieldInheritanceManager();
+
             // Initialize all modules with the combined state
             this._buildingCore = new BuildingCore(this);
             this._unitManagement = new UnitManagement(this);
