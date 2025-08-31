@@ -37,293 +37,13 @@ const statusOptions = [
           x-show="editingUnit"
           @submit.prevent="submitEditUnit()"
           class="space-y-6"
-          x-data="{
-                editUnit: {},
-                errors: {},
-                loading: false,
-
-                // Access unit types from parent Alpine.js context
-                getUnitTypes() {
-                    return unitTypes || [];
-                },
-
-                // Get current building data
-                getBuildingData() {
-                    return building || null;
-                },
-
-                // Compute unit type options for BaseSelect component
-                get unitTypeOptions() {
-                    const unitTypesList = this.getUnitTypes();
-                    const options = unitTypesList.map(ut => ({
-                        value: ut.modelID,
-                        label: `${ut.modelName} (${ut.beds} bed/${ut.baths} bath${ut.sqft ? `, ${ut.sqft} sq ft` : ''})`
-                    }));
-                    // Add option for no unit type (custom unit)
-                    options.unshift({ value: '', label: 'None (Custom Unit)' });
-                    return options;
-                },
-
-                // Initialize form data from editingUnit
-                initializeForm() {
-                    if(editingUnit) {
-                        this.editUnit = {
-                            unitID: editingUnit.unitID,
-                            unitNumber: editingUnit.unitNumber || editingUnit.unitID,
-                            modelID: editingUnit.modelID || '',
-                            beds: editingUnit.beds || 0,
-                            baths: editingUnit.baths || 1,
-                            sqft: editingUnit.sqft || null,
-                            rent: editingUnit.rent || 0,
-                            vacancyClass: editingUnit.vacancyClass || 'Unoccupied',
-                            description: editingUnit.description || ''
-                        };
-                    }
-                },
-
-                // Get selected unit type safely
-                get selectedUnitType() {
-                    if (!this.editUnit.modelID) return null;
-                    const unitTypesList = this.getUnitTypes();
-                    return unitTypesList.find(ut => ut.modelID === this.editUnit.modelID) || null;
-                },
-
-                // Check if a field is inherited
-                isFieldInherited(fieldName) {
-                    const unitData = this.editUnit;
-                    const unitType = this.selectedUnitType;
-                    return this.inheritanceManager.isInherited(unitData, unitType, fieldName);
-                },
-
-                // Get inherited value for a field
-                getInheritedValue(fieldName) {
-                    const unitType = this.selectedUnitType;
-                    return this.inheritanceManager.getInheritedValue(unitType, fieldName);
-                },
-
-                // Get effective value (unit value or inherited value)
-                getEffectiveValue(fieldName) {
-                    const unitData = this.editUnit;
-                    const unitType = this.selectedUnitType;
-                    return this.inheritanceManager.getEffectiveValue(unitData, unitType, fieldName);
-                },
-
-                // Get placeholder text for inherited values
-                getFieldPlaceholder(fieldName, defaultPlaceholder = '') {
-                    const inheritedValue = this.getInheritedValue(fieldName);
-                    if (inheritedValue !== null && inheritedValue !== undefined) {
-                        return `Inherited: ${inheritedValue}`;
-                    }
-                    return defaultPlaceholder;
-                },
-
-                // Get inheritance badge text
-                getInheritanceBadge(fieldName) {
-                    if (this.isFieldInherited(fieldName)) {
-                        return 'Inherited from floorplan';
-                    } else if (this.selectedUnitType && this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
-                        return 'Custom override';
-                    }
-                    return null;
-                },
-
-                // Clear a specific field override to allow inheritance
-                clearOverride(fieldName) {
-                    if (this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
-                        // Set field to null to trigger inheritance
-                        this.editUnit[fieldName] = null;
-
-                        // For beds and baths, we need special handling to avoid 0 values
-                        if (fieldName === 'beds' && this.selectedUnitType && !this.selectedUnitType.beds) {
-                            this.editUnit.beds = null;
-                        }
-                        if (fieldName === 'baths' && this.selectedUnitType && !this.selectedUnitType.baths) {
-                            this.editUnit.baths = null;
-                        }
-                    }
-                },
-
-                // Reset all overridden fields to inherit from floorplan
-                resetAllToFloorplan() {
-                    const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
-                    const overriddenFields = [];
-
-                    // Check which fields are currently overridden
-                    inheritableFields.forEach(field => {
-                        if (!this.isFieldInherited(field) && this.selectedUnitType) {
-                            overriddenFields.push(field);
-                        }
-                    });
-
-                    if (overriddenFields.length === 0) {
-                        $dispatch('show-toast', {
-                            message: 'No overridden fields to reset',
-                            type: 'info'
-                        });
-                        return;
-                    }
-
-                    const fieldNames = overriddenFields.join(', ');
-                    const confirmed = confirm(`Are you sure you want to reset ${overriddenFields.length} field(s) to inherit from the floorplan?\n\nFields: ${fieldNames}\n\nThis will clear your custom values.`);
-
-                    if (confirmed) {
-                        overriddenFields.forEach(field => {
-                            this.clearOverride(field);
-                        });
-
-                        $dispatch('show-toast', {
-                            message: `Reset ${overriddenFields.length} field(s) to floorplan values`,
-                            type: 'success'
-                        });
-                    }
-                },
-
-                // Check if unit has any overridden fields that can be reset
-                hasOverriddenFields() {
-                    if (!this.selectedUnitType) return false;
-                    const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
-                    return inheritableFields.some(field => !this.isFieldInherited(field));
-                },
-
-                // Preview what values will change when selecting a new unit type
-                previewUnitTypeChange(newModelID) {
-                    if (!newModelID) return;
-
-                    const newUnitType = this.getUnitTypes().find(ut => ut.modelID === newModelID);
-                    if (!newUnitType) return;
-
-                    const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
-                    const changes = [];
-
-                    inheritableFields.forEach(field => {
-                        const currentValue = this.getEffectiveValue(field);
-                        const newInheritedValue = this.inheritanceManager.getInheritedValue(newUnitType, field);
-                        const willInherit = (this.editUnit[field] === null || this.editUnit[field] === undefined || this.editUnit[field] === '');
-
-                        if (willInherit && newInheritedValue !== null && currentValue !== newInheritedValue) {
-                            changes.push({
-                                field: field,
-                                from: currentValue || 'Not set',
-                                to: newInheritedValue
-                            });
-                        }
-                    });
-
-                    if (changes.length > 0) {
-                        const changesList = changes.map(c => `${c.field}: ${c.from} → ${c.to}`).join('\n');
-                        const confirmed = confirm(`Changing to ${newUnitType.modelName} will update these inherited values:\n\n${changesList}\n\nContinue?`);
-
-                        if (!confirmed) {
-                            // Reset the select to previous value
-                            return false;
-                        }
-                    }
-
-                    return true;
-                },
-
-                // Watch for unit type changes to populate inherited values
-                onUnitTypeChange() {
-                    const selectedType = this.selectedUnitType;
-                    if (selectedType) {
-                        // Reset inheritable fields to allow inheritance
-                        // Only set values if unit doesn't have explicit values
-                        if (!this.editUnit.beds) {
-                            this.editUnit.beds = null; // Allow inheritance
-                        }
-                        if (!this.editUnit.baths) {
-                            this.editUnit.baths = null; // Allow inheritance
-                        }
-                        if (!this.editUnit.sqft) {
-                            this.editUnit.sqft = null; // Allow inheritance
-                        }
-                        if (!this.editUnit.rent) {
-                            this.editUnit.rent = null; // Allow inheritance
-                        }
-                    } else {
-                        // For custom units, ensure we have default values
-                        if (!this.editUnit.beds) this.editUnit.beds = 1;
-                        if (!this.editUnit.baths) this.editUnit.baths = 1;
-                        if (!this.editUnit.rent) this.editUnit.rent = 0;
-                    }
-                },
-
-                async submitEditUnit() {
-                    this.loading = true;
-                    this.errors = {};
-
-                    try {
-                        // Client-side validation
-                        if (!this.editUnit.unitNumber || !this.editUnit.unitNumber.trim()) {
-                            this.errors.unitNumber = 'Unit number is required';
-                        }
-                        if (this.editUnit.beds < 0) {
-                            this.errors.beds = 'Bedrooms must be 0 or greater';
-                        }
-                        if (this.editUnit.baths < 0.5) {
-                            this.errors.baths = 'Bathrooms must be 0.5 or greater';
-                        }
-                        if (this.editUnit.rent < 0) {
-                            this.errors.rent = 'Rent must be 0 or greater';
-                        }
-                        if (this.editUnit.rent > 25000) {
-                            this.errors.rent = 'Rent must be less than $25,000';
-                        }
-
-                        if (Object.keys(this.errors).length > 0) {
-                            this.loading = false;
-                            return;
-                        }
-
-                        // Dispatch update event with unit ID and changes
-                        $dispatch('update-unit', {
-                            unitId: editingUnit.unitID,
-                            updatedData: this.editUnit
-                        });
-                    } catch (error) {
-                        console.error('Edit unit error:', error);
-                        this.errors.general = 'Failed to update unit. Please try again.';
-                        $dispatch('show-toast', {
-                            message: 'Failed to update unit. Please try again.',
-                            type: 'error'
-                        });
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async confirmDeleteUnit() {
-                    if(!editingUnit) return;
-
-                    const unitDisplayName = editingUnit.unitNumber || editingUnit.unitID;
-                    if(confirm(`Are you sure you want to delete Unit ${unitDisplayName}?\\n\\nThis action cannot be undone.`)) {
-                        this.loading = true;
-                        try {
-                            $dispatch('delete-unit', {
-                                unitId: editingUnit.unitID
-                            });
-                        } catch(error) {
-                            console.error('Delete unit error:', error);
-                            $dispatch('show-toast', {
-                                message: 'Failed to delete unit. Please try again.',
-                                type: 'error'
-                            });
-                        } finally {
-                            this.loading = false;
-                        }
-                    }
-                },
-
-                // Note: unitTypes is accessed from parent Alpine.js context, not from dataset
-            }"
-          x-init="initializeForm()"
         >
             <!-- General Error Display -->
-            <div x-show="errors.general" class="alert alert-error" data-testid="edit-unit-general-error">
+            <div x-show="editUnitErrors.general" class="alert alert-error" data-testid="edit-unit-general-error">
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span x-text="errors.general"></span>
+                <span x-text="editUnitErrors.general"></span>
             </div>
 
             <!-- Basic Unit Information -->
@@ -343,19 +63,19 @@ const statusOptions = [
                     </label>
                     <select
                       class="select select-bordered"
-                      :class="{'select-error': errors.modelID}"
+                      :class="{'select-error': editUnitErrors.modelID}"
                         x-model="editUnit.modelID"
-                        @change="if (previewUnitTypeChange($event.target.value)) { onUnitTypeChange(); } else { $event.target.value = editUnit.modelID; }"
+                        @change="if (previewEditUnitTypeChange($event.target.value)) { onEditUnitTypeChange(); } else { $event.target.value = editUnit.modelID; }"
                         data-testid="unit-type-select"
                     >
                         <option value="">None (Custom Unit)</option>
-                        <template x-for="unitType in getUnitTypes()" :key="unitType.modelID">
+                        <template x-for="unitType in unitTypes" :key="unitType.modelID">
                             <option :value="unitType.modelID" x-text="unitType.modelName + ' (' + unitType.beds + ' bed/' + unitType.baths + ' bath' + (unitType.sqft ? ', ' + unitType.sqft + ' sq ft' : '') + ')'"></option>
                         </template>
                     </select>
                     <div class="label">
                         <span class="label-text-alt">Choose to inherit properties from a unit type</span>
-                        <span x-show="errors.modelID" class="label-text-alt text-error" x-text="errors.modelID"></span>
+                        <span x-show="editUnitErrors.modelID" class="label-text-alt text-error" x-text="editUnitErrors.modelID"></span>
                     </div>
                 </div>
             </div>
@@ -367,20 +87,20 @@ const statusOptions = [
                         <span class="label-text">Bedrooms</span>
                         <div class="flex items-center gap-2">
                             <span
-                              x-show="getInheritanceBadge('beds')"
+                              x-show="getEditInheritanceBadge('beds')"
                               class="badge badge-sm"
                               :class="{
-                                'badge-info': isFieldInherited('beds'),
-                                'badge-warning': !isFieldInherited('beds') && getInheritanceBadge('beds')
+                                'badge-info': isEditFieldInherited('beds'),
+                                'badge-warning': !isEditFieldInherited('beds') && getEditInheritanceBadge('beds')
                             }"
-                                x-text="getInheritanceBadge('beds')"
+                                x-text="getEditInheritanceBadge('beds')"
                             >
                             </span>
                             <button
-                              x-show="!isFieldInherited('beds') && selectedUnitType && getInheritanceBadge('beds')"
+                              x-show="!isEditFieldInherited('beds') && editFormSelectedUnitType && getEditInheritanceBadge('beds')"
                               type="button"
                               class="btn btn-ghost btn-xs"
-                              @click="clearOverride('beds')"
+                              @click="clearEditOverride('beds')"
                               title="Use floorplan value"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -394,17 +114,17 @@ const statusOptions = [
                       type="number"
                       name="beds"
                       x-model="editUnit.beds"
-                      :placeholder="getFieldPlaceholder('beds', '1')"
+                      :placeholder="getEditFieldPlaceholder('beds', '1')"
                         class="input input-bordered"
-                        class="{'input-error': errors.beds}"
-                        min="0"
-                        max="10"
-                        required
-                        data-testid="beds-input"
+                        :class="{'input-error': editUnitErrors.beds}"
+                          min="0"
+                          max="10"
+                          required
+                          data-testid="beds-input"
                     />
                     <div class="label">
                         <span class="label-text-alt">Number of bedrooms (0 for studio)</span>
-                        <span x-show="errors.beds" class="label-text-alt text-error" x-text="errors.beds"></span>
+                        <span x-show="editUnitErrors.beds" class="label-text-alt text-error" x-text="editUnitErrors.beds"></span>
                     </div>
                 </div>
 
@@ -413,20 +133,20 @@ const statusOptions = [
                         <span class="label-text">Bathrooms</span>
                         <div class="flex items-center gap-2">
                             <span
-                              x-show="getInheritanceBadge('baths')"
+                              x-show="getEditInheritanceBadge('baths')"
                               class="badge badge-sm"
                               :class="{
-                                'badge-info': isFieldInherited('baths'),
-                                'badge-warning': !isFieldInherited('baths') && getInheritanceBadge('baths')
+                                'badge-info': isEditFieldInherited('baths'),
+                                'badge-warning': !isEditFieldInherited('baths') && getEditInheritanceBadge('baths')
                             }"
-                                x-text="getInheritanceBadge('baths')"
+                                x-text="getEditInheritanceBadge('baths')"
                             >
                             </span>
                             <button
-                              x-show="!isFieldInherited('baths') && selectedUnitType && getInheritanceBadge('baths')"
+                              x-show="!isEditFieldInherited('baths') && editFormSelectedUnitType && getEditInheritanceBadge('baths')"
                               type="button"
                               class="btn btn-ghost btn-xs"
-                              @click="clearOverride('baths')"
+                              @click="clearEditOverride('baths')"
                               title="Use floorplan value"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -440,18 +160,18 @@ const statusOptions = [
                       type="number"
                       name="baths"
                       x-model="editUnit.baths"
-                      :placeholder="getFieldPlaceholder('baths', '1')"
+                      :placeholder="getEditFieldPlaceholder('baths', '1')"
                         class="input input-bordered"
-                        class="{'input-error': errors.baths}"
-                        min="0.5"
-                        max="10"
-                        step="0.5"
-                        required
-                        data-testid="baths-input"
+                        :class="{'input-error': editUnitErrors.baths}"
+                          min="0.5"
+                          max="10"
+                          step="0.5"
+                          required
+                          data-testid="baths-input"
                     />
                     <div class="label">
                         <span class="label-text-alt">Number of bathrooms</span>
-                        <span x-show="errors.baths" class="label-text-alt text-error" x-text="errors.baths"></span>
+                        <span x-show="editUnitErrors.baths" class="label-text-alt text-error" x-text="editUnitErrors.baths"></span>
                     </div>
                 </div>
 
@@ -460,20 +180,20 @@ const statusOptions = [
                         <span class="label-text">Square Feet</span>
                         <div class="flex items-center gap-2">
                             <span
-                              x-show="getInheritanceBadge('sqft')"
+                              x-show="getEditInheritanceBadge('sqft')"
                               class="badge badge-sm"
                               :class="{
-                                'badge-info': isFieldInherited('sqft'),
-                                'badge-warning': !isFieldInherited('sqft') && getInheritanceBadge('sqft')
+                                'badge-info': isEditFieldInherited('sqft'),
+                                'badge-warning': !isEditFieldInherited('sqft') && getEditInheritanceBadge('sqft')
                             }"
-                                x-text="getInheritanceBadge('sqft')"
+                                x-text="getEditInheritanceBadge('sqft')"
                             >
                             </span>
                             <button
-                              x-show="!isFieldInherited('sqft') && selectedUnitType && getInheritanceBadge('sqft')"
+                              x-show="!isEditFieldInherited('sqft') && editFormSelectedUnitType && getEditInheritanceBadge('sqft')"
                               type="button"
                               class="btn btn-ghost btn-xs"
-                              @click="clearOverride('sqft')"
+                              @click="clearEditOverride('sqft')"
                               title="Use floorplan value"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -487,16 +207,16 @@ const statusOptions = [
                       type="number"
                       name="sqft"
                       x-model="editUnit.sqft"
-                      :placeholder="getFieldPlaceholder('sqft', '750')"
+                      :placeholder="getEditFieldPlaceholder('sqft', '750')"
                         class="input input-bordered"
-                        class="{'input-error': errors.sqft}"
-                        min="100"
-                        max="10000"
-                        data-testid="sqft-input"
+                        :class="{'input-error': editUnitErrors.sqft}"
+                          min="100"
+                          max="10000"
+                          data-testid="sqft-input"
                     />
                     <div class="label">
                         <span class="label-text-alt">Optional - unit size</span>
-                        <span x-show="errors.sqft" class="label-text-alt text-error" x-text="errors.sqft"></span>
+                        <span x-show="editUnitErrors.sqft" class="label-text-alt text-error" x-text="editUnitErrors.sqft"></span>
                     </div>
                 </div>
             </div>
@@ -508,20 +228,20 @@ const statusOptions = [
                         <span class="label-text">Monthly Rent</span>
                         <div class="flex items-center gap-2">
                             <span
-                              x-show="getInheritanceBadge('rent')"
+                              x-show="getEditInheritanceBadge('rent')"
                               class="badge badge-sm"
                               :class="{
-                                'badge-info': isFieldInherited('rent'),
-                                'badge-warning': !isFieldInherited('rent') && getInheritanceBadge('rent')
+                                'badge-info': isEditFieldInherited('rent'),
+                                'badge-warning': !isEditFieldInherited('rent') && getEditInheritanceBadge('rent')
                             }"
-                                x-text="getInheritanceBadge('rent')"
+                                x-text="getEditInheritanceBadge('rent')"
                             >
                             </span>
                             <button
-                              x-show="!isFieldInherited('rent') && selectedUnitType && getInheritanceBadge('rent')"
+                              x-show="!isEditFieldInherited('rent') && editFormSelectedUnitType && getEditInheritanceBadge('rent')"
                               type="button"
                               class="btn btn-ghost btn-xs"
-                              @click="clearOverride('rent')"
+                              @click="clearEditOverride('rent')"
                               title="Use floorplan value"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -535,17 +255,17 @@ const statusOptions = [
                       type="number"
                       name="rent"
                       x-model="editUnit.rent"
-                      :placeholder="getFieldPlaceholder('rent', '2500')"
+                      :placeholder="getEditFieldPlaceholder('rent', '2500')"
                         class="input input-bordered"
-                        class="{'input-error': errors.rent}"
-                        min="0"
-                        max="25000"
-                        required
-                        data-testid="rent-input"
+                        :class="{'input-error': editUnitErrors.rent}"
+                          min="0"
+                          max="25000"
+                          required
+                          data-testid="rent-input"
                     />
                     <div class="label">
                         <span class="label-text-alt">Monthly rental amount in USD</span>
-                        <span x-show="errors.rent" class="label-text-alt text-error" x-text="errors.rent"></span>
+                        <span x-show="editUnitErrors.rent" class="label-text-alt text-error" x-text="editUnitErrors.rent"></span>
                     </div>
                 </div>
 
@@ -575,7 +295,7 @@ const statusOptions = [
             </div>
 
             <!-- Bulk Override Actions -->
-            <div x-show="selectedUnitType && hasOverriddenFields()" class="border-t pt-4">
+            <div x-show="editFormSelectedUnitType && hasEditOverriddenFields()" class="border-t pt-4">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-base-content/70">
                         Some fields have custom values that override the floorplan.
@@ -583,8 +303,8 @@ const statusOptions = [
                     <button
                       type="button"
                       class="btn btn-outline btn-sm"
-                      @click="resetAllToFloorplan()"
-                      :disabled="loading"
+                      @click="resetEditAllToFloorplan()"
+                      :disabled="editUnitLoading"
                         data-testid="reset-all-to-floorplan"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -600,8 +320,8 @@ const statusOptions = [
                 <button
                   type="button"
                   class="btn btn-error"
-                  @click="confirmDeleteUnit()"
-                  :disabled="loading"
+                  @click="confirmEditDeleteUnit()"
+                  :disabled="editUnitLoading"
                     data-testid="delete-unit"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -615,7 +335,7 @@ const statusOptions = [
                       type="button"
                       class="btn"
                       @click="$dispatch('close-edit-unit-dialog')"
-                      :disabled="loading"
+                      :disabled="editUnitLoading"
                         data-testid="cancel-edit-unit"
                     >
                         Cancel
@@ -623,11 +343,11 @@ const statusOptions = [
                     <button
                       type="submit"
                       class="btn btn-primary"
-                      :disabled="loading"
+                      :disabled="editUnitLoading"
                         data-testid="confirm-edit-unit"
                     >
-                        <span x-show="loading" class="loading loading-spinner loading-sm"></span>
-                        <span x-show="!loading">Save Changes</span>
+                        <span x-show="editUnitLoading" class="loading loading-spinner loading-sm"></span>
+                        <span x-show="!editUnitLoading">Save Changes</span>
                     </button>
                 </div>
             </div>

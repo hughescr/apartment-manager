@@ -74,6 +74,10 @@ function buildingStateObject(): any {
         showBulkStatusDialog: false,
         showBulkRentDialog: false,
         newUnit: { unitID: '', modelID: '' },
+        // Edit unit form state
+        editUnit: {} as Partial<ExtendedUnitData>,
+        editUnitErrors: {} as Record<string, string>,
+        editUnitLoading: false,
         newUnitType: {} as Partial<UnitTypeData>,
         selectedUnitType: null as UnitTypeData | null,
         bulkOperation: {
@@ -311,6 +315,10 @@ function buildingStateObject(): any {
 
         openEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
             this._unitManagement?.openEditUnitDialog(unit);
+            // Initialize the edit form when dialog opens
+            this.$nextTick(() => {
+                this.initializeEditForm();
+            });
         },
 
         closeEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
@@ -323,6 +331,272 @@ function buildingStateObject(): any {
 
         async deleteUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitId: string) {
             await this._unitManagement?.deleteUnit(unitId);
+        },
+
+        // Edit unit form methods
+        initializeEditForm(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            if(this.editingUnit) {
+                this.editUnit = {
+                    unitID: this.editingUnit.unitID,
+                    unitNumber: this.editingUnit.unitNumber || this.editingUnit.unitID,
+                    modelID: this.editingUnit.modelID || '',
+                    beds: this.editingUnit.beds || 0,
+                    baths: this.editingUnit.baths || 1,
+                    sqft: this.editingUnit.sqft || null,
+                    rent: this.editingUnit.rent || 0,
+                    vacancyClass: this.editingUnit.vacancyClass || 'Unoccupied',
+                    description: this.editingUnit.description || ''
+                };
+            }
+        },
+
+        // Get selected unit type for edit form
+        get editFormSelectedUnitType() {
+            if(!this.editUnit.modelID) {
+                return null;
+            }
+            return this.unitTypes.find((ut: UnitTypeData) => ut.modelID === this.editUnit.modelID) || null;
+        },
+
+        // Check if a field is inherited in edit form
+        isEditFieldInherited(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+            const unitData = this.editUnit;
+            const unitType = this.editFormSelectedUnitType;
+            return this.inheritanceManager.isInherited(unitData, unitType, fieldName);
+        },
+
+        // Get inherited value for a field in edit form
+        getEditInheritedValue(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+            const unitType = this.editFormSelectedUnitType;
+            return this.inheritanceManager.getInheritedValue(unitType, fieldName);
+        },
+
+        // Get effective value (unit value or inherited value) in edit form
+        getEditEffectiveValue(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+            const unitData = this.editUnit;
+            const unitType = this.editFormSelectedUnitType;
+            return this.inheritanceManager.getEffectiveValue(unitData, unitType, fieldName);
+        },
+
+        // Get placeholder text for inherited values in edit form
+        getEditFieldPlaceholder(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string, defaultPlaceholder = '') {
+            const inheritedValue = this.getEditInheritedValue(fieldName);
+            if(inheritedValue !== null && inheritedValue !== undefined) {
+                return `Inherited: ${inheritedValue}`;
+            }
+            return defaultPlaceholder;
+        },
+
+        // Get inheritance badge text for edit form
+        getEditInheritanceBadge(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+            if(this.isEditFieldInherited(fieldName)) {
+                return 'Inherited from floorplan';
+            } else if(this.editFormSelectedUnitType && this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
+                return 'Custom override';
+            }
+            return null;
+        },
+
+        // Clear a specific field override to allow inheritance in edit form
+        clearEditOverride(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+            if(this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
+                // Set field to null to trigger inheritance
+                this.editUnit[fieldName] = null;
+
+                // For beds and baths, we need special handling to avoid 0 values
+                if(fieldName === 'beds' && this.editFormSelectedUnitType && !this.editFormSelectedUnitType.beds) {
+                    this.editUnit.beds = null;
+                }
+                if(fieldName === 'baths' && this.editFormSelectedUnitType && !this.editFormSelectedUnitType.baths) {
+                    this.editUnit.baths = null;
+                }
+            }
+        },
+
+        // Reset all overridden fields to inherit from floorplan in edit form
+        resetEditAllToFloorplan(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
+            const overriddenFields: string[] = [];
+
+            // Check which fields are currently overridden
+            inheritableFields.forEach((field) => {
+                if(!this.isEditFieldInherited(field) && this.editFormSelectedUnitType) {
+                    overriddenFields.push(field);
+                }
+            });
+
+            if(overriddenFields.length === 0) {
+                this.$dispatch('show-toast', {
+                    message: 'No overridden fields to reset',
+                    type: 'info'
+                });
+                return;
+            }
+
+            const fieldNames = overriddenFields.join(', ');
+            const confirmed = confirm(`Are you sure you want to reset ${overriddenFields.length} field(s) to inherit from the floorplan?\n\nFields: ${fieldNames}\n\nThis will clear your custom values.`);
+
+            if(confirmed) {
+                overriddenFields.forEach((field) => {
+                    this.clearEditOverride(field);
+                });
+
+                this.$dispatch('show-toast', {
+                    message: `Reset ${overriddenFields.length} field(s) to floorplan values`,
+                    type: 'success'
+                });
+            }
+        },
+
+        // Check if unit has any overridden fields that can be reset in edit form
+        hasEditOverriddenFields(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            if(!this.editFormSelectedUnitType) {
+                return false;
+            }
+            const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
+            return inheritableFields.some(field => !this.isEditFieldInherited(field));
+        },
+
+        // Preview what values will change when selecting a new unit type in edit form
+        previewEditUnitTypeChange(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, newModelID: string) {
+            if(!newModelID) {
+                return true;
+            }
+
+            const newUnitType = this.unitTypes.find((ut: UnitTypeData) => ut.modelID === newModelID);
+            if(!newUnitType) {
+                return true;
+            }
+
+            const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
+            const changes: { field: string, from: string | number, to: string | number }[] = [];
+
+            inheritableFields.forEach((field) => {
+                const currentValue = this.getEditEffectiveValue(field);
+                const newInheritedValue = this.inheritanceManager.getInheritedValue(newUnitType, field);
+                const willInherit = (this.editUnit[field] === null || this.editUnit[field] === undefined || this.editUnit[field] === '');
+
+                if(willInherit && newInheritedValue !== null && currentValue !== newInheritedValue) {
+                    changes.push({
+                        field: field,
+                        from: currentValue || 'Not set',
+                        to: newInheritedValue
+                    });
+                }
+            });
+
+            if(changes.length > 0) {
+                const changesList = changes.map((c: { field: string, from: string | number, to: string | number }) => `${c.field}: ${c.from} → ${c.to}`).join('\n');
+                const confirmed = confirm(`Changing to ${newUnitType.modelName} will update these inherited values:\n\n${changesList}\n\nContinue?`);
+
+                if(!confirmed) {
+                    return false;
+                }
+            }
+
+            return true;
+        },
+
+        // Watch for unit type changes to populate inherited values in edit form
+        onEditUnitTypeChange(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            const selectedType = this.editFormSelectedUnitType;
+            if(selectedType) {
+                // Reset inheritable fields to allow inheritance
+                // Only set values if unit doesn't have explicit values
+                if(!this.editUnit.beds) {
+                    this.editUnit.beds = null; // Allow inheritance
+                }
+                if(!this.editUnit.baths) {
+                    this.editUnit.baths = null; // Allow inheritance
+                }
+                if(!this.editUnit.sqft) {
+                    this.editUnit.sqft = null; // Allow inheritance
+                }
+                if(!this.editUnit.rent) {
+                    this.editUnit.rent = null; // Allow inheritance
+                }
+            } else {
+                // For custom units, ensure we have default values
+                if(!this.editUnit.beds) {
+                    this.editUnit.beds = 1;
+                }
+                if(!this.editUnit.baths) {
+                    this.editUnit.baths = 1;
+                }
+                if(!this.editUnit.rent) {
+                    this.editUnit.rent = 0;
+                }
+            }
+        },
+
+        async submitEditUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            this.editUnitLoading = true;
+            this.editUnitErrors = {};
+
+            try {
+                // Client-side validation
+                if(!this.editUnit.unitNumber || !this.editUnit.unitNumber.trim()) {
+                    this.editUnitErrors.unitNumber = 'Unit number is required';
+                }
+                if(this.editUnit.beds < 0) {
+                    this.editUnitErrors.beds = 'Bedrooms must be 0 or greater';
+                }
+                if(this.editUnit.baths < 0.5) {
+                    this.editUnitErrors.baths = 'Bathrooms must be 0.5 or greater';
+                }
+                if(this.editUnit.rent < 0) {
+                    this.editUnitErrors.rent = 'Rent must be 0 or greater';
+                }
+                if(this.editUnit.rent > 25000) {
+                    this.editUnitErrors.rent = 'Rent must be less than $25,000';
+                }
+
+                if(Object.keys(this.editUnitErrors).length > 0) {
+                    this.editUnitLoading = false;
+                    return;
+                }
+
+                // Dispatch update event with unit ID and changes
+                this.$dispatch('update-unit', {
+                    unitId: this.editingUnit.unitID,
+                    updatedData: this.editUnit
+                });
+            } catch(error) {
+                // eslint-disable-next-line no-console -- error logging for debugging
+                console.error('Edit unit error:', error);
+                this.editUnitErrors.general = 'Failed to update unit. Please try again.';
+                this.$dispatch('show-toast', {
+                    message: 'Failed to update unit. Please try again.',
+                    type: 'error'
+                });
+            } finally {
+                this.editUnitLoading = false;
+            }
+        },
+
+        async confirmEditDeleteUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+            if(!this.editingUnit) {
+                return;
+            }
+
+            const unitDisplayName = this.editingUnit.unitNumber || this.editingUnit.unitID;
+            if(confirm(`Are you sure you want to delete Unit ${unitDisplayName}?\n\nThis action cannot be undone.`)) {
+                this.editUnitLoading = true;
+                try {
+                    this.$dispatch('delete-unit', {
+                        unitId: this.editingUnit.unitID
+                    });
+                } catch(error) {
+                    // eslint-disable-next-line no-console -- error logging for debugging
+                    console.error('Delete unit error:', error);
+                    this.$dispatch('show-toast', {
+                        message: 'Failed to delete unit. Please try again.',
+                        type: 'error'
+                    });
+                } finally {
+                    this.editUnitLoading = false;
+                }
+            }
         },
 
         openAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
