@@ -94,12 +94,12 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
                 unitID: 'unit-101',
                 unitNumber: '101',
                 modelID: 'model-studio',
-                beds: null,        // Inherit: 0
-                baths: null,       // Inherit: 1
-                sqft: null,        // Inherit: 450 (minSqft)
-                rent: null,        // Inherit: 1200 (minRent)
-                deposit: null,     // Inherit: 1200
-                maxOccupants: null, // Inherit: 2
+                beds: undefined,        // Inherit: 0
+                baths: undefined,       // Inherit: 1
+                sqft: undefined,        // Inherit: 450 (minSqft)
+                rent: undefined,        // Inherit: 1200 (minRent)
+                deposit: undefined,     // Inherit: 1200
+                maxOccupants: undefined, // Inherit: 2
                 occupied: false,
                 availableDate: '2025-02-01',
                 feedInclusion: { apartments_com: true, zillow: true }
@@ -110,12 +110,12 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
                 unitID: 'unit-201',
                 unitNumber: '201',
                 modelID: 'model-1bed',
-                beds: null,        // Inherit: 1
+                beds: undefined,        // Inherit: 1
                 baths: 1.5,        // Override unit type (1)
                 sqft: 900,         // Override range (750-850)
-                rent: null,        // Inherit: 1600-1800 range
+                rent: undefined,        // Inherit: 1600-1800 range
                 deposit: 1800,     // Override: 1800 vs 1600
-                maxOccupants: null, // Inherit: 3
+                maxOccupants: undefined, // Inherit: 3
                 occupied: false,
                 availableDate: '2025-02-15',
                 feedInclusion: { apartments_com: true, zillow: false }
@@ -126,11 +126,11 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
                 unitID: 'unit-301',
                 unitNumber: '301',
                 modelID: 'model-2bed',
-                beds: null,        // Inherit: 2
-                baths: null,       // Inherit: 2
-                sqft: null,        // Inherit: 1000 (same min/max)
-                rent: null,        // Inherit: 2000 (same min/max)
-                deposit: null,     // Inherit: 2000
+                beds: undefined,        // Inherit: 2
+                baths: undefined,       // Inherit: 2
+                sqft: undefined,        // Inherit: 1000 (same min/max)
+                rent: undefined,        // Inherit: 2000 (same min/max)
+                deposit: undefined,     // Inherit: 2000
                 maxOccupants: 6,   // Override: 6 vs 4
                 occupied: false,
                 availableDate: '2025-03-01',
@@ -163,7 +163,7 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
                 sqft: 1000,
                 rent: 2200,
                 occupied: true,    // Occupied unit
-                availableDate: null,
+                availableDate: undefined,
                 feedInclusion: { apartments_com: false, zillow: true }
             }
         ];
@@ -184,7 +184,8 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             expect(xml).toContain('<PropertyID>test-building-1</PropertyID>');
 
             // All available units should be present (occupied unit should be excluded)
-            const availableUnits = filter(mockUnitsWithInheritance, u => !u.occupied && u.feedInclusion.apartments_com);
+            // All available units should be present (occupied unit should be excluded)
+            const availableUnits: UnitData[] = filter(mockUnitsWithInheritance, u => !u.occupied && u.feedInclusion?.apartments_com) as UnitData[];
             expect(availableUnits).toHaveLength(4);
 
             // Verify each available unit appears in XML
@@ -401,7 +402,7 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
             const resolvedByResolver = inheritanceResolver.resolveUnitValues(
                 testUnit,
-                null, // No unit type found
+                undefined, // No unit type found
                 mockBuilding
             );
 
@@ -467,8 +468,8 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
                 unitNumber: 'EDGE',
                 modelID: 'model-studio',
                 beds: 0,           // Studio (0 beds should not be treated as null)
-                baths: null,       // Should inherit
-                sqft: null,        // Should inherit
+                baths: undefined,       // Should inherit
+                sqft: undefined,        // Should inherit
                 rent: 0,           // $0 rent (edge case - should not be treated as null)
                 occupied: false,
                 availableDate: '2025-04-01',
@@ -543,12 +544,12 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
                     unitID: `unit-${padStart(i.toString(), 3, '0')}`,
                     unitNumber: `${padStart(i.toString(), 3, '0')}`,
                     modelID: i % 2 === 0 ? 'model-1bed' : 'model-studio',
-                    beds: i % 3 === 0 ? 2 : null,     // Some overrides
-                    baths: i % 4 === 0 ? 1.5 : null,  // Some overrides
-                    sqft: i % 5 === 0 ? 800 : null,   // Some overrides
-                    rent: i % 6 === 0 ? 1750 : null,  // Some overrides
+                    beds: i % 3 === 0 ? 2 : undefined,     // Some overrides
+                    baths: i % 4 === 0 ? 1.5 : undefined,  // Some overrides
+                    sqft: i % 5 === 0 ? 800 : undefined,   // Some overrides
+                    rent: i % 6 === 0 ? 1750 : undefined,  // Some overrides
                     occupied: i % 10 === 0,            // 10% occupied
-                    availableDate: i % 10 === 0 ? null : '2025-04-01',
+                    availableDate: i % 10 === 0 ? undefined : '2025-04-01',
                     feedInclusion: { apartments_com: true, zillow: true }
                 });
             }

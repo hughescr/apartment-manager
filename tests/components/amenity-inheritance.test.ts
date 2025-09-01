@@ -1,6 +1,6 @@
 // CRITICAL: Import test setup FIRST before any other imports
 import '../data/test-setup';
-
+type RecordType = Record<string, StringOrNull | NumberOrNull | undefined>;
 import { describe, it, expect } from 'bun:test';
 import { isArray } from 'lodash';
 
@@ -13,7 +13,6 @@ interface Amenity {
 type AmenityArray = Amenity[] | null;
 type StringOrNull = string | null;
 type NumberOrNull = number | null;
-type RecordType = Record<string, StringOrNull | NumberOrNull>;
 type UnitTypeWithAmenities = { modelAmenities: AmenityArray } | null;
 /**
  * Tests for Amenity Inheritance Visualization
@@ -375,12 +374,12 @@ describe('Amenity Inheritance System', () => {
         it('should show inherited badge for fields with inherited values', () => {
             const component = {
                 unit: {
-                    beds: null,
+                    beds: undefined,
                     rent: 1500
                 } as RecordType,
                 selectedUnitType: {
                     beds: 2,
-                    rent: null
+                    rent: undefined
                 } as RecordType,
 
                 isInherited(fieldName: string) {
@@ -394,8 +393,8 @@ describe('Amenity Inheritance System', () => {
         it('should get inherited value from appropriate source', () => {
             const component = {
                 unit: {
-                    beds: null,
-                    rent: null
+                    beds: undefined,
+                    rent: undefined
                 } as RecordType,
                 selectedUnitType: {
                     beds: 2,
@@ -459,7 +458,7 @@ describe('Amenity Inheritance System', () => {
         it('should show correct CSS classes for inherited vs custom fields', () => {
             const component = {
                 unit: {
-                    beds: null, // Inherited
+                    beds: undefined, // Inherited
                     rent: 1500  // Custom
                 } as RecordType,
 
@@ -483,7 +482,7 @@ describe('Amenity Inheritance System', () => {
         it('should show reset button only for custom (non-inherited) values', () => {
             const component = {
                 unit: {
-                    beds: null, // Inherited
+                    beds: undefined, // Inherited
                     rent: 1500  // Custom
                 } as RecordType,
 
@@ -518,12 +517,12 @@ describe('Amenity Inheritance System', () => {
             const component = {
                 selectedUnitType: null as RecordType | null,
                 unit: {
-                    beds: null
+                    beds: undefined
                 } as RecordType,
 
                 getInheritedValue(fieldName: string): StringOrNull | NumberOrNull {
-                    if(this.selectedUnitType && this.selectedUnitType[fieldName] !== null) {
-                        return this.selectedUnitType[fieldName];
+                    if(this.selectedUnitType && this.selectedUnitType[fieldName] !== null && this.selectedUnitType[fieldName] !== undefined) {
+                        return this.selectedUnitType[fieldName] as StringOrNull | NumberOrNull;
                     }
                     return null;
                 }

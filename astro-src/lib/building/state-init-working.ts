@@ -2,29 +2,56 @@
 // eslint-disable-next-line no-console -- debugging component registration
 console.log('[working-init] Starting working Alpine.js component registration...');
 
-// Essential building state function without Node.js dependencies
+// Type imports for proper TypeScript support
+import type { UnitData, UnitTypeData, BuildingData } from '../../types';
+
+// Define interface for unit edit form
+interface UnitEditForm {
+    unitID: string
+    unitNumber: string
+    modelID: string
+    beds: number | null
+    baths: number | null
+    sqft: number | null
+    rent: number | null
+    vacancyClass: string
+    description: string
+    // Index signature for dynamic property access
+    [key: string]: unknown
+}
+// Define the working building state interface
 function createWorkingBuildingState() {
     // eslint-disable-next-line no-console -- debugging component registration
     console.log('[working-init] Creating working building state...');
 
     return {
-        // Core data
-        building: null,
-        original: null,
-        units: [],
-        unitTypes: [],
-        apiURL: '',
+        // Alpine.js magic properties (will be injected by Alpine.js at runtime)
+        $el: null as unknown as HTMLElement,
+        $dispatch: null as unknown as (event: string, detail?: unknown) => void,
+        $watch: null as unknown as (property: string, callback: (value: unknown) => void) => void,
+        $refs: null as unknown as Record<string, HTMLElement>,
+        $store: null as unknown as Record<string, unknown>,
+        $id: null as unknown as (name: string) => string,
+        $nextTick: null as unknown as (callback: () => void) => void,
+        $root: null as unknown as HTMLElement,
+        $data: null as unknown,
 
+        // Core data
+        building: null as BuildingData | null,
+        original: null as BuildingData | null,
+        units: [] as UnitData[],
+        unitTypes: [] as UnitTypeData[],
+        apiURL: '',
         // UI state that the templates expect
         showSave: false,
         saving: false,
         lastSaveSuccess: false,
         activeSectionTab: 'building-info',
         geocoding: false,
-        errors: {},
+        errors: {} as Record<string, string>,
 
         // Units tab state
-        filteredUnits: [],
+        filteredUnits: [] as UnitData[],
         selectedUnits: new Set(),
         statusFilter: '',
         searchQuery: '',
@@ -32,7 +59,7 @@ function createWorkingBuildingState() {
         showAddUnitTypeDialog: false,
         showEditUnitTypeDialog: false,
         showEditUnitDialog: false,
-        editingUnit: null,
+        editingUnit: null as UnitData | null,
         showBulkStatusDialog: false,
         showBulkRentDialog: false,
         newUnit: { unitID: '', modelID: '' },
@@ -71,33 +98,33 @@ function createWorkingBuildingState() {
         // Additional UI state
         expandedRentSpecials: {},
         selectedPetTypes: [],
-        editUnit: {},
+        editUnit: {} as UnitEditForm,
         editUnitType: {},
         // Edit unit form state
-        editUnitErrors: {},
+        editUnitErrors: {} as Record<string, string>,
         editUnitLoading: false,
         // Basic inheritance manager
         inheritanceManager: {
-            isInherited(unitData, unitType, fieldName) {
+            isInherited(unitData: UnitEditForm, unitType: UnitTypeData | null, fieldName: keyof UnitData): boolean {
                 if(!unitType) {
                     return false;
                 }
                 const unitValue = unitData[fieldName];
                 return (unitValue === null || unitValue === undefined || unitValue === '');
             },
-            getInheritedValue(unitType, fieldName) {
+            getInheritedValue(unitType: UnitTypeData | null, fieldName: keyof UnitTypeData): unknown {
                 if(!unitType) {
                     return null;
                 }
                 return unitType[fieldName] || null;
             },
-            getEffectiveValue(unitData, unitType, fieldName) {
+            getEffectiveValue(unitData: UnitEditForm, unitType: UnitTypeData | null, fieldName: keyof UnitData): unknown {
                 if(!unitType) {
                     return unitData[fieldName];
                 }
                 const unitValue = unitData[fieldName];
                 if(unitValue === null || unitValue === undefined || unitValue === '') {
-                    return unitType[fieldName] || null;
+                    return (unitType as unknown as Record<string, unknown>)[fieldName as string] || null;
                 }
                 return unitValue;
             }
@@ -153,7 +180,7 @@ function createWorkingBuildingState() {
         },
 
         // Essential helper functions that templates use
-        formatCurrency(amount) {
+        formatCurrency(amount: number | null | undefined): string {
             if(amount === null || amount === undefined) {
                 return '';
             }
@@ -165,7 +192,7 @@ function createWorkingBuildingState() {
             }).format(amount);
         },
 
-        formatRelativeTime(dateString) {
+        formatRelativeTime(dateString: string | undefined): string {
             if(!dateString) {
                 return 'Never';
             }
@@ -189,12 +216,12 @@ function createWorkingBuildingState() {
             return date.toLocaleDateString();
         },
 
-        getStatusBadgeClass(status) {
+        getStatusBadgeClass(status: string | undefined): string {
             if(!status) {
                 return 'badge-ghost';
             }
 
-            const statusMap = {
+            const statusMap: Record<string, string> = {
                 Occupied: 'badge-error',
                 Notice: 'badge-warning',
                 Vacant: 'badge-success',
@@ -206,8 +233,8 @@ function createWorkingBuildingState() {
             return statusMap[status] || 'badge-ghost';
         },
 
-        getTabDisplayName(tabKey) {
-            const tabNames = {
+        getTabDisplayName(tabKey: string): string {
+            const tabNames: Record<string, string> = {
                 'building-info': 'Building Info',
                 'floorplans-units': 'Floorplans & Units',
                 'pricing-policies': 'Pricing & Policies',
@@ -245,7 +272,7 @@ function createWorkingBuildingState() {
         closeAddUnitTypeDialog() {
             this.showAddUnitTypeDialog = false;
         },
-        openEditUnitDialog(unit) {
+        openEditUnitDialog(unit: UnitData): void {
             this.editingUnit = unit;
             this.showEditUnitDialog = true;
             // Initialize edit form
@@ -322,27 +349,27 @@ function createWorkingBuildingState() {
         },
 
         // Check if a field is inherited in edit form
-        isEditFieldInherited(fieldName) {
+        isEditFieldInherited(fieldName: string): boolean {
             const unitData = this.editUnit;
             const unitType = this.editFormSelectedUnitType;
-            return this.inheritanceManager.isInherited(unitData, unitType, fieldName);
+            return this.inheritanceManager.isInherited(unitData, unitType, fieldName as keyof UnitData);
         },
 
         // Get inherited value for a field in edit form
-        getEditInheritedValue(fieldName) {
+        getEditInheritedValue(fieldName: string): unknown {
             const unitType = this.editFormSelectedUnitType;
-            return this.inheritanceManager.getInheritedValue(unitType, fieldName);
+            return this.inheritanceManager.getInheritedValue(unitType, fieldName as keyof UnitTypeData);
         },
 
         // Get effective value (unit value or inherited value) in edit form
-        getEditEffectiveValue(fieldName) {
+        getEditEffectiveValue(fieldName: string): unknown {
             const unitData = this.editUnit;
             const unitType = this.editFormSelectedUnitType;
-            return this.inheritanceManager.getEffectiveValue(unitData, unitType, fieldName);
+            return this.inheritanceManager.getEffectiveValue(unitData, unitType, fieldName as keyof UnitData);
         },
 
         // Get placeholder text for inherited values in edit form
-        getEditFieldPlaceholder(fieldName, defaultPlaceholder = '') {
+        getEditFieldPlaceholder(fieldName: string, defaultPlaceholder = ''): string {
             const inheritedValue = this.getEditInheritedValue(fieldName);
             if(inheritedValue !== null && inheritedValue !== undefined) {
                 return `Inherited: ${inheritedValue}`;
@@ -351,7 +378,7 @@ function createWorkingBuildingState() {
         },
 
         // Get inheritance badge text for edit form
-        getEditInheritanceBadge(fieldName) {
+        getEditInheritanceBadge(fieldName: string): string | null {
             if(this.isEditFieldInherited(fieldName)) {
                 return 'Inherited from floorplan';
             } else if(this.editFormSelectedUnitType && this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
@@ -361,7 +388,7 @@ function createWorkingBuildingState() {
         },
 
         // Clear a specific field override to allow inheritance in edit form
-        clearEditOverride(fieldName) {
+        clearEditOverride(fieldName: string): void {
             if(this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
                 // Set field to null to trigger inheritance
                 this.editUnit[fieldName] = null;
@@ -379,11 +406,11 @@ function createWorkingBuildingState() {
         // Reset all overridden fields to inherit from floorplan in edit form
         resetEditAllToFloorplan() {
             const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
-            const overriddenFields = [];
+            const overriddenFields: string[] = [];
 
             // Check which fields are currently overridden
             inheritableFields.forEach((field) => {
-                if(!this.isEditFieldInherited(field) && this.editFormSelectedUnitType) {
+                if(!this.isEditFieldInherited(field as keyof UnitData) && this.editFormSelectedUnitType) {
                     overriddenFields.push(field);
                 }
             });
@@ -401,7 +428,7 @@ function createWorkingBuildingState() {
 
             if(confirmed) {
                 overriddenFields.forEach((field) => {
-                    this.clearEditOverride(field);
+                    this.clearEditOverride(field as keyof UnitData);
                 });
 
                 this.$dispatch('show-toast', {
@@ -417,11 +444,11 @@ function createWorkingBuildingState() {
                 return false;
             }
             const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
-            return inheritableFields.some(field => !this.isEditFieldInherited(field));
+            return inheritableFields.some(field => !this.isEditFieldInherited(field as keyof UnitData));
         },
 
         // Preview what values will change when selecting a new unit type in edit form
-        previewEditUnitTypeChange(newModelID) {
+        previewEditUnitTypeChange(newModelID: string): boolean {
             if(!newModelID) {
                 return true;
             }
@@ -432,11 +459,11 @@ function createWorkingBuildingState() {
             }
 
             const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
-            const changes = [];
+            const changes: { field: string, from: unknown, to: unknown }[] = [];
 
             inheritableFields.forEach((field) => {
-                const currentValue = this.getEditEffectiveValue(field);
-                const newInheritedValue = this.inheritanceManager.getInheritedValue(newUnitType, field);
+                const currentValue = this.getEditEffectiveValue(field as keyof UnitData);
+                const newInheritedValue = this.inheritanceManager.getInheritedValue(newUnitType, field as keyof UnitTypeData);
                 const willInherit = (this.editUnit[field] === null || this.editUnit[field] === undefined || this.editUnit[field] === '');
 
                 if(willInherit && newInheritedValue !== null && currentValue !== newInheritedValue) {
@@ -501,16 +528,16 @@ function createWorkingBuildingState() {
                 if(!this.editUnit.unitNumber || !this.editUnit.unitNumber.trim()) {
                     this.editUnitErrors.unitNumber = 'Unit number is required';
                 }
-                if(this.editUnit.beds < 0) {
+                if(this.editUnit.beds !== null && this.editUnit.beds < 0) {
                     this.editUnitErrors.beds = 'Bedrooms must be 0 or greater';
                 }
-                if(this.editUnit.baths < 0.5) {
+                if(this.editUnit.baths !== null && this.editUnit.baths < 0.5) {
                     this.editUnitErrors.baths = 'Bathrooms must be 0.5 or greater';
                 }
-                if(this.editUnit.rent < 0) {
+                if(this.editUnit.rent !== null && this.editUnit.rent < 0) {
                     this.editUnitErrors.rent = 'Rent must be 0 or greater';
                 }
-                if(this.editUnit.rent > 25000) {
+                if(this.editUnit.rent !== null && this.editUnit.rent > 25000) {
                     this.editUnitErrors.rent = 'Rent must be less than $25,000';
                 }
 
@@ -521,7 +548,7 @@ function createWorkingBuildingState() {
 
                 // Dispatch update event with unit ID and changes
                 this.$dispatch('update-unit', {
-                    unitId: this.editingUnit.unitID,
+                    unitId: this.editingUnit!.unitID,
                     updatedData: this.editUnit
                 });
             } catch(error) {
@@ -536,7 +563,7 @@ function createWorkingBuildingState() {
                 this.editUnitLoading = false;
             }
         },
-        async deleteUnit(unitId) {
+        async deleteUnit(unitId: string): Promise<void> {
             if(!this.building || !this.apiURL) {
                 this.$dispatch('show-toast', {
                     message: 'Building data or API URL not available',
@@ -582,12 +609,12 @@ function createWorkingBuildingState() {
                 return;
             }
 
-            const unitDisplayName = this.editingUnit.unitNumber || this.editingUnit.unitID;
+            const unitDisplayName = this.editingUnit!.unitNumber || this.editingUnit!.unitID;
             if(confirm(`Are you sure you want to delete Unit ${unitDisplayName}?\n\nThis action cannot be undone.`)) {
                 this.editUnitLoading = true;
                 try {
                     // Call the deleteUnit method directly instead of dispatching event
-                    await this.deleteUnit(this.editingUnit.unitID);
+                    await this.deleteUnit(this.editingUnit!.unitID);
                 } catch(error) {
                     // Error handling is already done in deleteUnit method
                     // eslint-disable-next-line no-console -- error logging for debugging
@@ -599,7 +626,7 @@ function createWorkingBuildingState() {
         },
 
         // Bulk Create Dialog Functions
-        openBulkCreateDialog(modelID) {
+        openBulkCreateDialog(modelID?: string): void {
             this.showBulkCreateDialog = true;
             // Reset bulk create data with optional modelID
             Object.assign(this.bulkCreateData, {
@@ -638,10 +665,12 @@ if(typeof window !== 'undefined') {
     // eslint-disable-next-line no-console -- debugging component registration
     console.log('[working-init] Browser context detected');
 
-    if(typeof window.Alpine !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Alpine.js types not available
+    if(typeof (window as any).Alpine !== 'undefined') {
         // eslint-disable-next-line no-console -- debugging component registration
         console.log('[working-init] Alpine detected, registering working component');
-        window.Alpine.data('buildingStateData', createWorkingBuildingState);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Alpine.js types not available
+        (window as any).Alpine.data('buildingStateData', createWorkingBuildingState);
         // eslint-disable-next-line no-console -- debugging component registration
         console.log('[working-init] Working buildingStateData registered successfully');
     } else {

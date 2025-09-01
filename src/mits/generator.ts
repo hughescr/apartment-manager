@@ -567,8 +567,15 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     const unitTypeMap = new Map(map(unitTypes, ut => [ut.modelID, ut]));
 
     // Resolve inheritance for all units before XML generation
+    // Resolve inheritance for all units before XML generation
     const siteUnits = map(filteredUnits, (unit) => {
+        if(!unit.modelID) {
+            throw new Error(`Unit '${unit.unitID}' is missing required modelID for inheritance resolution`);
+        }
         const unitType = unitTypeMap.get(unit.modelID);
+        if(!unitType) {
+            throw new Error(`Unit type with modelID '${unit.modelID}' not found for unit '${unit.unitID}'`);
+        }
         return inheritanceResolver.resolveUnitValues(unit, unitType, building);
     });
 

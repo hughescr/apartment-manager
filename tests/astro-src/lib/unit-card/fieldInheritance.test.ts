@@ -15,10 +15,10 @@ describe('FieldInheritanceManager', () => {
             unitID: 'test-unit',
             unitNumber: '101',
             modelID: 'test-model',
-            beds: null,
-            baths: null,
-            sqft: null,
-            rent: null,
+            beds: undefined,
+            baths: undefined,
+            sqft: undefined,
+            rent: undefined,
             occupied: false,
             availableDate: '2025-02-01',
             feedInclusion: {
@@ -48,7 +48,7 @@ describe('FieldInheritanceManager', () => {
 
     describe('isInherited', () => {
         it('should return true when unit field is null and unit type has value', () => {
-            mockUnit.beds = null;
+            mockUnit.beds = null as unknown as number;
             mockUnitType.beds = 2;
 
             expect(manager.isInherited(mockUnit, mockUnitType, 'beds')).toBe(true);
@@ -76,13 +76,13 @@ describe('FieldInheritanceManager', () => {
         });
 
         it('should return false when unit type is null', () => {
-            mockUnit.beds = null;
+            mockUnit.beds = null as unknown as number;
 
             expect(manager.isInherited(mockUnit, null, 'beds')).toBe(false);
         });
 
         it('should return false when unit type does not have the field', () => {
-            mockUnit.beds = null;
+            mockUnit.beds = null as unknown as number;
             mockUnitType.beds = undefined as unknown as number;
 
             expect(manager.isInherited(mockUnit, mockUnitType, 'beds')).toBe(false);
@@ -90,7 +90,7 @@ describe('FieldInheritanceManager', () => {
 
         describe('range fields (sqft, rent)', () => {
             it('should return true for sqft when unit is empty and unit type has min/max values', () => {
-                mockUnit.sqft = null;
+                mockUnit.sqft = null as unknown as number;
                 mockUnitType.minSqft = 800;
                 mockUnitType.maxSqft = 900;
 
@@ -98,7 +98,7 @@ describe('FieldInheritanceManager', () => {
             });
 
             it('should return true for rent when unit is empty and unit type has min/max values', () => {
-                mockUnit.rent = null;
+                mockUnit.rent = null as unknown as number;
                 mockUnitType.minRent = 1500;
                 mockUnitType.maxRent = 1800;
 
@@ -106,7 +106,7 @@ describe('FieldInheritanceManager', () => {
             });
 
             it('should return true when only minSqft is set', () => {
-                mockUnit.sqft = null;
+                mockUnit.sqft = null as unknown as number;
                 mockUnitType.minSqft = 800;
                 mockUnitType.maxSqft = undefined as unknown as number;
 
@@ -114,7 +114,7 @@ describe('FieldInheritanceManager', () => {
             });
 
             it('should return false when unit type has no range values', () => {
-                mockUnit.sqft = null;
+                mockUnit.sqft = null as unknown as number;
                 mockUnitType.minSqft = undefined as unknown as number;
                 mockUnitType.maxSqft = undefined as unknown as number;
 
@@ -198,14 +198,14 @@ describe('FieldInheritanceManager', () => {
         });
 
         it('should return inherited value when unit field is empty', () => {
-            mockUnit.beds = null;
+            mockUnit.beds = null as unknown as number;
             mockUnitType.beds = 2;
 
             expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'beds')).toBe(2);
         });
 
         it('should return inherited range value when unit field is empty', () => {
-            mockUnit.rent = null;
+            mockUnit.rent = null as unknown as number;
             mockUnitType.minRent = 1500;
             mockUnitType.maxRent = 1800;
 
@@ -213,14 +213,14 @@ describe('FieldInheritanceManager', () => {
         });
 
         it('should return null when unit is empty and no inheritance available', () => {
-            mockUnit.beds = null;
+            mockUnit.beds = null as unknown as number;
             mockUnitType.beds = undefined as unknown as number;
 
             expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'beds')).toBe(null);
         });
 
         it('should return null when unit type is null', () => {
-            mockUnit.beds = null;
+            mockUnit.beds = null as unknown as number;
 
             expect(manager.getEffectiveValue(mockUnit, null, 'beds')).toBe(null);
         });
@@ -231,14 +231,14 @@ describe('FieldInheritanceManager', () => {
             mockUnit.beds = 3;
             manager.resetFieldToInherited(mockUnit, 'beds');
 
-            expect((mockUnit as Record<string, unknown>).beds).toBe(undefined);
+            expect((mockUnit as unknown as Record<string, unknown>).beds).toBe(undefined);
         });
 
         it('should reset deposit field to undefined', () => {
             mockUnit.deposit = 2000;
             manager.resetFieldToInherited(mockUnit, 'deposit');
 
-            expect((mockUnit as Record<string, unknown>).deposit).toBe(undefined);
+            expect((mockUnit as unknown as Record<string, unknown>).deposit).toBe(undefined);
         });
 
         it('should reset other fields correctly', () => {
@@ -250,9 +250,9 @@ describe('FieldInheritanceManager', () => {
             manager.resetFieldToInherited(mockUnit, 'sqft');
             manager.resetFieldToInherited(mockUnit, 'baths');
 
-            expect((mockUnit as Record<string, unknown>).rent).toBe(undefined);
-            expect((mockUnit as Record<string, unknown>).sqft).toBe(undefined);
-            expect((mockUnit as Record<string, unknown>).baths).toBe(undefined);
+            expect((mockUnit as unknown as Record<string, unknown>).rent).toBe(undefined);
+            expect((mockUnit as unknown as Record<string, unknown>).sqft).toBe(undefined);
+            expect((mockUnit as unknown as Record<string, unknown>).baths).toBe(undefined);
         });
     });
 
@@ -332,7 +332,7 @@ describe('FieldInheritanceManager', () => {
 
     describe('inheritance scenarios', () => {
         it('should handle studio apartment (0 bedrooms) inheritance', () => {
-            mockUnit.beds = null;
+            mockUnit.beds = null as unknown as number;
             mockUnitType.beds = 0;
 
             expect(manager.isInherited(mockUnit, mockUnitType, 'beds')).toBe(true);
@@ -348,9 +348,9 @@ describe('FieldInheritanceManager', () => {
                 maxRent: undefined as unknown as number
             };
 
-            mockUnit.beds = null;
-            mockUnit.sqft = null;
-            mockUnit.rent = null;
+            mockUnit.beds = null as unknown as number;
+            mockUnit.sqft = null as unknown as number;
+            mockUnit.rent = null as unknown as number;
 
             expect(manager.isInherited(mockUnit, partialUnitType, 'beds')).toBe(false);
             expect(manager.isInherited(mockUnit, partialUnitType, 'sqft')).toBe(true);
@@ -359,9 +359,9 @@ describe('FieldInheritanceManager', () => {
 
         it('should handle mixed explicit and inherited values', () => {
             mockUnit.beds = 3;        // Explicit override
-            mockUnit.baths = null;    // Should inherit
+            mockUnit.baths = null as unknown as number;    // Should inherit
             mockUnit.sqft = 1200;     // Explicit override
-            mockUnit.rent = null;     // Should inherit
+            mockUnit.rent = null as unknown as number;     // Should inherit
 
             expect(manager.isInherited(mockUnit, mockUnitType, 'beds')).toBe(false);
             expect(manager.isInherited(mockUnit, mockUnitType, 'baths')).toBe(true);

@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
-import type { Page, BrowserContext } from 'playwright';
+import { describe, it, beforeEach, afterEach } from 'bun:test';
+import { expect } from '@playwright/test';
+import type { Page, BrowserContext, Route, ConsoleMessage } from 'playwright';
 import { chromium } from 'playwright';
 import { startsWith } from 'lodash';
 
@@ -13,7 +14,7 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
         page = await context.newPage();
 
         // Setup mock server with test data
-        await page.route('/api/buildings/test-building-1', (route) => {
+        await page.route('/api/buildings/test-building-1', (route: Route) => {
             const buildingData = {
                 buildingID: 'test-building-1',
                 buildingName: 'Test Building',
@@ -29,16 +30,16 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
             });
         });
 
-        await page.route('/api/buildings/test-building-1/units', (route) => {
+        await page.route('/api/buildings/test-building-1/units', (route: Route) => {
             const units = [
                 {
                     buildingID: 'test-building-1',
                     unitID: 'unit-101',
                     unitNumber: '101',
                     modelID: 'model-1bed',
-                    beds: null,        // Should inherit from unit type
+                    beds: undefined,        // Should inherit from unit type
                     baths: 2,          // Override unit type
-                    sqft: null,        // Should inherit from unit type
+                    sqft: undefined,        // Should inherit from unit type
                     rent: 1650,        // Override unit type
                     occupied: false,
                     availableDate: '2025-02-01'
@@ -63,7 +64,7 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
             });
         });
 
-        await page.route('/api/buildings/test-building-1/unit-types', (route) => {
+        await page.route('/api/buildings/test-building-1/unit-types', (route: Route) => {
             const unitTypes = [
                 {
                     buildingID: 'test-building-1',
@@ -314,9 +315,9 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
                                     unitID: 'unit-101',
                                     unitNumber: '101',
                                     modelID: 'model-1bed',
-                                    beds: null,
+                                    beds: undefined,
                                     baths: 2,
-                                    sqft: null,
+                                    sqft: undefined,
                                     rent: 1650,
                                     occupied: false
                                 },
@@ -691,7 +692,7 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
             // Change beds from inherited to explicit value
             const bedsInput = page.locator('[data-testid="beds-input"]');
             await bedsInput.clear();
-            await bedsInput.type('3');
+            await bedsInput.fill('3');
 
             // Badge should change from inherited to override
             await expect(page.locator('[data-testid="beds-badge"]')).toContainText('Custom override');
@@ -704,7 +705,7 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
 
             // Setup console log capture
             const consoleLogs: unknown[] = [];
-            page.on('console', (msg) => {
+            page.on('console', (msg: ConsoleMessage) => {
                 if(msg.type() === 'log' && startsWith(msg.text(), 'Submitting:')) {
                     consoleLogs.push(msg.text());
                 }
@@ -727,7 +728,7 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
             // Make a change
             const bedsInput = page.locator('[data-testid="beds-input"]');
             await bedsInput.clear();
-            await bedsInput.type('3');
+            await bedsInput.fill('3');
 
             // Close dialog
             await page.click('[data-testid="cancel-btn"]');
@@ -769,7 +770,7 @@ describe('EditUnitDialog - Browser Inheritance Tests', () => {
             // Enter decimal value for baths
             const bathsInput = page.locator('[data-testid="baths-input"]');
             await bathsInput.clear();
-            await bathsInput.type('1.5');
+            await bathsInput.fill('1.5');
 
             // Should be treated as explicit override
             await expect(page.locator('[data-testid="baths-badge"]')).toContainText('Custom override');

@@ -1,5 +1,8 @@
 import type { BuildingData, UnitData, UnitTypeData } from '../../types';
 
+// Re-export types needed by components
+export type { UnitTypeData };
+
 // Extended UnitData with runtime properties
 export interface ExtendedUnitData extends UnitData {
     lastUpdated?: string

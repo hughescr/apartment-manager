@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
-import type { Page, BrowserContext } from 'playwright';
-import { chromium } from 'playwright';
+import { describe, it, beforeEach, afterEach } from 'bun:test';
+import { expect } from '@playwright/test';
+import type { Page, BrowserContext, Route, ConsoleMessage } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import { findIndex, split, replace } from 'lodash';
 import { generateMITSFeed } from '../../src/mits/generator';
 import type { BuildingData, UnitData, UnitTypeData } from '../../src/types';
@@ -64,10 +65,10 @@ describe('End-to-End Inheritance Workflow Tests', () => {
                 unitID: 'workflow-101',
                 unitNumber: '101',
                 modelID: 'studio-deluxe',
-                beds: null,    // Will inherit: 0
-                baths: null,   // Will inherit: 1
-                sqft: null,    // Will inherit: 500 (min)
-                rent: null,    // Will inherit: 1400 (min)
+                beds: undefined,    // Will inherit: 0
+                baths: undefined,   // Will inherit: 1
+                sqft: undefined,    // Will inherit: 500 (min)
+                rent: undefined,    // Will inherit: 1400 (min)
                 occupied: false,
                 availableDate: '2025-02-01',
                 feedInclusion: { apartments_com: true, zillow: true }
@@ -77,10 +78,10 @@ describe('End-to-End Inheritance Workflow Tests', () => {
                 unitID: 'workflow-201',
                 unitNumber: '201',
                 modelID: 'one-bed-premium',
-                beds: null,    // Will inherit: 1
+                beds: undefined,    // Will inherit: 1
                 baths: 1.5,    // Override: 1.5 vs 1
                 sqft: 800,     // Override: 800 vs 750-850
-                rent: null,    // Will inherit: 1800 (min)
+                rent: undefined,    // Will inherit: 1800 (min)
                 occupied: false,
                 availableDate: '2025-02-15',
                 feedInclusion: { apartments_com: true, zillow: true }
@@ -88,7 +89,7 @@ describe('End-to-End Inheritance Workflow Tests', () => {
         ];
 
         // Setup mock API responses
-        await page.route('/api/buildings/workflow-building', (route) => {
+        await page.route('/api/buildings/workflow-building', (route: Route) => {
             route.fulfill({
                 status: 200,
                 contentType: 'application/json',
@@ -96,7 +97,7 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             });
         });
 
-        await page.route('/api/buildings/workflow-building/units', (route) => {
+        await page.route('/api/buildings/workflow-building/units', (route: Route) => {
             if(route.request().method() === 'GET') {
                 route.fulfill({
                     status: 200,
@@ -118,7 +119,7 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             }
         });
 
-        await page.route('/api/buildings/workflow-building/unit-types', (route) => {
+        await page.route('/api/buildings/workflow-building/unit-types', (route: Route) => {
             route.fulfill({
                 status: 200,
                 contentType: 'application/json',
@@ -126,7 +127,7 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             });
         });
 
-        await page.route('/api/buildings/workflow-building/units/*', (route) => {
+        await page.route('/api/buildings/workflow-building/units/*', (route: Route) => {
             const url = route.request().url();
             const unitId = split(url, '/').pop();
 
@@ -578,7 +579,6 @@ describe('End-to-End Inheritance Workflow Tests', () => {
         });
 
         it('should display units with correct inheritance indicators', async () => {
-            // Unit 101 should show inherited values from studio-deluxe
             const unit101 = page.locator('[data-testid="edit-unit-101"]').locator('..');
             await expect(unit101).toContainText('Unit 101');
             await expect(unit101).toContainText('Studio Deluxe');
@@ -600,8 +600,8 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             await expect(page.locator('[data-testid="baths-input"]')).toHaveAttribute('placeholder', 'Inherited: 1');
 
             // Make an override: change baths to 1.5
-            await page.clear('[data-testid="baths-input"]');
-            await page.type('[data-testid="baths-input"]', '1.5');
+            await page.locator('[data-testid="baths-input"]').clear();
+            await page.locator('[data-testid="baths-input"]').fill('1.5');
 
             // Badge should change to custom
             await expect(page.locator('[data-testid="baths-badge"]')).toContainText('Custom');
@@ -647,8 +647,8 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             await page.waitForSelector('[data-testid="edit-dialog"]');
 
             // Add another override to make bulk reset more meaningful
-            await page.clear('[data-testid="beds-input"]');
-            await page.type('[data-testid="beds-input"]', '2');
+            await page.locator('[data-testid="beds-input"]').clear();
+            await page.locator('[data-testid="beds-input"]').fill('2');
 
             // Should now show bulk reset option
             await expect(page.locator('[data-testid="reset-all-to-floorplan"]')).toBeVisible();
@@ -709,14 +709,14 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             await expect(page.locator('[data-testid="baths-input"]')).toHaveAttribute('placeholder', '');
 
             // Set explicit values
-            await page.clear('[data-testid="beds-input"]');
-            await page.type('[data-testid="beds-input"]', '2');
-            await page.clear('[data-testid="baths-input"]');
-            await page.type('[data-testid="baths-input"]', '2');
-            await page.clear('[data-testid="sqft-input"]');
-            await page.type('[data-testid="sqft-input"]', '1000');
-            await page.clear('[data-testid="rent-input"]');
-            await page.type('[data-testid="rent-input"]', '2200');
+            await page.locator('[data-testid="beds-input"]').clear();
+            await page.locator('[data-testid="beds-input"]').fill('2');
+            await page.locator('[data-testid="baths-input"]').clear();
+            await page.locator('[data-testid="baths-input"]').fill('2');
+            await page.locator('[data-testid="sqft-input"]').clear();
+            await page.locator('[data-testid="sqft-input"]').fill('1000');
+            await page.locator('[data-testid="rent-input"]').clear();
+            await page.locator('[data-testid="rent-input"]').fill('2200');
 
             await page.click('[data-testid="save-btn"]');
             await page.waitForSelector('[data-testid="edit-dialog"]', { state: 'hidden' });
@@ -734,7 +734,7 @@ describe('End-to-End Inheritance Workflow Tests', () => {
     describe('MITS Generation Integration Workflow', () => {
         beforeEach(async () => {
             // Mock MITS generation endpoint
-            await page.route('/api/mits-generate', async (route) => {
+            await page.route('/api/mits-generate', async (route: Route) => {
                 const requestData = JSON.parse(route.request().postData() || '{}');
 
                 // Generate actual MITS XML using the test units
@@ -790,8 +790,8 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             await page.click('[data-testid="edit-unit-101"]');
             await page.waitForSelector('[data-testid="edit-dialog"]');
 
-            await page.clear('[data-testid="rent-input"]');
-            await page.type('[data-testid="rent-input"]', '1500');
+            await page.locator('[data-testid="rent-input"]').clear();
+            await page.locator('[data-testid="rent-input"]').fill('1500');
 
             await page.click('[data-testid="save-btn"]');
             await page.waitForSelector('[data-testid="edit-dialog"]', { state: 'hidden' });
@@ -814,7 +814,7 @@ describe('End-to-End Inheritance Workflow Tests', () => {
     describe('Error Handling and Edge Cases', () => {
         it('should handle API errors gracefully during unit updates', async () => {
             // Mock API to return error
-            await page.route('/api/buildings/workflow-building/units/*', (route) => {
+            await page.route('/api/buildings/workflow-building/units/*', (route: Route) => {
                 route.fulfill({
                     status: 500,
                     contentType: 'application/json',
@@ -830,12 +830,12 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             await page.click('[data-testid="edit-unit-101"]');
             await page.waitForSelector('[data-testid="edit-dialog"]');
 
-            await page.clear('[data-testid="rent-input"]');
-            await page.type('[data-testid="rent-input"]', '1500');
+            await page.locator('[data-testid="rent-input"]').clear();
+            await page.locator('[data-testid="rent-input"]').fill('1500');
 
             // Capture console errors
             const consoleErrors: string[] = [];
-            page.on('console', (msg) => {
+            page.on('console', (msg: ConsoleMessage) => {
                 if(msg.type() === 'error') {
                     consoleErrors.push(msg.text());
                 }
@@ -860,8 +860,8 @@ describe('End-to-End Inheritance Workflow Tests', () => {
             await page.click('[data-testid="edit-unit-201"]');
             await page.waitForSelector('[data-testid="edit-dialog"]');
 
-            await page.clear('[data-testid="beds-input"]');
-            await page.type('[data-testid="beds-input"]', '0');
+            await page.locator('[data-testid="beds-input"]').clear();
+            await page.locator('[data-testid="beds-input"]').fill('0');
 
             // 0 should be treated as explicit value, not inherited
             await expect(page.locator('[data-testid="beds-badge"]')).toContainText('Custom');

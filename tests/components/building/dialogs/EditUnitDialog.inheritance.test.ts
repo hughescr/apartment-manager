@@ -12,7 +12,19 @@ const mockInheritanceManager = {
         }
         const unitValue = unit[field as keyof UnitData];
         const isEmptyValue = unitValue === null || unitValue === undefined || unitValue === '';
-        return isEmptyValue && unitType[field as keyof UnitTypeData] !== null;
+
+        // Check if there's actually a value to inherit based on field type
+        if(field === 'rent') {
+            const hasInheritableValue = unitType.minRent !== null && unitType.minRent !== undefined;
+            return isEmptyValue && hasInheritableValue;
+        }
+        if(field === 'sqft') {
+            const hasInheritableValue = unitType.minSqft !== null && unitType.minSqft !== undefined;
+            return isEmptyValue && hasInheritableValue;
+        }
+
+        const unitTypeValue = unitType[field as keyof UnitTypeData];
+        return isEmptyValue && unitTypeValue !== null && unitTypeValue !== undefined;
     },
     getInheritedValue: (unitType: UnitTypeData | null, field: string): unknown => {
         if(!unitType) {
@@ -44,8 +56,6 @@ const mockInheritanceManager = {
 describe('EditUnitDialog - Inheritance Functionality', () => {
     let dom: JSDOM;
     let document: Document;
-    let _editUnitDialog: Element;
-    let _mockBuilding: Record<string, unknown>;
     let mockUnitTypes: UnitTypeData[];
     let mockUnit: ExtendedUnitData;
 
@@ -248,16 +258,6 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         (global as any).window = dom.window;
 
         // Setup mock data
-        _mockBuilding = {
-            buildingID: 'test-building-1',
-            buildingName: 'Test Building',
-            street: '123 Test St',
-            city: 'Test City',
-            state: 'CA',
-            zip: '12345',
-            latitude: 34.0522,
-            longitude: -118.2437
-        };
 
         mockUnitTypes = [
             {
@@ -293,9 +293,9 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             unitID: 'unit-101',
             unitNumber: '101',
             modelID: 'model-1bed',
-            beds: null,        // Should inherit
+            beds: undefined,        // Should inherit
             baths: 2,          // Override
-            sqft: null,        // Should inherit
+            sqft: undefined,        // Should inherit
             rent: 1600,        // Override
             occupied: false,
             availableDate: '2025-02-01',
@@ -311,20 +311,18 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         };
 
         // Make mock data available globally for the script
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM script access
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM simulation
         (global as any).mockInheritanceManager = mockInheritanceManager;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM script access
         (global as any).mockUnitTypes = mockUnitTypes;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM script access
         (global as any).mockUnit = mockUnit;
-
-        _editUnitDialog = document.getElementById('edit-unit-dialog')!;
     });
 
     describe('Inheritance Badge Display', () => {
         it('should show "Inherited from floorplan" badge when field is inherited', () => {
-            // Unit has null beds, should inherit from unit type (1)
-            expect(mockUnit.beds).toBe(null);
+            // Unit has undefined beds, should inherit from unit type (1)
+            expect(mockUnit.beds).toBeUndefined();
             expect(mockUnitTypes[0].beds).toBe(1);
 
             const result = mockInheritanceManager.isInherited(mockUnit, mockUnitTypes[0], 'beds');
@@ -394,7 +392,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             const testUnit = { ...mockUnit, beds: 3 }; // Has override
 
             // Simulate clearing the override
-            testUnit.beds = null;
+            (testUnit as Record<string, unknown>).beds = undefined;
 
             const isInherited = mockInheritanceManager.isInherited(testUnit, mockUnitTypes[0], 'beds');
             const effectiveValue = mockInheritanceManager.getEffectiveValue(testUnit, mockUnitTypes[0], 'beds');
@@ -407,7 +405,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             const testUnit = { ...mockUnit, rent: 2500 }; // Has override
 
             // Simulate clearing the override
-            testUnit.rent = null;
+            (testUnit as Record<string, unknown>).rent = undefined;
 
             const isInherited = mockInheritanceManager.isInherited(testUnit, mockUnitTypes[0], 'rent');
             const effectiveValue = mockInheritanceManager.getEffectiveValue(testUnit, mockUnitTypes[0], 'rent');
@@ -417,14 +415,14 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         });
 
         it('should handle clearing already inherited fields gracefully', () => {
-            // beds is already null (inherited)
-            expect(mockUnit.beds).toBe(null);
+            // beds is already undefined (inherited)
+            expect(mockUnit.beds).toBeUndefined();
 
             const isInheritedBefore = mockInheritanceManager.isInherited(mockUnit, mockUnitTypes[0], 'beds');
             expect(isInheritedBefore).toBe(true);
 
             // Clearing should not change anything
-            mockUnit.beds = null;
+            mockUnit.beds = undefined;
 
             const isInheritedAfter = mockInheritanceManager.isInherited(mockUnit, mockUnitTypes[0], 'beds');
             expect(isInheritedAfter).toBe(true);
@@ -434,7 +432,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
     describe('Unit Type Selection and Inheritance Updates', () => {
         it('should update inheritance when changing unit type', () => {
             // Start with model-1bed
-            const unit = { ...mockUnit, modelID: 'model-1bed', beds: null };
+            const unit = { ...mockUnit, modelID: 'model-1bed', beds: undefined };
 
             let effectiveValue = mockInheritanceManager.getEffectiveValue(unit, mockUnitTypes[0], 'beds');
             expect(effectiveValue).toBe(1); // One bedroom
@@ -459,7 +457,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         });
 
         it('should handle switching from unit type to custom unit', () => {
-            const unit = { ...mockUnit, modelID: 'model-1bed', beds: null };
+            const unit = { ...mockUnit, modelID: 'model-1bed', beds: undefined };
 
             // Initially inherits from unit type
             let effectiveValue = mockInheritanceManager.getEffectiveValue(unit, mockUnitTypes[0], 'beds');
@@ -468,7 +466,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             // Switch to custom unit (no unit type)
             unit.modelID = '';
             effectiveValue = mockInheritanceManager.getEffectiveValue(unit, null, 'beds');
-            expect(effectiveValue).toBe(null); // No inheritance available
+            expect(effectiveValue).toBeUndefined(); // No inheritance available
         });
     });
 
@@ -487,7 +485,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
                 return !mockInheritanceManager.isInherited(mockUnit, mockUnitTypes[0], field) && mockUnitTypes[0];
             });
 
-            // beds: null (inherited), baths: 2 (override), sqft: null (inherited), rent: 1600 (override)
+            // beds: undefined (inherited), baths: 2 (override), sqft: undefined (inherited), rent: 1600 (override)
             expect(overriddenFields).toEqual(['baths', 'rent']);
         });
 
@@ -497,12 +495,11 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             // Simulate bulk reset - clear all overridden fields
             const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
             const overriddenFields = filter(inheritableFields, (field) => {
-                return !mockInheritanceManager.isInherited(testUnit, mockUnitTypes[0], field) && mockUnitTypes[0];
+                return !mockInheritanceManager.isInherited(testUnit, mockUnitTypes[0], field) && !!mockUnitTypes[0];
             });
-
             // Clear the overridden fields
             forEach(overriddenFields, (field) => {
-                (testUnit as Record<string, unknown>)[field] = null;
+                (testUnit as Record<string, unknown>)[field] = undefined;
             });
 
             // Verify all fields are now inherited
@@ -514,7 +511,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         });
 
         it('should handle units with no overrides gracefully', () => {
-            const testUnit = { ...mockUnit, beds: null, baths: null, sqft: null, rent: null };
+            const testUnit = { ...mockUnit, beds: undefined, baths: undefined, sqft: undefined, rent: undefined };
 
             const overriddenFields = filter(['beds', 'baths', 'sqft', 'rent'], (field) => {
                 return !mockInheritanceManager.isInherited(testUnit, mockUnitTypes[0], field) && mockUnitTypes[0];
@@ -526,7 +523,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
 
     describe('Unit Type Change Preview', () => {
         it('should calculate changes when switching unit types with inherited fields', () => {
-            const testUnit = { ...mockUnit, beds: null, rent: null }; // Inherited fields
+            const testUnit = { ...mockUnit, beds: undefined, rent: undefined }; // Inherited fields
 
             // Current values from model-1bed
             const currentBeds = mockInheritanceManager.getEffectiveValue(testUnit, mockUnitTypes[0], 'beds');
@@ -557,20 +554,20 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
     });
 
     describe('Form Submission with Null Values', () => {
-        it('should prepare correct data for submission with inherited fields as null', () => {
+        it('should prepare correct data for submission with inherited fields as undefined', () => {
             const submissionData = {
                 unitID: mockUnit.unitID,
                 unitNumber: mockUnit.unitNumber,
                 modelID: mockUnit.modelID,
-                beds: mockUnit.beds,     // null - should inherit
+                beds: mockUnit.beds,     // undefined - should inherit
                 baths: mockUnit.baths,   // 2 - explicit override
-                sqft: mockUnit.sqft,     // null - should inherit
+                sqft: mockUnit.sqft,     // undefined - should inherit
                 rent: mockUnit.rent      // 1600 - explicit override
             };
 
-            expect(submissionData.beds).toBe(null);
+            expect(submissionData.beds).toBeUndefined();
             expect(submissionData.baths).toBe(2);
-            expect(submissionData.sqft).toBe(null);
+            expect(submissionData.sqft).toBeUndefined();
             expect(submissionData.rent).toBe(1600);
         });
 
@@ -580,16 +577,16 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             const submissionData = {
                 unitID: customUnit.unitID,
                 modelID: customUnit.modelID, // Empty string
-                beds: customUnit.beds,       // null - no inheritance available
+                beds: customUnit.beds,       // undefined - no inheritance available
                 baths: customUnit.baths,     // 2 - explicit value
-                sqft: customUnit.sqft,       // null - no inheritance available
+                sqft: customUnit.sqft,       // undefined - no inheritance available
                 rent: customUnit.rent        // 1600 - explicit value
             };
 
             expect(submissionData.modelID).toBe('');
-            expect(submissionData.beds).toBe(null);
+            expect(submissionData.beds).toBeUndefined();
             expect(submissionData.baths).toBe(2);
-            expect(submissionData.sqft).toBe(null);
+            expect(submissionData.sqft).toBeUndefined();
             expect(submissionData.rent).toBe(1600);
         });
     });
@@ -623,7 +620,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
                 maxRent: undefined as unknown as number
             };
 
-            const testUnit = { ...mockUnit, beds: null, rent: null };
+            const testUnit = { ...mockUnit, beds: undefined, rent: undefined };
 
             const bedsInherited = mockInheritanceManager.isInherited(testUnit, incompleteUnitType, 'beds');
             const rentInherited = mockInheritanceManager.isInherited(testUnit, incompleteUnitType, 'rent');

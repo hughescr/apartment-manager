@@ -80,6 +80,14 @@ export default
         },
     },
 
+    { // Disable lodash rules for test files (Playwright methods like .fill() are not lodash)
+        files: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js'],
+        rules: {
+            'lodash/prefer-lodash-method': 'off',
+            'lodash/prefer-lodash-typecheck': 'off',
+        },
+    },
+
     {
         ...packageJson.configs.recommended,
         rules: {

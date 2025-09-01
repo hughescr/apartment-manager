@@ -24,10 +24,8 @@ const statusOptions = [
             in
             <strong x-show="building">
                 <span x-text="building?.street"></span>
-,
-<span x-text="building?.city"></span>
-,
-<span x-text="building?.state"></span>
+                <span x-text="building?.city"></span>
+                <span x-text="building?.state"></span>
             </strong>
 .
             Units can inherit properties from a unit type or be configured independently.
@@ -89,15 +87,12 @@ const statusOptions = [
                             <span
                               x-show="getEditInheritanceBadge('beds')"
                               class="badge badge-sm"
-                              :class="{
-                                'badge-info': isEditFieldInherited('beds'),
-                                'badge-warning': !isEditFieldInherited('beds') && getEditInheritanceBadge('beds')
-                            }"
+                              :class="{ 'badge-info': isEditFieldInherited('beds'), 'badge-warning': !isEditFieldInherited('beds') && getEditInheritanceBadge('beds') }"
                                 x-text="getEditInheritanceBadge('beds')"
                             >
                             </span>
                             <button
-                              x-show="!isEditFieldInherited('beds') && editFormSelectedUnitType && getEditInheritanceBadge('beds')"
+                              x-show="!isEditFieldInherited(&#39;beds&#39;) && editFormSelectedUnitType && getEditInheritanceBadge(&#39;beds&#39;)"
                               type="button"
                               class="btn btn-ghost btn-xs"
                               @click="clearEditOverride('beds')"
@@ -135,15 +130,12 @@ const statusOptions = [
                             <span
                               x-show="getEditInheritanceBadge('baths')"
                               class="badge badge-sm"
-                              :class="{
-                                'badge-info': isEditFieldInherited('baths'),
-                                'badge-warning': !isEditFieldInherited('baths') && getEditInheritanceBadge('baths')
-                            }"
+                              :class="{ 'badge-info': isEditFieldInherited('baths'), 'badge-warning': !isEditFieldInherited('baths') && getEditInheritanceBadge('baths') }"
                                 x-text="getEditInheritanceBadge('baths')"
                             >
                             </span>
                             <button
-                              x-show="!isEditFieldInherited('baths') && editFormSelectedUnitType && getEditInheritanceBadge('baths')"
+                              x-show="!isEditFieldInherited(&#39;baths&#39;) && editFormSelectedUnitType && getEditInheritanceBadge(&#39;baths&#39;)"
                               type="button"
                               class="btn btn-ghost btn-xs"
                               @click="clearEditOverride('baths')"
@@ -182,15 +174,12 @@ const statusOptions = [
                             <span
                               x-show="getEditInheritanceBadge('sqft')"
                               class="badge badge-sm"
-                              :class="{
-                                'badge-info': isEditFieldInherited('sqft'),
-                                'badge-warning': !isEditFieldInherited('sqft') && getEditInheritanceBadge('sqft')
-                            }"
+                              :class="{ 'badge-info': isEditFieldInherited('sqft'), 'badge-warning': !isEditFieldInherited('sqft') && getEditInheritanceBadge('sqft') }"
                                 x-text="getEditInheritanceBadge('sqft')"
                             >
                             </span>
                             <button
-                              x-show="!isEditFieldInherited('sqft') && editFormSelectedUnitType && getEditInheritanceBadge('sqft')"
+                              x-show="!isEditFieldInherited(&#39;sqft&#39;) && editFormSelectedUnitType && getEditInheritanceBadge(&#39;sqft&#39;)"
                               type="button"
                               class="btn btn-ghost btn-xs"
                               @click="clearEditOverride('sqft')"
@@ -230,21 +219,18 @@ const statusOptions = [
                             <span
                               x-show="getEditInheritanceBadge('rent')"
                               class="badge badge-sm"
-                              :class="{
-                                'badge-info': isEditFieldInherited('rent'),
-                                'badge-warning': !isEditFieldInherited('rent') && getEditInheritanceBadge('rent')
-                            }"
+                              :class="{ 'badge-info': isEditFieldInherited('rent'), 'badge-warning': !isEditFieldInherited('rent') && getEditInheritanceBadge('rent') }"
                                 x-text="getEditInheritanceBadge('rent')"
                             >
                             </span>
                             <button
-                              x-show="!isEditFieldInherited('rent') && editFormSelectedUnitType && getEditInheritanceBadge('rent')"
+                              x-show="!isEditFieldInherited(&#39;rent&#39;) && editFormSelectedUnitType && getEditInheritanceBadge(&#39;rent&#39;)"
                               type="button"
                               class="btn btn-ghost btn-xs"
                               @click="clearEditOverride('rent')"
                               title="Use floorplan value"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
                                 </svg>
                                 Use floorplan
