@@ -132,8 +132,8 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                 ...mockUnit,
                 beds: undefined,
                 baths: undefined,
-                sqft: 0,
-                rent: 0
+                sqft: '', // Empty string should be inherited
+                rent: '' // Empty string should be inherited
             };
             const selectedUnitType = mockUnitTypes[0];
 
@@ -176,11 +176,11 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             expect(sqftValue).toBe(750);
         });
 
-        it('should return null when no unit type is provided', () => {
-            expect(inheritanceManager.getInheritedValue(null, 'beds')).toBe(null);
-            expect(inheritanceManager.getInheritedValue(null, 'baths')).toBe(null);
-            expect(inheritanceManager.getInheritedValue(null, 'sqft')).toBe(null);
-            expect(inheritanceManager.getInheritedValue(null, 'rent')).toBe(null);
+        it('should return undefined when no unit type is provided', () => {
+            expect(inheritanceManager.getInheritedValue(null, 'beds')).toBeUndefined();
+            expect(inheritanceManager.getInheritedValue(null, 'baths')).toBeUndefined();
+            expect(inheritanceManager.getInheritedValue(null, 'sqft')).toBeUndefined();
+            expect(inheritanceManager.getInheritedValue(null, 'rent')).toBeUndefined();
         });
 
         it('should return null when unit type lacks the field', () => {
@@ -670,8 +670,8 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             };
 
             expect(inheritanceManager.isInherited(mockUnit, incompleteUnitType, 'beds')).toBe(true);
-            expect(inheritanceManager.isInherited(mockUnit, incompleteUnitType, 'baths')).toBe(false);
-            expect(inheritanceManager.isInherited(mockUnit, incompleteUnitType, 'sqft')).toBe(false);
+            expect(inheritanceManager.isInherited(mockUnit, incompleteUnitType, 'baths')).toBe(true); // Unit type has baths: 1, so it can be inherited
+            expect(inheritanceManager.isInherited(mockUnit, incompleteUnitType, 'sqft')).toBe(false); // Unit type missing sqft fields
         });
 
         it('should handle zero values correctly', () => {

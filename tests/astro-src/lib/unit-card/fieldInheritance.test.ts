@@ -130,8 +130,8 @@ describe('FieldInheritanceManager', () => {
             expect(manager.getInheritedValue(mockUnitType, 'deposit')).toBe(1500);
         });
 
-        it('should return null when unit type is null', () => {
-            expect(manager.getInheritedValue(null, 'beds')).toBe(null);
+        it('should return undefined when unit type is null', () => {
+            expect(manager.getInheritedValue(null, 'beds')).toBeUndefined();
         });
 
         it('should return null when unit type does not have the field', () => {
@@ -219,10 +219,10 @@ describe('FieldInheritanceManager', () => {
             expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'beds')).toBe(null);
         });
 
-        it('should return null when unit type is null', () => {
+        it('should return undefined when unit type is null', () => {
             mockUnit.beds = null as unknown as number;
 
-            expect(manager.getEffectiveValue(mockUnit, null, 'beds')).toBe(null);
+            expect(manager.getEffectiveValue(mockUnit, null, 'beds')).toBeUndefined();
         });
     });
 

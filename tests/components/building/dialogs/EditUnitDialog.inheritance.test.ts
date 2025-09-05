@@ -28,7 +28,7 @@ const mockInheritanceManager = {
     },
     getInheritedValue: (unitType: UnitTypeData | null, field: string): unknown => {
         if(!unitType) {
-            return null;
+            return undefined;
         }
         if(field === 'rent') {
             if(unitType.minRent === unitType.maxRent) {
@@ -381,7 +381,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
 
         it('should use default placeholder when no inheritance available', () => {
             const inheritedValue = mockInheritanceManager.getInheritedValue(null, 'beds');
-            expect(inheritedValue).toBe(null);
+            expect(inheritedValue).toBeUndefined();
 
             // Would use default placeholder in this case
         });

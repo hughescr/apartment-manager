@@ -1,7 +1,7 @@
 // Initialize Alpine.js building state component
 // eslint-disable-next-line no-console -- debugging component registration
 console.log('[state-init] Starting Alpine.js component registration...');
-import { createBuildingState } from './state/index.ts';
+import { createBuildingState } from './state.ts';
 // eslint-disable-next-line no-console -- debugging component registration
 console.log('[state-init] createBuildingState imported successfully');
 

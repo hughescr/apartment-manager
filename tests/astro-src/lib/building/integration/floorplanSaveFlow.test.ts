@@ -15,10 +15,9 @@ import {
 import type { BuildingData, UnitTypeData } from '../../../../../astro-src/types';
 
 // Import the actual modules to spy on them
-import { UnitTypeManagement } from '../../../../../astro-src/lib/building/state/unitTypeManagement';
-import type { UnitTypeManagementState } from '../../../../../astro-src/lib/building/state/unitTypeManagement';
-import * as unitTypeValidation from '../../../../../astro-src/lib/building/state/unitTypeValidation';
-import { UnitTypeCrud } from '../../../../../astro-src/lib/building/state/unitTypeCrud';
+import { UnitTypeManagement, UnitTypeCrud } from '../../../../../astro-src/lib/building/state.ts';
+import type { UnitTypeManagementState } from '../../../../../astro-src/lib/building/state.ts';
+import * as buildingState from '../../../../../astro-src/lib/building/state.ts';
 import { BuildingApiService } from '../../../../../astro-src/lib/building/services/buildingApiService';
 
 // Create spies on the actual modules
@@ -43,7 +42,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
         testBuilding = createTestBuildingData();
 
         // Create spies on the actual module functions
-        mockValidateUnitType = spyOn(unitTypeValidation, 'validateUnitType');
+        mockValidateUnitType = spyOn(buildingState, 'validateUnitType');
         mockCreateNewUnitType = spyOn(UnitTypeCrud, 'createNewUnitType');
         mockAddUnitType = spyOn(UnitTypeCrud, 'addUnitType');
         mockUpdateUnitType = spyOn(UnitTypeCrud, 'updateUnitType');
@@ -57,11 +56,13 @@ describe('Floorplan Save Flow - Integration Tests', () => {
         mockState = {
             unitTypes: [],
             showAddUnitTypeDialog: false,
+            showEditUnitTypeDialog: false,
             newUnitType: {},
+            selectedUnitType: null,
             building: testBuilding,
             apiURL: testApiURL,
             ...mockContext
-        };
+        } as UnitTypeManagementState & AlpineMagicProperties;
 
         management = new UnitTypeManagement(mockState);
 
@@ -528,12 +529,10 @@ describe('Floorplan Save Flow - Integration Tests', () => {
                 newUnitType: {}
             };
 
-            const newManagement = new UnitTypeManagement(newMockState);
-
             // Step 3: Verify data persisted
             expect(newMockState.unitTypes).toEqual([createdUnitType]);
-            expect(newManagement.getAllUnitTypes()).toEqual([createdUnitType]);
-            expect(newManagement.getUnitType('persistent-model')).toEqual(createdUnitType);
+            expect(UnitTypeCrud.getAllUnitTypes(newMockState.unitTypes)).toEqual([createdUnitType]);
+            expect(newMockState.unitTypes.find(ut => ut.modelID === 'persistent-model')).toEqual(createdUnitType);
         });
     });
 

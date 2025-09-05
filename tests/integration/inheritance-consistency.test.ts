@@ -331,7 +331,7 @@ describe('Inheritance System Consistency Tests', () => {
             const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
             forEach(inheritableFields, (field) => {
                 expect(fieldInheritanceManager.isInherited(customUnit, null, field as FieldName)).toBe(false); // Use correct FieldName type
-                expect(fieldInheritanceManager.getInheritedValue(null, field as FieldName)).toBe(null); // Use correct FieldName type
+                expect(fieldInheritanceManager.getInheritedValue(null, field as FieldName)).toBeUndefined(); // Use correct FieldName type
             });
 
             // Resolver should use unit values directly

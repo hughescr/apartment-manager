@@ -353,23 +353,13 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
             });
             return updateResult;
         } else {
-            logger.warn('UpdateItemCommand returned undefined - item may not exist, falling back to PutItemCommand', {
+            logger.warn('UpdateItemCommand returned undefined - item may not exist or no changes made', {
                 buildingID,
                 unitID,
-                context: 'updateUnit_update_undefined_fallback'
+                context: 'updateUnit_update_undefined'
             });
-
-            // Fall back to PutItemCommand with merge logic when UpdateItemCommand returns undefined
-            logger.info('Attempting PutItemCommand fallback', { buildingID, unitID, context: 'updateUnit_trying_put' });
-            const putResult = await fallbackToPutItemCommand(buildingID, unitID, restUpdates, feedLastPulled, feedLastModified, feedInclusion, manualReferences);
-
-            logger.info('PutItemCommand fallback successful', {
-                buildingID,
-                unitID,
-                result: JSON.stringify(putResult, null, 2),
-                context: 'updateUnit_put_success'
-            });
-            return putResult;
+            // Return undefined when UpdateItemCommand returns undefined (indicates item doesn't exist or no changes)
+            return undefined;
         }
     } catch(error) {
         // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic

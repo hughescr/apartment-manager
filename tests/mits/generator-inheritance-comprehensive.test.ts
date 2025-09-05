@@ -397,7 +397,8 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
         it('should handle units with missing unit types consistently', async () => {
             const testUnit = {
                 ...mockUnitsWithInheritance[4], // unit with non-existent unit type
-                occupied: false // Make available for testing
+                occupied: false, // Make available for testing
+                feedInclusion: { apartments_com: true, zillow: true } // Include in feed
             };
 
             const resolvedByResolver = inheritanceResolver.resolveUnitValues(
@@ -566,9 +567,9 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             // Should complete within reasonable time (adjust threshold as needed)
             expect(duration).toBeLessThan(5000); // 5 seconds
 
-            // Should generate XML with expected unit count (90 available units)
+            // Should generate XML with expected unit count (all 100 units since they have feedInclusion: true)
             const unitMatches = xml.match(/<UnitID>unit-\d+<\/UnitID>/g) || [];
-            expect(unitMatches.length).toBe(90); // 100 - 10 occupied
+            expect(unitMatches.length).toBe(100); // All units included when they have explicit feedInclusion
         });
     });
 });

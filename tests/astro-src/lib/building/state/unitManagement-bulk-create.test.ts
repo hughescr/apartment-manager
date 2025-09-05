@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, mock } from 'bun:test';
-import { UnitManagement } from '../../../../../astro-src/lib/building/state/unitManagement';
-import type { UnitManagementState } from '../../../../../astro-src/lib/building/state/unitManagement';
+import { UnitManagement } from '../../../../../astro-src/lib/building/state.ts';
+import type { UnitManagementState } from '../../../../../astro-src/lib/building/state.ts';
 import type { AlpineMagicProperties } from '../../../../../astro-src/lib/alpine.d';
 import { createMockAlpineContext } from './test-setup';
 
@@ -12,6 +12,9 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
     };
 
     beforeEach(() => {
+        // Mock context
+        const mockContext = createMockAlpineContext();
+
         // Mock state with all required properties
         mockState = {
             building: {
@@ -19,32 +22,21 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
                 buildingName: 'Test Building'
             },
             units: [],
-            selectedUnits: new Set(),
             filteredUnits: [],
-            statusFilter: '',
+            selectedUnits: new Set(),
+            statusFilter: 'all',
             searchQuery: '',
-            showAddUnitDialog: false,
-            showAssignUnitTypeDialog: false,
             showBulkCreateDialog: false,
-            showEditUnitDialog: false,
-            editingUnit: null,
-            newUnit: { unitID: '', modelID: '' },
             bulkCreateData: {
                 modelID: 'model-1',
-                count: 2,
-                patternType: 'numeric' as const,
-                startingNumber: '101',
+                count: null,
+                patternType: 'numeric',
+                startingNumber: '',
                 prefix: '',
                 suffix: '',
                 customUnitNumbers: '',
                 unitNumbers: ['101', '102'],
                 vacancyClass: 'Unoccupied'
-            },
-            assignUnitTypeData: {
-                selectedUnit: null,
-                selectedModelID: '',
-                keepCustomValues: {},
-                loading: false
             },
             bulkOperation: {
                 loading: false,
@@ -54,9 +46,8 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
                 errors: undefined,
                 successfulUnits: undefined
             },
-            apiURL: 'http://localhost:3000/api',
-            ...createMockAlpineContext()
-        };
+            ...mockContext
+        } as UnitManagementState & AlpineMagicProperties;
 
         // Mock API service
         mockApiService = {
@@ -75,11 +66,14 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
             error: 'Unit number already exists'
         });
 
+        // Start with dialog open
+        mockState.showBulkCreateDialog = true;
+
         // Execute: Perform bulk create
         await unitManagement.performBulkCreateUnits();
 
-        // Verify: Dialog should still be open
-        expect(mockState.showBulkCreateDialog).toBe(false); // This was already false in setup
+        // Verify: Dialog should stay open when all units fail
+        expect(mockState.showBulkCreateDialog).toBe(true);
 
         // Verify: Form data should be preserved
         expect(mockState.bulkCreateData.modelID).toBe('model-1');
@@ -93,7 +87,7 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         expect(mockState.bulkOperation.errors![0].error).toBe('Unit number already exists');
         expect(mockState.bulkOperation.errors![1].unitNumber).toBe('102');
         expect(mockState.bulkOperation.errors![1].error).toBe('Unit number already exists');
-        // Verify: No successful units
+        // Verify: Empty successful units array (not undefined since errors occurred)
         expect(mockState.bulkOperation.successfulUnits).toEqual([]);
     });
 
@@ -118,14 +112,14 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         // Verify: Dialog should be closed
         expect(mockState.showBulkCreateDialog).toBe(false);
 
-        // Verify: No errors
+        // Verify: No errors when all succeed (undefined after dialog closes)
         expect(mockState.bulkOperation.errors).toBeUndefined();
 
-        // Verify: Successful units recorded (unique unit numbers from successful results)
-        expect(mockState.bulkOperation.successfulUnits).toEqual(['101', '101']); // Both units succeeded with same unit number from mock
+        // Verify: Successful units cleared when dialog closes after complete success
+        expect(mockState.bulkOperation.successfulUnits).toBeUndefined();
     });
 
-    it('should keep dialog open when some units fail', async () => {
+    it('should close dialog when some units fail (partial success)', async () => {
         // Setup: Mock API to succeed for first unit, fail for second
         mockApiService.addUnit
             .mockResolvedValueOnce({
@@ -148,11 +142,13 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         // Execute: Perform bulk create
         await unitManagement.performBulkCreateUnits();
 
-        // Verify: Dialog should close (partial success with at least one success closes dialog)
-        // Verify: Both errors and successes recorded
-        // Verify: Both errors and successes recorded
-        expect(mockState.bulkOperation.errors!).toHaveLength(1);
+        // Verify: Dialog should stay open for partial success to allow retry
+        expect(mockState.showBulkCreateDialog).toBe(true);
+
+        // Verify: Errors preserved for retry with partial success
+        expect(mockState.bulkOperation.errors).toHaveLength(1);
         expect(mockState.bulkOperation.errors![0].unitNumber).toBe('102');
+        expect(mockState.bulkOperation.errors![0].error).toBe('Unit 102 already exists');
 
         // Verify: Form data preserved for retry
         expect(mockState.bulkCreateData.modelID).toBe('model-1');

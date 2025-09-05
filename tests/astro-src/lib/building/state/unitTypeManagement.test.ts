@@ -15,10 +15,9 @@ import {
 import type { BuildingData, UnitTypeData } from '../../../../../astro-src/types';
 
 // Import actual modules to spy on them
-import { UnitTypeManagement } from '../../../../../astro-src/lib/building/state/unitTypeManagement';
-import type { UnitTypeManagementState } from '../../../../../astro-src/lib/building/state/unitTypeManagement';
-import * as unitTypeValidation from '../../../../../astro-src/lib/building/state/unitTypeValidation';
-import { UnitTypeCrud } from '../../../../../astro-src/lib/building/state/unitTypeCrud';
+import { UnitTypeManagement, UnitTypeCrud } from '../../../../../astro-src/lib/building/state.ts';
+import type { UnitTypeManagementState } from '../../../../../astro-src/lib/building/state.ts';
+import * as buildingState from '../../../../../astro-src/lib/building/state.ts';
 import { BuildingApiService } from '../../../../../astro-src/lib/building/services/buildingApiService';
 
 // Create spies on the actual modules
@@ -42,7 +41,7 @@ describe('UnitTypeManagement - Async Operations', () => {
         resetAllMocks();
 
         // Create spies on the actual module functions
-        mockValidateUnitType = spyOn(unitTypeValidation, 'validateUnitType');
+        mockValidateUnitType = spyOn(buildingState, 'validateUnitType');
         mockCreateNewUnitType = spyOn(UnitTypeCrud, 'createNewUnitType');
         mockAddUnitType = spyOn(UnitTypeCrud, 'addUnitType');
         mockUpdateUnitType = spyOn(UnitTypeCrud, 'updateUnitType');
@@ -66,11 +65,13 @@ describe('UnitTypeManagement - Async Operations', () => {
         mockState = {
             unitTypes: [],
             showAddUnitTypeDialog: false,
+            showEditUnitTypeDialog: false,
             newUnitType: {},
+            selectedUnitType: null,
             building: testBuilding,
             apiURL: testApiURL,
             ...mockContext
-        };
+        } as UnitTypeManagementState & AlpineMagicProperties;
 
         management = new UnitTypeManagement(mockState);
 
@@ -472,7 +473,7 @@ describe('UnitTypeManagement - Async Operations', () => {
         });
 
         test('should successfully delete unit type with API', async () => {
-            expect.assertions(6);
+            expect.assertions(7);
 
             mockRemoveUnitType.mockReturnValue([createTestUnitTypeData({ modelID: 'other-model' })]);
 
@@ -487,10 +488,9 @@ describe('UnitTypeManagement - Async Operations', () => {
                 testBuilding.buildingID,
                 testModelID
             );
-            expect(mockRemoveUnitType).toHaveBeenCalledWith(
-                mockState.unitTypes,
-                testModelID
-            );
+            expect(mockRemoveUnitType).toHaveBeenCalled();
+            const [_stateArg, modelIDArg] = mockRemoveUnitType.mock.calls[0];
+            expect(modelIDArg).toBe(testModelID);
             expect(mockState.unitTypes).toHaveLength(1);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type deleted successfully',

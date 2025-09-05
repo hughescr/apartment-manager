@@ -49,7 +49,7 @@ export class FieldInheritanceManager {
 
     getInheritedValue(unitType: UnitTypeData | null, fieldName: FieldName): unknown {
         if(!unitType) {
-            return null;
+            return undefined;
         }
 
         const modelField = this.modelFieldMap[fieldName];

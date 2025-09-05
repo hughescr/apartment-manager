@@ -3,7 +3,7 @@
  * Tests JSON parsing, data validation, error handling, and security considerations
  */
 import { describe, test, expect, beforeEach } from 'bun:test';
-import { BuildingDataParser } from '../../../../../astro-src/lib/building/state/dataParser';
+import { BuildingDataParser } from '../../../../../astro-src/lib/building/state.ts';
 import {
     resetAllMocks,
     createTestBuildingData,

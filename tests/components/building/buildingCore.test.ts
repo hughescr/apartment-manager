@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { noop } from 'lodash';
 import './test-setup'; // Import test setup for DOM mocking
 import { setupFakeTimers, teardownFakeTimers, tick } from '../../utils/timer-acceleration';
-import { BuildingCore } from '../../../astro-src/lib/building/state/buildingCore';
-import type { BuildingCoreState } from '../../../astro-src/lib/building/state/buildingCore';
+import { BuildingCore } from '../../../astro-src/lib/building/state.ts';
+import type { BuildingCoreState } from '../../../astro-src/lib/building/state.ts';
 import type { AlpineMagicProperties } from '../../../astro-src/lib/alpine';
 
 describe('BuildingCore', () => {

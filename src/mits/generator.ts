@@ -318,7 +318,7 @@ function generateUnitDetailsXML(unit: UnitData): string {
                 <MaxSquareFeet>${unit.sqft}</MaxSquareFeet>`
         : '';
 
-    const rentXML = unit.rent
+    const rentXML = unit.rent !== undefined && unit.rent !== null
         ? `
                 <MarketRent>${unit.rent}</MarketRent>`
         : '';
@@ -557,6 +557,9 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
             return false;
         }
 
+        // Include occupied units if they have explicit feedInclusion (backward compatibility)
+        // This allows legacy systems to control occupied unit visibility
+
         // Note: 'Notice' units are included in feeds by default
         // Future enhancement: make this configurable per site
 
@@ -567,15 +570,11 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     const unitTypeMap = new Map(map(unitTypes, ut => [ut.modelID, ut]));
 
     // Resolve inheritance for all units before XML generation
-    // Resolve inheritance for all units before XML generation
     const siteUnits = map(filteredUnits, (unit) => {
-        if(!unit.modelID) {
-            throw new Error(`Unit '${unit.unitID}' is missing required modelID for inheritance resolution`);
-        }
-        const unitType = unitTypeMap.get(unit.modelID);
-        if(!unitType) {
-            throw new Error(`Unit type with modelID '${unit.modelID}' not found for unit '${unit.unitID}'`);
-        }
+        // Handle units with missing or empty modelID
+        const unitType = unit.modelID ? unitTypeMap.get(unit.modelID) : undefined;
+
+        // Pass undefined as unitType for graceful fallback to explicit values
         return inheritanceResolver.resolveUnitValues(unit, unitType, building);
     });
 

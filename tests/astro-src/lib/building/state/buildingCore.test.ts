@@ -3,7 +3,7 @@
  * Tests state transitions, saving/loading, change detection, and error handling
  */
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
-import { BuildingCore } from '../../../../../astro-src/lib/building/state/buildingCore';
+import { BuildingCore } from '../../../../../astro-src/lib/building/state.ts';
 import {
     resetAllMocks,
     createTestBuildingData,
@@ -14,7 +14,7 @@ import {
     mockWindow
 } from './test-setup';
 import type { BuildingData } from '../../../../../astro-src/types';
-import type { BuildingCoreState } from '../../../../../astro-src/lib/building/state/buildingCore';
+import type { BuildingCoreState } from '../../../../../astro-src/lib/building/state.ts';
 import type { AlpineMagicProperties } from '../../../../../astro-src/lib/alpine';
 import { find, some } from 'lodash';
 import { jest } from 'bun:test';

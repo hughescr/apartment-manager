@@ -102,10 +102,10 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 text-sm text-base-content/70">
-                                <span x-text="unit.beds + ' bed, ' + unit.baths + ' bath'"></span>
-                                <span x-show="unit.sqft">
+                                <span x-text="getUnitDisplayValue(unit, 'beds') + ' bed, ' + getUnitDisplayValue(unit, 'baths') + ' bath'"></span>
+                                <span x-show="getUnitDisplayValue(unit, 'sqft') && getUnitDisplayValue(unit, 'sqft') !== '—'">
 •
-<span x-text="unit.sqft"></span>
+<span x-text="getUnitDisplayValue(unit, 'sqft')"></span>
 {' '}
 sq ft
                                 </span>
@@ -171,7 +171,7 @@ sq ft
                                       data-testid="'inline-rent-' + unit.unitID"
                                       @click="unit.editingRent = true; $nextTick(() => $el.nextElementSibling.focus())"
                                     >
-                                        <span :data-testid="'unit-rent-' + unit.unitID" x-text="formatCurrency(unit.rent)"></span>
+                                        <span :data-testid="'unit-rent-' + unit.unitID" x-text="formatCurrency(getUnitDisplayValue(unit, 'rent'))"></span>
                                     </span>
                                 </div>
 

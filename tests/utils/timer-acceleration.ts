@@ -1,4 +1,4 @@
-import FakeTimers from '@sinonjs/fake-timers';
+import * as FakeTimers from '@sinonjs/fake-timers';
 
 type TimerClock = FakeTimers.InstalledClock;
 
