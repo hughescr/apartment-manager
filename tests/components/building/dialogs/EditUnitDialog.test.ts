@@ -127,18 +127,18 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             expect(inheritanceManager.isInherited(mockUnit, null, 'rent')).toBe(false);
         });
 
-        it('should handle empty string values as inherited', () => {
-            const unitWithEmptyStrings = {
+        it('should handle undefined values as inherited', () => {
+            const unitWithUndefinedValues = {
                 ...mockUnit,
                 beds: undefined,
                 baths: undefined,
-                sqft: '', // Empty string should be inherited
-                rent: '' // Empty string should be inherited
+                sqft: undefined, // Undefined should be inherited
+                rent: undefined  // Undefined should be inherited
             };
             const selectedUnitType = mockUnitTypes[0];
 
-            expect(inheritanceManager.isInherited(unitWithEmptyStrings, selectedUnitType, 'sqft')).toBe(true);
-            expect(inheritanceManager.isInherited(unitWithEmptyStrings, selectedUnitType, 'rent')).toBe(true);
+            expect(inheritanceManager.isInherited(unitWithUndefinedValues, selectedUnitType, 'sqft')).toBe(true);
+            expect(inheritanceManager.isInherited(unitWithUndefinedValues, selectedUnitType, 'rent')).toBe(true);
         });
     });
 
