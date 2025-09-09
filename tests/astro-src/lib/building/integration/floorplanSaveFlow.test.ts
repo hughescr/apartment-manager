@@ -4,7 +4,7 @@
  * Validates that all components work together correctly
  */
 import { describe, test, expect, beforeEach, spyOn } from 'bun:test';
-import type { AlpineMagicProperties } from '../../../../../astro-src/lib/alpine';
+import type { AlpineMagics } from '../../../../../astro-src/lib/alpine-types';
 import {
     resetAllMocks,
     createTestBuildingData,
@@ -32,7 +32,7 @@ let mockApiServiceDeleteUnitType: jest.Mock;
 
 describe('Floorplan Save Flow - Integration Tests', () => {
     let management: UnitTypeManagement;
-    let mockState: UnitTypeManagementState & AlpineMagicProperties;
+    let mockState: UnitTypeManagementState & AlpineMagics;
     let testBuilding: BuildingData;
     const testApiURL = 'https://api.example.com/buildings/test-building';
 
@@ -62,7 +62,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             building: testBuilding,
             apiURL: testApiURL,
             ...mockContext
-        } as UnitTypeManagementState & AlpineMagicProperties;
+        } as UnitTypeManagementState & AlpineMagics;
 
         management = new UnitTypeManagement(mockState);
 

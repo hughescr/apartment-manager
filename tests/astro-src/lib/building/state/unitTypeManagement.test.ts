@@ -4,7 +4,7 @@
  * Focuses on API integration, error handling, state updates, and event dispatching
  */
 import { describe, test, expect, beforeEach, spyOn } from 'bun:test';
-import type { AlpineMagicProperties } from '../../../../../astro-src/lib/alpine';
+import type { AlpineMagics } from '../../../../../astro-src/lib/alpine-types';
 import {
     resetAllMocks,
     createTestBuildingData,
@@ -32,7 +32,7 @@ let mockApiServiceDeleteUnitType: jest.Mock;
 
 describe('UnitTypeManagement - Async Operations', () => {
     let management: UnitTypeManagement;
-    let mockState: UnitTypeManagementState & AlpineMagicProperties;
+    let mockState: UnitTypeManagementState & AlpineMagics;
     let testBuilding: BuildingData;
     let testUnitType: Partial<UnitTypeData>;
     const testApiURL = 'https://api.example.com/buildings/test-building';
@@ -71,7 +71,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             building: testBuilding,
             apiURL: testApiURL,
             ...mockContext
-        } as UnitTypeManagementState & AlpineMagicProperties;
+        } as UnitTypeManagementState & AlpineMagics;
 
         management = new UnitTypeManagement(mockState);
 

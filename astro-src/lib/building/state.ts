@@ -1,5 +1,5 @@
 import type { BuildingData, UnitTypeData, VacancyClass } from '../../types';
-import type { AlpineMagicProperties } from '../alpine';
+import type { AlpineMagics } from '../alpine-types';
 import type { ExtendedUnitData } from './types';
 import type { BuildingStateWithMagic } from '../types/alpine-state';
 import { FieldInheritanceManager } from '../unit-card/fieldInheritance';
@@ -720,7 +720,7 @@ function buildingStateObject(): any {
         /**
          * Initialize the component state
          */
-        init(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        init(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             // Initialize inheritance manager
             this.inheritanceManager = new FieldInheritanceManager();
 
@@ -755,7 +755,7 @@ function buildingStateObject(): any {
         /**
          * Initialize building data from HTML dataset
          */
-        initializeBuildingData(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, element: HTMLElement): void {
+        initializeBuildingData(this: ReturnType<typeof buildingStateObject> & AlpineMagics, element: HTMLElement): void {
             // Parse building data
             this.building = BuildingDataParser.parseBuildingData(element);
 
@@ -771,7 +771,7 @@ function buildingStateObject(): any {
         /**
          * Initialize units data from HTML dataset
          */
-        initializeUnitsData(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, element: HTMLElement): void {
+        initializeUnitsData(this: ReturnType<typeof buildingStateObject> & AlpineMagics, element: HTMLElement): void {
             // Parse units data
             this.units = BuildingDataParser.parseUnitsData(element);
 
@@ -782,14 +782,14 @@ function buildingStateObject(): any {
         /**
          * Initialize unit types data from HTML dataset
          */
-        initializeUnitTypesData(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, element: HTMLElement): void {
+        initializeUnitTypesData(this: ReturnType<typeof buildingStateObject> & AlpineMagics, element: HTMLElement): void {
             this.unitTypes = BuildingDataParser.parseUnitTypesData(element);
         },
 
         /**
          * Initialize expanded state for existing rent specials
          */
-        initializeRentSpecialStates(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        initializeRentSpecialStates(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             if(this.building?.rentSpecials) {
                 // Initialize expanded state for all existing rent specials (default to collapsed)
                 this.building.rentSpecials.forEach((special: { id?: string | number }) => {
@@ -803,7 +803,7 @@ function buildingStateObject(): any {
         /**
          * Setup watchers for building state changes
          */
-        setupBuildingWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        setupBuildingWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             // Watch for building changes to update showSave
             // Use a flag to prevent triggering during initial setup
             let initialSetupComplete = false;
@@ -834,7 +834,7 @@ function buildingStateObject(): any {
         /**
          * Setup watchers for unit state changes
          */
-        setupUnitWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        setupUnitWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             // Watch for units changes
             this.$watch('units', () => this.updateFilteredUnits());
             this.$watch('statusFilter', () => this.updateFilteredUnits());
@@ -865,7 +865,7 @@ function buildingStateObject(): any {
         /**
          * Setup all state watchers for reactive behavior
          */
-        setupAllWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        setupAllWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             this.setupFilterWatchers();
             this.setupSearchWatchers();
             this.setupSelectionWatchers();
@@ -875,7 +875,7 @@ function buildingStateObject(): any {
         /**
          * Setup filter-related watchers
          */
-        setupFilterWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        setupFilterWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             this.$watch('statusFilter', () => {
                 this.$dispatch('units:filter-changed', {
                     filter: this.statusFilter
@@ -886,7 +886,7 @@ function buildingStateObject(): any {
         /**
          * Setup search-related watchers
          */
-        setupSearchWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        setupSearchWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             this.$watch('searchQuery', () => {
                 if(this.searchQuery !== undefined) {
                     this.$dispatch('units:filter', {
@@ -900,7 +900,7 @@ function buildingStateObject(): any {
         /**
          * Setup selection-related watchers
          */
-        setupSelectionWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        setupSelectionWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             this.$watch('selectedUnits', () => {
                 this.$dispatch('units:selection-changed', {
                     selected: Array.from(this.selectedUnits)
@@ -911,7 +911,7 @@ function buildingStateObject(): any {
         /**
          * Setup geocoding state watchers
          */
-        setupGeocodingWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        setupGeocodingWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             this.$watch('geocoding', (value: boolean) => {
                 this.$dispatch('location:geocoding', { geocoding: value });
             });
@@ -920,7 +920,7 @@ function buildingStateObject(): any {
         /**
          * Listen for dynamic data updates from parent BuildingManager
          */
-        setupDataUpdateListener(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        setupDataUpdateListener(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             // Watch for changes to data attributes
             this.$watch('$el.dataset.buildingData', (value: string) => {
                 if(value) {
@@ -972,7 +972,7 @@ function buildingStateObject(): any {
         /**
          * Handle building data update events from BuildingManager
          */
-        handleBuildingDataUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, event: CustomEvent) {
+        handleBuildingDataUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagics, event: CustomEvent) {
             const { building: newBuilding, units: newUnits, unitTypes: newUnitTypes } = event.detail;
 
             if(newBuilding) {
@@ -1003,7 +1003,7 @@ function buildingStateObject(): any {
         /**
          * Get unit status from vacancy class
          */
-        getUnitStatus(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData): string {
+        getUnitStatus(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unit: ExtendedUnitData): string {
             if(unit.vacancyClass) {
                 switch(unit.vacancyClass) {
                     case 'Occupied':
@@ -1029,7 +1029,7 @@ function buildingStateObject(): any {
         initializeUnitsTimestamps: noop,
         setupWatchers: noop,
 
-        updateFilteredUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        updateFilteredUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(this.unitsManager) {
                 this.filteredUnits = this.unitsManager.updateFilteredUnits(
                     this.statusFilter,
@@ -1043,7 +1043,7 @@ function buildingStateObject(): any {
             });
         },
 
-        validateForm(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        validateForm(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             const result = validateBuildingForm(this.building);
             this.errors = result.errors;
 
@@ -1055,7 +1055,7 @@ function buildingStateObject(): any {
             return result.isValid;
         },
 
-        async saveBuilding(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async saveBuilding(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             // Remove validation check - we now allow saving with warnings
             if(!this.building || !this.apiService) {
                 return;
@@ -1140,7 +1140,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async deleteBuilding(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async deleteBuilding(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(!this.building || !this.apiService) {
                 return;
             }
@@ -1171,7 +1171,7 @@ function buildingStateObject(): any {
             }
         },
 
-        undoChanges(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        undoChanges(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(this.original) {
                 this.building = JSON.parse(JSON.stringify(this.original));
                 this.showSave = false;
@@ -1183,24 +1183,24 @@ function buildingStateObject(): any {
          * Update original state when data is loaded dynamically
          * This is called when building data is loaded from the server
          */
-        updateOriginalState(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, building: BuildingData): void {
+        updateOriginalState(this: ReturnType<typeof buildingStateObject> & AlpineMagics, building: BuildingData): void {
             this.original = JSON.parse(JSON.stringify(building));
             this.showSave = false;
         },
 
         // Unit Management Methods
-        openAddUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        openAddUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showAddUnitDialog = true;
             this.newUnit = { unitID: '', modelID: '' };
         },
 
-        closeAddUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        closeAddUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showAddUnitDialog = false;
             this.newUnit = { unitID: '', modelID: '' };
         },
 
         // Unit Type Management Methods
-        openAddUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        openAddUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showAddUnitTypeDialog = true;
             this.newUnitType = {
                 modelID: '',
@@ -1215,12 +1215,12 @@ function buildingStateObject(): any {
             };
         },
 
-        closeAddUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        closeAddUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showAddUnitTypeDialog = false;
             this.newUnitType = {};
         },
 
-        async addUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async addUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             // Validate the new unit type
             const validation = validateUnitType(this.newUnitType);
             if(!validation.isValid) {
@@ -1290,7 +1290,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async updateUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, modelID: string, updates: Partial<UnitTypeData>) {
+        async updateUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagics, modelID: string, updates: Partial<UnitTypeData>) {
             const buildingID = this.building?.buildingID;
             if(!buildingID) {
                 this.$dispatch('toast:show', {
@@ -1347,7 +1347,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async deleteUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, modelID: string) {
+        async deleteUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagics, modelID: string) {
             if(!confirm(`Are you sure you want to delete unit type ${modelID}?`)) {
                 return;
             }
@@ -1400,17 +1400,17 @@ function buildingStateObject(): any {
             }
         },
 
-        editUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitType: UnitTypeData) {
+        editUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unitType: UnitTypeData) {
             this.selectedUnitType = unitType;
             this.showEditUnitTypeDialog = true;
         },
 
-        closeEditUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        closeEditUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showEditUnitTypeDialog = false;
             this.selectedUnitType = null;
         },
 
-        async addUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async addUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(!trim(this.newUnit.unitID) || !this.newUnit.modelID || !this.apiService || !this.building) {
                 return;
             }
@@ -1441,7 +1441,7 @@ function buildingStateObject(): any {
             }
         },
 
-        openEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
+        openEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unit: ExtendedUnitData) {
             this.showEditUnitDialog = true;
             this.editingUnit = { ...unit };
             // Initialize the edit form when dialog opens
@@ -1450,12 +1450,12 @@ function buildingStateObject(): any {
             });
         },
 
-        closeEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        closeEditUnitDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showEditUnitDialog = false;
             this.editingUnit = null;
         },
 
-        async updateUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitId: string, updatedData: Partial<ExtendedUnitData>) {
+        async updateUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unitId: string, updatedData: Partial<ExtendedUnitData>) {
             if(!this.apiService || !this.building || !this.editingUnit) {
                 // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
                 console.error('updateUnit: Missing required dependencies', {
@@ -1506,7 +1506,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async deleteUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitId: string) {
+        async deleteUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unitId: string) {
             if(!this.apiService || !this.building || !this.editingUnit) {
                 return;
             }
@@ -1537,7 +1537,7 @@ function buildingStateObject(): any {
         },
 
         // Edit unit form methods
-        initializeEditForm(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        initializeEditForm(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(this.editingUnit) {
                 this.editUnit = {
                     unitID: this.editingUnit.unitID,
@@ -1562,27 +1562,27 @@ function buildingStateObject(): any {
         },
 
         // Check if a field is inherited in edit form
-        isEditFieldInherited(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+        isEditFieldInherited(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string) {
             const unitData = this.editUnit;
             const unitType = this.editFormSelectedUnitType;
             return this.inheritanceManager.isInherited(unitData, unitType, fieldName);
         },
 
         // Get inherited value for a field in edit form
-        getEditInheritedValue(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+        getEditInheritedValue(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string) {
             const unitType = this.editFormSelectedUnitType;
             return this.inheritanceManager.getInheritedValue(unitType, fieldName);
         },
 
         // Get effective value (unit value or inherited value) in edit form
-        getEditEffectiveValue(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+        getEditEffectiveValue(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string) {
             const unitData = this.editUnit;
             const unitType = this.editFormSelectedUnitType;
             return this.inheritanceManager.getEffectiveValue(unitData, unitType, fieldName);
         },
 
         // Get placeholder text for inherited values in edit form
-        getEditFieldPlaceholder(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string, defaultPlaceholder = '') {
+        getEditFieldPlaceholder(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string, defaultPlaceholder = '') {
             const inheritedValue = this.getEditInheritedValue(fieldName);
             if(inheritedValue !== null && inheritedValue !== undefined) {
                 return `Inherited: ${inheritedValue}`;
@@ -1591,7 +1591,7 @@ function buildingStateObject(): any {
         },
 
         // Get inheritance badge text for edit form
-        getEditInheritanceBadge(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+        getEditInheritanceBadge(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string) {
             if(this.isEditFieldInherited(fieldName)) {
                 return 'Inherited from floorplan';
             } else if(this.editFormSelectedUnitType && this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
@@ -1601,7 +1601,7 @@ function buildingStateObject(): any {
         },
 
         // Clear a specific field override to allow inheritance in edit form
-        clearEditOverride(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string) {
+        clearEditOverride(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string) {
             if(this.editUnit[fieldName] !== null && this.editUnit[fieldName] !== undefined && this.editUnit[fieldName] !== '') {
                 // Set field to null to trigger inheritance
                 this.editUnit[fieldName] = null;
@@ -1617,7 +1617,7 @@ function buildingStateObject(): any {
         },
 
         // Reset all overridden fields to inherit from floorplan in edit form
-        resetEditAllToFloorplan(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        resetEditAllToFloorplan(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
             const overriddenFields: string[] = [];
 
@@ -1652,7 +1652,7 @@ function buildingStateObject(): any {
         },
 
         // Check if unit has any overridden fields that can be reset in edit form
-        hasEditOverriddenFields(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        hasEditOverriddenFields(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(!this.editFormSelectedUnitType) {
                 return false;
             }
@@ -1661,7 +1661,7 @@ function buildingStateObject(): any {
         },
 
         // Preview what values will change when selecting a new unit type in edit form
-        previewEditUnitTypeChange(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, newModelID: string) {
+        previewEditUnitTypeChange(this: ReturnType<typeof buildingStateObject> & AlpineMagics, newModelID: string) {
             if(!newModelID) {
                 return true;
             }
@@ -1701,7 +1701,7 @@ function buildingStateObject(): any {
         },
 
         // Watch for unit type changes to populate inherited values in edit form
-        onEditUnitTypeChange(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        onEditUnitTypeChange(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             const selectedType = this.editFormSelectedUnitType;
             if(selectedType) {
                 // Reset inheritable fields to allow inheritance
@@ -1732,7 +1732,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async submitEditUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async submitEditUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.editUnitLoading = true;
             this.editUnitErrors = {};
 
@@ -1777,7 +1777,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async confirmEditDeleteUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async confirmEditDeleteUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(!this.editingUnit) {
                 return;
             }
@@ -1803,7 +1803,7 @@ function buildingStateObject(): any {
         },
 
         // Unit assignment methods
-        openAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
+        openAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unit: ExtendedUnitData) {
             this.showAssignUnitTypeDialog = true;
             this.assignUnitTypeData = {
                 selectedUnit: unit,
@@ -1813,7 +1813,7 @@ function buildingStateObject(): any {
             };
         },
 
-        closeAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        closeAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showAssignUnitTypeDialog = false;
             this.assignUnitTypeData = {
                 selectedUnit: null,
@@ -1823,7 +1823,7 @@ function buildingStateObject(): any {
             };
         },
 
-        async assignUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, assignmentData: { selectedModelID: string, keepCustomValues: Record<string, boolean> }) {
+        async assignUnitType(this: ReturnType<typeof buildingStateObject> & AlpineMagics, assignmentData: { selectedModelID: string, keepCustomValues: Record<string, boolean> }) {
             if(!this.assignUnitTypeData.selectedUnit || !assignmentData.selectedModelID || !this.apiService || !this.building) {
                 return;
             }
@@ -1886,7 +1886,7 @@ function buildingStateObject(): any {
         },
 
         // Bulk create methods
-        openBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, modelID?: string) {
+        openBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics, modelID?: string) {
             this.showBulkCreateDialog = true;
             // Use Object.assign to avoid type checking issues
             Object.assign(this.bulkCreateData, {
@@ -1902,7 +1902,7 @@ function buildingStateObject(): any {
             });
         },
 
-        closeBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        closeBulkCreateDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showBulkCreateDialog = false;
             // Use Object.assign to avoid type checking issues
             Object.assign(this.bulkCreateData, {
@@ -1926,7 +1926,7 @@ function buildingStateObject(): any {
             this.bulkOperation.loading = false;
         },
 
-        closeBulkCreateDialogWithPreservedState(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        closeBulkCreateDialogWithPreservedState(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showBulkCreateDialog = false;
             // Clear results but preserve form data for retry
             if('errors' in this.bulkOperation) {
@@ -1938,7 +1938,7 @@ function buildingStateObject(): any {
             this.bulkOperation.loading = false;
         },
 
-        async performBulkCreateUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async performBulkCreateUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(!this.bulkCreateData.unitNumbers.length || !this.bulkCreateData.modelID || !this.apiService || !this.building) {
                 return;
             }
@@ -1967,7 +1967,7 @@ function buildingStateObject(): any {
         /**
          * Create units from the unit numbers list
          */
-        async createUnitsFromNumbers(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): Promise<{ results: ExtendedUnitData[], errors: { unitNumber: string, error: string }[] }> {
+        async createUnitsFromNumbers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): Promise<{ results: ExtendedUnitData[], errors: { unitNumber: string, error: string }[] }> {
             const results: ExtendedUnitData[] = [];
             const errors: { unitNumber: string, error: string }[] = [];
 
@@ -2000,7 +2000,7 @@ function buildingStateObject(): any {
         /**
          * Finalize bulk creation and show appropriate messages
          */
-        finalizeBulkCreation(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, results: ExtendedUnitData[], errors: { unitNumber: string, error: string }[]): void {
+        finalizeBulkCreation(this: ReturnType<typeof buildingStateObject> & AlpineMagics, results: ExtendedUnitData[], errors: { unitNumber: string, error: string }[]): void {
             this.updateFilteredUnits();
 
             // Store errors in state for dialog display
@@ -2044,24 +2044,24 @@ function buildingStateObject(): any {
         },
 
         // Unit Selection Methods
-        toggleSelectAll(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        toggleSelectAll(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.unitsManager?.toggleSelectAll(this.filteredUnits);
         },
 
-        isUnitSelected(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitID: string) {
+        isUnitSelected(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unitID: string) {
             return this.unitsManager?.isUnitSelected(unitID) || false;
         },
 
-        toggleUnitSelection(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitID: string) {
+        toggleUnitSelection(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unitID: string) {
             this.unitsManager?.toggleUnitSelection(unitID);
         },
 
-        getSelectedCount(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        getSelectedCount(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             return this.unitsManager?.getSelectedCount() || 0;
         },
 
         // Bulk Operations Methods
-        async performBulkStatusUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async performBulkStatusUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(this.selectedUnits.size === 0 || !this.bulkOperation.statusValue || !this.apiService || !this.building) {
                 return;
             }
@@ -2110,7 +2110,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async performBulkRentUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        async performBulkRentUpdate(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(this.selectedUnits.size === 0 || !this.bulkOperation.rentValue || !this.apiService || !this.building) {
                 return;
             }
@@ -2168,7 +2168,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async toggleUnitAvailability(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData) {
+        async toggleUnitAvailability(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unit: ExtendedUnitData) {
             if(!this.apiService || !this.building) {
                 return;
             }
@@ -2207,7 +2207,7 @@ function buildingStateObject(): any {
             }
         },
 
-        async updateUnitRent(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData, newRentValue: string) {
+        async updateUnitRent(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unit: ExtendedUnitData, newRentValue: string) {
             if(!this.apiService || !this.building) {
                 return;
             }
@@ -2259,19 +2259,19 @@ function buildingStateObject(): any {
         },
 
         // Formatting helper methods
-        formatCurrency(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, amount: number | null | undefined) {
+        formatCurrency(this: ReturnType<typeof buildingStateObject> & AlpineMagics, amount: number | null | undefined) {
             return BuildingFormatters.formatCurrency(amount);
         },
 
-        formatRelativeTime(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, dateString: string | undefined) {
+        formatRelativeTime(this: ReturnType<typeof buildingStateObject> & AlpineMagics, dateString: string | undefined) {
             return BuildingFormatters.formatRelativeTime(dateString);
         },
 
-        getStatusBadgeClass(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, status: string | undefined) {
+        getStatusBadgeClass(this: ReturnType<typeof buildingStateObject> & AlpineMagics, status: string | undefined) {
             return BuildingFormatters.getStatusBadgeClass(status);
         },
 
-        getTabDisplayName(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, tabKey: string) {
+        getTabDisplayName(this: ReturnType<typeof buildingStateObject> & AlpineMagics, tabKey: string) {
             return BuildingFormatters.getTabDisplayName(tabKey);
         },
 
@@ -2279,7 +2279,7 @@ function buildingStateObject(): any {
          * Get the display value for a unit field, considering inheritance from unit type
          */
         // eslint-disable-next-line complexity -- Unit display value requires field-specific formatting
-        getUnitDisplayValue(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData, fieldName: 'beds' | 'baths' | 'sqft' | 'rent' | 'maxOccupants' | 'perPersonRent' | 'deposit' | 'minLeaseTerm' | 'maxLeaseTerm') {
+        getUnitDisplayValue(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unit: ExtendedUnitData, fieldName: 'beds' | 'baths' | 'sqft' | 'rent' | 'maxOccupants' | 'perPersonRent' | 'deposit' | 'minLeaseTerm' | 'maxLeaseTerm') {
             if(!this.inheritanceManager || !unit) {
                 return '—';
             }
@@ -2336,7 +2336,7 @@ function buildingStateObject(): any {
         },
 
         // Rent Special Methods
-        addRentSpecial(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
+        addRentSpecial(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(!this.building) {
                 return;
             }
@@ -2346,9 +2346,11 @@ function buildingStateObject(): any {
                 this.building.rentSpecials = [];
             }
 
-            // Add new rent special with unique ID
+            // Add new rent special with unique ID using Alpine $id magic property
+            // This provides deterministic IDs for testing and better type safety
+            const nextIndex = this.building.rentSpecials.length;
             const newSpecial = {
-                id: Date.now() + Math.random(),
+                id: this.$id('rentSpecial', nextIndex),
                 title: '',
                 description: '',
                 startDate: '',
@@ -2360,7 +2362,7 @@ function buildingStateObject(): any {
             this.expandedRentSpecials[newSpecial.id] = true;
         },
 
-        removeRentSpecial(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, index: number) {
+        removeRentSpecial(this: ReturnType<typeof buildingStateObject> & AlpineMagics, index: number) {
             if(!this.building?.rentSpecials) {
                 return;
             }
@@ -2375,7 +2377,7 @@ function buildingStateObject(): any {
         },
 
         // Form validation methods
-        validateField(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string, value: unknown): boolean {
+        validateField(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string, value: unknown): boolean {
             const error = validateSingleField(fieldName, value, this.building || undefined);
 
             if(error) {
@@ -2390,34 +2392,34 @@ function buildingStateObject(): any {
             }
         },
 
-        clearErrors(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        clearErrors(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             this.errors = {};
         },
 
-        clearFieldError(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string): void {
+        clearFieldError(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string): void {
             if(this.errors[fieldName]) {
                 delete this.errors[fieldName];
             }
         },
 
-        hasValidationErrors(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): boolean {
+        hasValidationErrors(this: ReturnType<typeof buildingStateObject> & AlpineMagics): boolean {
             return keys(this.errors).length > 0;
         },
 
-        getFieldError(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, fieldName: string): string | null {
+        getFieldError(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string): string | null {
             return this.errors[fieldName] || null;
         },
 
-        getAllErrors(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): Record<string, string> {
+        getAllErrors(this: ReturnType<typeof buildingStateObject> & AlpineMagics): Record<string, string> {
             return { ...this.errors };
         },
 
-        hasUnsavedChanges(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): boolean {
+        hasUnsavedChanges(this: ReturnType<typeof buildingStateObject> & AlpineMagics): boolean {
             return hasUnsavedChanges(this.building, this.original);
         },
 
         // Utility methods
-        getFilterSummary(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): {
+        getFilterSummary(this: ReturnType<typeof buildingStateObject> & AlpineMagics): {
             total: number
             filtered: number
             selected: number
@@ -2431,7 +2433,7 @@ function buildingStateObject(): any {
             };
         },
 
-        getStatusCounts(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): Record<string, number> {
+        getStatusCounts(this: ReturnType<typeof buildingStateObject> & AlpineMagics): Record<string, number> {
             const counts: Record<string, number> = {
                 all: this.units.length,
                 occupied: 0,
@@ -2463,7 +2465,7 @@ function buildingStateObject(): any {
             return counts;
         },
 
-        getFormattedAddress(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): string {
+        getFormattedAddress(this: ReturnType<typeof buildingStateObject> & AlpineMagics): string {
             if(!this.building) {
                 return '';
             }
@@ -2478,7 +2480,7 @@ function buildingStateObject(): any {
             return parts.join(', ');
         },
 
-        getOccupancyRate(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): number {
+        getOccupancyRate(this: ReturnType<typeof buildingStateObject> & AlpineMagics): number {
             if(this.units.length === 0) {
                 return 0;
             }
@@ -2490,7 +2492,7 @@ function buildingStateObject(): any {
             return Math.round((occupiedCount / this.units.length) * 100);
         },
 
-        getAverageRent(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): number {
+        getAverageRent(this: ReturnType<typeof buildingStateObject> & AlpineMagics): number {
             const unitsWithRent = this.units.filter((unit: ExtendedUnitData) => unit.rent && unit.rent > 0) as ExtendedUnitData[];
 
             if(unitsWithRent.length === 0) {
@@ -2505,7 +2507,7 @@ function buildingStateObject(): any {
          * Cleanup method to prevent memory leaks
          * Should be called when the component is destroyed
          */
-        destroy(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties): void {
+        destroy(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             // Clear any pending initialization timeout
             if(this.initTimeoutId !== null) {
                 clearTimeout(this.initTimeoutId);
@@ -2572,9 +2574,9 @@ export interface UnitTypeManagementState {
  * Compatibility wrapper for BuildingCore to support existing tests
  */
 export class BuildingCore {
-    private stateObj: ReturnType<typeof buildingStateObject> & AlpineMagicProperties;
+    private stateObj: ReturnType<typeof buildingStateObject> & AlpineMagics;
 
-    constructor(state: BuildingCoreState & AlpineMagicProperties) {
+    constructor(state: BuildingCoreState & AlpineMagics) {
         // Extend the original state object with building state methods
         const buildingState = buildingStateObject();
 
@@ -2595,7 +2597,7 @@ export class BuildingCore {
         Object.assign(state, originalMethods);
 
         // Use the extended original state object
-        this.stateObj = state as ReturnType<typeof buildingStateObject> & AlpineMagicProperties;
+        this.stateObj = state as ReturnType<typeof buildingStateObject> & AlpineMagics;
 
         // Initialize the consolidated state functionality
         if(!this.stateObj.init) {
@@ -2682,9 +2684,9 @@ export class BuildingCore {
  * Compatibility wrapper for UnitManagement to support existing tests
  */
 export class UnitManagement {
-    private stateObj: ReturnType<typeof buildingStateObject> & AlpineMagicProperties;
+    private stateObj: ReturnType<typeof buildingStateObject> & AlpineMagics;
 
-    constructor(state: UnitManagementState & AlpineMagicProperties) {
+    constructor(state: UnitManagementState & AlpineMagics) {
         // Extend the original state object with building state methods
         const buildingState = buildingStateObject();
 
@@ -2703,7 +2705,7 @@ export class UnitManagement {
         });
 
         // Use the extended original state object
-        this.stateObj = state as ReturnType<typeof buildingStateObject> & AlpineMagicProperties;
+        this.stateObj = state as ReturnType<typeof buildingStateObject> & AlpineMagics;
     }
 
     // Allow tests to set the apiService directly on the internal state
@@ -2752,10 +2754,10 @@ export class UnitManagement {
  * Compatibility wrapper for UnitTypeManagement to support existing tests
  */
 export class UnitTypeManagement {
-    private state: UnitTypeManagementState & AlpineMagicProperties;
+    private state: UnitTypeManagementState & AlpineMagics;
     private apiService?: BuildingApiService;
 
-    constructor(state: UnitTypeManagementState & AlpineMagicProperties) {
+    constructor(state: UnitTypeManagementState & AlpineMagics) {
         this.state = state;
 
         // Initialize API service if apiURL is available

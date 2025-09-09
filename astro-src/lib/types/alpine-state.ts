@@ -4,7 +4,7 @@
  */
 
 import type { BuildingData, UnitData, UnitTypeData, Amenity } from '../../types';
-import type { AlpineMagicProperties } from '../alpine-types';
+import type { AlpineMagics } from '../alpine-types';
 
 // ===== BASE ALPINE STATE INTERFACES =====
 
@@ -375,7 +375,7 @@ export type FeedInclusionStatus = '' | 'active' | 'inactive' | 'pending' | 'erro
 /**
  * Complete Alpine.js state with magic properties
  */
-export type AlpineStateWithMagic<T extends BaseAlpineState> = T & AlpineMagicProperties;
+export type AlpineStateWithMagic<T extends BaseAlpineState> = T & AlpineMagics;
 
 /**
  * Building state with magic properties (for use in components)

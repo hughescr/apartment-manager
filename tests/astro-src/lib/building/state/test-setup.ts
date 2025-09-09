@@ -6,7 +6,7 @@
 import { jest, spyOn } from 'bun:test';
 import type { BuildingData, UnitTypeData } from '../../../../../astro-src/types';
 import type { ExtendedUnitData } from '../../../../../astro-src/lib/building/types';
-import type { AlpineMagicProperties } from '../../../../../astro-src/lib/alpine';
+import type { AlpineMagics } from '../../../../../astro-src/lib/alpine-types';
 import { PropertyType, PetType, FeeType, AmenityCategory, ParkingType, StorageType } from '../../../../../src/types/index.js';
 import { replace, toUpper } from 'lodash';
 
@@ -113,49 +113,61 @@ export const mockAlpineContext = {
         dataset: {} as Record<string, string>
     } as HTMLElement,
     $watch: jest.fn(),
-    $nextTick: jest.fn().mockImplementation((callback: () => void) => {
+    $nextTick: jest.fn().mockImplementation((callback?: () => void) => {
         // Execute immediately for tests
-        callback();
-        return Promise.resolve();
-    }),
-    $dispatch: jest.fn(),
-    $store: {},
-    $root: { dataset: {} } as HTMLElement
-} as AlpineMagicProperties;
-
-// Add watchers storage for testing
-(mockAlpineContext as unknown as { _watchers?: Map<string, (value: unknown) => void> })._watchers = new Map();
-
-// Mock Alpine.js context factory for tests
-export const createMockAlpineContext = (overrides: Partial<AlpineMagicProperties> = {}): AlpineMagicProperties => ({
-    $el: {
-        dataset: {} as Record<string, string>
-    } as HTMLElement,
-    $watch: jest.fn().mockImplementation((property: string, callback: (value: unknown) => void) => {
-        // Store watchers for later triggering in tests
-        const context = mockAlpineContext as unknown as { _watchers?: Map<string, (value: unknown) => void> };
-        if(!context._watchers) {
-            context._watchers = new Map();
+        if(callback) {
+            return callback();
         }
-        context._watchers.set(property, callback);
-    }),
-    $nextTick: jest.fn().mockImplementation((callback: () => void) => {
-        // Execute immediately for tests
-        callback();
         return Promise.resolve();
     }),
     $dispatch: jest.fn(),
     $store: {},
     $root: { dataset: {} } as HTMLElement,
+    $refs: {} as Record<string, HTMLElement>,
+    $data: {} as Record<string, unknown>
+} as unknown as AlpineMagics;
+
+// Add watchers storage for testing
+(mockAlpineContext as unknown as { _watchers?: Map<string, (value: unknown) => void> })._watchers = new Map();
+
+// Mock Alpine.js context factory for tests
+export const createMockAlpineContext = (overrides: Partial<AlpineMagics> = {}): AlpineMagics => ({
+    $el: {
+        dataset: {} as Record<string, string>
+    } as HTMLElement,
+    $watch: jest.fn().mockImplementation((property: string, callback: (newValue: unknown, oldValue: unknown) => void) => {
+        // Store watchers for later triggering in tests
+        const context = mockAlpineContext as unknown as { _watchers?: Map<string, (newValue: unknown, oldValue: unknown) => void> };
+        if(!context._watchers) {
+            context._watchers = new Map();
+        }
+        context._watchers.set(property, callback);
+    }),
+    $nextTick: jest.fn().mockImplementation((callback?: () => void) => {
+        // Execute immediately for tests
+        if(callback) {
+            return callback();
+        }
+        return Promise.resolve();
+    }),
+    $dispatch: jest.fn(),
+    $store: {},
+    $root: { dataset: {} } as HTMLElement,
+    $refs: {} as Record<string, HTMLElement>,
+    $data: {} as Record<string, unknown>,
+    $id: jest.fn().mockImplementation((_name: string, index?: number) => {
+        // Generate predictable IDs for testing as numbers (matches test expectations)
+        return index !== undefined ? index : Math.floor(Math.random() * 1000);
+    }),
     ...overrides
-});
+} as unknown as AlpineMagics);
 
 // Helper to trigger watchers in tests
-export const triggerWatcher = (property: string, value: unknown): void => {
-    const watchers = (mockAlpineContext as unknown as { _watchers?: Map<string, (value: unknown) => void> })._watchers;
+export const triggerWatcher = (property: string, newValue: unknown, oldValue?: unknown): void => {
+    const watchers = (mockAlpineContext as unknown as { _watchers?: Map<string, (newValue: unknown, oldValue: unknown) => void> })._watchers;
     const watcher = watchers?.get(property);
     if(watcher) {
-        watcher(value);
+        watcher(newValue, oldValue ?? null);
     }
 };
 

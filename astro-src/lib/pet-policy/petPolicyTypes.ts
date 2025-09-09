@@ -1,6 +1,6 @@
 import type { PetPolicy } from '../../types';
 import { PetType } from '../../types';
-import type { AlpineMagicProperties } from '../alpine';
+import type { AlpineMagics } from '../alpine-types';
 
 /**
  * Extended pet policy with UI state for advanced settings
@@ -94,7 +94,7 @@ export interface PetPolicyState extends PetPolicyUIState {
 /**
  * Combined state with Alpine.js magic properties
  */
-export type PetPolicyStateWithMagic = PetPolicyState & AlpineMagicProperties & Record<string, ExtendedPetPolicy>;
+export type PetPolicyStateWithMagic = PetPolicyState & AlpineMagics & Record<string, ExtendedPetPolicy>;
 
 /**
  * Props for pet policy components

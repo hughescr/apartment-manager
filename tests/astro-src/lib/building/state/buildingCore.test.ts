@@ -15,14 +15,14 @@ import {
 } from './test-setup';
 import type { BuildingData } from '../../../../../astro-src/types';
 import type { BuildingCoreState } from '../../../../../astro-src/lib/building/state.ts';
-import type { AlpineMagicProperties } from '../../../../../astro-src/lib/alpine';
+import type { AlpineMagics } from '../../../../../astro-src/lib/alpine-types';
 import { find, some } from 'lodash';
 import { jest } from 'bun:test';
 import { setupFakeTimers, teardownFakeTimers, tick } from '../../../../utils/timer-acceleration';
 
 describe('BuildingCore', () => {
     let buildingCore: BuildingCore;
-    let mockState: BuildingCoreState & AlpineMagicProperties;
+    let mockState: BuildingCoreState & AlpineMagics;
     let testBuilding: BuildingData;
 
     beforeEach(() => {

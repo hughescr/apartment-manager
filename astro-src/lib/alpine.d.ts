@@ -3,4 +3,4 @@
  * Re-exporting for backward compatibility
  */
 
-export type { AlpineMagicProperties, AlpineComponent } from './types/alpine-types';
+export type { AlpineMagics, AlpineComponent } from './alpine-types';

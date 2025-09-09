@@ -4,10 +4,10 @@ import './test-setup'; // Import test setup for DOM mocking
 import { setupFakeTimers, teardownFakeTimers, tick } from '../../utils/timer-acceleration';
 import { BuildingCore } from '../../../astro-src/lib/building/state.ts';
 import type { BuildingCoreState } from '../../../astro-src/lib/building/state.ts';
-import type { AlpineMagicProperties } from '../../../astro-src/lib/alpine';
+import type { AlpineMagics } from '../../../astro-src/lib/alpine-types';
 
 describe('BuildingCore', () => {
-    let mockState: BuildingCoreState & AlpineMagicProperties;
+    let mockState: BuildingCoreState & AlpineMagics;
     let buildingCore: BuildingCore;
 
     beforeEach(() => {
@@ -25,10 +25,17 @@ describe('BuildingCore', () => {
             errors: {},
             expandedRentSpecials: {},
             $watch: noop,
-            $nextTick: (callback: () => void) => callback(),
+            $nextTick: async (callback?: () => void) => {
+                if(callback) {
+                    return void callback();
+                }
+            },
             $dispatch: noop,
             $store: {},
             $root: { dataset: {} } as HTMLElement,
+            $refs: {} as Record<string, HTMLElement>,
+            $data: {} as Record<string, unknown>,
+            $id: (name: string, key?: number | string | null) => `${name}${key ? `-${key}` : ''}`,
             $el: (() => {
                 // Create a mock element that works in test environment
                 const el = { dataset: {} } as HTMLElement;

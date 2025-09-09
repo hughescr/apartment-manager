@@ -6,8 +6,6 @@
 export type {
     AlpineComponent,
     AlpineMagics,
-    AlpineInstance,
-    AlpineComponentRegistryFunction,
     // Component-specific types
     AddBuildingFormData,
     BuildingManagerData,

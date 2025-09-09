@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import { UnitManagement } from '../../../../../astro-src/lib/building/state.ts';
 import type { UnitManagementState } from '../../../../../astro-src/lib/building/state.ts';
-import type { AlpineMagicProperties } from '../../../../../astro-src/lib/alpine.d';
+import type { AlpineMagics } from '../../../../../astro-src/lib/alpine-types';
 import { createMockAlpineContext } from './test-setup';
 
 describe('UnitManagement - Bulk Create Error Handling', () => {
     let unitManagement: UnitManagement;
-    let mockState: UnitManagementState & AlpineMagicProperties;
+    let mockState: UnitManagementState & AlpineMagics;
     let mockApiService: {
         addUnit: ReturnType<typeof mock>
     };
@@ -47,7 +47,7 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
                 successfulUnits: undefined
             },
             ...mockContext
-        } as UnitManagementState & AlpineMagicProperties;
+        } as UnitManagementState & AlpineMagics;
 
         // Mock API service
         mockApiService = {

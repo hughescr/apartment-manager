@@ -1,5 +1,5 @@
 import { PetType } from '../../types';
-import type { AlpineMagicProperties } from '../alpine';
+import type { AlpineMagics } from '../alpine-types';
 import type {
     ExtendedPetPolicy,
     PetPolicyStateWithMagic,
@@ -51,7 +51,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Initialize the component state
          */
-        init(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties) {
+        init(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics) {
             // Initialize with default structure if not set
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
@@ -86,7 +86,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Toggle a pet type selection
          */
-        togglePetType(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, type: PetType) {
+        togglePetType(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, type: PetType) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
                 this[modelName].allowed = true;
@@ -97,14 +97,14 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Check if a pet type is selected
          */
-        isPetTypeSelected(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, type: PetType): boolean {
+        isPetTypeSelected(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, type: PetType): boolean {
             return isPetTypeSelected(this[modelName], type);
         },
 
         /**
          * Add a breed restriction
          */
-        addBreedRestriction(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, breed: string) {
+        addBreedRestriction(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, breed: string) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
                 this[modelName].allowed = true;
@@ -118,7 +118,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Remove a breed restriction by index
          */
-        removeBreedRestriction(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, index: number) {
+        removeBreedRestriction(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, index: number) {
             if(this[modelName]) {
                 removeBreedRestriction(this[modelName], index);
             }
@@ -127,7 +127,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Toggle a common breed restriction
          */
-        toggleCommonBreed(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, breed: string) {
+        toggleCommonBreed(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, breed: string) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
                 this[modelName].allowed = true;
@@ -138,7 +138,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Check if a breed is restricted
          */
-        isBreedRestricted(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, breed: string): boolean {
+        isBreedRestricted(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, breed: string): boolean {
             return isBreedRestricted(this[modelName], breed);
         },
 
@@ -155,7 +155,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Add a new pet type policy for advanced settings
          */
-        addPetTypePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties) {
+        addPetTypePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
                 this[modelName].allowed = true;
@@ -171,7 +171,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Remove a pet type policy by index
          */
-        removePetTypePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, index: number) {
+        removePetTypePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, index: number) {
             if(this[modelName]?.petTypes && index >= 0 && index < this[modelName].petTypes.length) {
                 this[modelName].petTypes.splice(index, 1);
             }
@@ -181,7 +181,7 @@ function petPolicyStateObject(modelName: string): any {
          * Add breed restriction to specific pet type
          */
         addBreedRestrictionToPetType(
-            this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties,
+            this: ReturnType<typeof petPolicyStateObject> & AlpineMagics,
             petTypeIndex: number,
             breed: string
         ) {
@@ -194,7 +194,7 @@ function petPolicyStateObject(modelName: string): any {
          * Remove breed restriction from specific pet type
          */
         removeBreedRestrictionFromPetType(
-            this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties,
+            this: ReturnType<typeof petPolicyStateObject> & AlpineMagics,
             petTypeIndex: number,
             breedIndex: number
         ) {
@@ -220,7 +220,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Reset the pet policy to default state
          */
-        resetPetPolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties) {
+        resetPetPolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics) {
             this[modelName] = ensurePetPolicyStructure(null);
             this.showBreedRestrictions = false;
             this.newBreedRestriction = '';
@@ -230,21 +230,21 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Get current policy data for form submission
          */
-        getPolicyData(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties): ExtendedPetPolicy {
+        getPolicyData(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics): ExtendedPetPolicy {
             return this[modelName] || ensurePetPolicyStructure(null);
         },
 
         /**
          * Set policy data (for external updates)
          */
-        setPolicyData(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties, data: ExtendedPetPolicy) {
+        setPolicyData(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, data: ExtendedPetPolicy) {
             this[modelName] = ensurePetPolicyStructure(data);
         },
 
         /**
          * Validate current policy
          */
-        validatePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties): boolean {
+        validatePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics): boolean {
             const policy = this[modelName];
             if(!policy) {
                 return true; // Empty policy is valid if not required
@@ -261,7 +261,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Get policy errors for display
          */
-        getPolicyErrors(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties): string[] {
+        getPolicyErrors(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics): string[] {
             const policy = this[modelName];
             const errors: string[] = [];
 
@@ -321,7 +321,7 @@ function petPolicyStateObject(modelName: string): any {
         /**
          * Get a formatted summary of the pet policy
          */
-        getPolicySummary(this: ReturnType<typeof petPolicyStateObject> & AlpineMagicProperties): string {
+        getPolicySummary(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics): string {
             const policy = this[modelName];
 
             if(!policy || !policy.allowed) {

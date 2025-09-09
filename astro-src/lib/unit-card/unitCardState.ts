@@ -1,5 +1,5 @@
 import type { UnitData, UnitTypeData, Amenity } from '../../types';
-import type { AlpineMagicProperties } from '../alpine';
+import type { AlpineMagics } from '../alpine-types';
 import type { InheritableField } from '../types/alpine-state';
 import { FieldInheritanceManager } from './fieldInheritance';
 import { UnitFormatters } from './unitFormatters';
@@ -41,13 +41,13 @@ export interface UnitCardState {
     apiService: ApiService | null
 
     // Methods
-    init(this: UnitCardState & AlpineMagicProperties): void
-    parseUnitData(this: UnitCardState & AlpineMagicProperties): void
-    parseUnitTypesData(this: UnitCardState & AlpineMagicProperties): void
+    init(this: UnitCardState & AlpineMagics): void
+    parseUnitData(this: UnitCardState & AlpineMagics): void
+    parseUnitTypesData(this: UnitCardState & AlpineMagics): void
     initializeUnitProperties(): void
     initializeSelectedUnitType(): void
     loadBuildingAmenities(): Promise<void>
-    setupWatchers(this: UnitCardState & AlpineMagicProperties): void
+    setupWatchers(this: UnitCardState & AlpineMagics): void
     isDirty(): boolean
     validateForm(): boolean
     clearFieldError(fieldName: string): void
@@ -77,7 +77,7 @@ export interface UnitCardState {
  */
 export function createUnitCardState() {
     const state = unitCardStateObject();
-    return state as typeof state & AlpineMagicProperties;
+    return state as typeof state & AlpineMagics;
 }
 
 function unitCardStateObject(): UnitCardState {
@@ -114,7 +114,7 @@ function unitCardStateObject(): UnitCardState {
         /**
          * Initialize the unit card state from HTML dataset
          */
-        init(this: UnitCardState & AlpineMagicProperties) {
+        init(this: UnitCardState & AlpineMagics) {
             // Initialize basic service instances
             this.fieldInheritance = new FieldInheritanceManager();
             this.formatters = new UnitFormatters();
@@ -147,7 +147,7 @@ function unitCardStateObject(): UnitCardState {
             this.setupWatchers();
         },
 
-        parseUnitData(this: UnitCardState & AlpineMagicProperties) {
+        parseUnitData(this: UnitCardState & AlpineMagics) {
             try {
                 const unitDataStr = this.$el?.dataset?.unit;
                 if(unitDataStr) {
@@ -158,7 +158,7 @@ function unitCardStateObject(): UnitCardState {
             }
         },
 
-        parseUnitTypesData(this: UnitCardState & AlpineMagicProperties) {
+        parseUnitTypesData(this: UnitCardState & AlpineMagics) {
             try {
                 const unitTypesStr = this.$el?.dataset?.unitTypes;
                 if(unitTypesStr) {
@@ -217,13 +217,13 @@ function unitCardStateObject(): UnitCardState {
             }
         },
 
-        setupWatchers(this: UnitCardState & AlpineMagicProperties) {
+        setupWatchers(this: UnitCardState & AlpineMagics) {
             // Watch for unit changes to trigger auto-save
             this.$watch('unit', () => {
                 if(this.isDirty()) {
                     this.saveUnit();
                 }
-            }, { deep: true });
+            });
 
             // Watch for section expansions
             this.$watch('expandedSections', (sections: typeof this.expandedSections) => {
@@ -232,7 +232,7 @@ function unitCardStateObject(): UnitCardState {
                         this.events.sectionToggled(section, expanded as boolean);
                     }
                 });
-            }, { deep: true });
+            });
         },
 
         /**

@@ -5,10 +5,22 @@
  * to ensure type safety across the application.
  */
 
-// Import official Alpine types - we'll define our own interfaces based on the runtime behavior
-// The @types/alpinejs package has complex namespace exports that are difficult to work with
+import type { Alpine } from 'alpinejs';
 
-// Business domain types (not Alpine-related)
+// Import Alpine magic properties from the official types
+export interface AlpineMagics {
+    $el: HTMLElement
+    $root: HTMLElement
+    $dispatch: (event: string, detail?: unknown) => void
+    $nextTick: (callback?: () => void) => Promise<void>
+    $watch: <T>(property: string, callback: (newValue: T, oldValue: T) => void) => void
+    $refs: Record<string, HTMLElement>
+    $data: Record<string, unknown>
+    $store: Record<string, unknown>
+    $id: (name: string, key?: number | string | null) => string
+}
+
+// Business domain types (simplified for component use)
 export interface Building {
     id: string
     name: string
@@ -37,31 +49,9 @@ export interface Amenity {
     [key: string]: unknown
 }
 
-// Alpine.js instance type (matches the global Alpine object)
-export interface AlpineInstance {
-    data: (name: string, data: () => unknown) => void
-    start: () => void
-    // Add other Alpine methods as needed
-}
-export type AlpineMagics<_T = Record<string, unknown>> = AlpineMagicProperties;
-
-// Define these locally since the Alpine namespace types are complex
-export interface AlpineMagicProperties {
-    $el: HTMLElement
-    $root: HTMLElement
-    $dispatch: (event: string, detail?: unknown) => void
-    $nextTick: (callback?: () => void) => Promise<void>
-    $watch: <T>(property: string, callback: (newValue: T, oldValue: T) => void) => void
-    $refs: Record<string, HTMLElement>
-    $data: Record<string, unknown>
-    $store: Record<string, unknown>
-}
-
-// Alpine component type that includes magic properties
-export type AlpineComponent<T = Record<string, unknown>> = T & AlpineMagicProperties;
-
-// Legacy alias for compatibility during transition
-export type AlpineComponentData = AlpineMagicProperties;
+// Alpine component type that includes magic properties with enhanced $id support
+// Custom type maintains compatibility while adding proper $id typing
+export type AlpineComponent<T = Record<string, unknown>> = T & AlpineMagics;
 
 // Component-specific data interfaces using official Alpine types
 export interface AddBuildingFormData {
@@ -175,4 +165,4 @@ export type LocationMapComponent = AlpineComponent<LocationMapData>;
 export type UnitTypeCardComponent = AlpineComponent<UnitTypeCardData>;
 
 // Registry function type
-export type AlpineComponentRegistryFunction = (Alpine: AlpineInstance) => void;
+export type AlpineComponentRegistryFunction = (Alpine: Alpine) => void;

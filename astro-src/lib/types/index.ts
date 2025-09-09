@@ -268,7 +268,7 @@ export type {
 
 // ===== RE-EXPORT BASE TYPES =====
 // Re-export commonly used types from other modules for convenience
-export type { AlpineMagicProperties, AlpineComponent } from '../alpine';
+export type { AlpineMagics, AlpineComponent } from '../alpine-types';
 export type {
     BuildingData,
     UnitData,
