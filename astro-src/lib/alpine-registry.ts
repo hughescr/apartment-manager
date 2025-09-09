@@ -11,6 +11,10 @@ import { createBuildingManagerState } from './building-manager/buildingManagerSt
 import { createBuildingsComponentState } from './buildings-component/buildingsComponentState';
 import { createBuildingsListState } from './buildings-list/buildingsListState';
 import { createModelAmenitiesManagerState } from './model-amenities-manager/modelAmenitiesManagerState';
+import { createUnitCardState } from './unit-card/unitCardState';
+import { createUnitTypeCardFactory } from './unit-type-card/factory';
+import { createUnitTypeFormFactory } from './unit-type-form/factory';
+import { createLocationMapFactory } from './location-map/factory';
 
 /**
  * Centralized Alpine component registration function
@@ -26,24 +30,26 @@ function registerAlpineComponents(Alpine: Alpine): void {
     Alpine.data('buildingsComponentData', createBuildingsComponentState);
     Alpine.data('buildingsListData', createBuildingsListState);
     Alpine.data('modelAmenitiesManagerData', createModelAmenitiesManagerState);
+    Alpine.data('unitCardData', createUnitCardState);
+    Alpine.data('unitTypeCardData', createUnitTypeCardFactory);
+    Alpine.data('unitTypeFormData', createUnitTypeFormFactory);
+    Alpine.data('locationMapData', createLocationMapFactory);
 
-    // Note: unitCardData is handled by component-specific implementation in unitCardState.ts
-    // locationMapData and unitTypeCardData take parameters so require special handling in components
     // toastController is handled separately in Toast.astro
 
     // eslint-disable-next-line no-console -- registration logging for debugging
     console.log('[alpine-registry] Alpine components registered:', {
         buildingStateData: 'building state management',
         petPolicyData: 'pet policy state',
-        unitTypeFormData: 'unit type form state (parameterized, in component)',
+        unitTypeFormData: 'unit type form state (now centralized with factory)',
         addBuildingFormData: 'add building form state',
         buildingManagerData: 'building manager state',
         buildingsComponentData: 'buildings component state',
         buildingsListData: 'buildings list state',
         modelAmenitiesManagerData: 'model amenities manager state',
-        unitCardData: 'unit card state (in unitCardState.ts)',
-        locationMapData: 'location map (parameterized, in component)',
-        unitTypeCardData: 'unit type card (parameterized, in component)',
+        unitCardData: 'unit card state (now centralized)',
+        locationMapData: 'location map (now centralized with factory)',
+        unitTypeCardData: 'unit type card (now centralized with factory)',
         toastController: 'toast controller (separate implementation)'
     });
 }

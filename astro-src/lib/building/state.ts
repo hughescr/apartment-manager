@@ -1456,15 +1456,6 @@ function buildingStateObject(): any {
         },
 
         async updateUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitId: string, updatedData: Partial<ExtendedUnitData>) {
-            // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
-            console.log('updateUnit called', {
-                unitId,
-                updatedData: JSON.stringify(updatedData, null, 2),
-                editingUnit: this.editingUnit ? JSON.stringify(this.editingUnit, null, 2) : null,
-                apiService: !!this.apiService,
-                building: !!this.building
-            });
-
             if(!this.apiService || !this.building || !this.editingUnit) {
                 // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
                 console.error('updateUnit: Missing required dependencies', {
@@ -1482,18 +1473,7 @@ function buildingStateObject(): any {
                     lastUpdated: new Date().toISOString()
                 };
 
-                // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
-                console.log('updateUnit: Prepared unit data for API call', {
-                    updatedUnit: JSON.stringify(updatedUnit, null, 2),
-                    buildingID: this.building.buildingID
-                });
-
                 const result = await this.apiService.updateUnit(this.building.buildingID, updatedUnit);
-
-                // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
-                console.log('updateUnit: API call result', {
-                    result: JSON.stringify(result, null, 2)
-                });
 
                 if(!result.success) {
                     throw new Error(result.error || 'Failed to update unit');
