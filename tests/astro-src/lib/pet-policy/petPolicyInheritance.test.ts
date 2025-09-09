@@ -462,7 +462,6 @@ function applyBasicPolicyMerging(merged: ExtendedPetPolicy, overridePolicy: Exte
     // Pet types: intersection (most restrictive)
     if(overridePolicy.types && overridePolicy.types.length > 0) {
         if(merged.types && merged.types.length > 0) {
-            // eslint-disable-next-line lodash/prefer-lodash-method -- TypeScript types work better with native filter
             merged.types = merged.types.filter(type => overridePolicy.types?.includes(type));
         } else {
             merged.types = [...overridePolicy.types];
@@ -557,7 +556,7 @@ function mergePetTypePolicy(
         deposit: override.deposit !== undefined
             ? Math.max(base.deposit || 0, override.deposit)
             : base.deposit,
-        // eslint-disable-next-line lodash/prefer-lodash-method -- TypeScript types work better with native filter
+
         breedRestrictions: [
             ...(base.breedRestrictions || []),
             ...(override.breedRestrictions || [])

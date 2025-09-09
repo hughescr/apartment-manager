@@ -1,5 +1,5 @@
-import type { PetPolicy } from '../../../src/types';
-import { PetType } from '../../../src/types';
+import type { PetPolicy } from '../../types';
+import { PetType } from '../../types';
 import type { AlpineMagicProperties } from '../alpine';
 
 /**

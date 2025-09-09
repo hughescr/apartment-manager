@@ -4,7 +4,7 @@
  */
 
 import type { BuildingData, UnitData, UnitTypeData, Amenity } from '../../types';
-import type { AlpineMagicProperties } from '../alpine';
+import type { AlpineMagicProperties } from '../alpine-types';
 
 // ===== BASE ALPINE STATE INTERFACES =====
 

@@ -532,7 +532,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Step 3: Verify data persisted
             expect(newMockState.unitTypes).toEqual([createdUnitType]);
             expect(UnitTypeCrud.getAllUnitTypes(newMockState.unitTypes)).toEqual([createdUnitType]);
-            expect(newMockState.unitTypes.find(ut => ut.modelID === 'persistent-model')).toEqual(createdUnitType);
+            expect(newMockState.unitTypes.find((ut: UnitTypeData) => ut.modelID === 'persistent-model')).toEqual(createdUnitType);
         });
     });
 

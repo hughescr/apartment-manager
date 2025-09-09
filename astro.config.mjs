@@ -6,7 +6,9 @@ import alpine from '@astrojs/alpinejs';
 // https://astro.build/config
 export default defineConfig({
     integrations: [
-        alpine()
+        alpine({
+            entrypoint: './astro-src/lib/alpine-registry.ts'
+        })
     ],
     vite: {
         plugins: [tailwind()],

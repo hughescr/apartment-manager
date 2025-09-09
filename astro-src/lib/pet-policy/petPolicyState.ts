@@ -1,4 +1,4 @@
-import { PetType } from '../../../src/types';
+import { PetType } from '../../types';
 import type { AlpineMagicProperties } from '../alpine';
 import type {
     ExtendedPetPolicy,
@@ -367,13 +367,5 @@ function petPolicyStateObject(modelName: string): any {
  * Global function for Alpine.js to create pet policy state
  */
 
-declare global {
-    interface Window {
-        createPetPolicyState: typeof createPetPolicyState
-    }
-}
-
-// Make the function available globally for Alpine.js
-if(typeof window !== 'undefined') {
-    window.createPetPolicyState = createPetPolicyState;
-}
+// Note: Global window declarations removed as part of centralized Alpine registration
+// createPetPolicyState is now registered via alpine-registry.ts

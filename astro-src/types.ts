@@ -8,12 +8,16 @@ export type {
     Building,
     Amenity,
     VacancyClass,
-    Deposit
-} from '../src/types';
+    Deposit,
+    PetPolicy,
+    PetTypePolicy
+} from '../src/types/index';
 
 export {
     PropertyType,
     UtilityType,
     FeeType,
+    PetType,
+    AmenityCategory,
     DayOfWeek
-} from '../src/types';
+} from '../src/types/index';

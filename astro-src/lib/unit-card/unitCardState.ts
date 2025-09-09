@@ -420,9 +420,19 @@ function unitCardStateObject(): UnitCardState {
     };
 }
 
-// Register with Alpine
+// Register with Alpine using hybrid approach (handles both cases)
 if(typeof window !== 'undefined') {
-    document.addEventListener('alpine:init', () => {
+    if(window.Alpine?.version) {
+        // Alpine already initialized, register immediately
         window.Alpine.data('unitCardData', createUnitCardState);
-    });
+        // eslint-disable-next-line no-console -- debugging component registration
+        console.log('[unitCardState] unitCardState registered (Alpine already initialized)');
+    } else {
+        // Alpine not yet initialized, wait for event
+        document.addEventListener('alpine:init', () => {
+            window.Alpine.data('unitCardData', createUnitCardState);
+            // eslint-disable-next-line no-console -- debugging component registration
+            console.log('[unitCardState] unitCardState registered (via alpine:init event)');
+        });
+    }
 }

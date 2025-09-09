@@ -27,7 +27,7 @@ import {
     isString,
     isNumber
 } from 'lodash';
-import { logger } from '@hughescr/logger';
+// import { logger } from '@hughescr/logger'; // Commented out - causes browser compatibility issues
 
 /**
  * Unit type validation utilities
@@ -239,7 +239,7 @@ export class UnitTypeCrud {
      * Remove a unit type by model ID
      */
     static removeUnitType(unitTypes: UnitTypeData[], modelID: string): UnitTypeData[] {
-        return filter(unitTypes, ut => ut.modelID !== modelID);
+        return filter(unitTypes, (ut: UnitTypeData) => ut.modelID !== modelID);
     }
 
     /**
@@ -260,7 +260,7 @@ export class UnitTypeCrud {
      * Get available unit types (with available count > 0)
      */
     static getAvailableUnitTypes(unitTypes: UnitTypeData[]): UnitTypeData[] {
-        return filter(unitTypes, ut => (ut.countAvailable ?? 0) > 0);
+        return filter(unitTypes, (ut: UnitTypeData) => (ut.countAvailable ?? 0) > 0);
     }
 
     /**
@@ -1456,7 +1456,8 @@ function buildingStateObject(): any {
         },
 
         async updateUnit(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unitId: string, updatedData: Partial<ExtendedUnitData>) {
-            logger.info('updateUnit called', {
+            // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
+            console.log('updateUnit called', {
                 unitId,
                 updatedData: JSON.stringify(updatedData, null, 2),
                 editingUnit: this.editingUnit ? JSON.stringify(this.editingUnit, null, 2) : null,
@@ -1465,7 +1466,8 @@ function buildingStateObject(): any {
             });
 
             if(!this.apiService || !this.building || !this.editingUnit) {
-                logger.error('updateUnit: Missing required dependencies', {
+                // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
+                console.error('updateUnit: Missing required dependencies', {
                     hasApiService: !!this.apiService,
                     hasBuilding: !!this.building,
                     hasEditingUnit: !!this.editingUnit
@@ -1480,14 +1482,16 @@ function buildingStateObject(): any {
                     lastUpdated: new Date().toISOString()
                 };
 
-                logger.info('updateUnit: Prepared unit data for API call', {
+                // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
+                console.log('updateUnit: Prepared unit data for API call', {
                     updatedUnit: JSON.stringify(updatedUnit, null, 2),
                     buildingID: this.building.buildingID
                 });
 
                 const result = await this.apiService.updateUnit(this.building.buildingID, updatedUnit);
 
-                logger.info('updateUnit: API call result', {
+                // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
+                console.log('updateUnit: API call result', {
                     result: JSON.stringify(result, null, 2)
                 });
 
@@ -1508,7 +1512,8 @@ function buildingStateObject(): any {
                     type: 'success'
                 });
             } catch(error) {
-                logger.error('updateUnit: Error occurred', {
+                // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
+                console.error('updateUnit: Error occurred', {
                     error,
                     unitId,
                     updatedData
@@ -2290,6 +2295,66 @@ function buildingStateObject(): any {
             return BuildingFormatters.getTabDisplayName(tabKey);
         },
 
+        /**
+         * Get the display value for a unit field, considering inheritance from unit type
+         */
+        // eslint-disable-next-line complexity -- Unit display value requires field-specific formatting
+        getUnitDisplayValue(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties, unit: ExtendedUnitData, fieldName: 'beds' | 'baths' | 'sqft' | 'rent' | 'maxOccupants' | 'perPersonRent' | 'deposit' | 'minLeaseTerm' | 'maxLeaseTerm') {
+            if(!this.inheritanceManager || !unit) {
+                return '—';
+            }
+
+            // Find the unit type for this unit
+            const unitType = this.unitTypes?.find((ut: UnitTypeData) => ut.modelID === unit.modelID) || null;
+
+            // Get the effective value using inheritance manager
+            const value = this.inheritanceManager.getEffectiveValue(unit, unitType, fieldName);
+
+            // Handle null/undefined values
+            if(value === null || value === undefined || value === '') {
+                return '—';
+            }
+
+            // Format specific field types
+            switch(fieldName) {
+                case 'sqft':
+                    if(Array.isArray(value)) {
+                        // Handle range values like [min, max]
+                        const [min, max] = value;
+                        if(min === max) {
+                            return min?.toString() || '—';
+                        }
+                        return `${min || '?'}–${max || '?'}`;
+                    }
+                    return value.toString();
+
+                case 'rent':
+                    if(Array.isArray(value)) {
+                        // Handle range values like [min, max]
+                        const [min, max] = value;
+                        if(min === max) {
+                            return min || 0;
+                        }
+                        return min || 0; // For rent display, show minimum
+                    }
+                    return value || 0;
+
+                case 'beds':
+                case 'baths':
+                case 'maxOccupants':
+                case 'minLeaseTerm':
+                case 'maxLeaseTerm':
+                    return value.toString();
+
+                case 'perPersonRent':
+                case 'deposit':
+                    return value || 0;
+
+                default:
+                    return value?.toString() || '—';
+            }
+        },
+
         // Rent Special Methods
         addRentSpecial(this: ReturnType<typeof buildingStateObject> & AlpineMagicProperties) {
             if(!this.building) {
@@ -2818,7 +2883,7 @@ export class UnitTypeManagement {
             }
 
             // Find the existing unit type
-            const existingUnitType = this.state.unitTypes.find(ut => ut.modelID === modelID);
+            const existingUnitType = this.state.unitTypes.find((ut: UnitTypeData) => ut.modelID === modelID);
             if(!existingUnitType) {
                 this.state.$dispatch('toast:show', {
                     message: 'Unit type not found',
@@ -2879,7 +2944,7 @@ export class UnitTypeManagement {
             }
 
             // Check if unit type exists locally (but still proceed with API call)
-            const existingUnitType = this.state.unitTypes.find(ut => ut.modelID === modelID);
+            const existingUnitType = this.state.unitTypes.find((ut: UnitTypeData) => ut.modelID === modelID);
             const unitTypeExists = !!existingUnitType;
 
             // Call API if available
