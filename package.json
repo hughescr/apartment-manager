@@ -10,15 +10,13 @@
     "claude": "tmux -CC new -A -n Claude -s apartment-manager bunx --bun @anthropic-ai/claude-code@latest --mcp-config ~/.claude/mcp.json",
     "dev": "astro dev",
     "dev-console": "sh -c 'if [ -z \"$AWS_ACCESS_KEY_ID\" ]; then op run --env-file=.env.op -- bunx sst dev --mode=mono \"$@\"; else bunx sst dev --mode=mono  \"$@\"; fi' _",
-    "full-test": "eslint --fix && tsc && astro check && bun test:all",
+    "full-test": "eslint --fix && tsc && astro check && bun test",
     "gemini": "tmux -CC new -A -n Gemini -s apartment-manager bunx @google/gemini-cli@latest",
     "lint": "eslint --fix",
     "package-check": "bunx npm-check@latest -i bun:test",
     "sst-dev": "if [ -z \"$AWS_ACCESS_KEY_ID\" ]; then op run --env-file=.env.op -- bunx sst dev; else bunx sst dev; fi",
     "sst-diagnostics": "sh -c 'if [ -z \"$AWS_ACCESS_KEY_ID\" ]; then op run --env-file=.env.op -- bunx sst diagnostic --print-logs \"$@\"; else bunx sst diagnostics --print-logs \"$@\"; fi' _",
-    "test": "bun test $(ls -d tests/*/ | grep -v browser)",
-    "test:all": "bun test && bun test:browser",
-    "test:browser": "bun test tests/browser/ --timeout 30000",
+    "test": "bun test",
     "postversion": "git commit -m \"Bump package version to $npm_package_version\" package.json; git flow release start $npm_package_version; git flow release finish -m $npm_package_version $npm_package_version; git checkout develop; git merge master"
   },
   "dependencies": {
