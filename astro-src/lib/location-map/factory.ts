@@ -71,6 +71,72 @@ function extractConfig(element: HTMLElement | undefined) {
  * Create helper methods for property access
  */
 function createPropertyHelpers(alpineContext: AlpineContext) {
+    const collectDataContexts = (): Record<string, unknown>[] => {
+        const contexts: Record<string, unknown>[] = [];
+        const visited = new Set<Record<string, unknown>>();
+
+        const pushContext = (context: unknown) => {
+            if(context && typeof context === 'object') {
+                const record = context as Record<string, unknown>;
+                if(!visited.has(record)) {
+                    visited.add(record);
+                    contexts.push(record);
+                }
+            }
+        };
+
+        pushContext(alpineContext as Record<string, unknown>);
+
+        let element: HTMLElement | null = alpineContext.$el || null;
+        while(element) {
+            const stack = (element as unknown as { _x_dataStack?: unknown[] })._x_dataStack;
+            if(Array.isArray(stack)) {
+                for(let i = stack.length - 1; i >= 0; i--) {
+                    pushContext(stack[i]);
+                }
+            }
+            element = element.parentElement;
+        }
+
+        return contexts;
+    };
+
+    const resolvePath = (context: Record<string, unknown>, parts: string[]) => {
+        let current: unknown = context;
+
+        for(let index = 0; index < parts.length; index++) {
+            const part = parts[index];
+            if(current == null || typeof current !== 'object' || !(part in current)) {
+                return null;
+            }
+
+            if(index === parts.length - 1) {
+                return {
+                    container: current as Record<string, unknown>,
+                    key: part,
+                    value: (current as Record<string, unknown>)[part]
+                };
+            }
+
+            current = (current as Record<string, unknown>)[part];
+        }
+
+        return null;
+    };
+
+    const resolveContainer = (context: Record<string, unknown>, parts: string[]) => {
+        let current: unknown = context;
+
+        for(const part of parts) {
+            if(current == null || typeof current !== 'object' || !(part in current)) {
+                return null;
+            }
+            current = (current as Record<string, unknown>)[part];
+        }
+
+        return current != null && typeof current === 'object' ? current as Record<string, unknown> : null;
+    };
+
     return {
         // Helper function to get nested property value
         getNestedProperty(path: string): unknown {
@@ -78,14 +144,16 @@ function createPropertyHelpers(alpineContext: AlpineContext) {
                 return undefined;
             }
             const parts = path.split('.');
-            let current: Record<string, unknown> = alpineContext as Record<string, unknown>;
-            for(const part of parts) {
-                if(current == null) {
-                    return undefined;
+            const contexts = collectDataContexts();
+
+            for(const context of contexts) {
+                const resolved = resolvePath(context, parts);
+                if(resolved) {
+                    return resolved.value;
                 }
-                current = current[part] as Record<string, unknown>;
             }
-            return current;
+
+            return undefined;
         },
 
         // Helper function to set nested property value
@@ -94,15 +162,34 @@ function createPropertyHelpers(alpineContext: AlpineContext) {
                 return;
             }
             const parts = path.split('.');
-            const lastPart = parts[parts.length - 1];
-            const initialParts = parts.slice(0, -1);
+            const lastPart = parts.pop();
             if(!lastPart) {
                 return;
             }
 
-            let current: Record<string, unknown> = alpineContext as Record<string, unknown>;
-            for(const part of initialParts) {
-                if(current[part] == null) {
+            const contexts = collectDataContexts();
+            let updated = false;
+
+            for(const context of contexts) {
+                const container = resolveContainer(context, parts);
+                if(container) {
+                    container[lastPart] = value;
+                    updated = true;
+                }
+            }
+
+            if(updated) {
+                return;
+            }
+
+            const fallbackContext = contexts[0];
+            if(!fallbackContext) {
+                return;
+            }
+
+            let current: Record<string, unknown> = fallbackContext;
+            for(const part of parts) {
+                if(current[part] == null || typeof current[part] !== 'object') {
                     current[part] = {};
                 }
                 current = current[part] as Record<string, unknown>;
