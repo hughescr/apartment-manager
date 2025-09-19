@@ -84,6 +84,19 @@ export class FieldInheritanceManager {
             return unitValue;
         }
 
+        if(fieldName === 'rent' && unitType) {
+            const hasMinRent = unitType.minRent !== undefined && unitType.minRent !== null;
+            const hasMaxRent = unitType.maxRent !== undefined && unitType.maxRent !== null;
+
+            if(hasMinRent) {
+                return unitType.minRent as number;
+            }
+
+            if(hasMaxRent) {
+                return unitType.maxRent as number;
+            }
+        }
+
         return this.getInheritedValue(unitType, fieldName);
     }
 

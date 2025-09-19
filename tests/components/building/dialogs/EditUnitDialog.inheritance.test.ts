@@ -49,6 +49,14 @@ const mockInheritanceManager = {
         if(unitValue !== null && unitValue !== undefined && unitValue !== '') {
             return unitValue;
         }
+        if(field === 'rent' && unitType) {
+            if(unitType.minRent !== null && unitType.minRent !== undefined) {
+                return unitType.minRent;
+            }
+            if(unitType.maxRent !== null && unitType.maxRent !== undefined) {
+                return unitType.maxRent;
+            }
+        }
         return mockInheritanceManager.getInheritedValue(unitType, field);
     }
 };
@@ -411,7 +419,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             const effectiveValue = mockInheritanceManager.getEffectiveValue(testUnit, mockUnitTypes[0], 'rent');
 
             expect(isInherited).toBe(true);
-            expect(effectiveValue).toBe('1500 - 1800'); // Inherits range from unit type
+            expect(effectiveValue).toBe(1500); // Inherits minimum rent from unit type
         });
 
         it('should handle clearing already inherited fields gracefully', () => {
@@ -535,10 +543,10 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
 
             expect(currentBeds).toBe(1);
             expect(newBeds).toBe(2);
-            expect(currentRent).toBe('1500 - 1800');
+            expect(currentRent).toBe(1500);
             expect(newRent).toBe(2000);
 
-            // Changes would be: beds: 1 → 2, rent: '1500 - 1800' → 2000
+            // Changes would be: beds: 1 → 2, rent: 1500 → 2000
         });
 
         it('should not show changes for explicit unit values', () => {

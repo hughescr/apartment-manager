@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'bun:test';
 import { generateMITSFeed } from '../../src/mits/generator';
 import { inheritanceResolver } from '../../src/mappers/inheritance-resolver';
 import { FieldInheritanceManager, type FieldName } from '../../astro-src/lib/unit-card/fieldInheritance';
-import { map, isEqual, pick, forEach, find, filter, chain, isString, isNumber } from 'lodash';
+import { map, isEqual, pick, forEach, find, filter, chain, isString } from 'lodash';
 import type { BuildingData, UnitData, UnitTypeData } from '../../src/types';
 
 describe('Inheritance System Consistency Tests', () => {
@@ -204,7 +204,7 @@ describe('Inheritance System Consistency Tests', () => {
                     expect(resolvedValue).toBeUndefined();
                 }
             } else {
-                // Different min/max - effective might be range, resolved uses min
+                // Different min/max - resolved uses min
                 if(unitType[minField as keyof UnitTypeData] !== undefined) {
                     const expectedValue = unitType[minField as keyof UnitTypeData];
                     if(expectedValue !== undefined) {
@@ -215,7 +215,12 @@ describe('Inheritance System Consistency Tests', () => {
                 } else {
                     expect(resolvedValue).toBeUndefined();
                 }
-                expect(effectiveValueByManager).toBe(`${unitType[minField as keyof UnitTypeData]} - ${unitType[maxField as keyof UnitTypeData]}`);
+                if(field === 'rent') {
+                    const expectedEffective = unitType[minField as keyof UnitTypeData] ?? unitType[maxField as keyof UnitTypeData];
+                    expect(effectiveValueByManager).toBe(expectedEffective);
+                } else {
+                    expect(effectiveValueByManager).toBe(`${unitType[minField as keyof UnitTypeData]} - ${unitType[maxField as keyof UnitTypeData]}`);
+                }
             }
         };
 
@@ -609,15 +614,24 @@ describe('Inheritance System Consistency Tests', () => {
                         if(uiResult.inherited) {
                             // UI shows as inherited - backend should use unit type value
                             if(unitType) {
-                                if(field === 'sqft' || field === 'rent') {
-                                    // Range fields: backend uses min value, UI might show range string
-                                    const minField = field === 'sqft' ? 'minSqft' : 'minRent';
-                                    if(unitType[minField as keyof UnitTypeData] !== undefined) {
-                                        const expectedValue = unitType[minField as keyof UnitTypeData];
-                                        if(expectedValue !== undefined) {
+                                if(field === 'rent') {
+                                    const expectedValue = unitType.minRent ?? unitType.maxRent;
+                                    if(expectedValue !== undefined) {
+                                        expect(uiResult.effective).toBe(expectedValue);
+                                        expect(backendValue).toBe(expectedValue);
+                                    } else {
+                                        expect(uiResult.effective === null || uiResult.effective === undefined).toBe(true);
+                                        expect(backendValue).toBeUndefined();
+                                    }
+                                } else if(field === 'sqft') {
+                                    // Range field: backend uses min value, UI may show range string
+                                    const expectedValue = unitType.minSqft ?? unitType.maxSqft;
+                                    if(expectedValue !== undefined) {
+                                        if(isString(uiResult.effective)) {
                                             expect(backendValue).toBe(expectedValue);
                                         } else {
-                                            expect(backendValue).toBeUndefined();
+                                            expect(uiResult.effective).toBe(expectedValue);
+                                            expect(backendValue).toBe(expectedValue);
                                         }
                                     } else {
                                         expect(backendValue).toBeUndefined();
@@ -625,15 +639,10 @@ describe('Inheritance System Consistency Tests', () => {
                                 } else {
                                     // Simple fields: should match exactly or be the inherited value
                                     const typeValue = unitType[field as keyof UnitTypeData];
-                                    if(isString(uiResult.effective) && isNumber(typeValue)) {
-                                        // UI might show range string, backend uses number
+                                    if(typeValue !== undefined) {
                                         expect(backendValue).toBe(typeValue);
                                     } else {
-                                        if(typeValue !== undefined) {
-                                            expect(backendValue).toBe(typeValue);
-                                        } else {
-                                            expect(backendValue).toBeUndefined();
-                                        }
+                                        expect(backendValue).toBeUndefined();
                                     }
                                 }
                             }

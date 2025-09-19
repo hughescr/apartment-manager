@@ -204,12 +204,12 @@ describe('FieldInheritanceManager', () => {
             expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'beds')).toBe(2);
         });
 
-        it('should return inherited range value when unit field is empty', () => {
+        it('should return inherited minimum rent when unit field is empty', () => {
             mockUnit.rent = null as unknown as number;
             mockUnitType.minRent = 1500;
             mockUnitType.maxRent = 1800;
 
-            expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'rent')).toBe('1500 - 1800');
+            expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'rent')).toBe(1500);
         });
 
         it('should return null when unit is empty and no inheritance available', () => {
@@ -371,7 +371,7 @@ describe('FieldInheritanceManager', () => {
             expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'beds')).toBe(3);
             expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'baths')).toBe(1.5);
             expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'sqft')).toBe(1200);
-            expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'rent')).toBe('1500 - 1800');
+            expect(manager.getEffectiveValue(mockUnit, mockUnitType, 'rent')).toBe(1500);
         });
     });
 });

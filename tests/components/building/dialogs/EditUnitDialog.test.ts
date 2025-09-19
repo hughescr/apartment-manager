@@ -219,7 +219,7 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             expect(inheritanceManager.getEffectiveValue(mockUnit, selectedUnitType, 'beds')).toBe(1);
             expect(inheritanceManager.getEffectiveValue(mockUnit, selectedUnitType, 'baths')).toBe(1);
             expect(inheritanceManager.getEffectiveValue(mockUnit, selectedUnitType, 'sqft')).toBe('750 - 850');
-            expect(inheritanceManager.getEffectiveValue(mockUnit, selectedUnitType, 'rent')).toBe('2800 - 3200');
+            expect(inheritanceManager.getEffectiveValue(mockUnit, selectedUnitType, 'rent')).toBe(2800);
         });
 
         it('should handle mixed scenario with some overrides and some inheritance', () => {
@@ -235,7 +235,7 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             expect(inheritanceManager.getEffectiveValue(partialOverrideUnit, selectedUnitType, 'beds')).toBe(3);
             expect(inheritanceManager.getEffectiveValue(partialOverrideUnit, selectedUnitType, 'baths')).toBe(2);
             expect(inheritanceManager.getEffectiveValue(partialOverrideUnit, selectedUnitType, 'sqft')).toBe(1500);
-            expect(inheritanceManager.getEffectiveValue(partialOverrideUnit, selectedUnitType, 'rent')).toBe('3500 - 4000');
+            expect(inheritanceManager.getEffectiveValue(partialOverrideUnit, selectedUnitType, 'rent')).toBe(3500);
         });
     });
 
@@ -519,12 +519,29 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                     const inheritableFields: FieldName[] = ['beds', 'baths', 'sqft', 'rent'];
                     const changes: { field: string, from: string, to: unknown }[] = [];
 
+                    const normalizeRentValue = (value: unknown): number | null => {
+                        if(typeof value === 'number') {
+                            return value;
+                        }
+                        if(typeof value === 'string') {
+                            const match = value.match(/-?\d+(?:\.\d+)?/);
+                            if(match) {
+                                const parsed = Number(match[0]);
+                                return Number.isNaN(parsed) ? null : parsed;
+                            }
+                        }
+                        return null;
+                    };
+
                     forEach(inheritableFields, (field) => {
                         const currentValue = this.inheritanceManager.getEffectiveValue(this.editUnit, this.selectedUnitType, field);
                         const newInheritedValue = this.inheritanceManager.getInheritedValue(newUnitType, field);
                         const willInherit = (this.editUnit[field as keyof ExtendedUnitData] === null || this.editUnit[field as keyof ExtendedUnitData] === undefined || this.editUnit[field as keyof ExtendedUnitData] === '');
 
-                        if(willInherit && newInheritedValue !== null && currentValue !== newInheritedValue) {
+                        const normalizedCurrentValue = field === 'rent' ? normalizeRentValue(currentValue) : currentValue;
+                        const normalizedNewValue = field === 'rent' ? normalizeRentValue(newInheritedValue) : newInheritedValue;
+
+                        if(willInherit && newInheritedValue !== null && normalizedCurrentValue !== normalizedNewValue) {
                             changes.push({
                                 field: field,
                                 from: currentValue?.toString() || 'Not set',

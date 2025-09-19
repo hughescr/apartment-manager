@@ -1674,12 +1674,29 @@ function buildingStateObject(): any {
             const inheritableFields = ['beds', 'baths', 'sqft', 'rent'];
             const changes: { field: string, from: string | number, to: string | number }[] = [];
 
+            const normalizeRentValue = (value: unknown): number | null => {
+                if(typeof value === 'number') {
+                    return value;
+                }
+                if(typeof value === 'string') {
+                    const match = value.match(/-?\d+(?:\.\d+)?/);
+                    if(match) {
+                        const parsed = Number(match[0]);
+                        return Number.isNaN(parsed) ? null : parsed;
+                    }
+                }
+                return null;
+            };
+
             inheritableFields.forEach((field) => {
                 const currentValue = this.getEditEffectiveValue(field);
                 const newInheritedValue = this.inheritanceManager.getInheritedValue(newUnitType, field);
                 const willInherit = (this.editUnit[field] === null || this.editUnit[field] === undefined || this.editUnit[field] === '');
 
-                if(willInherit && newInheritedValue !== null && currentValue !== newInheritedValue) {
+                const normalizedCurrentValue = field === 'rent' ? normalizeRentValue(currentValue) : currentValue;
+                const normalizedNewValue = field === 'rent' ? normalizeRentValue(newInheritedValue) : newInheritedValue;
+
+                if(willInherit && newInheritedValue !== null && normalizedCurrentValue !== normalizedNewValue) {
                     changes.push({
                         field: field,
                         from: currentValue || 'Not set',
