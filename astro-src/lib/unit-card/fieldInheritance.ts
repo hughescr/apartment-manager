@@ -1,26 +1,26 @@
 import { chain, isArray, isNumber, some } from 'lodash';
 import type { UnitData, UnitTypeData } from '../../types';
 
-export type FieldName = 'beds' | 'baths' | 'sqft' | 'rent' | 'maxOccupants' | 'perPersonRent' |
-  'deposit' | 'minLeaseTerm' | 'maxLeaseTerm';
+export type FieldName = 'beds' | 'baths' | 'sqft' | 'rent' | 'maxOccupants' | 'perPersonRent'
+  | 'deposit' | 'minLeaseTerm' | 'maxLeaseTerm';
 
 export interface Deposit {
-    amount: number | null
-    refundable: boolean
+    amount:                   number | null
+    refundable:               boolean
     partialRefundPercentage?: number
 }
 
 export class FieldInheritanceManager {
     private readonly modelFieldMap: Record<FieldName, string | string[]> = {
-        beds: 'beds',
-        baths: 'baths',
-        sqft: ['minSqft', 'maxSqft'],
-        rent: ['minRent', 'maxRent'],
-        maxOccupants: 'maxOccupants',
+        beds:          'beds',
+        baths:         'baths',
+        sqft:          ['minSqft', 'maxSqft'],
+        rent:          ['minRent', 'maxRent'],
+        maxOccupants:  'maxOccupants',
         perPersonRent: 'perPersonRent',
-        deposit: 'deposit',
-        minLeaseTerm: 'minLeaseTerm',
-        maxLeaseTerm: 'maxLeaseTerm'
+        deposit:       'deposit',
+        minLeaseTerm:  'minLeaseTerm',
+        maxLeaseTerm:  'maxLeaseTerm'
     };
 
     isInherited(unit: UnitData, unitType: UnitTypeData | null, fieldName: FieldName): boolean {
@@ -38,8 +38,8 @@ export class FieldInheritanceManager {
 
         if(isArray(modelField)) {
             return isEmptyValue && some(modelField, f =>
-                unitType[f as keyof UnitTypeData] !== null &&
-                unitType[f as keyof UnitTypeData] !== undefined
+                unitType[f as keyof UnitTypeData] !== null
+                && unitType[f as keyof UnitTypeData] !== undefined
             );
         } else {
             const typeValue = unitType[modelField as keyof UnitTypeData];
@@ -89,11 +89,11 @@ export class FieldInheritanceManager {
             const hasMaxRent = unitType.maxRent !== undefined && unitType.maxRent !== null;
 
             if(hasMinRent) {
-                return unitType.minRent as number;
+                return unitType.minRent!;
             }
 
             if(hasMaxRent) {
-                return unitType.maxRent as number;
+                return unitType.maxRent!;
             }
         }
 

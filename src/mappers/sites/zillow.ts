@@ -32,8 +32,8 @@ import {
 
 /** Enhanced deposit structure with refundability and partial refund options */
 interface Deposit {
-    amount: number
-    refundable?: boolean
+    amount:                   number
+    refundable?:              boolean
     partialRefundPercentage?: number
 }
 
@@ -48,7 +48,7 @@ function getDepositAmount(deposit: number | Deposit | undefined): number | undef
         return deposit;
     }
     if(isObject(deposit) && 'amount' in deposit) {
-        return (deposit as Deposit).amount;
+        return (deposit).amount;
     }
     return undefined;
 }
@@ -98,23 +98,23 @@ export class ZillowMapper implements SiteMapper {
 
         return {
             externalId: building.buildingID,
-            name: building.buildingID,
-            address: {
+            name:       building.buildingID,
+            address:    {
                 street: building.street || '',
-                city: building.city || '',
-                state: building.state || '',
-                zip: building.zip || ''
+                city:   building.city || '',
+                state:  building.state || '',
+                zip:    building.zip || ''
             },
             propertyType: building.propertyType
                 ? propertyTypeTransformer(building.propertyType)
                 : 'Apartment',
-            yearBuilt: building.yearBuilt,
-            totalUnits: building.totalUnits,
+            yearBuilt:   building.yearBuilt,
+            totalUnits:  building.totalUnits,
             description: building.propertyDescription || building.description,
-            photos: transformPhotoUrls(building.photos, this.siteId),
-            leaseTerms: {
-                minMonths: building.leaseLength,
-                maxMonths: building.leaseLength,
+            photos:      transformPhotoUrls(building.photos, this.siteId),
+            leaseTerms:  {
+                minMonths:     building.leaseLength,
+                maxMonths:     building.leaseLength,
                 defaultMonths: building.leaseLength || 12
             },
             fees: [
@@ -122,16 +122,16 @@ export class ZillowMapper implements SiteMapper {
                 ...transformFees(monthly, this.siteId),
                 ...transformFees(deposits, this.siteId)
             ],
-            utilities: zipObject(includedUtilities, fill(Array(includedUtilities.length), true)),
-            parking: this.transformParking(building),
-            petPolicy: this.transformPetPolicy(building),
-            amenities: transformAmenities(building.propertyAmenities, this.siteId),
-            contactInfo: building.contactInfo,
-            tourOptions: building.tourAvailability,
-            applicationFee: building.applicationFee,
-            rentSpecials: building.rentSpecials,
+            utilities:          zipObject(includedUtilities, fill(Array(includedUtilities.length), true)),
+            parking:            this.transformParking(building),
+            petPolicy:          this.transformPetPolicy(building),
+            amenities:          transformAmenities(building.propertyAmenities, this.siteId),
+            contactInfo:        building.contactInfo,
+            tourOptions:        building.tourAvailability,
+            applicationFee:     building.applicationFee,
+            rentSpecials:       building.rentSpecials,
             incomeRestrictions: building.incomeRestrictions,
-            screeningCriteria: building.screeningCriteria
+            screeningCriteria:  building.screeningCriteria
         };
     }
 
@@ -150,10 +150,10 @@ export class ZillowMapper implements SiteMapper {
 
         return {
             externalId: unitType.modelID,
-            modelName: unitType.modelName,
-            beds: unitType.beds,
-            baths: unitType.baths,
-            sqft: {
+            modelName:  unitType.modelName,
+            beds:       unitType.beds,
+            baths:      unitType.baths,
+            sqft:       {
                 min: unitType.minSqft,
                 max: unitType.maxSqft
             },
@@ -161,12 +161,12 @@ export class ZillowMapper implements SiteMapper {
                 min: unitType.minRent,
                 max: unitType.maxRent
             },
-            deposit: getDepositAmount(unitType.deposit),
-            maxOccupants: unitType.maxOccupants,
+            deposit:        getDepositAmount(unitType.deposit),
+            maxOccupants:   unitType.maxOccupants,
             countAvailable: unitType.countAvailable,
-            dateAvailable: dateFormatter(unitType.dateAvailable),
-            amenities: transformAmenities(unitType.modelAmenities, this.siteId),
-            photos: []
+            dateAvailable:  dateFormatter(unitType.dateAvailable),
+            amenities:      transformAmenities(unitType.modelAmenities, this.siteId),
+            photos:         []
         };
     }
 
@@ -188,23 +188,23 @@ export class ZillowMapper implements SiteMapper {
         const fullDescription = this.getCombinedDescription(building, flattened);
 
         return {
-            externalId: unit.unitID,
-            unitNumber: unit.unitNumber || unit.unitID,
-            modelName: unitType?.modelName, // For internal tracking only
-            beds: flattened.beds || 0,
-            baths: flattened.baths || 0,
-            sqft: flattened.sqft,
-            rent: flattened.rent || 0,
-            deposit: getDepositAmount(flattened.deposit),
+            externalId:    unit.unitID,
+            unitNumber:    unit.unitNumber || unit.unitID,
+            modelName:     unitType?.modelName, // For internal tracking only
+            beds:          flattened.beds || 0,
+            baths:         flattened.baths || 0,
+            sqft:          flattened.sqft,
+            rent:          flattened.rent || 0,
+            deposit:       getDepositAmount(flattened.deposit),
             dateAvailable: dateFormatter(flattened.availableDate),
-            description: fullDescription || `${flattened.beds} bed, ${flattened.baths} bath unit`,
-            maxOccupants: flattened.maxOccupants,
-            leaseTerms: {
+            description:   fullDescription || `${flattened.beds} bed, ${flattened.baths} bath unit`,
+            maxOccupants:  flattened.maxOccupants,
+            leaseTerms:    {
                 minMonths: flattened.minLeaseTerm || building.leaseLength,
                 maxMonths: flattened.maxLeaseTerm || building.leaseLength
             },
-            amenities: transformAmenities(allAmenities, this.siteId),
-            photos: transformPhotoUrls(allPhotos, this.siteId),
+            amenities:   transformAmenities(allAmenities, this.siteId),
+            photos:      transformPhotoUrls(allPhotos, this.siteId),
             rentSpecial: flattened.unitRentSpecial || head(building.rentSpecials)
         };
     }
@@ -328,9 +328,9 @@ export class ZillowMapper implements SiteMapper {
      * @private
      */
     private transformParking(building: BuildingData): {
-        type: string
-        included: boolean
-        fee?: number
+        type:         string
+        included:     boolean
+        fee?:         number
         description?: string
     }[] {
         if(!building.parkingOptions || building.parkingOptions.length === 0) {
@@ -356,9 +356,9 @@ export class ZillowMapper implements SiteMapper {
         );
 
         return map(sortedOptions, option => ({
-            type: parkingTransformer(option.type),
-            included: option.included,
-            fee: option.fee,
+            type:        parkingTransformer(option.type),
+            included:    option.included,
+            fee:         option.fee,
             description: option.description
         }));
     }
@@ -368,12 +368,12 @@ export class ZillowMapper implements SiteMapper {
      * @private
      */
     private transformPetPolicy(building: BuildingData): {
-        allowed: boolean
-        types?: string[]
-        maxCount?: number
-        weightLimit?: number
-        deposit?: number
-        monthlyFee?: number
+        allowed:       boolean
+        types?:        string[]
+        maxCount?:     number
+        weightLimit?:  number
+        deposit?:      number
+        monthlyFee?:   number
         restrictions?: string
     } | undefined {
         if(!building.petPolicies) {
@@ -384,7 +384,7 @@ export class ZillowMapper implements SiteMapper {
 
         if(!policy.allowed) {
             return {
-                allowed: false,
+                allowed:      false,
                 restrictions: 'No pets allowed'
             };
         }
@@ -398,12 +398,12 @@ export class ZillowMapper implements SiteMapper {
         const totalPetFees = (policy.deposit || 0) + (policy.oneTimeFee || 0);
 
         return {
-            allowed: true,
-            types: policy.types ? map(policy.types, (type: PetType) => petTransformer(type)) : undefined,
-            maxCount: policy.maxCount,
-            weightLimit: policy.weightLimit,
-            deposit: totalPetFees > 0 ? totalPetFees : undefined,
-            monthlyFee: policy.monthlyFee,
+            allowed:      true,
+            types:        policy.types ? map(policy.types, (type: PetType) => petTransformer(type)) : undefined,
+            maxCount:     policy.maxCount,
+            weightLimit:  policy.weightLimit,
+            deposit:      totalPetFees > 0 ? totalPetFees : undefined,
+            monthlyFee:   policy.monthlyFee,
             restrictions: this.formatPetRestrictions(policy)
         };
     }

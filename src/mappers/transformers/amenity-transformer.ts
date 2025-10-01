@@ -10,36 +10,36 @@ import { createEnumTransformer } from './enum-transformer.js';
  */
 const amenityNameMappings: Record<string, Record<string, string>> = {
     apartments_com: {
-        'Air Conditioning': 'A/C',
-        Dishwasher: 'Dishwasher',
-        'Hardwood Floors': 'Wood Floors',
+        'Air Conditioning':     'A/C',
+        Dishwasher:             'Dishwasher',
+        'Hardwood Floors':      'Wood Floors',
         'In-Unit Washer/Dryer': 'Washer/Dryer In Unit',
         'Washer/Dryer Hookups': 'Washer/Dryer Hookup',
-        Balcony: 'Balcony',
-        Patio: 'Patio',
-        'Swimming Pool': 'Pool',
-        'Fitness Center': 'Gym',
-        'Parking Garage': 'Garage Parking',
-        'Pet Friendly': 'Pet Friendly',
-        Elevator: 'Elevator',
-        Doorman: 'Doorman',
-        Concierge: 'Concierge Service'
+        Balcony:                'Balcony',
+        Patio:                  'Patio',
+        'Swimming Pool':        'Pool',
+        'Fitness Center':       'Gym',
+        'Parking Garage':       'Garage Parking',
+        'Pet Friendly':         'Pet Friendly',
+        Elevator:               'Elevator',
+        Doorman:                'Doorman',
+        Concierge:              'Concierge Service'
     },
     zillow: {
-        'Air Conditioning': 'Air conditioning',
-        Dishwasher: 'Dishwasher',
-        'Hardwood Floors': 'Hardwood floors',
+        'Air Conditioning':     'Air conditioning',
+        Dishwasher:             'Dishwasher',
+        'Hardwood Floors':      'Hardwood floors',
         'In-Unit Washer/Dryer': 'In unit laundry',
         'Washer/Dryer Hookups': 'Laundry hookups',
-        Balcony: 'Balcony/deck/patio',
-        Patio: 'Balcony/deck/patio',
-        'Swimming Pool': 'Pool',
-        'Fitness Center': 'Fitness center',
-        'Parking Garage': 'Covered parking',
-        'Pet Friendly': 'Pets allowed',
-        Elevator: 'Elevator',
-        Doorman: 'Doorman',
-        Concierge: 'Concierge'
+        Balcony:                'Balcony/deck/patio',
+        Patio:                  'Balcony/deck/patio',
+        'Swimming Pool':        'Pool',
+        'Fitness Center':       'Fitness center',
+        'Parking Garage':       'Covered parking',
+        'Pet Friendly':         'Pets allowed',
+        Elevator:               'Elevator',
+        Doorman:                'Doorman',
+        Concierge:              'Concierge'
     }
 };
 
@@ -106,7 +106,7 @@ export function transformAmenities(
     return chain(filtered)
         .filter(amenity => amenity && isObject(amenity) && isString(amenity.name))
         .map(amenity => ({
-            name: transformer(amenity.name),
+            name:     transformer(amenity.name),
             category: categoryTransformer(amenity.category) || 'other'
         }))
         .value();
@@ -124,8 +124,8 @@ export function groupAmenitiesByCategory(
 
     // Ensure all categories are present
     return {
-        [AmenityCategory.UNIT]: grouped[AmenityCategory.UNIT] || [],
-        [AmenityCategory.PROPERTY]: grouped[AmenityCategory.PROPERTY] || [],
+        [AmenityCategory.UNIT]:      grouped[AmenityCategory.UNIT] || [],
+        [AmenityCategory.PROPERTY]:  grouped[AmenityCategory.PROPERTY] || [],
         [AmenityCategory.COMMUNITY]: grouped[AmenityCategory.COMMUNITY] || []
     };
 }

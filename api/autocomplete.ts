@@ -1,9 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { radarService, getUserLocation, type RadarAutocompleteResult } from '../src/services/radar-service';
-import { logger as baseLogger } from '@hughescr/logger';
+import { logger } from '@hughescr/logger';
 import { chain, map, split, trim } from 'lodash';
-
-const logger = baseLogger;
 
 // Helper function to create consistent headers
 function createHeaders(): Record<string, string> {
@@ -21,15 +19,15 @@ interface AddressSuggestion {
     /** Structured address components */
     address: {
         /** Street number and name */
-        street?: string
+        street?:     string
         /** City name */
-        city?: string
+        city?:       string
         /** State name or abbreviation */
-        state?: string
+        state?:      string
         /** Postal code */
         postalCode?: string
         /** Full formatted address */
-        formatted: string
+        formatted:   string
     }
     /** Geographic coordinates if available */
     coordinates?: {
@@ -39,23 +37,23 @@ interface AddressSuggestion {
     /** Confidence score (0-1) if provided by the service */
     confidence?: number
     /** Source that provided the suggestion */
-    source: 'radar' | 'cache'
+    source:      'radar' | 'cache'
     /** Unique identifier for the suggestion */
-    id: string
+    id:          string
 }
 
 /**
  * Address autocomplete API response
  */
 interface AutocompleteResponse {
-    success: boolean
+    success:      boolean
     suggestions?: AddressSuggestion[]
-    error?: string
+    error?:       string
     cacheStats?: {
-        autocompleteSize: number
-        ipSize: number
+        autocompleteSize:       number
+        ipSize:                 number
         autocompleteTtlMinutes: number
-        ipTtlMinutes: number
+        ipTtlMinutes:           number
     }
 }
 
@@ -119,12 +117,12 @@ function getClientIP(event: { headers?: Record<string, string | undefined> }): s
 function convertRadarToAddressSuggestion(radarResult: RadarAutocompleteResult): AddressSuggestion {
     return {
         displayText: radarResult.displayText,
-        address: {
-            street: radarResult.components.street,
-            city: radarResult.components.city,
-            state: radarResult.components.state,
+        address:     {
+            street:     radarResult.components.street,
+            city:       radarResult.components.city,
+            state:      radarResult.components.state,
             postalCode: radarResult.components.postalCode,
-            formatted: chain([radarResult.components.street, radarResult.components.city, radarResult.components.state, radarResult.components.postalCode])
+            formatted:  chain([radarResult.components.street, radarResult.components.city, radarResult.components.state, radarResult.components.postalCode])
                 .compact()
                 .join(', ')
                 .value()
@@ -136,8 +134,8 @@ function convertRadarToAddressSuggestion(radarResult: RadarAutocompleteResult): 
             }
             : undefined,
         confidence: radarResult.confidence,
-        source: radarResult.source,
-        id: radarResult.id
+        source:     radarResult.source,
+        id:         radarResult.id
     };
 }
 
@@ -148,18 +146,18 @@ function convertRadarToAddressSuggestion(radarResult: RadarAutocompleteResult): 
 export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         logger.info('Address autocomplete request received', {
-            method: event.requestContext.http.method,
-            path: event.rawPath,
+            method:      event.requestContext.http.method,
+            path:        event.rawPath,
             queryParams: event.queryStringParameters
         });
 
         if(event.requestContext.http.method !== 'GET') {
             return {
                 statusCode: 405,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Method not allowed. Use GET.'
+                    error:   'Method not allowed. Use GET.'
                 }),
             };
         }
@@ -174,10 +172,10 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
         if(!query || !trim(query)) {
             return {
                 statusCode: 400,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Query parameter "q" is required'
+                    error:   'Query parameter "q" is required'
                 }),
             };
         }
@@ -188,10 +186,10 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
         if(trimmedQuery.length < 3) {
             return {
                 statusCode: 400,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Query must be at least 3 characters long'
+                    error:   'Query must be at least 3 characters long'
                 }),
             };
         }
@@ -199,10 +197,10 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
         if(trimmedQuery.length > 100) {
             return {
                 statusCode: 400,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Query must be 100 characters or less'
+                    error:   'Query must be 100 characters or less'
                 }),
             };
         }
@@ -214,10 +212,10 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
             if(isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > 20) {
                 return {
                     statusCode: 400,
-                    headers: createHeaders(),
-                    body: JSON.stringify({
+                    headers:    createHeaders(),
+                    body:       JSON.stringify({
                         success: false,
-                        error: 'Limit must be a number between 1 and 20'
+                        error:   'Limit must be a number between 1 and 20'
                     }),
                 };
             }
@@ -231,23 +229,23 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
         const clientIP = getClientIP(event);
 
         logger.info('Getting address suggestions', {
-            query: trimmedQuery,
+            query:                 trimmedQuery,
             limit,
             hasBrowserCoordinates: !!browserCoordinates,
-            hasClientIP: !!clientIP
+            hasClientIP:           !!clientIP
         });
 
         // Get user location using smart fallback chain (browser → IP → default)
         const userLocation = await getUserLocation(browserCoordinates, clientIP);
         logger.info('Using location for address search', {
             source: userLocation.source,
-            lat: userLocation.lat,
-            lon: userLocation.lon
+            lat:    userLocation.lat,
+            lon:    userLocation.lon
         });
 
         // Get suggestions from Radar service with location bias
         const radarResults = await radarService.autocompleteAddress({
-            query: trimmedQuery,
+            query:       trimmedQuery,
             coordinates: { lat: userLocation.lat, lon: userLocation.lon },
             limit
         });
@@ -256,31 +254,31 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
         const suggestions = map(radarResults, convertRadarToAddressSuggestion);
 
         const response: AutocompleteResponse = {
-            success: true,
+            success:    true,
             suggestions,
             cacheStats: radarService.getCacheStats()
         };
 
         logger.info('Address autocomplete successful', {
-            query: trimmedQuery,
+            query:            trimmedQuery,
             suggestionsCount: suggestions.length,
-            hasCache: suggestions.length > 0 && suggestions[0].source === 'cache'
+            hasCache:         suggestions.length > 0 && suggestions[0].source === 'cache'
         });
 
         return {
             statusCode: 200,
-            headers: createHeaders(),
-            body: JSON.stringify(response),
+            headers:    createHeaders(),
+            body:       JSON.stringify(response),
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Address autocomplete API error', { error });
 
         return {
             statusCode: 500,
-            headers: createHeaders(),
-            body: JSON.stringify({
+            headers:    createHeaders(),
+            body:       JSON.stringify({
                 success: false,
-                error: 'Internal server error'
+                error:   'Internal server error'
             }),
         };
     }
@@ -297,10 +295,10 @@ export const status: APIGatewayProxyHandlerV2 = async (event) => {
         if(event.requestContext.http.method !== 'GET') {
             return {
                 statusCode: 405,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Method not allowed. Use GET.'
+                    error:   'Method not allowed. Use GET.'
                 }),
             };
         }
@@ -308,40 +306,40 @@ export const status: APIGatewayProxyHandlerV2 = async (event) => {
         const cacheStats = radarService.getCacheStats();
 
         const statusResponse = {
-            success: true,
-            service: 'Radar Maps API',
-            status: 'operational',
-            cache: cacheStats,
+            success:   true,
+            service:   'Radar Maps API',
+            status:    'operational',
+            cache:     cacheStats,
             rateLimit: {
                 intervalMs: 100,
-                policy: 'Conservative rate limiting for Radar API'
+                policy:     'Conservative rate limiting for Radar API'
             },
             debounce: {
                 intervalMs: 200,
-                policy: 'Prevents excessive API calls during typing'
+                policy:     'Prevents excessive API calls during typing'
             },
             features: {
-                addressAutocomplete: 'Available',
-                ipGeocoding: 'Available',
-                proximityBias: 'Available',
+                addressAutocomplete:   'Available',
+                ipGeocoding:           'Available',
+                proximityBias:         'Available',
                 smartLocationFallback: 'Available'
             }
         };
 
         return {
             statusCode: 200,
-            headers: createHeaders(),
-            body: JSON.stringify(statusResponse),
+            headers:    createHeaders(),
+            body:       JSON.stringify(statusResponse),
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Autocomplete status API error', { error });
 
         return {
             statusCode: 500,
-            headers: createHeaders(),
-            body: JSON.stringify({
+            headers:    createHeaders(),
+            body:       JSON.stringify({
                 success: false,
-                error: 'Internal server error'
+                error:   'Internal server error'
             }),
         };
     }
@@ -358,10 +356,10 @@ export const clearCache: APIGatewayProxyHandlerV2 = async (event) => {
         if(event.requestContext.http.method !== 'DELETE') {
             return {
                 statusCode: 405,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Method not allowed. Use DELETE.'
+                    error:   'Method not allowed. Use DELETE.'
                 }),
             };
         }
@@ -376,29 +374,29 @@ export const clearCache: APIGatewayProxyHandlerV2 = async (event) => {
 
         return {
             statusCode: 200,
-            headers: createHeaders(),
-            body: JSON.stringify({
+            headers:    createHeaders(),
+            body:       JSON.stringify({
                 success: true,
                 message: 'Cache cleared successfully',
                 cleared: {
                     autocomplete: statsBefore.autocompleteSize,
-                    ip: statsBefore.ipSize
+                    ip:           statsBefore.ipSize
                 },
                 remaining: {
                     autocomplete: statsAfter.autocompleteSize,
-                    ip: statsAfter.ipSize
+                    ip:           statsAfter.ipSize
                 }
             }),
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Autocomplete cache clear API error', { error });
 
         return {
             statusCode: 500,
-            headers: createHeaders(),
-            body: JSON.stringify({
+            headers:    createHeaders(),
+            body:       JSON.stringify({
                 success: false,
-                error: 'Internal server error'
+                error:   'Internal server error'
             }),
         };
     }

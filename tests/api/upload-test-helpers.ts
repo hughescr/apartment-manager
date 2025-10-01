@@ -28,30 +28,30 @@ export const callHandler = async (
  * @returns Complete APIGatewayProxyEventV2 object
  */
 export const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
-    headers: {},
+    headers:         {},
     isBase64Encoded: false,
-    rawPath: '/api/upload',
-    rawQueryString: '',
-    requestContext: {
-        accountId: 'test-account',
-        apiId: 'test-api',
-        domainName: 'test.com',
+    rawPath:         '/api/upload',
+    rawQueryString:  '',
+    requestContext:  {
+        accountId:    'test-account',
+        apiId:        'test-api',
+        domainName:   'test.com',
         domainPrefix: 'test',
-        http: {
-            method: 'POST',
-            path: '/api/upload',
-            protocol: 'HTTP/1.1',
-            sourceIp: '127.0.0.1',
+        http:         {
+            method:    'POST',
+            path:      '/api/upload',
+            protocol:  'HTTP/1.1',
+            sourceIp:  '127.0.0.1',
             userAgent: 'test-agent',
         },
         requestId: 'test-request-id',
-        routeKey: 'POST /api/upload',
-        stage: 'test',
-        time: '01/Jan/2024:00:00:00 +0000',
+        routeKey:  'POST /api/upload',
+        stage:     'test',
+        time:      '01/Jan/2024:00:00:00 +0000',
         timeEpoch: 1704067200000,
     },
     routeKey: 'POST /api/upload',
-    version: '2.0',
+    version:  '2.0',
     ...overrides,
 });
 
@@ -61,7 +61,7 @@ export const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {})
  * @returns APIGatewayProxyEventV2 configured for DELETE operation
  */
 export const createDeleteEvent = (keyPath: string): APIGatewayProxyEventV2 => createMockEvent({
-    rawPath: `/api/upload/${keyPath}`,
+    rawPath:        `/api/upload/${keyPath}`,
     requestContext: {
         ...createMockEvent().requestContext,
         http: {
@@ -98,12 +98,12 @@ export const createUploadEvent = (payload: Record<string, unknown>): APIGatewayP
  * Standard test data constants
  */
 export const TEST_DATA = {
-    BUILDING_ID: 'gSPgoPTdFcPqdeCYMBZMzy',
-    UNIT_ID: 'unit-1',
+    BUILDING_ID:    'gSPgoPTdFcPqdeCYMBZMzy',
+    UNIT_ID:        'unit-1',
     VALID_FILENAME: 'photo.jpg',
-    SIGNED_URL: 'https://s3.example.com/signed-url',
-    UUID: 'test-uuid',
-    BUCKET_NAME: 'test-photos-bucket'
+    SIGNED_URL:     'https://s3.example.com/signed-url',
+    UUID:           'test-uuid',
+    BUCKET_NAME:    'test-photos-bucket'
 } as const;
 
 /**

@@ -32,7 +32,7 @@ describe('BuildingDataParser', () => {
 
             expect(result).toBeDefined();
             expect(result!.buildingID).toBe(testBuilding.buildingID);
-            expect(result!.buildingName).toBe(testBuilding.buildingName!);
+            expect(result!.buildingName).toBe(testBuilding.buildingName);
             // JSON parsing converts Date to string
             expect(result!.updatedAt as unknown as string).toBe(testBuilding.updatedAt!.toISOString());
         });
@@ -41,7 +41,7 @@ describe('BuildingDataParser', () => {
             const testBuilding = createTestBuildingData();
             const mockElement = {
                 hasAttribute: jest.fn().mockReturnValue(true),
-                dataset: {
+                dataset:      {
                     buildingData: JSON.stringify(testBuilding)
                 },
                 querySelector: jest.fn()
@@ -51,7 +51,7 @@ describe('BuildingDataParser', () => {
 
             expect(result).toBeDefined();
             expect(result!.buildingID).toBe(testBuilding.buildingID);
-            expect(result!.buildingName).toBe(testBuilding.buildingName!);
+            expect(result!.buildingName).toBe(testBuilding.buildingName);
             // JSON parsing converts Date to string
             expect(result!.updatedAt as unknown as string).toBe(testBuilding.updatedAt!.toISOString());
             expect(mockElement.hasAttribute).toHaveBeenCalledWith('data-building-data');
@@ -60,7 +60,7 @@ describe('BuildingDataParser', () => {
 
         test('should return null when no building data element found', () => {
             const mockElement = {
-                hasAttribute: jest.fn().mockReturnValue(false),
+                hasAttribute:  jest.fn().mockReturnValue(false),
                 querySelector: jest.fn().mockReturnValue(null)
             } as unknown as HTMLElement;
 
@@ -127,8 +127,8 @@ describe('BuildingDataParser', () => {
 
             expect(result).toHaveLength(2);
             expect(result[0]).toMatchObject({
-                unitID: testUnits[0].unitID,
-                status: expect.any(String),
+                unitID:      testUnits[0].unitID,
+                status:      expect.any(String),
                 lastUpdated: expect.any(String),
                 currentRent: expect.any(Number),
                 editingRent: false,
@@ -138,7 +138,7 @@ describe('BuildingDataParser', () => {
 
         test('should return empty array when no units element found', () => {
             const mockElement = {
-                hasAttribute: jest.fn().mockReturnValue(false),
+                hasAttribute:  jest.fn().mockReturnValue(false),
                 querySelector: jest.fn().mockReturnValue(null)
             } as unknown as HTMLElement;
 
@@ -170,14 +170,14 @@ describe('BuildingDataParser', () => {
         test('should properly initialize extended properties for units', () => {
             const baseUnits = [
                 {
-                    unitID: 'unit-1',
-                    buildingID: 'building-1',
-                    modelID: 'model-1',
-                    unitNumber: '101',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 800,
-                    rent: 2500,
+                    unitID:       'unit-1',
+                    buildingID:   'building-1',
+                    modelID:      'model-1',
+                    unitNumber:   '101',
+                    beds:         1,
+                    baths:        1,
+                    sqft:         800,
+                    rent:         2500,
                     vacancyClass: 'Occupied' as const
                 }
             ];
@@ -188,8 +188,8 @@ describe('BuildingDataParser', () => {
             const result = BuildingDataParser.parseUnitsData(element);
 
             expect(result[0]).toMatchObject({
-                unitID: 'unit-1',
-                status: 'Occupied',
+                unitID:      'unit-1',
+                status:      'Occupied',
                 lastUpdated: expect.any(String),
                 currentRent: 2500,
                 editingRent: false,
@@ -200,9 +200,9 @@ describe('BuildingDataParser', () => {
         test('should handle units with missing optional properties', () => {
             const incompleteUnits = [
                 {
-                    unitID: 'unit-1',
+                    unitID:     'unit-1',
                     buildingID: 'building-1',
-                    modelID: 'model-1',
+                    modelID:    'model-1',
                     unitNumber: '101'
                     // Missing rent, lastUpdated, etc.
                 }
@@ -214,8 +214,8 @@ describe('BuildingDataParser', () => {
             const result = BuildingDataParser.parseUnitsData(element);
 
             expect(result[0]).toMatchObject({
-                unitID: 'unit-1',
-                status: expect.any(String),
+                unitID:      'unit-1',
+                status:      expect.any(String),
                 currentRent: 0,
                 editingRent: false,
                 savingField: null
@@ -233,15 +233,15 @@ describe('BuildingDataParser', () => {
             const result = BuildingDataParser.parseUnitTypesData(element);
 
             expect(result).toHaveLength(testUnitTypes.length);
-            expect(result[0]!.modelID).toBe(testUnitTypes[0]?.modelID);
-            expect(result[0]!.modelName).toBe(testUnitTypes[0]?.modelName);
+            expect(result[0].modelID).toBe(testUnitTypes[0]?.modelID);
+            expect(result[0].modelName).toBe(testUnitTypes[0]?.modelName);
             // JSON parsing converts Date to string
-            expect(result[0]!.updatedAt as unknown as string).toBe(testUnitTypes[0]!.updatedAt!.toISOString());
+            expect(result[0].updatedAt as unknown as string).toBe(testUnitTypes[0].updatedAt!.toISOString());
         });
 
         test('should return empty array when no unit types element found', () => {
             const mockElement = {
-                hasAttribute: jest.fn().mockReturnValue(false),
+                hasAttribute:  jest.fn().mockReturnValue(false),
                 querySelector: jest.fn().mockReturnValue(null)
             } as unknown as HTMLElement;
 
@@ -274,8 +274,8 @@ describe('BuildingDataParser', () => {
     describe('Location Data Parsing', () => {
         test('should parse valid location data from HTML element', () => {
             const locationConfig = {
-                lat: 40.7128,
-                lng: -74.0060,
+                lat:         40.7128,
+                lng:         -74.0060,
                 mapboxToken: 'test-token'
             };
             const element = createMockHtmlElement({
@@ -289,7 +289,7 @@ describe('BuildingDataParser', () => {
 
         test('should return null when no location element found', () => {
             const mockElement = {
-                hasAttribute: jest.fn().mockReturnValue(false),
+                hasAttribute:  jest.fn().mockReturnValue(false),
                 querySelector: jest.fn().mockReturnValue(null)
             } as unknown as HTMLElement;
 
@@ -333,7 +333,7 @@ describe('BuildingDataParser', () => {
 
         test('should return empty string when no API URL element found', () => {
             const mockElement = {
-                hasAttribute: jest.fn().mockReturnValue(false),
+                hasAttribute:  jest.fn().mockReturnValue(false),
                 querySelector: jest.fn().mockReturnValue(null)
             } as unknown as HTMLElement;
 
@@ -345,7 +345,7 @@ describe('BuildingDataParser', () => {
         test('should return empty string when API URL is undefined', () => {
             const mockElement = {
                 hasAttribute: jest.fn().mockReturnValue(true),
-                dataset: {}
+                dataset:      {}
             } as unknown as HTMLElement;
 
             const result = BuildingDataParser.parseApiUrl(mockElement);
@@ -368,14 +368,14 @@ describe('BuildingDataParser', () => {
             forEach(testCases, ({ vacancyClass, expectedStatus }) => {
                 // Create unit with only the base properties we need to test status mapping
                 const baseUnit = {
-                    unitID: 'test-unit',
+                    unitID:     'test-unit',
                     buildingID: 'test-building',
-                    modelID: 'test-model',
+                    modelID:    'test-model',
                     unitNumber: '101',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 800,
-                    rent: 2500,
+                    beds:       1,
+                    baths:      1,
+                    sqft:       800,
+                    rent:       2500,
                     vacancyClass
                 };
                 const element = createMockHtmlElement({
@@ -472,7 +472,7 @@ describe('BuildingDataParser', () => {
         test('should handle potential XSS in JSON data', () => {
             const maliciousData = {
                 buildingName: '<script>alert("xss")</script>',
-                description: 'javascript:alert("xss")'
+                description:  'javascript:alert("xss")'
             };
             const element = createMockHtmlElement({
                 buildingData: JSON.stringify(maliciousData)
@@ -514,10 +514,10 @@ describe('BuildingDataParser', () => {
 
         test('should handle null and undefined values in JSON', () => {
             const dataWithNulls = {
-                buildingID: 'test',
+                buildingID:   'test',
                 buildingName: null,
-                description: undefined,
-                totalUnits: null
+                description:  undefined,
+                totalUnits:   null
             };
             const element = createMockHtmlElement({
                 buildingData: JSON.stringify(dataWithNulls)
@@ -535,7 +535,7 @@ describe('BuildingDataParser', () => {
             const mixedTypes = {
                 buildingID: '123', // String ID
                 totalUnits: 50, // Numeric value
-                latitude: 40.7128 // Numeric value
+                latitude:   40.7128 // Numeric value
             };
             const element = createMockHtmlElement({
                 buildingData: JSON.stringify(mixedTypes)

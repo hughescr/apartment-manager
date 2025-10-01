@@ -12,22 +12,22 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
     beforeEach(() => {
         mockBuilding = {
-            buildingID: 'test-building-1',
-            buildingName: 'Inheritance Test Apartments',
-            street: '123 Test St',
-            city: 'Los Angeles',
-            state: 'CA',
-            zip: '90001',
-            latitude: 34.0522,
-            longitude: -118.2437,
-            description: 'Test building for comprehensive inheritance testing',
-            yearBuilt: 2020,
-            numberStories: 3,
-            totalUnits: 8,
+            buildingID:          'test-building-1',
+            buildingName:        'Inheritance Test Apartments',
+            street:              '123 Test St',
+            city:                'Los Angeles',
+            state:               'CA',
+            zip:                 '90001',
+            latitude:            34.0522,
+            longitude:           -118.2437,
+            description:         'Test building for comprehensive inheritance testing',
+            yearBuilt:           2020,
+            numberStories:       3,
+            totalUnits:          8,
             propertyDescription: 'Test apartments with inheritance patterns',
-            leaseLength: 12,
-            contactInfo: {
-                name: 'Test Manager',
+            leaseLength:         12,
+            contactInfo:         {
+                name:  'Test Manager',
                 phone: '(555) 123-4567',
                 email: 'test@example.com'
             }
@@ -35,54 +35,54 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         mockUnitTypes = [
             {
-                buildingID: 'test-building-1',
-                modelID: 'model-studio',
-                modelName: 'Studio',
-                beds: 0,
-                baths: 1,
-                minRent: 1200,
-                maxRent: 1400,
-                minSqft: 450,
-                maxSqft: 550,
-                deposit: 1200,
-                minLeaseTerm: 6,
-                maxLeaseTerm: 18,
-                maxOccupants: 2,
-                perPersonRent: 1200,
+                buildingID:     'test-building-1',
+                modelID:        'model-studio',
+                modelName:      'Studio',
+                beds:           0,
+                baths:          1,
+                minRent:        1200,
+                maxRent:        1400,
+                minSqft:        450,
+                maxSqft:        550,
+                deposit:        1200,
+                minLeaseTerm:   6,
+                maxLeaseTerm:   18,
+                maxOccupants:   2,
+                perPersonRent:  1200,
                 countAvailable: 2
             },
             {
-                buildingID: 'test-building-1',
-                modelID: 'model-1bed',
-                modelName: 'One Bedroom',
-                beds: 1,
-                baths: 1,
-                minRent: 1600,
-                maxRent: 1800,
-                minSqft: 750,
-                maxSqft: 850,
-                deposit: 1600,
-                minLeaseTerm: 12,
-                maxLeaseTerm: 24,
-                maxOccupants: 3,
-                perPersonRent: 800,
+                buildingID:     'test-building-1',
+                modelID:        'model-1bed',
+                modelName:      'One Bedroom',
+                beds:           1,
+                baths:          1,
+                minRent:        1600,
+                maxRent:        1800,
+                minSqft:        750,
+                maxSqft:        850,
+                deposit:        1600,
+                minLeaseTerm:   12,
+                maxLeaseTerm:   24,
+                maxOccupants:   3,
+                perPersonRent:  800,
                 countAvailable: 4
             },
             {
-                buildingID: 'test-building-1',
-                modelID: 'model-2bed',
-                modelName: 'Two Bedroom',
-                beds: 2,
-                baths: 2,
-                minRent: 2000,
-                maxRent: 2000, // Same min/max for testing
-                minSqft: 1000,
-                maxSqft: 1000, // Same min/max for testing
-                deposit: 2000,
-                minLeaseTerm: 12,
-                maxLeaseTerm: 36,
-                maxOccupants: 4,
-                perPersonRent: 1000,
+                buildingID:     'test-building-1',
+                modelID:        'model-2bed',
+                modelName:      'Two Bedroom',
+                beds:           2,
+                baths:          2,
+                minRent:        2000,
+                maxRent:        2000, // Same min/max for testing
+                minSqft:        1000,
+                maxSqft:        1000, // Same min/max for testing
+                deposit:        2000,
+                minLeaseTerm:   12,
+                maxLeaseTerm:   36,
+                maxOccupants:   4,
+                perPersonRent:  1000,
                 countAvailable: 2
             }
         ];
@@ -90,79 +90,79 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
         mockUnitsWithInheritance = [
             {
                 // Unit with complete inheritance from studio model
-                buildingID: 'test-building-1',
-                unitID: 'unit-101',
-                unitNumber: '101',
-                modelID: 'model-studio',
-                beds: undefined,        // Inherit: 0
-                baths: undefined,       // Inherit: 1
-                sqft: undefined,        // Inherit: 450 (minSqft)
-                rent: undefined,        // Inherit: 1200 (minRent)
-                deposit: undefined,     // Inherit: 1200
-                maxOccupants: undefined, // Inherit: 2
-                occupied: false,
+                buildingID:    'test-building-1',
+                unitID:        'unit-101',
+                unitNumber:    '101',
+                modelID:       'model-studio',
+                beds:          undefined,        // Inherit: 0
+                baths:         undefined,       // Inherit: 1
+                sqft:          undefined,        // Inherit: 450 (minSqft)
+                rent:          undefined,        // Inherit: 1200 (minRent)
+                deposit:       undefined,     // Inherit: 1200
+                maxOccupants:  undefined, // Inherit: 2
+                occupied:      false,
                 availableDate: '2025-02-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             {
                 // Unit with partial inheritance and overrides
-                buildingID: 'test-building-1',
-                unitID: 'unit-201',
-                unitNumber: '201',
-                modelID: 'model-1bed',
-                beds: undefined,        // Inherit: 1
-                baths: 1.5,        // Override unit type (1)
-                sqft: 900,         // Override range (750-850)
-                rent: undefined,        // Inherit: 1600-1800 range
-                deposit: 1800,     // Override: 1800 vs 1600
-                maxOccupants: undefined, // Inherit: 3
-                occupied: false,
+                buildingID:    'test-building-1',
+                unitID:        'unit-201',
+                unitNumber:    '201',
+                modelID:       'model-1bed',
+                beds:          undefined,        // Inherit: 1
+                baths:         1.5,        // Override unit type (1)
+                sqft:          900,         // Override range (750-850)
+                rent:          undefined,        // Inherit: 1600-1800 range
+                deposit:       1800,     // Override: 1800 vs 1600
+                maxOccupants:  undefined, // Inherit: 3
+                occupied:      false,
                 availableDate: '2025-02-15',
                 feedInclusion: { apartments_com: true, zillow: false }
             },
             {
                 // Unit with same min/max values (single value inheritance)
-                buildingID: 'test-building-1',
-                unitID: 'unit-301',
-                unitNumber: '301',
-                modelID: 'model-2bed',
-                beds: undefined,        // Inherit: 2
-                baths: undefined,       // Inherit: 2
-                sqft: undefined,        // Inherit: 1000 (same min/max)
-                rent: undefined,        // Inherit: 2000 (same min/max)
-                deposit: undefined,     // Inherit: 2000
-                maxOccupants: 6,   // Override: 6 vs 4
-                occupied: false,
+                buildingID:    'test-building-1',
+                unitID:        'unit-301',
+                unitNumber:    '301',
+                modelID:       'model-2bed',
+                beds:          undefined,        // Inherit: 2
+                baths:         undefined,       // Inherit: 2
+                sqft:          undefined,        // Inherit: 1000 (same min/max)
+                rent:          undefined,        // Inherit: 2000 (same min/max)
+                deposit:       undefined,     // Inherit: 2000
+                maxOccupants:  6,   // Override: 6 vs 4
+                occupied:      false,
                 availableDate: '2025-03-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             {
                 // Custom unit with no unit type
-                buildingID: 'test-building-1',
-                unitID: 'unit-401',
-                unitNumber: '401',
-                modelID: '',       // No unit type
-                beds: 3,           // Explicit value
-                baths: 2.5,        // Explicit value
-                sqft: 1200,        // Explicit value
-                rent: 2500,        // Explicit value
-                deposit: 2500,     // Explicit value
-                maxOccupants: 6,   // Explicit value
-                occupied: false,
+                buildingID:    'test-building-1',
+                unitID:        'unit-401',
+                unitNumber:    '401',
+                modelID:       '',       // No unit type
+                beds:          3,           // Explicit value
+                baths:         2.5,        // Explicit value
+                sqft:          1200,        // Explicit value
+                rent:          2500,        // Explicit value
+                deposit:       2500,     // Explicit value
+                maxOccupants:  6,   // Explicit value
+                occupied:      false,
                 availableDate: '2025-03-15',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             {
                 // Unit with non-existent unit type (should fall back gracefully)
-                buildingID: 'test-building-1',
-                unitID: 'unit-501',
-                unitNumber: '501',
-                modelID: 'model-nonexistent',
-                beds: 2,           // Explicit values since unit type doesn't exist
-                baths: 2,
-                sqft: 1000,
-                rent: 2200,
-                occupied: true,    // Occupied unit
+                buildingID:    'test-building-1',
+                unitID:        'unit-501',
+                unitNumber:    '501',
+                modelID:       'model-nonexistent',
+                beds:          2,           // Explicit values since unit type doesn't exist
+                baths:         2,
+                sqft:          1000,
+                rent:          2200,
+                occupied:      true,    // Occupied unit
                 availableDate: undefined,
                 feedInclusion: { apartments_com: false, zillow: true }
             }
@@ -172,10 +172,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
     describe('MITS XML Generation with Inheritance Resolution', () => {
         it('should generate complete XML with all inherited values resolved', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithInheritance,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithInheritance,
+                siteName:  'apartments_com'
             });
 
             // Basic XML structure validation
@@ -196,10 +196,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         it('should resolve inheritance for unit 101 (complete inheritance from studio)', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [mockUnitsWithInheritance[0]], // unit-101
-                siteName: 'apartments_com'
+                units:     [mockUnitsWithInheritance[0]], // unit-101
+                siteName:  'apartments_com'
             });
 
             // Find unit section in XML
@@ -217,10 +217,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         it('should handle mixed inheritance and overrides for unit 201', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [mockUnitsWithInheritance[1]], // unit-201
-                siteName: 'apartments_com'
+                units:     [mockUnitsWithInheritance[1]], // unit-201
+                siteName:  'apartments_com'
             });
 
             const unitStart = xml.indexOf('<UnitID>unit-201</UnitID>');
@@ -237,10 +237,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         it('should handle same min/max inheritance for unit 301', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [mockUnitsWithInheritance[2]], // unit-301
-                siteName: 'apartments_com'
+                units:     [mockUnitsWithInheritance[2]], // unit-301
+                siteName:  'apartments_com'
             });
 
             const unitStart = xml.indexOf('<UnitID>unit-301</UnitID>');
@@ -257,10 +257,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         it('should handle custom units without unit types', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [mockUnitsWithInheritance[3]], // unit-401 (custom)
-                siteName: 'apartments_com'
+                units:     [mockUnitsWithInheritance[3]], // unit-401 (custom)
+                siteName:  'apartments_com'
             });
 
             const unitStart = xml.indexOf('<UnitID>unit-401</UnitID>');
@@ -277,10 +277,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         it('should exclude occupied units from feed', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithInheritance, // Includes occupied unit-501
-                siteName: 'apartments_com'
+                units:     mockUnitsWithInheritance, // Includes occupied unit-501
+                siteName:  'apartments_com'
             });
 
             // Occupied unit should not appear in XML
@@ -295,17 +295,17 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         it('should respect site-specific feed inclusion settings', async () => {
             const xmlApartments = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithInheritance,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithInheritance,
+                siteName:  'apartments_com'
             });
 
             const xmlZillow = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithInheritance,
-                siteName: 'zillow'
+                units:     mockUnitsWithInheritance,
+                siteName:  'zillow'
             });
 
             // unit-201 has apartments_com: true, zillow: false
@@ -332,10 +332,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
             // Generate MITS XML (uses same resolver internally)
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [testUnit],
-                siteName: 'apartments_com'
+                units:     [testUnit],
+                siteName:  'apartments_com'
             });
 
             // Extract values from XML and compare
@@ -344,19 +344,19 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             const unitSection = xml.substring(unitStart, unitEnd);
 
             // Beds
-            const bedsMatch = unitSection.match(/<UnitBedrooms>(\d+)<\/UnitBedrooms>/);
+            const bedsMatch = /<UnitBedrooms>(\d+)<\/UnitBedrooms>/.exec(unitSection);
             expect(bedsMatch?.[1]).toBe(String(resolvedByResolver.beds));
 
             // Baths
-            const bathsMatch = unitSection.match(/<UnitBathrooms>([\d.]+)<\/UnitBathrooms>/);
+            const bathsMatch = /<UnitBathrooms>([\d.]+)<\/UnitBathrooms>/.exec(unitSection);
             expect(bathsMatch?.[1]).toBe(String(resolvedByResolver.baths));
 
             // Square feet
-            const sqftMatch = unitSection.match(/<MinSquareFeet>(\d+)<\/MinSquareFeet>/);
+            const sqftMatch = /<MinSquareFeet>(\d+)<\/MinSquareFeet>/.exec(unitSection);
             expect(sqftMatch?.[1]).toBe(String(resolvedByResolver.sqft));
 
             // Rent
-            const rentMatch = unitSection.match(/<MarketRent>(\d+)<\/MarketRent>/);
+            const rentMatch = /<MarketRent>(\d+)<\/MarketRent>/.exec(unitSection);
             expect(rentMatch?.[1]).toBe(String(resolvedByResolver.rent));
         });
 
@@ -371,10 +371,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             );
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [testUnit],
-                siteName: 'apartments_com'
+                units:     [testUnit],
+                siteName:  'apartments_com'
             });
 
             const unitStart = xml.indexOf('<UnitID>unit-201</UnitID>');
@@ -397,7 +397,7 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
         it('should handle units with missing unit types consistently', async () => {
             const testUnit = {
                 ...mockUnitsWithInheritance[4], // unit with non-existent unit type
-                occupied: false, // Make available for testing
+                occupied:      false, // Make available for testing
                 feedInclusion: { apartments_com: true, zillow: true } // Include in feed
             };
 
@@ -408,10 +408,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             );
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [testUnit],
-                siteName: 'apartments_com'
+                units:     [testUnit],
+                siteName:  'apartments_com'
             });
 
             // Should use explicit values when no inheritance available
@@ -432,10 +432,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
     describe('XML Structure and Completeness', () => {
         it('should produce well-formed XML with inheritance data', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: filter(mockUnitsWithInheritance, u => !u.occupied),
-                siteName: 'apartments_com'
+                units:     filter(mockUnitsWithInheritance, u => !u.occupied),
+                siteName:  'apartments_com'
             });
 
             // Parse XML to ensure it's well-formed
@@ -446,10 +446,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
         it('should include all required MITS elements for inherited units', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [mockUnitsWithInheritance[0]], // Complete inheritance unit
-                siteName: 'apartments_com'
+                units:     [mockUnitsWithInheritance[0]], // Complete inheritance unit
+                siteName:  'apartments_com'
             });
 
             // Check for presence of all critical elements that should be populated via inheritance
@@ -464,24 +464,24 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
         it('should handle edge cases in inheritance gracefully', async () => {
             // Create unit with edge case data
             const edgeCaseUnit: UnitData = {
-                buildingID: 'test-building-1',
-                unitID: 'unit-edge',
-                unitNumber: 'EDGE',
-                modelID: 'model-studio',
-                beds: 0,           // Studio (0 beds should not be treated as null)
-                baths: undefined,       // Should inherit
-                sqft: undefined,        // Should inherit
-                rent: 0,           // $0 rent (edge case - should not be treated as null)
-                occupied: false,
+                buildingID:    'test-building-1',
+                unitID:        'unit-edge',
+                unitNumber:    'EDGE',
+                modelID:       'model-studio',
+                beds:          0,           // Studio (0 beds should not be treated as null)
+                baths:         undefined,       // Should inherit
+                sqft:          undefined,        // Should inherit
+                rent:          0,           // $0 rent (edge case - should not be treated as null)
+                occupied:      false,
                 availableDate: '2025-04-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             };
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [edgeCaseUnit],
-                siteName: 'apartments_com'
+                units:     [edgeCaseUnit],
+                siteName:  'apartments_com'
             });
 
             const unitStart = xml.indexOf('<UnitID>unit-edge</UnitID>');
@@ -503,17 +503,17 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
             // Generate for different sites
             const apartmentsXml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: testUnits,
-                siteName: 'apartments_com'
+                units:     testUnits,
+                siteName:  'apartments_com'
             });
 
             const zillowXml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: testUnits,
-                siteName: 'zillow'
+                units:     testUnits,
+                siteName:  'zillow'
             });
 
             // Inheritance resolution should be identical regardless of site
@@ -541,15 +541,15 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             const manyUnits: UnitData[] = [];
             for(let i = 1; i <= 100; i++) {
                 manyUnits.push({
-                    buildingID: 'test-building-1',
-                    unitID: `unit-${padStart(i.toString(), 3, '0')}`,
-                    unitNumber: `${padStart(i.toString(), 3, '0')}`,
-                    modelID: i % 2 === 0 ? 'model-1bed' : 'model-studio',
-                    beds: i % 3 === 0 ? 2 : undefined,     // Some overrides
-                    baths: i % 4 === 0 ? 1.5 : undefined,  // Some overrides
-                    sqft: i % 5 === 0 ? 800 : undefined,   // Some overrides
-                    rent: i % 6 === 0 ? 1750 : undefined,  // Some overrides
-                    occupied: i % 10 === 0,            // 10% occupied
+                    buildingID:    'test-building-1',
+                    unitID:        `unit-${padStart(i.toString(), 3, '0')}`,
+                    unitNumber:    `${padStart(i.toString(), 3, '0')}`,
+                    modelID:       i % 2 === 0 ? 'model-1bed' : 'model-studio',
+                    beds:          i % 3 === 0 ? 2 : undefined,     // Some overrides
+                    baths:         i % 4 === 0 ? 1.5 : undefined,  // Some overrides
+                    sqft:          i % 5 === 0 ? 800 : undefined,   // Some overrides
+                    rent:          i % 6 === 0 ? 1750 : undefined,  // Some overrides
+                    occupied:      i % 10 === 0,            // 10% occupied
                     availableDate: i % 10 === 0 ? undefined : '2025-04-01',
                     feedInclusion: { apartments_com: true, zillow: true }
                 });
@@ -557,10 +557,10 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
 
             const startTime = Date.now();
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: manyUnits,
-                siteName: 'apartments_com'
+                units:     manyUnits,
+                siteName:  'apartments_com'
             });
             const duration = Date.now() - startTime;
 

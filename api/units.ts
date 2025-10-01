@@ -96,8 +96,8 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     if(!unitData.unitID || trim(unitData.unitID) === '') {
         return {
             statusCode: 400,
-            body: JSON.stringify({
-                error: 'Validation failed',
+            body:       JSON.stringify({
+                error:  'Validation failed',
                 errors: { unitID: 'Unit ID is required for creation' }
             }),
         };
@@ -164,7 +164,7 @@ export const del = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyS
 
 // Interface for bulk request data
 interface BulkRequestData {
-    unitIDs?: string[]
+    unitIDs?:      string[]
     [key: string]: unknown
 }
 
@@ -205,15 +205,15 @@ function parseBulkRequestBody(body: string | null): StatusUpdateData | APIGatewa
     try {
         const rawData = JSON.parse(body || '{}');
         return sanitizeObject(rawData) as StatusUpdateData;
-    } catch(parseError) {
+    } catch (parseError) {
         logger.warn('Failed to parse bulk status update request body', {
-            error: parseError,
+            error:   parseError,
             context: 'parseBulkRequestBody'
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({
-                error: 'Invalid request body',
+            body:       JSON.stringify({
+                error:   'Invalid request body',
                 details: isError(parseError) ? parseError.message : 'Invalid JSON format'
             }),
         };
@@ -246,7 +246,7 @@ function validateBulkStatusOperation(buildingID: string, data: StatusUpdateData)
     if(keys(errors).length > 0) {
         return {
             statusCode: 400,
-            body: JSON.stringify({
+            body:       JSON.stringify({
                 error: 'Validation failed',
                 errors
             }),
@@ -259,41 +259,41 @@ async function executeBulkStatusUpdate(buildingID: string, data: StatusUpdateDat
     try {
         const result = await performBulkStatusUpdate({
             buildingID,
-            unitIDs: data.unitIDs!,
+            unitIDs:      data.unitIDs!,
             vacancyClass: data.vacancyClass as VacancyClass
         });
 
         if(result.success) {
             return {
                 statusCode: 200,
-                body: JSON.stringify({
-                    message: `Successfully updated ${result.processedUnits} units`,
+                body:       JSON.stringify({
+                    message:      `Successfully updated ${result.processedUnits} units`,
                     updatedUnits: result.processedUnits
                 }),
             };
         } else {
             return {
                 statusCode: 207, // Multi-status - some succeeded, some failed
-                body: JSON.stringify({
-                    message: `Updated ${result.processedUnits} out of ${data.unitIDs!.length} units`,
+                body:       JSON.stringify({
+                    message:      `Updated ${result.processedUnits} out of ${data.unitIDs!.length} units`,
                     updatedUnits: result.processedUnits,
-                    errors: result.errors
+                    errors:       result.errors
                 }),
             };
         }
-    } catch(error) {
+    } catch (error) {
         logger.error('Bulk status update error', {
             error,
-            context: 'executeBulkStatusUpdate',
+            context:       'executeBulkStatusUpdate',
             buildingID,
-            unitCount: data.unitIDs?.length || 0,
-            vacancyClass: data.vacancyClass,
+            unitCount:     data.unitIDs?.length || 0,
+            vacancyClass:  data.vacancyClass,
             operationType: 'status_update'
         });
         return {
             statusCode: 500,
-            body: JSON.stringify({
-                error: 'Failed to update units',
+            body:       JSON.stringify({
+                error:   'Failed to update units',
                 details: isError(error) ? error.message : 'Unknown error during bulk status update'
             }),
         };
@@ -303,7 +303,7 @@ async function executeBulkStatusUpdate(buildingID: string, data: StatusUpdateDat
 // Interface for rent update request data
 interface RentUpdateData extends BulkRequestData {
     updateType?: string
-    value?: unknown
+    value?:      unknown
 }
 
 export const bulkRentUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
@@ -338,15 +338,15 @@ function parseRentRequestBody(body: string | null): RentUpdateData | APIGatewayP
     try {
         const rawData = JSON.parse(body || '{}');
         return sanitizeObject(rawData) as RentUpdateData;
-    } catch(parseError) {
+    } catch (parseError) {
         logger.warn('Failed to parse bulk rent update request body', {
-            error: parseError,
+            error:   parseError,
             context: 'parseRentRequestBody'
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({
-                error: 'Invalid request body',
+            body:       JSON.stringify({
+                error:   'Invalid request body',
                 details: isError(parseError) ? parseError.message : 'Invalid JSON format'
             }),
         };
@@ -384,7 +384,7 @@ function validateBulkRentOperation(buildingID: string, data: RentUpdateData): AP
     if(keys(errors).length > 0) {
         return {
             statusCode: 400,
-            body: JSON.stringify({
+            body:       JSON.stringify({
                 error: 'Validation failed',
                 errors
             }),
@@ -397,43 +397,43 @@ async function executeBulkRentUpdate(buildingID: string, data: RentUpdateData): 
     try {
         const result = await performBulkRentUpdate({
             buildingID,
-            unitIDs: data.unitIDs!,
+            unitIDs:    data.unitIDs!,
             updateType: data.updateType as 'absolute' | 'percentage',
-            value: Number(data.value)
+            value:      Number(data.value)
         });
 
         if(result.success) {
             return {
                 statusCode: 200,
-                body: JSON.stringify({
-                    message: `Successfully updated rent for ${result.processedUnits} units`,
+                body:       JSON.stringify({
+                    message:      `Successfully updated rent for ${result.processedUnits} units`,
                     updatedUnits: result.processedUnits
                 }),
             };
         } else {
             return {
                 statusCode: 207, // Multi-status - some succeeded, some failed
-                body: JSON.stringify({
-                    message: `Updated rent for ${result.processedUnits} out of ${data.unitIDs!.length} units`,
+                body:       JSON.stringify({
+                    message:      `Updated rent for ${result.processedUnits} out of ${data.unitIDs!.length} units`,
                     updatedUnits: result.processedUnits,
-                    errors: result.errors
+                    errors:       result.errors
                 }),
             };
         }
-    } catch(error) {
+    } catch (error) {
         logger.error('Bulk rent update error', {
             error,
-            context: 'executeBulkRentUpdate',
+            context:       'executeBulkRentUpdate',
             buildingID,
-            unitCount: data.unitIDs?.length || 0,
-            updateType: data.updateType,
-            value: data.value,
+            unitCount:     data.unitIDs?.length || 0,
+            updateType:    data.updateType,
+            value:         data.value,
             operationType: 'rent_update'
         });
         return {
             statusCode: 500,
-            body: JSON.stringify({
-                error: 'Failed to update unit rents',
+            body:       JSON.stringify({
+                error:   'Failed to update unit rents',
                 details: isError(error) ? error.message : 'Unknown error during bulk rent update'
             }),
         };

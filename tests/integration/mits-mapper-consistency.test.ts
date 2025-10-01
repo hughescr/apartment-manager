@@ -6,21 +6,21 @@ import type { BuildingData, UnitData, UnitTypeData } from '../../src/types';
 
 describe('MITS Generator and Site Mapper Consistency', () => {
     const mockBuilding: BuildingData = {
-        buildingID: 'consistency-test-building',
-        buildingName: 'Consistency Test Apartments',
-        street: '123 Test St',
-        city: 'Los Angeles',
-        state: 'CA',
-        zip: '90001',
-        latitude: 34.0522,
-        longitude: -118.2437,
-        description: 'Test building for consistency verification',
-        yearBuilt: 2020,
+        buildingID:    'consistency-test-building',
+        buildingName:  'Consistency Test Apartments',
+        street:        '123 Test St',
+        city:          'Los Angeles',
+        state:         'CA',
+        zip:           '90001',
+        latitude:      34.0522,
+        longitude:     -118.2437,
+        description:   'Test building for consistency verification',
+        yearBuilt:     2020,
         numberStories: 3,
-        totalUnits: 2,
-        leaseLength: 12, // Building-level default
-        contactInfo: {
-            name: 'Test Manager',
+        totalUnits:    2,
+        leaseLength:   12, // Building-level default
+        contactInfo:   {
+            name:  'Test Manager',
             phone: '(555) 123-4567',
             email: 'test@example.com'
         }
@@ -28,16 +28,16 @@ describe('MITS Generator and Site Mapper Consistency', () => {
 
     const mockUnitTypes: UnitTypeData[] = [
         {
-            buildingID: 'consistency-test-building',
-            modelID: 'test-model',
-            modelName: 'Test Unit Type',
-            beds: 1,
-            baths: 1,
-            minRent: 1500,
-            maxRent: 1700,
-            minSqft: 750,
-            maxSqft: 850,
-            deposit: 1500,
+            buildingID:   'consistency-test-building',
+            modelID:      'test-model',
+            modelName:    'Test Unit Type',
+            beds:         1,
+            baths:        1,
+            minRent:      1500,
+            maxRent:      1700,
+            minSqft:      750,
+            maxSqft:      850,
+            deposit:      1500,
             minLeaseTerm: 6,
             maxLeaseTerm: 18
         }
@@ -45,16 +45,16 @@ describe('MITS Generator and Site Mapper Consistency', () => {
 
     const mockUnitsWithMissingFields: UnitData[] = [
         {
-            buildingID: 'consistency-test-building',
-            unitID: 'consistency-unit-1',
-            unitNumber: '101',
-            modelID: 'test-model',
+            buildingID:    'consistency-test-building',
+            unitID:        'consistency-unit-1',
+            unitNumber:    '101',
+            modelID:       'test-model',
             // Missing: beds, baths, sqft, rent, minLeaseTerm, maxLeaseTerm
-            occupied: false,
+            occupied:      false,
             availableDate: '2025-02-01',
             feedInclusion: {
                 apartments_com: true,
-                zillow: true
+                zillow:         true
             }
         }
     ];
@@ -72,10 +72,10 @@ describe('MITS Generator and Site Mapper Consistency', () => {
 
         // 2. Generate MITS XML and extract the resolved values
         const mitsXML = await generateMITSFeed({
-            building: mockBuilding,
+            building:  mockBuilding,
             unitTypes: mockUnitTypes,
-            units: [testUnit],
-            siteName: 'apartments_com'
+            units:     [testUnit],
+            siteName:  'apartments_com'
         });
 
         // 3. Extract values from the MITS XML
@@ -102,20 +102,20 @@ describe('MITS Generator and Site Mapper Consistency', () => {
     it('should handle inheritance chain consistently: Unit → UnitType → Building', async () => {
         // Create a unit that references a non-existent unit type
         const unitWithMissingType: UnitData = {
-            buildingID: 'consistency-test-building',
-            unitID: 'orphan-unit',
-            unitNumber: '999',
-            modelID: 'non-existent-model',
-            beds: 2,
-            baths: 2,
-            sqft: 1000,
-            rent: 2000,
+            buildingID:    'consistency-test-building',
+            unitID:        'orphan-unit',
+            unitNumber:    '999',
+            modelID:       'non-existent-model',
+            beds:          2,
+            baths:         2,
+            sqft:          1000,
+            rent:          2000,
             // Missing: lease terms should inherit from building
-            occupied: false,
+            occupied:      false,
             availableDate: '2025-03-01',
             feedInclusion: {
                 apartments_com: true,
-                zillow: true
+                zillow:         true
             }
         };
 
@@ -128,10 +128,10 @@ describe('MITS Generator and Site Mapper Consistency', () => {
 
         // 2. Generate MITS XML
         const mitsXML = await generateMITSFeed({
-            building: mockBuilding,
+            building:  mockBuilding,
             unitTypes: mockUnitTypes,
-            units: [unitWithMissingType],
-            siteName: 'apartments_com'
+            units:     [unitWithMissingType],
+            siteName:  'apartments_com'
         });
 
         // 3. Verify that both methods produce the same results
@@ -154,28 +154,28 @@ describe('MITS Generator and Site Mapper Consistency', () => {
         const mixedUnits: UnitData[] = [
             // Complete unit with all fields
             {
-                buildingID: 'consistency-test-building',
-                unitID: 'complete-unit',
-                unitNumber: '201',
-                modelID: 'test-model',
-                beds: 2,
-                baths: 2,
-                sqft: 900,
-                rent: 1800,
-                minLeaseTerm: 12,
-                maxLeaseTerm: 24,
-                occupied: false,
+                buildingID:    'consistency-test-building',
+                unitID:        'complete-unit',
+                unitNumber:    '201',
+                modelID:       'test-model',
+                beds:          2,
+                baths:         2,
+                sqft:          900,
+                rent:          1800,
+                minLeaseTerm:  12,
+                maxLeaseTerm:  24,
+                occupied:      false,
                 availableDate: '2025-02-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             // Incomplete unit missing several fields
             {
-                buildingID: 'consistency-test-building',
-                unitID: 'incomplete-unit',
-                unitNumber: '202',
-                modelID: 'test-model',
+                buildingID:    'consistency-test-building',
+                unitID:        'incomplete-unit',
+                unitNumber:    '202',
+                modelID:       'test-model',
                 // Missing: beds, baths, sqft, rent, lease terms
-                occupied: false,
+                occupied:      false,
                 availableDate: '2025-02-15',
                 feedInclusion: { apartments_com: true, zillow: true }
             }
@@ -188,10 +188,10 @@ describe('MITS Generator and Site Mapper Consistency', () => {
 
         // Generate MITS XML
         const mitsXML = await generateMITSFeed({
-            building: mockBuilding,
+            building:  mockBuilding,
             unitTypes: mockUnitTypes,
-            units: mixedUnits,
-            siteName: 'apartments_com'
+            units:     mixedUnits,
+            siteName:  'apartments_com'
         });
 
         // Verify complete unit maintains its explicit values

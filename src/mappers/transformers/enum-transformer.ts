@@ -16,35 +16,35 @@ export const defaultEnumMappings = {
             internal: PropertyType.APARTMENT,
             external: {
                 apartments_com: 'Apartment',
-                zillow: 'Apartment'
+                zillow:         'Apartment'
             }
         },
         {
             internal: PropertyType.CONDO,
             external: {
                 apartments_com: 'Condo',
-                zillow: 'Condo'
+                zillow:         'Condo'
             }
         },
         {
             internal: PropertyType.TOWNHOME,
             external: {
                 apartments_com: 'Townhome',
-                zillow: 'Townhouse'
+                zillow:         'Townhouse'
             }
         },
         {
             internal: PropertyType.SINGLE_FAMILY,
             external: {
                 apartments_com: 'Single Family',
-                zillow: 'Single Family Home'
+                zillow:         'Single Family Home'
             }
         },
         {
             internal: PropertyType.HOUSE,
             external: {
                 apartments_com: 'House',
-                zillow: 'House'
+                zillow:         'House'
             }
         }
     ] as EnumMapping<PropertyType>[],
@@ -54,42 +54,42 @@ export const defaultEnumMappings = {
             internal: PetType.DOG,
             external: {
                 apartments_com: 'Dogs',
-                zillow: 'Dog'
+                zillow:         'Dog'
             }
         },
         {
             internal: PetType.CAT,
             external: {
                 apartments_com: 'Cats',
-                zillow: 'Cat'
+                zillow:         'Cat'
             }
         },
         {
             internal: PetType.BIRD,
             external: {
                 apartments_com: 'Birds',
-                zillow: 'Bird'
+                zillow:         'Bird'
             }
         },
         {
             internal: PetType.FISH,
             external: {
                 apartments_com: 'Fish',
-                zillow: 'Fish'
+                zillow:         'Fish'
             }
         },
         {
             internal: PetType.SMALL_ANIMAL,
             external: {
                 apartments_com: 'Small Animals',
-                zillow: 'Small Animal'
+                zillow:         'Small Animal'
             }
         },
         {
             internal: PetType.NO_PETS,
             external: {
                 apartments_com: 'No Pets',
-                zillow: 'No Pets Allowed'
+                zillow:         'No Pets Allowed'
             }
         }
     ] as EnumMapping<PetType>[],
@@ -99,35 +99,35 @@ export const defaultEnumMappings = {
             internal: ParkingType.GARAGE,
             external: {
                 apartments_com: 'Garage',
-                zillow: 'Garage'
+                zillow:         'Garage'
             }
         },
         {
             internal: ParkingType.COVERED,
             external: {
                 apartments_com: 'Covered',
-                zillow: 'Covered Parking'
+                zillow:         'Covered Parking'
             }
         },
         {
             internal: ParkingType.UNCOVERED,
             external: {
                 apartments_com: 'Uncovered',
-                zillow: 'Off-street Parking'
+                zillow:         'Off-street Parking'
             }
         },
         {
             internal: ParkingType.STREET,
             external: {
                 apartments_com: 'Street',
-                zillow: 'Street Parking'
+                zillow:         'Street Parking'
             }
         },
         {
             internal: ParkingType.NONE,
             external: {
                 apartments_com: 'None',
-                zillow: 'No Parking'
+                zillow:         'No Parking'
             }
         }
     ] as EnumMapping<ParkingType>[],
@@ -137,63 +137,63 @@ export const defaultEnumMappings = {
             internal: UtilityType.WATER,
             external: {
                 apartments_com: 'Water',
-                zillow: 'Water'
+                zillow:         'Water'
             }
         },
         {
             internal: UtilityType.SEWER,
             external: {
                 apartments_com: 'Sewer',
-                zillow: 'Sewer'
+                zillow:         'Sewer'
             }
         },
         {
             internal: UtilityType.TRASH,
             external: {
                 apartments_com: 'Trash',
-                zillow: 'Trash'
+                zillow:         'Trash'
             }
         },
         {
             internal: UtilityType.GAS,
             external: {
                 apartments_com: 'Gas',
-                zillow: 'Gas'
+                zillow:         'Gas'
             }
         },
         {
             internal: UtilityType.ELECTRICITY,
             external: {
                 apartments_com: 'Electricity',
-                zillow: 'Electric'
+                zillow:         'Electric'
             }
         },
         {
             internal: UtilityType.CABLE,
             external: {
                 apartments_com: 'Cable',
-                zillow: 'Cable'
+                zillow:         'Cable'
             }
         },
         {
             internal: UtilityType.INTERNET,
             external: {
                 apartments_com: 'Internet',
-                zillow: 'Internet'
+                zillow:         'Internet'
             }
         },
         {
             internal: UtilityType.HEAT,
             external: {
                 apartments_com: 'Heat',
-                zillow: 'Heat'
+                zillow:         'Heat'
             }
         },
         {
             internal: UtilityType.AIR_CONDITIONING,
             external: {
                 apartments_com: 'A/C',
-                zillow: 'Air Conditioning'
+                zillow:         'Air Conditioning'
             }
         }
     ] as EnumMapping<UtilityType>[],
@@ -203,70 +203,70 @@ export const defaultEnumMappings = {
             internal: FeeType.APPLICATION,
             external: {
                 apartments_com: 'Application Fee',
-                zillow: 'Application Fee'
+                zillow:         'Application Fee'
             }
         },
         {
             internal: FeeType.ADMIN,
             external: {
                 apartments_com: 'Admin Fee',
-                zillow: 'Administrative Fee'
+                zillow:         'Administrative Fee'
             }
         },
         {
             internal: FeeType.SECURITY_DEPOSIT,
             external: {
                 apartments_com: 'Security Deposit',
-                zillow: 'Security Deposit'
+                zillow:         'Security Deposit'
             }
         },
         {
             internal: FeeType.PET_DEPOSIT,
             external: {
                 apartments_com: 'Pet Deposit',
-                zillow: 'Pet Deposit'
+                zillow:         'Pet Deposit'
             }
         },
         {
             internal: FeeType.PET_FEE,
             external: {
                 apartments_com: 'Pet Fee',
-                zillow: 'Pet Fee'
+                zillow:         'Pet Fee'
             }
         },
         {
             internal: FeeType.PARKING,
             external: {
                 apartments_com: 'Parking Fee',
-                zillow: 'Parking'
+                zillow:         'Parking'
             }
         },
         {
             internal: FeeType.STORAGE,
             external: {
                 apartments_com: 'Storage Fee',
-                zillow: 'Storage'
+                zillow:         'Storage'
             }
         },
         {
             internal: FeeType.MOVE_IN,
             external: {
                 apartments_com: 'Move-in Fee',
-                zillow: 'Move-in Fee'
+                zillow:         'Move-in Fee'
             }
         },
         {
             internal: FeeType.KEY_DEPOSIT,
             external: {
                 apartments_com: 'Key Deposit',
-                zillow: 'Key Deposit'
+                zillow:         'Key Deposit'
             }
         },
         {
             internal: FeeType.CLEANING,
             external: {
                 apartments_com: 'Cleaning Fee',
-                zillow: 'Cleaning Fee'
+                zillow:         'Cleaning Fee'
             }
         }
     ] as EnumMapping<FeeType>[],
@@ -276,21 +276,21 @@ export const defaultEnumMappings = {
             internal: AmenityCategory.UNIT,
             external: {
                 apartments_com: 'Unit',
-                zillow: 'Interior'
+                zillow:         'Interior'
             }
         },
         {
             internal: AmenityCategory.PROPERTY,
             external: {
                 apartments_com: 'Property',
-                zillow: 'Property'
+                zillow:         'Property'
             }
         },
         {
             internal: AmenityCategory.COMMUNITY,
             external: {
                 apartments_com: 'Community',
-                zillow: 'Community'
+                zillow:         'Community'
             }
         }
     ] as EnumMapping<AmenityCategory>[]

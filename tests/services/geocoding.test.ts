@@ -70,17 +70,17 @@ describe('GeocodingService', () => {
         it('should successfully geocode a valid address', async () => {
             // Mock successful Nominatim response
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => [{
-                    lat: '34.0522',
-                    lon: '-118.2437',
+                    lat:          '34.0522',
+                    lon:          '-118.2437',
                     display_name: '123 Main St, Los Angeles, CA, USA',
-                    importance: 0.8,
-                    place_id: '123456',
-                    licence: 'test',
-                    osm_type: 'way',
-                    osm_id: '123456',
-                    boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                    importance:   0.8,
+                    place_id:     '123456',
+                    licence:      'test',
+                    osm_type:     'way',
+                    osm_id:       '123456',
+                    boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                 }]
             });
 
@@ -106,7 +106,7 @@ describe('GeocodingService', () => {
 
         it('should return null for no results', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => []
             });
 
@@ -132,8 +132,8 @@ describe('GeocodingService', () => {
 
         it('should handle API errors gracefully', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
+                ok:         false,
+                status:     500,
                 statusText: 'Internal Server Error'
             });
 
@@ -147,8 +147,8 @@ describe('GeocodingService', () => {
 
         it('should handle rate limiting (429 response)', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: false,
-                status: 429,
+                ok:         false,
+                status:     429,
                 statusText: 'Too Many Requests'
             });
 
@@ -163,17 +163,17 @@ describe('GeocodingService', () => {
         it('should cache results and return from cache on second call', async () => {
             // Mock successful response
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => [{
-                    lat: '34.0522',
-                    lon: '-118.2437',
+                    lat:          '34.0522',
+                    lon:          '-118.2437',
                     display_name: '123 Main St, Los Angeles, CA, USA',
-                    importance: 0.8,
-                    place_id: '123456',
-                    licence: 'test',
-                    osm_type: 'way',
-                    osm_id: '123456',
-                    boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                    importance:   0.8,
+                    place_id:     '123456',
+                    licence:      'test',
+                    osm_type:     'way',
+                    osm_id:       '123456',
+                    boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                 }]
             });
 
@@ -200,17 +200,17 @@ describe('GeocodingService', () => {
 
         it('should build query correctly with various address components', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => [{
-                    lat: '34.0522',
-                    lon: '-118.2437',
+                    lat:          '34.0522',
+                    lon:          '-118.2437',
                     display_name: 'Test Address',
-                    importance: 0.8,
-                    place_id: '123456',
-                    licence: 'test',
-                    osm_type: 'way',
-                    osm_id: '123456',
-                    boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                    importance:   0.8,
+                    place_id:     '123456',
+                    licence:      'test',
+                    osm_type:     'way',
+                    osm_id:       '123456',
+                    boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                 }]
             });
 
@@ -227,17 +227,17 @@ describe('GeocodingService', () => {
             timeNow += 2000; // Advance time for next call
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => [{
-                    lat: '34.0522',
-                    lon: '-118.2437',
+                    lat:          '34.0522',
+                    lon:          '-118.2437',
                     display_name: 'Test Address',
-                    importance: 0.8,
-                    place_id: '123456',
-                    licence: 'test',
-                    osm_type: 'way',
-                    osm_id: '123456',
-                    boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                    importance:   0.8,
+                    place_id:     '123456',
+                    licence:      'test',
+                    osm_type:     'way',
+                    osm_id:       '123456',
+                    boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                 }]
             });
 
@@ -251,17 +251,17 @@ describe('GeocodingService', () => {
             timeNow += 2000; // Advance time for next call
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => [{
-                    lat: '34.0522',
-                    lon: '-118.2437',
+                    lat:          '34.0522',
+                    lon:          '-118.2437',
                     display_name: 'Test Address',
-                    importance: 0.8,
-                    place_id: '123456',
-                    licence: 'test',
-                    osm_type: 'way',
-                    osm_id: '123456',
-                    boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                    importance:   0.8,
+                    place_id:     '123456',
+                    licence:      'test',
+                    osm_type:     'way',
+                    osm_id:       '123456',
+                    boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                 }]
             });
 
@@ -273,17 +273,17 @@ describe('GeocodingService', () => {
 
         it('should handle invalid coordinates in API response', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => [{
-                    lat: 'invalid',
-                    lon: 'invalid',
+                    lat:          'invalid',
+                    lon:          'invalid',
                     display_name: 'Test Address',
-                    importance: 0.8,
-                    place_id: '123456',
-                    licence: 'test',
-                    osm_type: 'way',
-                    osm_id: '123456',
-                    boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                    importance:   0.8,
+                    place_id:     '123456',
+                    licence:      'test',
+                    osm_type:     'way',
+                    osm_id:       '123456',
+                    boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                 }]
             });
 
@@ -313,17 +313,17 @@ describe('GeocodingService', () => {
         it('should clear cache', async () => {
             // Mock successful response and cache an item
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: async () => [{
-                    lat: '34.0522',
-                    lon: '-118.2437',
+                    lat:          '34.0522',
+                    lon:          '-118.2437',
                     display_name: '123 Main St, Los Angeles, CA, USA',
-                    importance: 0.8,
-                    place_id: '123456',
-                    licence: 'test',
-                    osm_type: 'way',
-                    osm_id: '123456',
-                    boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                    importance:   0.8,
+                    place_id:     '123456',
+                    licence:      'test',
+                    osm_type:     'way',
+                    osm_id:       '123456',
+                    boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                 }]
             });
 

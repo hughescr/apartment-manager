@@ -47,8 +47,8 @@ const loggerDebugSpy = spyOn(logger, 'debug');
 
 // Mock logger implementation (for backward compatibility)
 const mockLogger = {
-    info: loggerInfoSpy,
-    warn: loggerWarnSpy,
+    info:  loggerInfoSpy,
+    warn:  loggerWarnSpy,
     error: loggerErrorSpy,
     debug: loggerDebugSpy
 };
@@ -77,9 +77,9 @@ const createDynamoDbMock = () => {
         // Each response is a fresh object to prevent shared references
         if(cmd.constructor.name === 'QueryCommand') {
             return Promise.resolve({
-                Items: [],
-                Count: 0,
-                ScannedCount: 0,
+                Items:            [],
+                Count:            0,
+                ScannedCount:     0,
                 LastEvaluatedKey: undefined
             });
         }
@@ -93,30 +93,30 @@ const createDynamoDbMock = () => {
             const returnValues = cmdWithInput.input?.ReturnValues;
             const attributes = (returnValues === 'ALL_NEW') ? cmdWithInput.input?.Item || {} : {};
             return Promise.resolve({
-                Attributes: attributes,
-                ConsumedCapacity: undefined,
+                Attributes:            attributes,
+                ConsumedCapacity:      undefined,
                 ItemCollectionMetrics: undefined
             });
         }
         if(cmd.constructor.name === 'UpdateItemCommand' || cmd.constructor.name === 'UpdateCommand') {
             return Promise.resolve({
-                Attributes: {},
-                ConsumedCapacity: undefined,
+                Attributes:            {},
+                ConsumedCapacity:      undefined,
                 ItemCollectionMetrics: undefined
             });
         }
         if(cmd.constructor.name === 'DeleteItemCommand' || cmd.constructor.name === 'DeleteCommand') {
             return Promise.resolve({
-                Attributes: undefined,
-                ConsumedCapacity: undefined,
+                Attributes:            undefined,
+                ConsumedCapacity:      undefined,
                 ItemCollectionMetrics: undefined
             });
         }
         if(cmd.constructor.name === 'ScanCommand') {
             return Promise.resolve({
-                Items: [],
-                Count: 0,
-                ScannedCount: 0,
+                Items:            [],
+                Count:            0,
+                ScannedCount:     0,
                 LastEvaluatedKey: undefined
             });
         }
@@ -143,7 +143,7 @@ const createS3Mock = () => {
         const cmd = command as { constructor: { name: string } };
         if(cmd.constructor.name === 'PutObjectCommand') {
             return Promise.resolve({
-                ETag: '"mock-etag"',
+                ETag:      '"mock-etag"',
                 VersionId: 'mock-version-id',
             });
         }
@@ -160,7 +160,7 @@ const createS3Mock = () => {
         }
         if(cmd.constructor.name === 'ListObjectsV2Command') {
             return Promise.resolve({
-                Contents: [],
+                Contents:    [],
                 IsTruncated: false,
             });
         }
@@ -177,15 +177,15 @@ const createSSMMock = () => {
         if(cmd.constructor.name === 'PutParameterCommand') {
             return Promise.resolve({
                 Version: 1,
-                Tier: 'Standard'
+                Tier:    'Standard'
             });
         }
         if(cmd.constructor.name === 'GetParameterCommand') {
             return Promise.resolve({
                 Parameter: {
-                    Name: '/apartment-manager/test/credentials/test-site',
-                    Value: '{"apiKey":"test-key"}',
-                    Type: 'SecureString',
+                    Name:    '/apartment-manager/test/credentials/test-site',
+                    Value:   '{"apiKey":"test-key"}',
+                    Type:    'SecureString',
                     Version: 1
                 }
             });
@@ -196,7 +196,7 @@ const createSSMMock = () => {
         if(cmd.constructor.name === 'DescribeParametersCommand') {
             return Promise.resolve({
                 Parameters: [],
-                NextToken: undefined
+                NextToken:  undefined
             });
         }
         return Promise.reject(new Error(`Unmocked SSM command: ${cmd.constructor.name}`));
@@ -212,22 +212,22 @@ let ssmMock = createSSMMock();
 // Interface for mock data clients
 interface MockDataClients {
     getDynamoClient: () => {
-        send: typeof dynamoDbMock
+        send:    typeof dynamoDbMock
         destroy: jest.Mock
-        config: Record<string, unknown>
+        config:  Record<string, unknown>
     }
     getS3Client: () => {
-        send: typeof s3Mock
+        send:    typeof s3Mock
         destroy: jest.Mock
     }
     getSSMClient: () => {
-        send: typeof ssmMock
-        destroy: jest.Mock
-        config: Record<string, unknown>
+        send:            typeof ssmMock
+        destroy:         jest.Mock
+        config:          Record<string, unknown>
         middlewareStack: Record<string, unknown>
     }
-    setTestClients: jest.Mock
-    resetClients: jest.Mock
+    setTestClients:    jest.Mock
+    resetClients:      jest.Mock
     getApartmentTable: () => {
         build: jest.Mock
     }
@@ -240,22 +240,22 @@ if(process.env.BUN_ENV === 'test') {
     // Set up a mock for module resolution
     (globalThis as typeof globalThis & { mockDataClients?: MockDataClients }).mockDataClients = {
         getDynamoClient: () => ({
-            send: dynamoDbMock,
+            send:    dynamoDbMock,
             destroy: jest.fn().mockResolvedValue(undefined),
-            config: {}
+            config:  {}
         }),
         getS3Client: () => ({
-            send: s3Mock,
+            send:    s3Mock,
             destroy: jest.fn().mockResolvedValue(undefined)
         }),
         getSSMClient: () => ({
-            send: ssmMock,
-            destroy: jest.fn().mockResolvedValue(undefined),
-            config: {},
+            send:            ssmMock,
+            destroy:         jest.fn().mockResolvedValue(undefined),
+            config:          {},
             middlewareStack: {}
         }),
-        setTestClients: jest.fn(),
-        resetClients: jest.fn(),
+        setTestClients:    jest.fn(),
+        resetClients:      jest.fn(),
         // Enhanced mock table that properly handles entity filtering
         getApartmentTable: () => {
             const tableContext = {
@@ -269,9 +269,9 @@ if(process.env.BUN_ENV === 'test') {
                             tableContext.entities = map(entities, entity => ({ name: entity.name }));
                             return commandBuilder;
                         }),
-                        query: jest.fn().mockReturnThis(),
+                        query:   jest.fn().mockReturnThis(),
                         options: jest.fn().mockReturnThis(),
-                        send: jest.fn().mockImplementation(async (command?: Record<string, unknown>) => {
+                        send:    jest.fn().mockImplementation(async (command?: Record<string, unknown>) => {
                             // Create a QueryCommand-like object that preserves the constructor name
                             const QueryCommand = class QueryCommand {
                                 constructor(input: unknown) {
@@ -281,8 +281,8 @@ if(process.env.BUN_ENV === 'test') {
 
                             // Build the command object from the command builder state
                             const commandObj = new QueryCommand({
-                                TableName: 'test-table-name',
-                                KeyConditionExpression: 'buildingID = :buildingID',
+                                TableName:                 'test-table-name',
+                                KeyConditionExpression:    'buildingID = :buildingID',
                                 ExpressionAttributeValues: {
                                     ':buildingID': 'test-building-id'
                                 },
@@ -295,19 +295,19 @@ if(process.env.BUN_ENV === 'test') {
                             const mockResponse = await dynamoDbMock(commandObj);
 
                             // Check if this is a default empty response (indicating no explicit test configuration)
-                            const isDefaultResponse = mockResponse &&
-                              isArray(mockResponse.Items) &&
-                              mockResponse.Items.length === 0 &&
-                              mockResponse.Count === 0;
+                            const isDefaultResponse = mockResponse
+                              && isArray(mockResponse.Items)
+                              && mockResponse.Items.length === 0
+                              && mockResponse.Count === 0;
 
                             // If it's a default response and we have entities to filter, apply entity filtering
                             if(isDefaultResponse && tableContext.entities.length > 0) {
                                 // Apply entity filtering logic for unconfigured mocks
                                 // Entity names: map(tableContext.entities, 'name')
                                 return {
-                                    Items: [], // Filtered results would go here
-                                    Count: 0,
-                                    ScannedCount: 0,
+                                    Items:            [], // Filtered results would go here
+                                    Count:            0,
+                                    ScannedCount:     0,
                                     LastEvaluatedKey: undefined
                                 };
                             }
@@ -350,8 +350,8 @@ const validateBooleanTypes = (itemData: Record<string, unknown>) => {
 
 // Helper function to check if a value is a DynamoDB Toolbox operator (like $set([]))
 const isDynamoDBOperator = (value: unknown): boolean => {
-    return isObject(value) && value !== null &&
-      some(Object.getOwnPropertySymbols(value), sym => sym.toString().includes('$'));
+    return isObject(value) && value !== null
+      && some(Object.getOwnPropertySymbols(value), sym => sym.toString().includes('$'));
 };
 
 const validateArrayTypes = (itemData: Record<string, unknown>) => {
@@ -397,9 +397,9 @@ const createEntityMock = (entityName: string) => {
     // CRITICAL: Create completely fresh command context for each entity mock
     // This prevents state pollution between test files
     const createFreshCommandContext = () => ({
-        entities: [] as { name: string }[],
+        entities:    [] as { name: string }[],
         lastCommand: null as string | null,
-        itemData: null as Record<string, unknown> | null,
+        itemData:    null as Record<string, unknown> | null,
         optionsData: null as Record<string, unknown> | null
     });
 
@@ -417,7 +417,7 @@ const createEntityMock = (entityName: string) => {
             }
             return mockCommandBuilder;
         }),
-        key: jest.fn().mockReturnThis(),
+        key:     jest.fn().mockReturnThis(),
         options: jest.fn().mockImplementation((optionsData: Record<string, unknown>) => {
             // Store the options data for later use in send()
             commandContext.optionsData = optionsData;
@@ -489,7 +489,7 @@ const createEntityMock = (entityName: string) => {
             // For PutItemCommand, include the item data in the expected format
             if(commandName === 'PutItemCommand' || commandName === 'PutCommand') {
                 (commandObj as Record<string, unknown>).input = {
-                    Item: commandContext.itemData,
+                    Item:         commandContext.itemData,
                     ReturnValues: commandContext.optionsData?.returnValues,
                     ...commandContext.optionsData
                 };
@@ -505,12 +505,12 @@ const createEntityMock = (entityName: string) => {
 
     // Mock entity with proper metadata and enhanced methods
     const mockEntity = {
-        name: entityName,
+        name:       entityName,
         entityName: entityName, // Add entityName property for compatibility
-        table: {
-            name: 'test-table-name',
+        table:      {
+            name:         'test-table-name',
             partitionKey: { name: 'buildingID', type: 'string' },
-            sortKey: { name: 'unitID', type: 'string' }
+            sortKey:      { name: 'unitID', type: 'string' }
         },
         build: jest.fn().mockImplementation((CommandClass) => {
             // Store the command type for context
@@ -519,8 +519,8 @@ const createEntityMock = (entityName: string) => {
         }),
         // Legacy methods for backward compatibility
         query: jest.fn().mockImplementation(() => dynamoDbMock()),
-        scan: jest.fn().mockImplementation(() => dynamoDbMock()),
-        get: jest.fn().mockImplementation(() => dynamoDbMock())
+        scan:  jest.fn().mockImplementation(() => dynamoDbMock()),
+        get:   jest.fn().mockImplementation(() => dynamoDbMock())
     };
 
     return { mockEntity, mockCommandBuilder, commandContext };
@@ -556,31 +556,31 @@ export class TestSSMClient {
 
 export const TestDynamoDBDocumentClient = {
     from: (_client: unknown, _config?: unknown) => ({
-        send: dynamoDbMock,
+        send:    dynamoDbMock,
         destroy: jest.fn().mockResolvedValue(undefined),
-        config: {}
+        config:  {}
     })
 };
 
 // Create the mock data clients object that can be accessed by model.ts
 const createMockDataClients = () => ({
     getDynamoClient: () => ({
-        send: dynamoDbMock,
+        send:    dynamoDbMock,
         destroy: jest.fn().mockResolvedValue(undefined),
-        config: {}
+        config:  {}
     }),
     getS3Client: () => ({
-        send: s3Mock,
+        send:    s3Mock,
         destroy: jest.fn().mockResolvedValue(undefined)
     }),
     getSSMClient: () => ({
-        send: ssmMock,
-        destroy: jest.fn().mockResolvedValue(undefined),
-        config: {},
+        send:            ssmMock,
+        destroy:         jest.fn().mockResolvedValue(undefined),
+        config:          {},
         middlewareStack: {}
     }),
-    setTestClients: jest.fn(),
-    resetClients: jest.fn(),
+    setTestClients:    jest.fn(),
+    resetClients:      jest.fn(),
     // Enhanced mock table that properly handles entity filtering
     getApartmentTable: () => {
         return {
@@ -597,9 +597,9 @@ const createMockDataClients = () => ({
                         }));
                         return commandBuilder;
                     }),
-                    query: jest.fn().mockReturnThis(),
+                    query:   jest.fn().mockReturnThis(),
                     options: jest.fn().mockReturnThis(),
-                    send: jest.fn().mockImplementation(async (command?: Record<string, unknown>) => {
+                    send:    jest.fn().mockImplementation(async (command?: Record<string, unknown>) => {
                         // Create a QueryCommand-like object that preserves the constructor name
                         const QueryCommand = class QueryCommand {
                             constructor(input: unknown) {
@@ -609,8 +609,8 @@ const createMockDataClients = () => ({
 
                         // Build the command object from the command builder state
                         const commandObj = new QueryCommand({
-                            TableName: 'test-table-name',
-                            KeyConditionExpression: 'buildingID = :buildingID',
+                            TableName:                 'test-table-name',
+                            KeyConditionExpression:    'buildingID = :buildingID',
                             ExpressionAttributeValues: {
                                 ':buildingID': 'test-building-id'
                             },
@@ -623,19 +623,19 @@ const createMockDataClients = () => ({
                         const mockResponse = await dynamoDbMock(commandObj);
 
                         // Check if this is a default empty response (indicating no explicit test configuration)
-                        const isDefaultResponse = mockResponse &&
-                          isArray(mockResponse.Items) &&
-                          mockResponse.Items.length === 0 &&
-                          mockResponse.Count === 0;
+                        const isDefaultResponse = mockResponse
+                          && isArray(mockResponse.Items)
+                          && mockResponse.Items.length === 0
+                          && mockResponse.Count === 0;
 
                         // If it's a default response and we have entities to filter, apply entity filtering
                         if(isDefaultResponse && commandContext.entities.length > 0) {
                             // Apply entity filtering logic for unconfigured mocks
                             // Entity names: map(commandContext.entities, 'name')
                             return {
-                                Items: [], // Filtered results would go here
-                                Count: 0,
-                                ScannedCount: 0,
+                                Items:            [], // Filtered results would go here
+                                Count:            0,
+                                ScannedCount:     0,
                                 LastEvaluatedKey: undefined
                             };
                         }
@@ -696,9 +696,9 @@ const resetAllMocks = () => {
 
     // CRITICAL: Completely replace global references to ensure no shared state
     const globalRefs = globalThis as typeof globalThis & {
-        mockDataClients?: MockDataClients
+        mockDataClients?:    MockDataClients
         buildingEntityMock?: typeof buildingEntityMock
-        unitEntityMock?: typeof unitEntityMock
+        unitEntityMock?:     typeof unitEntityMock
         unitTypeEntityMock?: typeof unitTypeEntityMock
     };
 
@@ -735,9 +735,9 @@ const resetAllMocks = () => {
     TestSSMClient.prototype.config = {};
     TestSSMClient.prototype.middlewareStack = {};
     TestDynamoDBDocumentClient.from = (_client: unknown, _config?: unknown) => ({
-        send: dynamoDbMock,
+        send:    dynamoDbMock,
         destroy: jest.fn().mockResolvedValue(undefined),
-        config: {}
+        config:  {}
     });
 
     // CRITICAL: Force Jest to clear all mock state

@@ -40,7 +40,7 @@ export function validateId(id: string, fieldName: string): string | null {
     }
 
     // Check for null bytes
-    if(NULL_BYTE_PATTERN.test(id)) {
+    if(id.includes('\0')) {
         return `${fieldName} contains invalid characters`;
     }
 
@@ -176,13 +176,13 @@ export function validatePath(path: string): boolean {
     }
 
     // Check both original and decoded paths for null bytes
-    if(NULL_BYTE_PATTERN.test(path) || NULL_BYTE_PATTERN.test(decodedPath)) {
+    if(path.includes('\0') || decodedPath.includes('\0')) {
         return false;
     }
 
     // Check both original and decoded paths for absolute paths
-    if(startsWith(path, '/') || path.match(/^[a-z]:\\/i) ||
-      startsWith(decodedPath, '/') || decodedPath.match(/^[a-z]:\\/i)) {
+    if(startsWith(path, '/') || (/^[a-z]:\\/i.exec(path))
+      || startsWith(decodedPath, '/') || (/^[a-z]:\\/i.exec(decodedPath))) {
         return false;
     }
 

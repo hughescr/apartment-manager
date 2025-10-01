@@ -4,10 +4,10 @@
  */
 
 export interface MockResponseOptions {
-    Items?: unknown[]
-    Item?: unknown
-    Attributes?: unknown
-    Count?: number
+    Items?:        unknown[]
+    Item?:         unknown
+    Attributes?:   unknown
+    Count?:        number
     ScannedCount?: number
 }
 

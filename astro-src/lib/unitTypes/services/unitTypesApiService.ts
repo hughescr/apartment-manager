@@ -2,8 +2,8 @@ import type { UnitTypeData } from '../../../types';
 
 export interface ApiResponse<T> {
     success: boolean
-    data?: T
-    error?: string
+    data?:   T
+    error?:  string
 }
 
 export class UnitTypesApiService {
@@ -25,10 +25,10 @@ export class UnitTypesApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to load unit types' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -46,10 +46,10 @@ export class UnitTypesApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to load unit type' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -57,7 +57,7 @@ export class UnitTypesApiService {
     async createUnitType(unitType: Partial<UnitTypeData>): Promise<ApiResponse<UnitTypeData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${unitType.buildingID}/unit-types`, {
-                method: 'POST',
+                method:  'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -71,10 +71,10 @@ export class UnitTypesApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to create unit type' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -82,7 +82,7 @@ export class UnitTypesApiService {
     async updateUnitType(buildingID: string, modelID: string, unitType: Partial<UnitTypeData>): Promise<ApiResponse<UnitTypeData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/unit-types/${modelID}`, {
-                method: 'PUT',
+                method:  'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -96,10 +96,10 @@ export class UnitTypesApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to update unit type' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -116,10 +116,10 @@ export class UnitTypesApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to delete unit type' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }

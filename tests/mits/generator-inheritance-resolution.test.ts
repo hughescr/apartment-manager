@@ -10,22 +10,22 @@ describe('MITS Generator - Inheritance Resolution', () => {
     beforeEach(() => {
         // Create building with some default values
         mockBuilding = {
-            buildingID: 'test-building-1',
-            buildingName: 'Inheritance Test Apartments',
-            street: '123 Test St',
-            city: 'Los Angeles',
-            state: 'CA',
-            zip: '90001',
-            latitude: 34.0522,
-            longitude: -118.2437,
-            description: 'Test building for inheritance',
-            yearBuilt: 2020,
-            numberStories: 3,
-            totalUnits: 6,
+            buildingID:          'test-building-1',
+            buildingName:        'Inheritance Test Apartments',
+            street:              '123 Test St',
+            city:                'Los Angeles',
+            state:               'CA',
+            zip:                 '90001',
+            latitude:            34.0522,
+            longitude:           -118.2437,
+            description:         'Test building for inheritance',
+            yearBuilt:           2020,
+            numberStories:       3,
+            totalUnits:          6,
             propertyDescription: 'Test apartments with inheritance patterns',
-            leaseLength: 12, // Building-level lease length default
-            contactInfo: {
-                name: 'Test Manager',
+            leaseLength:         12, // Building-level lease length default
+            contactInfo:         {
+                name:  'Test Manager',
                 phone: '(555) 123-4567',
                 email: 'test@example.com'
             }
@@ -34,33 +34,33 @@ describe('MITS Generator - Inheritance Resolution', () => {
         // Create unit types with complete field sets
         mockUnitTypes = [
             {
-                buildingID: 'test-building-1',
-                modelID: 'model-studio',
-                modelName: 'Studio',
-                beds: 0,
-                baths: 1,
-                minRent: 1200,
-                maxRent: 1400,
-                minSqft: 450,
-                maxSqft: 550,
-                deposit: 1200,
-                minLeaseTerm: 6,
-                maxLeaseTerm: 18,
+                buildingID:     'test-building-1',
+                modelID:        'model-studio',
+                modelName:      'Studio',
+                beds:           0,
+                baths:          1,
+                minRent:        1200,
+                maxRent:        1400,
+                minSqft:        450,
+                maxSqft:        550,
+                deposit:        1200,
+                minLeaseTerm:   6,
+                maxLeaseTerm:   18,
                 countAvailable: 2
             },
             {
-                buildingID: 'test-building-1',
-                modelID: 'model-1bed',
-                modelName: 'One Bedroom',
-                beds: 1,
-                baths: 1,
-                minRent: 1600,
-                maxRent: 1800,
-                minSqft: 750,
-                maxSqft: 850,
-                deposit: 1600,
-                minLeaseTerm: 12,
-                maxLeaseTerm: 24,
+                buildingID:     'test-building-1',
+                modelID:        'model-1bed',
+                modelName:      'One Bedroom',
+                beds:           1,
+                baths:          1,
+                minRent:        1600,
+                maxRent:        1800,
+                minSqft:        750,
+                maxSqft:        850,
+                deposit:        1600,
+                minLeaseTerm:   12,
+                maxLeaseTerm:   24,
                 countAvailable: 4
             }
         ];
@@ -69,57 +69,57 @@ describe('MITS Generator - Inheritance Resolution', () => {
         mockUnitsWithMissingFields = [
             {
                 // Unit with missing beds, baths, sqft, rent - should inherit from unit type
-                buildingID: 'test-building-1',
-                unitID: 'unit-101',
-                unitNumber: '101',
-                modelID: 'model-studio',
+                buildingID:    'test-building-1',
+                unitID:        'unit-101',
+                unitNumber:    '101',
+                modelID:       'model-studio',
                 // beds: undefined - should inherit 0 from model-studio
                 // baths: undefined - should inherit 1 from model-studio
                 // sqft: undefined - should inherit 450 (minSqft) from model-studio
                 // rent: undefined - should inherit 1200 (minRent) from model-studio
-                occupied: false,
+                occupied:      false,
                 availableDate: '2025-02-01',
                 feedInclusion: {
                     apartments_com: true,
-                    zillow: true
+                    zillow:         true
                 }
             },
             {
                 // Unit with missing lease terms - should inherit from unit type then building
-                buildingID: 'test-building-1',
-                unitID: 'unit-201',
-                unitNumber: '201',
-                modelID: 'model-1bed',
-                beds: 1,
-                baths: 1,
-                sqft: 800,
-                rent: 1700,
+                buildingID:    'test-building-1',
+                unitID:        'unit-201',
+                unitNumber:    '201',
+                modelID:       'model-1bed',
+                beds:          1,
+                baths:         1,
+                sqft:          800,
+                rent:          1700,
                 // minLeaseTerm: undefined - should inherit 12 from model-1bed
                 // maxLeaseTerm: undefined - should inherit 24 from model-1bed
-                occupied: false,
+                occupied:      false,
                 availableDate: '2025-02-15',
                 feedInclusion: {
                     apartments_com: true,
-                    zillow: false
+                    zillow:         false
                 }
             },
             {
                 // Unit with missing unit type reference - should inherit from building
-                buildingID: 'test-building-1',
-                unitID: 'unit-301',
-                unitNumber: '301',
-                modelID: 'model-nonexistent', // This unit type doesn't exist
-                beds: 2,
-                baths: 2,
-                sqft: 1000,
-                rent: 2000,
+                buildingID:    'test-building-1',
+                unitID:        'unit-301',
+                unitNumber:    '301',
+                modelID:       'model-nonexistent', // This unit type doesn't exist
+                beds:          2,
+                baths:         2,
+                sqft:          1000,
+                rent:          2000,
                 // minLeaseTerm: undefined - should inherit 12 from building.leaseLength
                 // maxLeaseTerm: undefined - should inherit 12 from building.leaseLength
-                occupied: false,
+                occupied:      false,
                 availableDate: '2025-03-01',
                 feedInclusion: {
                     apartments_com: true,
-                    zillow: true
+                    zillow:         true
                 }
             }
         ];
@@ -128,10 +128,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
     describe('Unit Field Inheritance from Unit Types', () => {
         it('should inherit missing beds from unit type', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithMissingFields,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithMissingFields,
+                siteName:  'apartments_com'
             });
 
             // Unit 101 should have beds=0 inherited from model-studio
@@ -147,10 +147,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
 
         it('should inherit missing baths from unit type', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithMissingFields,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithMissingFields,
+                siteName:  'apartments_com'
             });
 
             // Unit 101 should have baths=1 inherited from model-studio
@@ -163,10 +163,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
 
         it('should inherit missing sqft from unit type minSqft', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithMissingFields,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithMissingFields,
+                siteName:  'apartments_com'
             });
 
             // Unit 101 should have sqft=450 inherited from model-studio.minSqft
@@ -180,10 +180,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
 
         it('should inherit missing rent from unit type minRent', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithMissingFields,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithMissingFields,
+                siteName:  'apartments_com'
             });
 
             // Unit 101 should have rent=1200 inherited from model-studio.minRent
@@ -198,10 +198,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
     describe('Lease Term Inheritance Chain', () => {
         it('should inherit lease terms from unit type when available', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithMissingFields,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithMissingFields,
+                siteName:  'apartments_com'
             });
 
             // Unit 201 should inherit lease terms from model-1bed
@@ -211,10 +211,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
 
         it('should inherit lease terms from building when unit type unavailable', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithMissingFields,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithMissingFields,
+                siteName:  'apartments_com'
             });
 
             // Unit 301 references non-existent model, should inherit from building
@@ -225,10 +225,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
     describe('Complete XML Generation with Inheritance', () => {
         it('should generate complete MITS XML with all inherited fields populated', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithMissingFields,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithMissingFields,
+                siteName:  'apartments_com'
             });
 
             // Basic XML structure
@@ -258,28 +258,28 @@ describe('MITS Generator - Inheritance Resolution', () => {
             // Create a unit with explicit values that differ from unit type
             const unitsWithExplicitValues: UnitData[] = [
                 {
-                    buildingID: 'test-building-1',
-                    unitID: 'unit-override',
-                    unitNumber: '999',
-                    modelID: 'model-studio', // Points to studio (0 bed, 1 bath)
-                    beds: 2, // Override: should be 2, not 0
-                    baths: 2, // Override: should be 2, not 1
-                    sqft: 1200, // Override: should be 1200, not 450
-                    rent: 2500, // Override: should be 2500, not 1200
-                    occupied: false,
+                    buildingID:    'test-building-1',
+                    unitID:        'unit-override',
+                    unitNumber:    '999',
+                    modelID:       'model-studio', // Points to studio (0 bed, 1 bath)
+                    beds:          2, // Override: should be 2, not 0
+                    baths:         2, // Override: should be 2, not 1
+                    sqft:          1200, // Override: should be 1200, not 450
+                    rent:          2500, // Override: should be 2500, not 1200
+                    occupied:      false,
                     availableDate: '2025-02-01',
                     feedInclusion: {
                         apartments_com: true,
-                        zillow: true
+                        zillow:         true
                     }
                 }
             ];
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: unitsWithExplicitValues,
-                siteName: 'apartments_com'
+                units:     unitsWithExplicitValues,
+                siteName:  'apartments_com'
             });
 
             // Should use explicit values, not inherited ones
@@ -312,10 +312,10 @@ describe('MITS Generator - Inheritance Resolution', () => {
 
             // Generate MITS XML (which now uses the same resolver internally)
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: [testUnit],
-                siteName: 'apartments_com'
+                units:     [testUnit],
+                siteName:  'apartments_com'
             });
 
             // The MITS XML should reflect the same resolved values

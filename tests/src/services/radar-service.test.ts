@@ -46,23 +46,23 @@ const createTestAutocompleteResult = (overrides: Partial<RadarAutocompleteResult
     displayText: '123 Test Street, Test City, TS 12345',
     description: 'Address',
     coordinates: { lat: 37.7749, lon: -122.4194 },
-    components: {
-        street: '123 Test Street',
-        city: 'Test City',
-        state: 'TS',
-        country: 'United States',
+    components:  {
+        street:     '123 Test Street',
+        city:       'Test City',
+        state:      'TS',
+        country:    'United States',
         postalCode: '12345'
     },
     confidence: 0.9,
-    source: 'radar',
-    id: 'test_address_1',
+    source:     'radar',
+    id:         'test_address_1',
     ...overrides
 });
 
 const createTestGeolocationResult = (overrides: Partial<GeolocationResult> = {}): GeolocationResult => ({
-    lat: 37.7749,
-    lon: -122.4194,
-    source: 'ip',
+    lat:        37.7749,
+    lon:        -122.4194,
+    source:     'ip',
     confidence: 'high',
     ...overrides
 });
@@ -70,31 +70,31 @@ const createTestGeolocationResult = (overrides: Partial<GeolocationResult> = {})
 const createMockRadarAutocompleteResponse = (addressCount = 2): RadarAutocompleteResponse => ({
     addresses: Array.from({ length: addressCount }, (_, i) => ({
         formattedAddress: `${100 + i} Test Street, Test City, TS 1234${i}`,
-        placeLabel: i === 0 ? undefined : `Test Place ${i}`,
-        addressLabel: `${100 + i} Test Street`,
-        confidence: i === 0 ? 'exact' : 'high',
-        geometry: {
-            type: 'Point',
+        placeLabel:       i === 0 ? undefined : `Test Place ${i}`,
+        addressLabel:     `${100 + i} Test Street`,
+        confidence:       i === 0 ? 'exact' : 'high',
+        geometry:         {
+            type:        'Point',
             coordinates: [-122.4194 + i * 0.001, 37.7749 + i * 0.001]
         },
-        city: 'Test City',
-        state: 'TS',
+        city:       'Test City',
+        state:      'TS',
         postalCode: `1234${i}`,
-        country: 'United States',
-        layer: i === 0 ? 'address' : 'place'
+        country:    'United States',
+        layer:      i === 0 ? 'address' : 'place'
     }))
 });
 
 const createMockRadarIPGeocodeResponse = (): RadarIPGeocodeResponse => ({
     address: {
         formattedAddress: 'Test City, TS, United States',
-        city: 'Test City',
-        state: 'TS',
-        country: 'United States',
-        postalCode: '12345',
-        confidence: 'medium',
-        geometry: {
-            type: 'Point',
+        city:             'Test City',
+        state:            'TS',
+        country:          'United States',
+        postalCode:       '12345',
+        confidence:       'medium',
+        geometry:         {
+            type:        'Point',
             coordinates: [-122.4194, 37.7749]
         }
     }
@@ -103,15 +103,15 @@ const createMockRadarIPGeocodeResponse = (): RadarIPGeocodeResponse => ({
 const createMockRadarForwardGeocodeResponse = (): RadarForwardGeocodeResponse => ({
     addresses: [{
         formattedAddress: '123 Test Street, Test City, TS 12345',
-        confidence: 'exact',
-        geometry: {
-            type: 'Point',
+        confidence:       'exact',
+        geometry:         {
+            type:        'Point',
             coordinates: [-122.4194, 37.7749]
         },
-        city: 'Test City',
-        state: 'TS',
+        city:       'Test City',
+        state:      'TS',
         postalCode: '12345',
-        country: 'United States'
+        country:    'United States'
     }]
 });
 
@@ -131,16 +131,16 @@ const createMockResponse = (data: unknown, options: { status?: number, ok?: bool
         ok,
         status,
         statusText,
-        json: () => Promise.resolve(data),
-        text: () => Promise.resolve(JSON.stringify(data)),
-        headers: new Headers(),
-        clone: jest.fn(),
-        body: null,
-        bodyUsed: false,
+        json:       () => Promise.resolve(data),
+        text:       () => Promise.resolve(JSON.stringify(data)),
+        headers:    new Headers(),
+        clone:      jest.fn(),
+        body:       null,
+        bodyUsed:   false,
         redirected: false,
-        type: 'default' as ResponseType,
-        url: '',
-        bytes: () => Promise.resolve(new Uint8Array())
+        type:       'default' as ResponseType,
+        url:        '',
+        bytes:      () => Promise.resolve(new Uint8Array())
     };
 };
 // Function to reset all mocks
@@ -348,12 +348,12 @@ describe('RadarCache', () => {
             const stats = cache.getStats();
 
             expect(stats).toEqual({
-                autocompleteSize: 0,
-                ipSize: 0,
-                maxAutocompleteSize: 500,
-                maxIPSize: 1000,
+                autocompleteSize:       0,
+                ipSize:                 0,
+                maxAutocompleteSize:    500,
+                maxIPSize:              1000,
                 autocompleteTtlMinutes: 5,
-                ipTtlMinutes: 60
+                ipTtlMinutes:           60
             });
 
             cache.setAutocomplete('test1', [createTestAutocompleteResult()]);
@@ -423,8 +423,8 @@ describe('RadarClient', () => {
             mockFetch.mockResolvedValue(createMockResponse(mockResponse));
 
             const requestPromise = client.autocompleteAddress({
-                query: 'test query',
-                limit: 3,
+                query:       'test query',
+                limit:       3,
                 coordinates: { lat: 37.7749, lon: -122.4194 }
             });
 
@@ -460,14 +460,14 @@ describe('RadarClient', () => {
             expect(results[0]).toMatchObject({
                 displayText: '100 Test Street',
                 coordinates: { lat: 37.7749, lon: -122.4194 },
-                source: 'radar',
-                confidence: 1.0
+                source:      'radar',
+                confidence:  1.0
             });
             expect(results[1]).toMatchObject({
                 displayText: 'Test Place 1',
                 description: 'Place',
-                source: 'radar',
-                confidence: 0.8
+                source:      'radar',
+                confidence:  0.8
             });
             // Check coordinates separately with tolerance for floating point
             const secondResult = results[1];
@@ -524,10 +524,10 @@ describe('RadarClient', () => {
             const result = await client.getLocationFromIP('192.168.1.1');
 
             expect(result).toEqual({
-                lat: 37.7749,
-                lon: -122.4194,
+                lat:        37.7749,
+                lon:        -122.4194,
                 confidence: 'medium',
-                source: 'ip'
+                source:     'ip'
             });
         });
 
@@ -596,8 +596,8 @@ describe('RadarClient', () => {
             const result = client.getDefaultLocation();
 
             expect(result).toEqual({
-                lat: 37.7749,
-                lon: -122.4194,
+                lat:    37.7749,
+                lon:    -122.4194,
                 source: 'fallback'
             });
         });
@@ -619,10 +619,10 @@ describe('RadarClient', () => {
 
             expect(stats).toEqual(
                 expect.objectContaining({
-                    autocompleteSize: 0,
-                    ipSize: 0,
+                    autocompleteSize:    0,
+                    ipSize:              0,
                     maxAutocompleteSize: 500,
-                    maxIPSize: 1000
+                    maxIPSize:           1000
                 })
             );
         });
@@ -661,7 +661,7 @@ describe('Integration Tests', () => {
             expect(results).toHaveLength(2);
             expect(results[0]).toMatchObject({
                 displayText: expect.stringContaining('100 Test Street'),
-                source: 'radar'
+                source:      'radar'
             });
         });
 
@@ -689,8 +689,8 @@ describe('Integration Tests', () => {
             const result = await getUserLocation(browserCoords);
 
             expect(result).toEqual({
-                lat: 40.7128,
-                lon: -74.0060,
+                lat:    40.7128,
+                lon:    -74.0060,
                 source: 'browser'
             });
             expect(mockFetch).not.toHaveBeenCalled();
@@ -703,10 +703,10 @@ describe('Integration Tests', () => {
             const result = await getUserLocation(undefined, '192.168.1.1');
 
             expect(result).toEqual({
-                lat: 37.7749,
-                lon: -122.4194,
+                lat:        37.7749,
+                lon:        -122.4194,
                 confidence: 'medium',
-                source: 'ip'
+                source:     'ip'
             });
         });
 
@@ -716,8 +716,8 @@ describe('Integration Tests', () => {
             const result = await getUserLocation();
 
             expect(result).toEqual({
-                lat: 37.7749,
-                lon: -122.4194,
+                lat:    37.7749,
+                lon:    -122.4194,
                 source: 'fallback'
             });
         });

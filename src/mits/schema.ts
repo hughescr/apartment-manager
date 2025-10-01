@@ -4,141 +4,141 @@
 import type { BuildingData, UnitTypeData, UnitData } from '../types';
 
 export interface MITSPhysicalProperty {
-    Property_ID: PropertyIdentification
+    Property_ID:  PropertyIdentification
     Information?: PropertyInformation
-    Management?: ManagementInfo
-    Policy?: PropertyPolicy
-    Phase?: Phase[]
-    Building?: BuildingInfo[]
-    Floorplan?: Floorplan[]
-    ILSUnit?: ILSUnitInfo
-    Amenity?: PropertyAmenity[]
-    File?: MediaFile[]
-    LastUpdate: string // ISO 8601 datetime
+    Management?:  ManagementInfo
+    Policy?:      PropertyPolicy
+    Phase?:       Phase[]
+    Building?:    BuildingInfo[]
+    Floorplan?:   Floorplan[]
+    ILSUnit?:     ILSUnitInfo
+    Amenity?:     PropertyAmenity[]
+    File?:        MediaFile[]
+    LastUpdate:   string // ISO 8601 datetime
 }
 
 export interface PropertyIdentification {
     Identification: {
-        PropertyID: string
+        PropertyID:     string
         MarketingName?: string
-        WebSite?: string
+        WebSite?:       string
     }
-    Address?: PropertyAddress
+    Address?:            PropertyAddress
     ILS_Identification?: ILSIdentification
     Location?: {
-        Latitude?: number
+        Latitude?:  number
         Longitude?: number
     }
 }
 
 export interface PropertyAddress {
-    Address: string
-    Address2?: string
-    City: string
-    State: string
+    Address:    string
+    Address2?:  string
+    City:       string
+    State:      string
     PostalCode: string
-    Country?: string
+    Country?:   string
 }
 
 export interface ILSIdentification {
-    RentalType: 'Market Rate' | 'Affordable' | 'Student' | 'Senior'
-    YearBuilt?: number
+    RentalType:  'Market Rate' | 'Affordable' | 'Student' | 'Senior'
+    YearBuilt?:  number
     TotalUnits?: number
-    Latitude?: number
-    Longitude?: number
+    Latitude?:   number
+    Longitude?:  number
 }
 
 export interface PropertyInformation {
-    StructureType?: 'Apartment' | 'Condo' | 'Townhouse' | 'Single Family' | 'House'
-    YearBuilt?: number
-    NumberOfStories?: number
-    UnitCount?: number
-    ShortDescription?: string
-    LongDescription?: string
-    PhoneNumber?: string
-    Email?: string
-    WebSite?: string
-    OfficeHours?: OfficeHour[]
+    StructureType?:         'Apartment' | 'Condo' | 'Townhouse' | 'Single Family' | 'House'
+    YearBuilt?:             number
+    NumberOfStories?:       number
+    UnitCount?:             number
+    ShortDescription?:      string
+    LongDescription?:       string
+    PhoneNumber?:           string
+    Email?:                 string
+    WebSite?:               string
+    OfficeHours?:           OfficeHour[]
     PropertyLicenseNumber?: string
 }
 
 export interface OfficeHour {
-    Day: string
-    OpenTime: string
+    Day:       string
+    OpenTime:  string
     CloseTime: string
 }
 
 export interface ManagementInfo {
-    CompanyID?: string
+    CompanyID?:   string
     CompanyName?: string
-    Name?: string
-    Email?: string
-    Phone?: string
-    Address?: PropertyAddress
-    WebSite?: string
+    Name?:        string
+    Email?:       string
+    Phone?:       string
+    Address?:     PropertyAddress
+    WebSite?:     string
     CompanyLogo?: string
 }
 
 export interface PropertyPolicy {
-    Pet?: PetPolicy
-    ApplicationFee?: number
-    AdminFee?: number
-    BrokerFee?: number
+    Pet?:             PetPolicy
+    ApplicationFee?:  number
+    AdminFee?:        number
+    BrokerFee?:       number
     SecurityDeposit?: DepositInfo
 }
 
 export interface PetPolicy {
-    Allowed: boolean
-    Deposit?: number
-    Fee?: number
-    Rent?: number
-    MaxCount?: number
+    Allowed:      boolean
+    Deposit?:     number
+    Fee?:         number
+    Rent?:        number
+    MaxCount?:    number
     WeightLimit?: number
-    Comment?: string
-    PetType?: PetTypeInfo[]
+    Comment?:     string
+    PetType?:     PetTypeInfo[]
 }
 
 export interface PetTypeInfo {
-    Type: string
-    Allowed: boolean
+    Type:     string
+    Allowed:  boolean
     Deposit?: number
-    Fee?: number
-    Rent?: number
+    Fee?:     number
+    Rent?:    number
 }
 
 export interface DepositInfo {
     Amount?: {
         Value?: number
-        Min?: number
-        Max?: number
+        Min?:   number
+        Max?:   number
     }
-    Refundable?: boolean
+    Refundable?:        boolean
     PortionRefundable?: number
 }
 
 export interface Phase {
-    PhaseID: string
-    PhaseName?: string
+    PhaseID:           string
+    PhaseName?:        string
     PhaseDescription?: string
-    Building?: BuildingInfo[]
+    Building?:         BuildingInfo[]
 }
 
 export interface BuildingInfo {
-    BuildingID: string
-    BuildingName?: string
-    Address?: PropertyAddress
+    BuildingID:      string
+    BuildingName?:   string
+    Address?:        PropertyAddress
     BuildingFloors?: number
-    BuildingUnits?: number
+    BuildingUnits?:  number
 }
 
 export interface Floorplan {
     Identification: {
-        FloorplanID: string
-        Name: string
-        UnitCount?: number
+        FloorplanID:     string
+        Name:            string
+        UnitCount?:      number
         UnitsAvailable?: number
     }
-    Room?: RoomInfo[]
+    Room?:       RoomInfo[]
     SquareFeet?: {
         Min?: number
         Max?: number
@@ -152,18 +152,18 @@ export interface Floorplan {
         Min?: number
         Max?: number
     }
-    Deposit?: DepositInfo
+    Deposit?:          DepositInfo
     FloorplanAmenity?: FloorplanAmenity[]
-    File?: MediaFile[]
+    File?:             MediaFile[]
 }
 
 export interface RoomInfo {
     RoomType: 'bedroom' | 'bathroom' | 'den' | 'loft' | 'kitchen' | 'living'
-    Count: number
+    Count:    number
 }
 
 export interface FloorplanAmenity {
-    AmenityType: string
+    AmenityType:         string
     AmenityDescription?: string
 }
 
@@ -175,91 +175,91 @@ export interface ILSUnitInfo {
 
 export interface ILSUnit {
     Identification: {
-        UnitID: string
-        UnitNumber?: string
+        UnitID:       string
+        UnitNumber?:  string
         FloorplanID?: string
-        PhaseID?: string
-        BuildingID?: string
+        PhaseID?:     string
+        BuildingID?:  string
     }
-    UnitBedrooms?: number
+    UnitBedrooms?:  number
     UnitBathrooms?: number
     MinSquareFeet?: number
     MaxSquareFeet?: number
-    SquareFeet?: number
-    UnitRent?: number
-    MarketRent?: number
+    SquareFeet?:    number
+    UnitRent?:      number
+    MarketRent?:    number
     EffectiveRent?: number
-    Deposit?: DepositInfo
+    Deposit?:       DepositInfo
     Availability?: {
-        VacateDate?: string // ISO 8601 date
-        VacancyClass?: 'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
+        VacateDate?:    string // ISO 8601 date
+        VacancyClass?:  'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
         MadeReadyDate?: string // ISO 8601 date
         AvailableDate?: string // ISO 8601 date
     }
     UnitAmenity?: UnitAmenity[]
-    File?: MediaFile[]
+    File?:        MediaFile[]
 }
 
 export interface UnitAmenity {
-    AmenityType: string
+    AmenityType:         string
     AmenityDescription?: string
 }
 
 export interface PropertyAmenity {
-    AmenityType: string
+    AmenityType:         string
     AmenityDescription?: string
-    AmenityRank?: number
+    AmenityRank?:        number
 }
 
 export interface MediaFile {
-    FileID?: string
-    Active?: boolean
-    FileType?: 'Photo' | 'Video' | 'Floorplan' | 'Document' | 'Logo'
-    Name?: string
-    Caption?: string
+    FileID?:      string
+    Active?:      boolean
+    FileType?:    'Photo' | 'Video' | 'Floorplan' | 'Document' | 'Logo'
+    Name?:        string
+    Caption?:     string
     Description?: string
-    Format?: string // MIME type
-    Src?: string // URL
-    Width?: number
-    Height?: number
-    Rank?: number
+    Format?:      string // MIME type
+    Src?:         string // URL
+    Width?:       number
+    Height?:      number
+    Rank?:        number
 }
 
 // Helper type for feed generation options
 export interface MITSFeedOptions {
-    building: BuildingData // BuildingData from types/index.ts
-    unitTypes: UnitTypeData[] // UnitTypeData[] from types/index.ts
-    units: UnitData[] // UnitData[] from types/index.ts
-    siteName: 'apartments_com' | 'zillow'
+    building:       BuildingData // BuildingData from types/index.ts
+    unitTypes:      UnitTypeData[] // UnitTypeData[] from types/index.ts
+    units:          UnitData[] // UnitData[] from types/index.ts
+    siteName:       'apartments_com' | 'zillow'
     includePhotos?: boolean
-    updateMode?: 'full' | 'availability_only'
+    updateMode?:    'full' | 'availability_only'
 }
 
 // Site-specific configuration
 export interface SiteConfig {
-    siteName: string
+    siteName:           string
     requiresFloorplans: boolean
-    supportsPetTypes: boolean
-    supportsPhases: boolean
-    defaultRentalType: 'Market Rate' | 'Affordable' | 'Student' | 'Senior'
-    xmlNamespace?: string
+    supportsPetTypes:   boolean
+    supportsPhases:     boolean
+    defaultRentalType:  'Market Rate' | 'Affordable' | 'Student' | 'Senior'
+    xmlNamespace?:      string
 }
 
 // Validation options
 export interface ValidationOptions {
-    strict?: boolean
-    maxDepth?: number
+    strict?:                boolean
+    maxDepth?:              number
     allowExternalEntities?: boolean
-    checkDates?: boolean
-    checkNumericTypes?: boolean
+    checkDates?:            boolean
+    checkNumericTypes?:     boolean
 }
 
 // Feed metadata
 export interface FeedMetadata {
-    generatedAt: Date
-    version: string
-    siteName: string
-    propertyCount: number
-    unitCount: number
+    generatedAt:    Date
+    version:        string
+    siteName:       string
+    propertyCount:  number
+    unitCount:      number
     floorplanCount: number
 }

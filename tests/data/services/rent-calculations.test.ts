@@ -16,8 +16,8 @@ describe('Rent Calculations Service', () => {
         it('should calculate absolute rent correctly', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'absolute',
-                value: 2800
+                updateType:  'absolute',
+                value:       2800
             };
 
             const result = calculateRent(options);
@@ -28,8 +28,8 @@ describe('Rent Calculations Service', () => {
         it('should calculate percentage increase correctly', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 10
+                updateType:  'percentage',
+                value:       10
             };
 
             const result = calculateRent(options);
@@ -40,8 +40,8 @@ describe('Rent Calculations Service', () => {
         it('should calculate percentage decrease correctly', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: -10
+                updateType:  'percentage',
+                value:       -10
             };
 
             const result = calculateRent(options);
@@ -52,8 +52,8 @@ describe('Rent Calculations Service', () => {
         it('should round percentage calculations to nearest dollar', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2533,
-                updateType: 'percentage',
-                value: 10
+                updateType:  'percentage',
+                value:       10
             };
 
             const result = calculateRent(options);
@@ -64,8 +64,8 @@ describe('Rent Calculations Service', () => {
         it('should handle zero current rent with percentage', () => {
             const options: RentCalculationOptions = {
                 currentRent: 0,
-                updateType: 'percentage',
-                value: 50
+                updateType:  'percentage',
+                value:       50
             };
 
             const result = calculateRent(options);
@@ -76,8 +76,8 @@ describe('Rent Calculations Service', () => {
         it('should handle zero percentage change', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 0
+                updateType:  'percentage',
+                value:       0
             };
 
             const result = calculateRent(options);
@@ -88,8 +88,8 @@ describe('Rent Calculations Service', () => {
         it('should handle 100% increase', () => {
             const options: RentCalculationOptions = {
                 currentRent: 1000,
-                updateType: 'percentage',
-                value: 100
+                updateType:  'percentage',
+                value:       100
             };
 
             const result = calculateRent(options);
@@ -100,8 +100,8 @@ describe('Rent Calculations Service', () => {
         it('should handle fractional percentages', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2000,
-                updateType: 'percentage',
-                value: 2.5
+                updateType:  'percentage',
+                value:       2.5
             };
 
             const result = calculateRent(options);
@@ -120,22 +120,22 @@ describe('Rent Calculations Service', () => {
             expect(results).toHaveLength(4);
             expect(results[0]).toEqual({
                 percentage: 5,
-                newRent: 2625,
+                newRent:    2625,
                 difference: 125
             });
             expect(results[1]).toEqual({
                 percentage: 10,
-                newRent: 2750,
+                newRent:    2750,
                 difference: 250
             });
             expect(results[2]).toEqual({
                 percentage: -5,
-                newRent: 2375,
+                newRent:    2375,
                 difference: -125
             });
             expect(results[3]).toEqual({
                 percentage: -10,
-                newRent: 2250,
+                newRent:    2250,
                 difference: -250
             });
         });
@@ -160,7 +160,7 @@ describe('Rent Calculations Service', () => {
 
             expect(results[0]).toEqual({
                 percentage: 3.5,
-                newRent: 2415, // 2333 * 1.035 = 2414.655, rounds to 2415
+                newRent:    2415, // 2333 * 1.035 = 2414.655, rounds to 2415
                 difference: 82
             });
         });
@@ -170,8 +170,8 @@ describe('Rent Calculations Service', () => {
         it('should validate correct absolute rent calculation', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'absolute',
-                value: 2800
+                updateType:  'absolute',
+                value:       2800
             };
 
             const result = validateRentCalculation(options);
@@ -184,8 +184,8 @@ describe('Rent Calculations Service', () => {
         it('should validate correct percentage rent calculation', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 10
+                updateType:  'percentage',
+                value:       10
             };
 
             const result = validateRentCalculation(options);
@@ -198,8 +198,8 @@ describe('Rent Calculations Service', () => {
         it('should reject negative current rent', () => {
             const options: RentCalculationOptions = {
                 currentRent: -100,
-                updateType: 'absolute',
-                value: 2800
+                updateType:  'absolute',
+                value:       2800
             };
 
             const result = validateRentCalculation(options);
@@ -211,8 +211,8 @@ describe('Rent Calculations Service', () => {
         it('should reject NaN current rent', () => {
             const options: RentCalculationOptions = {
                 currentRent: NaN,
-                updateType: 'absolute',
-                value: 2800
+                updateType:  'absolute',
+                value:       2800
             };
 
             const result = validateRentCalculation(options);
@@ -224,8 +224,8 @@ describe('Rent Calculations Service', () => {
         it('should reject invalid update type', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'relative' as unknown as 'absolute' | 'percentage',
-                value: 100
+                updateType:  'relative' as unknown as 'absolute' | 'percentage',
+                value:       100
             };
 
             const result = validateRentCalculation(options);
@@ -237,8 +237,8 @@ describe('Rent Calculations Service', () => {
         it('should reject NaN value', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'absolute',
-                value: NaN
+                updateType:  'absolute',
+                value:       NaN
             };
 
             const result = validateRentCalculation(options);
@@ -250,8 +250,8 @@ describe('Rent Calculations Service', () => {
         it('should reject negative absolute rent', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'absolute',
-                value: -100
+                updateType:  'absolute',
+                value:       -100
             };
 
             const result = validateRentCalculation(options);
@@ -263,8 +263,8 @@ describe('Rent Calculations Service', () => {
         it('should reject zero absolute rent', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'absolute',
-                value: 0
+                updateType:  'absolute',
+                value:       0
             };
 
             const result = validateRentCalculation(options);
@@ -276,8 +276,8 @@ describe('Rent Calculations Service', () => {
         it('should warn about unusually high rent', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'absolute',
-                value: 15000
+                updateType:  'absolute',
+                value:       15000
             };
 
             const result = validateRentCalculation(options);
@@ -289,8 +289,8 @@ describe('Rent Calculations Service', () => {
         it('should reject percentage over 100%', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 150
+                updateType:  'percentage',
+                value:       150
             };
 
             const result = validateRentCalculation(options);
@@ -302,8 +302,8 @@ describe('Rent Calculations Service', () => {
         it('should reject percentage under -100%', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: -150
+                updateType:  'percentage',
+                value:       -150
             };
 
             const result = validateRentCalculation(options);
@@ -315,8 +315,8 @@ describe('Rent Calculations Service', () => {
         it('should allow exactly 100% and -100%', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 100
+                updateType:  'percentage',
+                value:       100
             };
 
             let result = validateRentCalculation(options);
@@ -330,8 +330,8 @@ describe('Rent Calculations Service', () => {
         it('should warn about large percentage changes', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 75
+                updateType:  'percentage',
+                value:       75
             };
 
             const result = validateRentCalculation(options);
@@ -343,8 +343,8 @@ describe('Rent Calculations Service', () => {
         it('should warn about significant rent decrease', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: -30
+                updateType:  'percentage',
+                value:       -30
             };
 
             const result = validateRentCalculation(options);
@@ -356,8 +356,8 @@ describe('Rent Calculations Service', () => {
         it('should accumulate multiple errors', () => {
             const options: RentCalculationOptions = {
                 currentRent: -100,
-                updateType: 'invalid' as unknown as 'absolute' | 'percentage',
-                value: NaN
+                updateType:  'invalid' as unknown as 'absolute' | 'percentage',
+                value:       NaN
             };
 
             const result = validateRentCalculation(options);
@@ -372,8 +372,8 @@ describe('Rent Calculations Service', () => {
         it('should handle valid parameters with warnings only', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: -30
+                updateType:  'percentage',
+                value:       -30
             };
 
             const result = validateRentCalculation(options);
@@ -483,8 +483,8 @@ describe('Rent Calculations Service', () => {
         it('should handle extremely large numbers', () => {
             const options: RentCalculationOptions = {
                 currentRent: 999999,
-                updateType: 'percentage',
-                value: 10
+                updateType:  'percentage',
+                value:       10
             };
 
             const result = calculateRent(options);
@@ -495,8 +495,8 @@ describe('Rent Calculations Service', () => {
         it('should handle very small percentage changes', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 0.01
+                updateType:  'percentage',
+                value:       0.01
             };
 
             const result = calculateRent(options);
@@ -507,8 +507,8 @@ describe('Rent Calculations Service', () => {
         it('should validate edge case percentages correctly', () => {
             const options: RentCalculationOptions = {
                 currentRent: 2500,
-                updateType: 'percentage',
-                value: 50.1
+                updateType:  'percentage',
+                value:       50.1
             };
 
             let result = validateRentCalculation(options);
@@ -524,8 +524,8 @@ describe('Rent Calculations Service', () => {
         it('should handle boundary values in validation', () => {
             const options: RentCalculationOptions = {
                 currentRent: 0,
-                updateType: 'percentage',
-                value: 100
+                updateType:  'percentage',
+                value:       100
             };
 
             const result = validateRentCalculation(options);

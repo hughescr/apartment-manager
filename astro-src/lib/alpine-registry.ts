@@ -39,18 +39,18 @@ function registerAlpineComponents(Alpine: Alpine): void {
 
     // eslint-disable-next-line no-console -- registration logging for debugging
     console.log('[alpine-registry] Alpine components registered:', {
-        buildingStateData: 'building state management',
-        petPolicyData: 'pet policy state',
-        unitTypeFormData: 'unit type form state (now centralized with factory)',
-        addBuildingFormData: 'add building form state',
-        buildingManagerData: 'building manager state',
-        buildingsComponentData: 'buildings component state',
-        buildingsListData: 'buildings list state',
+        buildingStateData:         'building state management',
+        petPolicyData:             'pet policy state',
+        unitTypeFormData:          'unit type form state (now centralized with factory)',
+        addBuildingFormData:       'add building form state',
+        buildingManagerData:       'building manager state',
+        buildingsComponentData:    'buildings component state',
+        buildingsListData:         'buildings list state',
         modelAmenitiesManagerData: 'model amenities manager state',
-        unitCardData: 'unit card state (now centralized)',
-        locationMapData: 'location map (now centralized with factory)',
-        unitTypeCardData: 'unit type card (now centralized with factory)',
-        toastController: 'toast controller (separate implementation)'
+        unitCardData:              'unit card state (now centralized)',
+        locationMapData:           'location map (now centralized with factory)',
+        unitTypeCardData:          'unit type card (now centralized with factory)',
+        toastController:           'toast controller (separate implementation)'
     });
 }
 

@@ -100,8 +100,8 @@ describe('Version API - /version endpoint', () => {
 
             expect(parsedBody.features).toEqual({
                 consistentReads: true,
-                logging: true,
-                description: 'Added consistent reads and debug logging to getBuildings'
+                logging:         true,
+                description:     'Added consistent reads and debug logging to getBuildings'
             });
         });
     });
@@ -137,7 +137,7 @@ describe('Version API - /version endpoint', () => {
 
             expect(result1.statusCode).toBeDefined();
             expect(result2.statusCode).toBeDefined();
-            expect(result1.statusCode).toBe(result2.statusCode!);
+            expect(result1.statusCode).toBe(result2.statusCode);
 
             const body1 = JSON.parse(result1.body!);
             const body2 = JSON.parse(result2.body!);
@@ -275,8 +275,8 @@ describe('Version API - /version endpoint', () => {
             expect(secondCall.statusCode).toBeDefined();
             expect(firstCall.body).toBeDefined();
             expect(secondCall.body).toBeDefined();
-            expect(firstCall.statusCode).toBe(secondCall.statusCode!);
-            expect(firstCall.body).toBe(secondCall.body!);
+            expect(firstCall.statusCode).toBe(secondCall.statusCode);
+            expect(firstCall.body).toBe(secondCall.body);
         });
     });
 

@@ -8,16 +8,16 @@ import { map, toUpper, trim } from 'lodash';
  */
 export function createDefaultPetPolicy(): ExtendedPetPolicy {
     return {
-        allowed: false,
-        types: [],
-        maxCount: undefined,
-        weightLimit: undefined,
+        allowed:           false,
+        types:             [],
+        maxCount:          undefined,
+        weightLimit:       undefined,
         breedRestrictions: [],
-        deposit: undefined,
-        monthlyFee: undefined,
-        oneTimeFee: undefined,
-        notes: '',
-        petTypes: []
+        deposit:           undefined,
+        monthlyFee:        undefined,
+        oneTimeFee:        undefined,
+        notes:             '',
+        petTypes:          []
     };
 }
 
@@ -27,10 +27,10 @@ export function createDefaultPetPolicy(): ExtendedPetPolicy {
 export function createDefaultPetTypePolicy(type: PetType = PetType.DOG): PetTypePolicy {
     return {
         type,
-        weightLimit: undefined,
-        countLimit: undefined,
-        fee: undefined,
-        deposit: undefined,
+        weightLimit:       undefined,
+        countLimit:        undefined,
+        fee:               undefined,
+        deposit:           undefined,
         breedRestrictions: []
     };
 }
@@ -70,7 +70,7 @@ export function calculatePetCosts(policy: PetPolicy): PetCostSummary {
     return {
         upfront: deposit + oneTime,
         monthly: monthly,
-        annual: monthly * 12
+        annual:  monthly * 12
     };
 }
 
@@ -179,9 +179,9 @@ export function removeBreedRestrictionFromPetType(
     breedIndex: number
 ): void {
     const petTypePolicy = policy.petTypes?.[petTypeIndex];
-    if(petTypePolicy?.breedRestrictions &&
-      breedIndex >= 0 &&
-      breedIndex < petTypePolicy.breedRestrictions.length) {
+    if(petTypePolicy?.breedRestrictions
+      && breedIndex >= 0
+      && breedIndex < petTypePolicy.breedRestrictions.length) {
         petTypePolicy.breedRestrictions.splice(breedIndex, 1);
     }
 }

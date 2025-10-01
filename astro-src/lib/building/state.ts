@@ -5,8 +5,8 @@ import type { BuildingStateWithMagic } from '../types/alpine-state';
 import { FieldInheritanceManager } from '../unit-card/fieldInheritance';
 
 export interface LocationConfig {
-    lat?: number
-    lng?: number
+    lat?:         number
+    lng?:         number
     mapboxToken?: string
 }
 import { BuildingApiService } from './services/buildingApiService';
@@ -62,7 +62,7 @@ export function validateUnitType(unitType: Partial<UnitTypeData>): { isValid: bo
 
     return {
         isValid: errors.length === 0,
-        errors: reduce(errors, (acc, error, index) => {
+        errors:  reduce(errors, (acc, error, index) => {
             acc[`error_${index}`] = error;
             return acc;
         }, {} as Record<string, string>)
@@ -277,17 +277,17 @@ export class UnitTypeCrud {
 
         const unitType: UnitTypeData = {
             buildingID,
-            modelID: '',
-            modelName: '',
-            beds: 1,
-            baths: 1,
-            minSqft: undefined,
-            maxSqft: undefined,
-            minRent: undefined,
-            maxRent: undefined,
+            modelID:        '',
+            modelName:      '',
+            beds:           1,
+            baths:          1,
+            minSqft:        undefined,
+            maxSqft:        undefined,
+            minRent:        undefined,
+            maxRent:        undefined,
             countAvailable: 1,
             modelAmenities: [],
-            updatedAt: new Date(),
+            updatedAt:      new Date(),
             ...filteredPartial
         };
 
@@ -391,7 +391,7 @@ class BuildingDataParser {
             return map(units, unit => ({
                 ...unit,
                 lastUpdated: unit.lastUpdated || new Date().toISOString(),
-                status: unit.status || this.getUnitStatus(unit),
+                status:      unit.status || this.getUnitStatus(unit),
                 currentRent: unit.rent || 0,
                 editingRent: false,
                 savingField: null
@@ -545,11 +545,11 @@ class UnitsStateManager {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter((unit): unit is ExtendedUnitData => {
                 return !!(
-                    unit.unitID.toLowerCase().includes(query) ||
-                    (unit.description && unit.description.toLowerCase().includes(query)) ||
-                    (unit.beds && unit.beds.toString().includes(query)) ||
-                    (unit.baths && unit.baths.toString().includes(query)) ||
-                    (unit.rent && unit.rent.toString().includes(query))
+                    unit.unitID.toLowerCase().includes(query)
+                    || (unit.description?.toLowerCase().includes(query))
+                    || (unit.beds?.toString().includes(query))
+                    || (unit.baths?.toString().includes(query))
+                    || (unit.rent?.toString().includes(query))
                 );
             });
         }
@@ -647,75 +647,75 @@ export function createBuildingState(): BuildingStateWithMagic {
 function buildingStateObject(): any {
     return {
         // Core state properties
-        building: null as BuildingData | null,
-        original: null as BuildingData | null,
-        units: [] as ExtendedUnitData[],
+        building:  null as BuildingData | null,
+        original:  null as BuildingData | null,
+        units:     [] as ExtendedUnitData[],
         unitTypes: [] as UnitTypeData[],
-        apiURL: '',
+        apiURL:    '',
 
         // UI state
-        activeSectionTab: 'building-info',
-        showSave: false,
-        saving: false,
-        lastSaveSuccess: false,
-        geocoding: false,
-        errors: {} as Record<string, string>,
+        activeSectionTab:     'building-info',
+        showSave:             false,
+        saving:               false,
+        lastSaveSuccess:      false,
+        geocoding:            false,
+        errors:               {} as Record<string, string>,
         expandedRentSpecials: {} as Record<string, boolean>,
-        selectedPetTypes: [] as string[],
+        selectedPetTypes:     [] as string[],
 
         // Units tab state
-        filteredUnits: [] as ExtendedUnitData[],
-        selectedUnits: new Set<string>(),
-        statusFilter: '',
-        searchQuery: '',
-        showAddUnitDialog: false,
-        showAddUnitTypeDialog: false,
+        filteredUnits:          [] as ExtendedUnitData[],
+        selectedUnits:          new Set<string>(),
+        statusFilter:           '',
+        searchQuery:            '',
+        showAddUnitDialog:      false,
+        showAddUnitTypeDialog:  false,
         showEditUnitTypeDialog: false,
-        showEditUnitDialog: false,
-        editingUnit: null as ExtendedUnitData | null,
-        showBulkStatusDialog: false,
-        showBulkRentDialog: false,
-        newUnit: { unitID: '', modelID: '' },
+        showEditUnitDialog:     false,
+        editingUnit:            null as ExtendedUnitData | null,
+        showBulkStatusDialog:   false,
+        showBulkRentDialog:     false,
+        newUnit:                { unitID: '', modelID: '' },
         // Edit unit form state
-        editUnit: {} as Partial<ExtendedUnitData>,
-        editUnitErrors: {} as Record<string, string>,
-        editUnitLoading: false,
-        newUnitType: {} as Partial<UnitTypeData>,
-        selectedUnitType: null as UnitTypeData | null,
-        bulkOperation: {
-            loading: false,
-            statusValue: '',
-            rentUpdateType: 'absolute' as 'absolute' | 'percentage',
-            rentValue: 0,
-            errors: undefined,
+        editUnit:               {} as Partial<ExtendedUnitData>,
+        editUnitErrors:         {} as Record<string, string>,
+        editUnitLoading:        false,
+        newUnitType:            {} as Partial<UnitTypeData>,
+        selectedUnitType:       null as UnitTypeData | null,
+        bulkOperation:          {
+            loading:         false,
+            statusValue:     '',
+            rentUpdateType:  'absolute' as 'absolute' | 'percentage',
+            rentValue:       0,
+            errors:          undefined,
             successfulUnits: undefined
         },
-        showBulkCreateDialog: false,
+        showBulkCreateDialog:     false,
         showAssignUnitTypeDialog: false,
-        bulkCreateData: {
-            modelID: '',
-            count: null,
-            patternType: 'numeric',
-            startingNumber: '101',
-            prefix: '',
-            suffix: '',
+        bulkCreateData:           {
+            modelID:           '',
+            count:             null,
+            patternType:       'numeric',
+            startingNumber:    '101',
+            prefix:            '',
+            suffix:            '',
             customUnitNumbers: '',
-            unitNumbers: [],
-            vacancyClass: 'Unoccupied'
+            unitNumbers:       [],
+            vacancyClass:      'Unoccupied'
         },
         assignUnitTypeData: {
-            selectedUnit: null as ExtendedUnitData | null,
-            selectedModelID: '',
+            selectedUnit:     null as ExtendedUnitData | null,
+            selectedModelID:  '',
             keepCustomValues: {} as Record<string, boolean>,
-            loading: false
+            loading:          false
         },
 
         // Internal helpers
         inheritanceManager: new FieldInheritanceManager(),
-        unitsManager: null as UnitsStateManager | null,
-        apiService: null as BuildingApiService | null,
-        suspendWatcher: false, // Flag to temporarily disable change detection
-        initTimeoutId: null as ReturnType<typeof setTimeout> | null, // Timeout ID for cleanup
+        unitsManager:       null as UnitsStateManager | null,
+        apiService:         null as BuildingApiService | null,
+        suspendWatcher:     false, // Flag to temporarily disable change detection
+        initTimeoutId:      null as ReturnType<typeof setTimeout> | null, // Timeout ID for cleanup
 
         /**
          * Initialize the component state
@@ -844,7 +844,7 @@ function buildingStateObject(): any {
                 if(this.searchQuery !== undefined) {
                     this.$dispatch('units:filter', {
                         filter: this.statusFilter,
-                        query: this.searchQuery
+                        query:  this.searchQuery
                     });
                 }
             });
@@ -891,7 +891,7 @@ function buildingStateObject(): any {
                 if(this.searchQuery !== undefined) {
                     this.$dispatch('units:filter', {
                         filter: this.statusFilter,
-                        query: this.searchQuery
+                        query:  this.searchQuery
                     });
                 }
             });
@@ -945,7 +945,7 @@ function buildingStateObject(): any {
                         this.units = map(units, (unit: ExtendedUnitData) => ({
                             ...unit,
                             lastUpdated: unit.lastUpdated || new Date().toISOString(),
-                            status: unit.status || this.getUnitStatus(unit) || 'unknown',
+                            status:      unit.status || this.getUnitStatus(unit) || 'unknown',
                             currentRent: unit.rent || 0,
                             editingRent: false,
                             savingField: null
@@ -987,7 +987,7 @@ function buildingStateObject(): any {
                 this.units = map(newUnits, (unit: ExtendedUnitData) => ({
                     ...unit,
                     lastUpdated: unit.lastUpdated || new Date().toISOString(),
-                    status: unit.status || this.getUnitStatus(unit) || 'unknown',
+                    status:      unit.status || this.getUnitStatus(unit) || 'unknown',
                     currentRent: unit.rent || 0,
                     editingRent: false,
                     savingField: null
@@ -1022,12 +1022,12 @@ function buildingStateObject(): any {
         },
 
         // Building Core Methods
-        parseBuildingData: noop,
-        parseLocationData: noop,
-        parseUnitsData: noop,
-        parseUnitTypesData: noop,
+        parseBuildingData:         noop,
+        parseLocationData:         noop,
+        parseUnitsData:            noop,
+        parseUnitTypesData:        noop,
         initializeUnitsTimestamps: noop,
-        setupWatchers: noop,
+        setupWatchers:             noop,
 
         updateFilteredUnits(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(this.unitsManager) {
@@ -1039,7 +1039,7 @@ function buildingStateObject(): any {
 
             this.$dispatch('units:updated', {
                 filter: this.statusFilter,
-                query: this.searchQuery
+                query:  this.searchQuery
             });
         },
 
@@ -1049,7 +1049,7 @@ function buildingStateObject(): any {
 
             this.$dispatch('building:validate', {
                 isValid: result.isValid,
-                errors: result.errors
+                errors:  result.errors
             });
 
             return result.isValid;
@@ -1114,12 +1114,12 @@ function buildingStateObject(): any {
                     const warningCount = keys(warnings).length;
                     this.$dispatch('toast:show', {
                         message: `Building saved with ${warningCount} warning${warningCount > 1 ? 's' : ''}. Complete all fields to publish.`,
-                        type: 'warning'
+                        type:    'warning'
                     });
                 } else {
                     this.$dispatch('toast:show', {
                         message: 'Building saved successfully',
-                        type: 'success'
+                        type:    'success'
                     });
                 }
 
@@ -1130,10 +1130,10 @@ function buildingStateObject(): any {
                 this.$dispatch('building:reset', {
                     building: this.building
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to save building: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             } finally {
                 this.saving = false;
@@ -1158,15 +1158,15 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: 'Building deleted successfully',
-                    type: 'success'
+                    type:    'success'
                 });
 
                 // Redirect to buildings list
                 window.location.href = '/';
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to delete building: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             }
         },
@@ -1203,14 +1203,14 @@ function buildingStateObject(): any {
         openAddUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showAddUnitTypeDialog = true;
             this.newUnitType = {
-                modelID: '',
-                modelName: '',
-                beds: 1,
-                baths: 1,
-                minSqft: undefined,
-                maxSqft: undefined,
-                minRent: undefined,
-                maxRent: undefined,
+                modelID:    '',
+                modelName:  '',
+                beds:       1,
+                baths:      1,
+                minSqft:    undefined,
+                maxSqft:    undefined,
+                minRent:    undefined,
+                maxRent:    undefined,
                 buildingID: this.building?.buildingID || ''
             };
         },
@@ -1227,7 +1227,7 @@ function buildingStateObject(): any {
                 const firstError = values(validation.errors)[0] || 'Invalid unit type data';
                 this.$dispatch('toast:show', {
                     message: firstError,
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -1237,7 +1237,7 @@ function buildingStateObject(): any {
             if(!buildingID) {
                 this.$dispatch('toast:show', {
                     message: 'Building ID not available',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -1255,7 +1255,7 @@ function buildingStateObject(): any {
                     if(!response.success) {
                         this.$dispatch('toast:show', {
                             message: response.error || 'Failed to save unit type',
-                            type: 'error'
+                            type:    'error'
                         });
                         // Keep dialog open for retry
                         return;
@@ -1275,16 +1275,16 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: 'Unit type added successfully',
-                    type: 'success'
+                    type:    'success'
                 });
 
                 this.$dispatch('unit-types:updated', {
                     unitTypes: this.unitTypes
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: error instanceof Error ? error.message : 'An unexpected error occurred',
-                    type: 'error'
+                    type:    'error'
                 });
                 // Keep dialog open for retry on network errors
             }
@@ -1295,7 +1295,7 @@ function buildingStateObject(): any {
             if(!buildingID) {
                 this.$dispatch('toast:show', {
                     message: 'Building ID not available',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -1307,7 +1307,7 @@ function buildingStateObject(): any {
                     if(!response.success) {
                         this.$dispatch('toast:show', {
                             message: response.error || 'Failed to update unit type',
-                            type: 'error'
+                            type:    'error'
                         });
                         return;
                     }
@@ -1333,16 +1333,16 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: 'Unit type updated successfully',
-                    type: 'success'
+                    type:    'success'
                 });
 
                 this.$dispatch('unit-types:updated', {
                     unitTypes: this.unitTypes
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: error instanceof Error ? error.message : 'An unexpected error occurred',
-                    type: 'error'
+                    type:    'error'
                 });
             }
         },
@@ -1356,7 +1356,7 @@ function buildingStateObject(): any {
             if(!buildingID) {
                 this.$dispatch('toast:show', {
                     message: 'Building ID not available',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -1368,7 +1368,7 @@ function buildingStateObject(): any {
                     if(!response.success) {
                         this.$dispatch('toast:show', {
                             message: response.error || 'Failed to delete unit type',
-                            type: 'error'
+                            type:    'error'
                         });
                         return;
                     }
@@ -1385,17 +1385,17 @@ function buildingStateObject(): any {
                 if(this.unitTypes.length < initialLength) {
                     this.$dispatch('toast:show', {
                         message: 'Unit type deleted successfully',
-                        type: 'success'
+                        type:    'success'
                     });
 
                     this.$dispatch('unit-types:updated', {
                         unitTypes: this.unitTypes
                     });
                 }
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: error instanceof Error ? error.message : 'An unexpected error occurred',
-                    type: 'error'
+                    type:    'error'
                 });
             }
         },
@@ -1431,12 +1431,12 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: 'Unit added successfully',
-                    type: 'success'
+                    type:    'success'
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to add unit: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             }
         },
@@ -1459,8 +1459,8 @@ function buildingStateObject(): any {
             if(!this.apiService || !this.building || !this.editingUnit) {
                 // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
                 console.error('updateUnit: Missing required dependencies', {
-                    hasApiService: !!this.apiService,
-                    hasBuilding: !!this.building,
+                    hasApiService:  !!this.apiService,
+                    hasBuilding:    !!this.building,
                     hasEditingUnit: !!this.editingUnit
                 });
                 return;
@@ -1489,9 +1489,9 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: `Unit ${this.editingUnit.unitNumber || unitId} updated successfully`,
-                    type: 'success'
+                    type:    'success'
                 });
-            } catch(error) {
+            } catch (error) {
                 // eslint-disable-next-line no-console -- temporary debugging while fixing browser compatibility
                 console.error('updateUnit: Error occurred', {
                     error,
@@ -1500,7 +1500,7 @@ function buildingStateObject(): any {
                 });
                 this.$dispatch('toast:show', {
                     message: 'Failed to update unit: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
                 throw error;
             }
@@ -1525,12 +1525,12 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: `Unit ${this.editingUnit.unitNumber || unitId} deleted successfully`,
-                    type: 'success'
+                    type:    'success'
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to delete unit: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
                 throw error;
             }
@@ -1540,15 +1540,15 @@ function buildingStateObject(): any {
         initializeEditForm(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             if(this.editingUnit) {
                 this.editUnit = {
-                    unitID: this.editingUnit.unitID,
-                    unitNumber: this.editingUnit.unitNumber || this.editingUnit.unitID,
-                    modelID: this.editingUnit.modelID || '',
-                    beds: this.editingUnit.beds || 0,
-                    baths: this.editingUnit.baths || 1,
-                    sqft: this.editingUnit.sqft || null,
-                    rent: this.editingUnit.rent || 0,
+                    unitID:       this.editingUnit.unitID,
+                    unitNumber:   this.editingUnit.unitNumber || this.editingUnit.unitID,
+                    modelID:      this.editingUnit.modelID || '',
+                    beds:         this.editingUnit.beds || 0,
+                    baths:        this.editingUnit.baths || 1,
+                    sqft:         this.editingUnit.sqft || null,
+                    rent:         this.editingUnit.rent || 0,
                     vacancyClass: this.editingUnit.vacancyClass || 'Unoccupied',
-                    description: this.editingUnit.description || ''
+                    description:  this.editingUnit.description || ''
                 };
             }
         },
@@ -1631,7 +1631,7 @@ function buildingStateObject(): any {
             if(overriddenFields.length === 0) {
                 this.$dispatch('show-toast', {
                     message: 'No overridden fields to reset',
-                    type: 'info'
+                    type:    'info'
                 });
                 return;
             }
@@ -1646,7 +1646,7 @@ function buildingStateObject(): any {
 
                 this.$dispatch('show-toast', {
                     message: `Reset ${overriddenFields.length} field(s) to floorplan values`,
-                    type: 'success'
+                    type:    'success'
                 });
             }
         },
@@ -1679,7 +1679,7 @@ function buildingStateObject(): any {
                     return value;
                 }
                 if(typeof value === 'string') {
-                    const match = value.match(/-?\d+(?:\.\d+)?/);
+                    const match = /-?\d+(?:\.\d+)?/.exec(value);
                     if(match) {
                         const parsed = Number(match[0]);
                         return Number.isNaN(parsed) ? null : parsed;
@@ -1699,8 +1699,8 @@ function buildingStateObject(): any {
                 if(willInherit && newInheritedValue !== null && normalizedCurrentValue !== normalizedNewValue) {
                     changes.push({
                         field: field,
-                        from: currentValue || 'Not set',
-                        to: newInheritedValue
+                        from:  currentValue || 'Not set',
+                        to:    newInheritedValue
                     });
                 }
             });
@@ -1755,7 +1755,7 @@ function buildingStateObject(): any {
 
             try {
                 // Client-side validation
-                if(!this.editUnit.unitNumber || !this.editUnit.unitNumber.trim()) {
+                if(!this.editUnit.unitNumber?.trim()) {
                     this.editUnitErrors.unitNumber = 'Unit number is required';
                 }
                 if(this.editUnit.beds !== null && this.editUnit.beds < 0) {
@@ -1778,16 +1778,16 @@ function buildingStateObject(): any {
 
                 // Dispatch update event with unit ID and changes
                 this.$dispatch('update-unit', {
-                    unitId: this.editingUnit?.unitID,
+                    unitId:      this.editingUnit?.unitID,
                     updatedData: this.editUnit
                 });
-            } catch(error) {
+            } catch (error) {
                 // eslint-disable-next-line no-console -- error logging for debugging
                 console.error('Edit unit error:', error);
                 this.editUnitErrors.general = 'Failed to update unit. Please try again.';
                 this.$dispatch('show-toast', {
                     message: 'Failed to update unit. Please try again.',
-                    type: 'error'
+                    type:    'error'
                 });
             } finally {
                 this.editUnitLoading = false;
@@ -1806,12 +1806,12 @@ function buildingStateObject(): any {
                     this.$dispatch('delete-unit', {
                         unitId: this.editingUnit.unitID
                     });
-                } catch(error) {
+                } catch (error) {
                     // eslint-disable-next-line no-console -- error logging for debugging
                     console.error('Delete unit error:', error);
                     this.$dispatch('show-toast', {
                         message: 'Failed to delete unit. Please try again.',
-                        type: 'error'
+                        type:    'error'
                     });
                 } finally {
                     this.editUnitLoading = false;
@@ -1823,20 +1823,20 @@ function buildingStateObject(): any {
         openAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unit: ExtendedUnitData) {
             this.showAssignUnitTypeDialog = true;
             this.assignUnitTypeData = {
-                selectedUnit: unit,
-                selectedModelID: '',
+                selectedUnit:     unit,
+                selectedModelID:  '',
                 keepCustomValues: {},
-                loading: false
+                loading:          false
             };
         },
 
         closeAssignUnitTypeDialog(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
             this.showAssignUnitTypeDialog = false;
             this.assignUnitTypeData = {
-                selectedUnit: null,
-                selectedModelID: '',
+                selectedUnit:     null,
+                selectedModelID:  '',
                 keepCustomValues: {},
-                loading: false
+                loading:          false
             };
         },
 
@@ -1852,7 +1852,7 @@ function buildingStateObject(): any {
                 // Create updated unit data
                 const updatedUnit = {
                     ...unit,
-                    modelID: assignmentData.selectedModelID,
+                    modelID:     assignmentData.selectedModelID,
                     lastUpdated: new Date().toISOString()
                 };
 
@@ -1890,12 +1890,12 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: `Unit ${unit.unitID} successfully assigned to unit type`,
-                    type: 'success'
+                    type:    'success'
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to assign unit type: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             } finally {
                 this.assignUnitTypeData.loading = false;
@@ -1907,15 +1907,15 @@ function buildingStateObject(): any {
             this.showBulkCreateDialog = true;
             // Use Object.assign to avoid type checking issues
             Object.assign(this.bulkCreateData, {
-                modelID: modelID || '',
-                count: null,
-                patternType: 'numeric',
-                startingNumber: '101',
-                prefix: '',
-                suffix: '',
+                modelID:           modelID || '',
+                count:             null,
+                patternType:       'numeric',
+                startingNumber:    '101',
+                prefix:            '',
+                suffix:            '',
                 customUnitNumbers: '',
-                unitNumbers: [],
-                vacancyClass: 'Unoccupied'
+                unitNumbers:       [],
+                vacancyClass:      'Unoccupied'
             });
         },
 
@@ -1923,15 +1923,15 @@ function buildingStateObject(): any {
             this.showBulkCreateDialog = false;
             // Use Object.assign to avoid type checking issues
             Object.assign(this.bulkCreateData, {
-                modelID: '',
-                count: null,
-                patternType: 'numeric' as const,
-                startingNumber: '101',
-                prefix: '',
-                suffix: '',
+                modelID:           '',
+                count:             null,
+                patternType:       'numeric' as const,
+                startingNumber:    '101',
+                prefix:            '',
+                suffix:            '',
                 customUnitNumbers: '',
-                unitNumbers: [],
-                vacancyClass: 'Unoccupied'
+                unitNumbers:       [],
+                vacancyClass:      'Unoccupied'
             });
             // Clear any previous errors and loading state
             if('errors' in this.bulkOperation) {
@@ -1972,11 +1972,11 @@ function buildingStateObject(): any {
             try {
                 const { results, errors } = await this.createUnitsFromNumbers();
                 this.finalizeBulkCreation(results, errors);
-            } catch(error) {
+            } catch (error) {
                 this.bulkOperation.loading = false;
                 this.$dispatch('toast:show', {
                     message: 'Failed to create units: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             }
         },
@@ -1991,9 +1991,9 @@ function buildingStateObject(): any {
             for(const unitNumber of this.bulkCreateData.unitNumbers) {
                 try {
                     const result = await this.apiService!.addUnit(this.building!.buildingID, {
-                        unitID: unitNumber,
-                        unitNumber: unitNumber,
-                        modelID: this.bulkCreateData.modelID,
+                        unitID:       unitNumber,
+                        unitNumber:   unitNumber,
+                        modelID:      this.bulkCreateData.modelID,
                         vacancyClass: this.bulkCreateData.vacancyClass as VacancyClass
                     });
 
@@ -2003,7 +2003,7 @@ function buildingStateObject(): any {
 
                     results.push(result.data);
                     this.unitsManager?.addUnit(result.data);
-                } catch(error) {
+                } catch (error) {
                     errors.push({
                         unitNumber,
                         error: isError(error) ? error.message : 'Unknown error'
@@ -2039,8 +2039,8 @@ function buildingStateObject(): any {
             if(isCompleteFailure) {
                 // All units failed - keep dialog open with error details and preserve form state
                 this.$dispatch('toast:show', {
-                    message: 'All units failed to create. Please review the errors in the dialog and try again.',
-                    type: 'error',
+                    message:  'All units failed to create. Please review the errors in the dialog and try again.',
+                    type:     'error',
                     duration: 6000
                 });
             } else if(isFullSuccess) {
@@ -2048,13 +2048,13 @@ function buildingStateObject(): any {
                 this.closeBulkCreateDialog();
                 this.$dispatch('toast:show', {
                     message: `Successfully created all ${successCount} units`,
-                    type: 'success'
+                    type:    'success'
                 });
             } else {
                 // Partial success - keep dialog open with error details for retry
                 this.$dispatch('toast:show', {
-                    message: `Created ${successCount} of ${totalAttempted} units. ${errors.length} units failed - review errors and try again.`,
-                    type: 'warning',
+                    message:  `Created ${successCount} of ${totalAttempted} units. ${errors.length} units failed - review errors and try again.`,
+                    type:     'warning',
                     duration: 8000
                 });
             }
@@ -2110,17 +2110,17 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: `Updated ${unitIDs.length} units successfully`,
-                    type: 'success'
+                    type:    'success'
                 });
 
                 this.$dispatch('units:bulk-update', {
                     operationType: 'status',
                     unitIDs
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to update units: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             } finally {
                 this.bulkOperation.loading = false;
@@ -2140,7 +2140,7 @@ function buildingStateObject(): any {
                     unitIDs,
                     {
                         rentUpdateType: this.bulkOperation.rentUpdateType,
-                        rent: this.bulkOperation.rentValue
+                        rent:           this.bulkOperation.rentValue
                     }
                 );
 
@@ -2168,17 +2168,17 @@ function buildingStateObject(): any {
 
                 this.$dispatch('toast:show', {
                     message: `Updated rent for ${unitIDs.length} units successfully`,
-                    type: 'success'
+                    type:    'success'
                 });
 
                 this.$dispatch('units:bulk-update', {
                     operationType: 'rent',
                     unitIDs
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to update rents: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             } finally {
                 this.bulkOperation.loading = false;
@@ -2196,7 +2196,7 @@ function buildingStateObject(): any {
                 const updatedUnit = {
                     ...unit,
                     vacancyClass: newStatus as VacancyClass,
-                    lastUpdated: new Date().toISOString()
+                    lastUpdated:  new Date().toISOString()
                 };
 
                 const result = await this.apiService.updateUnit(this.building.buildingID, updatedUnit);
@@ -2208,18 +2208,18 @@ function buildingStateObject(): any {
                 // Update local state
                 this.unitsManager?.updateUnit(unit.unitID, {
                     vacancyClass: newStatus,
-                    lastUpdated: new Date().toISOString()
+                    lastUpdated:  new Date().toISOString()
                 });
                 this.updateFilteredUnits();
 
                 this.$dispatch('toast:show', {
                     message: `Unit ${unit.unitID} status updated to ${newStatus}`,
-                    type: 'success'
+                    type:    'success'
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to update unit: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             }
         },
@@ -2233,7 +2233,7 @@ function buildingStateObject(): any {
             if(isNaN(rentAmount) || rentAmount < 0 || rentAmount > 25000) {
                 this.$dispatch('toast:show', {
                     message: 'Please enter a valid rent amount between $0 and $25,000',
-                    type: 'error'
+                    type:    'error'
                 });
                 unit.editingRent = false;
                 return;
@@ -2245,7 +2245,7 @@ function buildingStateObject(): any {
             try {
                 const updatedUnit = {
                     ...unit,
-                    rent: rentAmount,
+                    rent:        rentAmount,
                     lastUpdated: new Date().toISOString()
                 };
 
@@ -2257,18 +2257,18 @@ function buildingStateObject(): any {
 
                 // Update local state
                 this.unitsManager?.updateUnit(unit.unitID, {
-                    rent: rentAmount,
+                    rent:        rentAmount,
                     lastUpdated: new Date().toISOString()
                 });
 
                 this.$dispatch('toast:show', {
                     message: `Unit ${unit.unitID} rent updated`,
-                    type: 'success'
+                    type:    'success'
                 });
-            } catch(error) {
+            } catch (error) {
                 this.$dispatch('toast:show', {
                     message: 'Failed to update rent: ' + (isError(error) ? error.message : 'Unknown error'),
-                    type: 'error'
+                    type:    'error'
                 });
             } finally {
                 unit.savingField = null;
@@ -2367,11 +2367,11 @@ function buildingStateObject(): any {
             // This provides deterministic IDs for testing and better type safety
             const nextIndex = this.building.rentSpecials.length;
             const newSpecial = {
-                id: this.$id('rentSpecial', nextIndex),
-                title: '',
+                id:          this.$id('rentSpecial', nextIndex),
+                title:       '',
                 description: '',
-                startDate: '',
-                endDate: ''
+                startDate:   '',
+                endDate:     ''
             };
             this.building.rentSpecials.push(newSpecial);
 
@@ -2437,26 +2437,26 @@ function buildingStateObject(): any {
 
         // Utility methods
         getFilterSummary(this: ReturnType<typeof buildingStateObject> & AlpineMagics): {
-            total: number
-            filtered: number
-            selected: number
+            total:     number
+            filtered:  number
+            selected:  number
             hasFilter: boolean
         } {
             return {
-                total: this.units.length,
-                filtered: this.filteredUnits.length,
-                selected: this.selectedUnits.size,
+                total:     this.units.length,
+                filtered:  this.filteredUnits.length,
+                selected:  this.selectedUnits.size,
                 hasFilter: !!(this.statusFilter || this.searchQuery)
             };
         },
 
         getStatusCounts(this: ReturnType<typeof buildingStateObject> & AlpineMagics): Record<string, number> {
             const counts: Record<string, number> = {
-                all: this.units.length,
-                occupied: 0,
-                vacant: 0,
-                notice: 0,
-                model: 0,
+                all:       this.units.length,
+                occupied:  0,
+                vacant:    0,
+                notice:    0,
+                model:     0,
                 available: 0
             };
 
@@ -2538,52 +2538,52 @@ function buildingStateObject(): any {
  * State interfaces for compatibility with modular architecture tests
  */
 export interface BuildingCoreState {
-    building: BuildingData | null
-    original: BuildingData | null
-    apiURL: string
-    saving: boolean
-    showSave: boolean
-    lastSaveSuccess: boolean
-    errors: Record<string, string>
+    building:             BuildingData | null
+    original:             BuildingData | null
+    apiURL:               string
+    saving:               boolean
+    showSave:             boolean
+    lastSaveSuccess:      boolean
+    errors:               Record<string, string>
     expandedRentSpecials: Record<string, boolean>
 }
 
 export interface UnitManagementState {
-    building: BuildingData | null
-    units: ExtendedUnitData[]
-    filteredUnits: ExtendedUnitData[]
-    selectedUnits: Set<string>
-    statusFilter: string
-    searchQuery: string
+    building:             BuildingData | null
+    units:                ExtendedUnitData[]
+    filteredUnits:        ExtendedUnitData[]
+    selectedUnits:        Set<string>
+    statusFilter:         string
+    searchQuery:          string
     showBulkCreateDialog: boolean
     bulkCreateData: {
-        modelID: string
-        count: number | null
-        patternType: string
-        startingNumber: string
-        prefix: string
-        suffix: string
+        modelID:           string
+        count:             number | null
+        patternType:       string
+        startingNumber:    string
+        prefix:            string
+        suffix:            string
         customUnitNumbers: string
-        unitNumbers: string[]
-        vacancyClass: string
+        unitNumbers:       string[]
+        vacancyClass:      string
     }
     bulkOperation: {
-        loading: boolean
-        statusValue: string
-        rentUpdateType: 'absolute' | 'percentage'
-        rentValue: number
-        errors: { unitNumber: string, error: string }[] | undefined
+        loading:         boolean
+        statusValue:     string
+        rentUpdateType:  'absolute' | 'percentage'
+        rentValue:       number
+        errors:          { unitNumber: string, error: string }[] | undefined
         successfulUnits: string[] | undefined
     }
 }
 
 export interface UnitTypeManagementState {
-    building: BuildingData | null
-    apiURL: string
-    unitTypes: UnitTypeData[]
-    newUnitType: Partial<UnitTypeData>
-    selectedUnitType: UnitTypeData | null
-    showAddUnitTypeDialog: boolean
+    building:               BuildingData | null
+    apiURL:                 string
+    unitTypes:              UnitTypeData[]
+    newUnitType:            Partial<UnitTypeData>
+    selectedUnitType:       UnitTypeData | null
+    showAddUnitTypeDialog:  boolean
     showEditUnitTypeDialog: boolean
 }
 
@@ -2599,12 +2599,12 @@ export class BuildingCore {
 
         // Preserve the original Alpine methods from the mock
         const originalMethods = {
-            $el: state.$el,
-            $watch: state.$watch,
+            $el:       state.$el,
+            $watch:    state.$watch,
             $nextTick: state.$nextTick,
             $dispatch: state.$dispatch,
-            $store: state.$store,
-            $root: state.$root
+            $store:    state.$store,
+            $root:     state.$root
         };
 
         // Add missing methods to the original state object
@@ -2728,14 +2728,12 @@ export class UnitManagement {
     // Allow tests to set the apiService directly on the internal state
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Needed for test compatibility
     set apiService(service: any) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Needed for test compatibility
-        (this.stateObj as any).apiService = service;
+        (this.stateObj).apiService = service;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Needed for test compatibility
     get apiService(): any {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Needed for test compatibility
-        return (this.stateObj as any).apiService;
+        return (this.stateObj).apiService;
     }
 
     updateFilteredUnits(): void {
@@ -2771,7 +2769,7 @@ export class UnitManagement {
  * Compatibility wrapper for UnitTypeManagement to support existing tests
  */
 export class UnitTypeManagement {
-    private state: UnitTypeManagementState & AlpineMagics;
+    private state:       UnitTypeManagementState & AlpineMagics;
     private apiService?: BuildingApiService;
 
     constructor(state: UnitTypeManagementState & AlpineMagics) {
@@ -2786,15 +2784,15 @@ export class UnitTypeManagement {
     openAddUnitTypeDialog(): void {
         this.state.showAddUnitTypeDialog = true;
         this.state.newUnitType = {
-            modelID: '',
-            modelName: '',
-            beds: 1,
-            baths: 1,
+            modelID:    '',
+            modelName:  '',
+            beds:       1,
+            baths:      1,
             buildingID: this.state.building?.buildingID || '',
-            minSqft: undefined,
-            maxSqft: undefined,
-            minRent: undefined,
-            maxRent: undefined
+            minSqft:    undefined,
+            maxSqft:    undefined,
+            minRent:    undefined,
+            maxRent:    undefined
         };
     }
 
@@ -2811,7 +2809,7 @@ export class UnitTypeManagement {
                 const firstError = values(validation.errors)[0] || 'Invalid unit type data';
                 this.state.$dispatch('toast:show', {
                     message: firstError,
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -2821,7 +2819,7 @@ export class UnitTypeManagement {
             if(!buildingID) {
                 this.state.$dispatch('toast:show', {
                     message: 'Building ID not available',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -2835,7 +2833,7 @@ export class UnitTypeManagement {
                 if(!response.success) {
                     this.state.$dispatch('toast:show', {
                         message: response.error || 'Failed to save unit type',
-                        type: 'error'
+                        type:    'error'
                     });
                     // Keep dialog open for retry
                     return;
@@ -2855,16 +2853,16 @@ export class UnitTypeManagement {
 
             this.state.$dispatch('toast:show', {
                 message: 'Unit type added successfully',
-                type: 'success'
+                type:    'success'
             });
 
             this.state.$dispatch('unit-types:updated', {
                 unitTypes: this.state.unitTypes
             });
-        } catch(error) {
+        } catch (error) {
             this.state.$dispatch('toast:show', {
                 message: error instanceof Error ? error.message : 'An unexpected error occurred',
-                type: 'error'
+                type:    'error'
             });
             // Keep dialog open for retry on network errors
         }
@@ -2876,7 +2874,7 @@ export class UnitTypeManagement {
             if(!buildingID) {
                 this.state.$dispatch('toast:show', {
                     message: 'Building ID not available',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -2886,7 +2884,7 @@ export class UnitTypeManagement {
             if(!existingUnitType) {
                 this.state.$dispatch('toast:show', {
                     message: 'Unit type not found',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -2897,7 +2895,7 @@ export class UnitTypeManagement {
                 if(!response.success) {
                     this.state.$dispatch('toast:show', {
                         message: response.error || 'Failed to update unit type',
-                        type: 'error'
+                        type:    'error'
                     });
                     return;
                 }
@@ -2912,16 +2910,16 @@ export class UnitTypeManagement {
 
             this.state.$dispatch('toast:show', {
                 message: 'Unit type updated successfully',
-                type: 'success'
+                type:    'success'
             });
 
             this.state.$dispatch('unit-types:updated', {
                 unitTypes: this.state.unitTypes
             });
-        } catch(error) {
+        } catch (error) {
             this.state.$dispatch('toast:show', {
                 message: error instanceof Error ? error.message : 'An unexpected error occurred',
-                type: 'error'
+                type:    'error'
             });
         }
     }
@@ -2932,7 +2930,7 @@ export class UnitTypeManagement {
             if(!buildingID) {
                 this.state.$dispatch('toast:show', {
                     message: 'Building ID not available',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -2952,7 +2950,7 @@ export class UnitTypeManagement {
                 if(!response.success) {
                     this.state.$dispatch('toast:show', {
                         message: response.error || 'Failed to delete unit type',
-                        type: 'error'
+                        type:    'error'
                     });
                     return;
                 }
@@ -2965,17 +2963,17 @@ export class UnitTypeManagement {
             if(unitTypeExists) {
                 this.state.$dispatch('toast:show', {
                     message: 'Unit type deleted successfully',
-                    type: 'success'
+                    type:    'success'
                 });
 
                 this.state.$dispatch('unit-types:updated', {
                     unitTypes: this.state.unitTypes
                 });
             }
-        } catch(error) {
+        } catch (error) {
             this.state.$dispatch('toast:show', {
                 message: error instanceof Error ? error.message : 'An unexpected error occurred',
-                type: 'error'
+                type:    'error'
             });
         }
     }

@@ -5,21 +5,21 @@ import BaseSelect from './BaseSelect.astro';
 import _ from 'lodash';
 
 export interface Props {
-    fieldName: string
-    label: string
-    type?: 'text' | 'number' | 'date' | 'email' | 'tel' | 'url' | 'time' | 'datetime-local' | 'select'
-    xModel: string
+    fieldName:         string
+    label:             string
+    type?:             'text' | 'number' | 'date' | 'email' | 'tel' | 'url' | 'time' | 'datetime-local' | 'select'
+    xModel:            string
     inheritanceCheck?: string
-    inheritedValue?: string
-    error?: string
-    min?: number
-    max?: number
-    step?: number
-    options?: { value: string, label: string }[]
-    required?: boolean
-    placeholder?: string
-    'class'?: string
-    onReset?: string
+    inheritedValue?:   string
+    error?:            string
+    min?:              number
+    max?:              number
+    step?:             number
+    options?:          { value: string, label: string }[]
+    required?:         boolean
+    placeholder?:      string
+    'class'?:          string
+    onReset?:          string
 }
 
 const {

@@ -98,7 +98,7 @@ export async function getBuildings() {
     const queryResult = await TableInstance.build(QueryCommand)
         .entities(BuildingEntity)
         .query({
-            index: 'unitTypeIndex',
+            index:     'unitTypeIndex',
             partition: 'BUILDING'
         })
         .options({ consistent: false }) // GSI queries cannot be strongly consistent
@@ -152,7 +152,7 @@ export async function getBuilding(buildingID: string) {
     const rawBuilding = omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as BuildingData;
     // Convert updatedAt from string to Date if present
     if(Item?.updatedAt) {
-        rawBuilding.updatedAt = new Date(Item.updatedAt as string);
+        rawBuilding.updatedAt = new Date(Item.updatedAt);
     }
     // Start with defaults, then overlay actual data to preserve all fields including empty strings
     const defaults = getDefaultBuildingData();
@@ -205,7 +205,7 @@ export async function createBuilding(building: BuildingData) {
         // Item was created successfully, return the processed building data (what we actually stored)
         // Since PutItemCommand with NONE doesn't return the item, we return our processed data
         return formatBuildingResult(itemToStore);
-    } catch(error) {
+    } catch (error) {
         // If there's any error, log it and re-throw
         logger.error('Error in createBuilding:', error);
         throw error;
@@ -226,7 +226,7 @@ function prepareUpdateData(buildingID: string, updates: Partial<BuildingData>, n
     const dbUpdates: Record<string, unknown> = {
         ...baseUpdates,
         buildingID, // Ensure buildingID is always present
-        unitID: 'BUILDING',
+        unitID:    'BUILDING',
         updatedAt: now.toISOString() // Convert to string for DynamoDB
     };
 
@@ -275,7 +275,7 @@ function mergeWithExistingData(
         ...existingBuilding,
         ...updates,
         buildingID,
-        unitID: 'BUILDING',
+        unitID:    'BUILDING',
         updatedAt: now.toISOString()
     };
 
@@ -327,7 +327,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
     try {
         // Try UpdateItemCommand first for backward compatibility with existing tests and behavior
         return await performDirectUpdate(buildingID, updatesForDB);
-    } catch(error) {
+    } catch (error) {
         // If building doesn't exist (ConditionalCheckFailedException), return undefined
         if(isError(error) && error.message.includes('ConditionalCheckFailedException')) {
             return undefined;
@@ -338,7 +338,7 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
 
         try {
             return await performFallbackUpdate(buildingID, updates, now);
-        } catch(fallbackError) {
+        } catch (fallbackError) {
             logger.error('Both UpdateItemCommand and PutItemCommand fallback failed:', fallbackError);
             throw fallbackError;
         }
@@ -352,7 +352,7 @@ export async function deleteBuilding(buildingID: string): Promise<boolean> {
             .key({ buildingID, unitID: 'BUILDING' })
             .send();
         return true;
-    } catch(error) {
+    } catch (error) {
         logger.error('Error deleting building:', error);
         return false;
     }

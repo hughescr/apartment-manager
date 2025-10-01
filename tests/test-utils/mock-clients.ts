@@ -47,7 +47,7 @@ export const mockDynamoResponses = {
      * Create a successful GetCommand response
      */
     getItem: (item?: Record<string, unknown>) => ({
-        Item: item,
+        Item:      item,
         $metadata: { httpStatusCode: 200 }
     }),
 
@@ -63,7 +63,7 @@ export const mockDynamoResponses = {
      */
     updateItem: (attributes?: Record<string, unknown>) => ({
         Attributes: attributes,
-        $metadata: { httpStatusCode: 200 }
+        $metadata:  { httpStatusCode: 200 }
     }),
 
     /**
@@ -77,20 +77,20 @@ export const mockDynamoResponses = {
      * Create a successful QueryCommand response
      */
     query: (items: Record<string, unknown>[] = []) => ({
-        Items: items,
-        Count: items.length,
+        Items:        items,
+        Count:        items.length,
         ScannedCount: items.length,
-        $metadata: { httpStatusCode: 200 }
+        $metadata:    { httpStatusCode: 200 }
     }),
 
     /**
      * Create a successful ScanCommand response
      */
     scan: (items: Record<string, unknown>[] = []) => ({
-        Items: items,
-        Count: items.length,
+        Items:        items,
+        Count:        items.length,
         ScannedCount: items.length,
-        $metadata: { httpStatusCode: 200 }
+        $metadata:    { httpStatusCode: 200 }
     })
 };
 
@@ -102,7 +102,7 @@ export const mockS3Responses = {
      * Create a successful PutObjectCommand response
      */
     putObject: (eTag = '"mock-etag"') => ({
-        ETag: eTag,
+        ETag:      eTag,
         $metadata: { httpStatusCode: 200 }
     }),
 
@@ -118,7 +118,7 @@ export const mockS3Responses = {
      */
     getObject: (body: string | Buffer = '') => ({
         Body: {
-            transformToString: async () => body.toString(),
+            transformToString:    async () => body.toString(),
             transformToByteArray: async () =>
                 (body instanceof Buffer ? new Uint8Array(body) : new TextEncoder().encode(body.toString()))
         },
@@ -129,9 +129,9 @@ export const mockS3Responses = {
      * Create a successful ListObjectsV2Command response
      */
     listObjects: (contents: { Key: string, Size: number }[] = []) => ({
-        Contents: contents,
+        Contents:    contents,
         IsTruncated: false,
-        $metadata: { httpStatusCode: 200 }
+        $metadata:   { httpStatusCode: 200 }
     })
 };
 
@@ -140,8 +140,8 @@ export const mockS3Responses = {
  */
 export interface TrackedMockClient<T> {
     client: T
-    calls: { command: unknown, response: unknown }[]
-    reset: () => void
+    calls:  { command: unknown, response: unknown }[]
+    reset:  () => void
 }
 
 /**

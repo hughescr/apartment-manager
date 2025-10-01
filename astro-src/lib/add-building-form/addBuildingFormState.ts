@@ -6,20 +6,20 @@ import _ from 'lodash';
 interface AddressSuggestion {
     displayText: string
     address: {
-        street: string
-        city: string
-        state: string
-        postcode: string
+        street:      string
+        city:        string
+        state:       string
+        postcode:    string
         postalCode?: string
-        formatted: string
+        formatted:   string
     }
     coordinates?: {
         lat: number
         lng: number
     }
     confidence?: number
-    source: 'radar' | 'cache'
-    id: string
+    source:      'radar' | 'cache'
+    id:          string
 }
 
 // Type removed - was unused and declared but never referenced
@@ -27,27 +27,27 @@ interface AddressSuggestion {
 export function createAddBuildingFormState() {
     return {
         // Form state
-        buildingName: '',
-        street: '',
-        city: '',
-        state: '',
-        zip: '',
-        description: '',
-        specialtyType: 'market-rate',
-        propertyWebsite: '',
+        buildingName:      '',
+        street:            '',
+        city:              '',
+        state:             '',
+        zip:               '',
+        description:       '',
+        specialtyType:     'market-rate',
+        propertyWebsite:   '',
         managementWebsite: '',
-        saving: false,
-        apiURL: '',
+        saving:            false,
+        apiURL:            '',
         // Autocomplete state
-        suggestions: [],
-        showSuggestions: false,
-        loading: false,
-        selectedIndex: -1,
-        debounceTimer: null as ReturnType<typeof setTimeout> | null,
+        suggestions:       [],
+        showSuggestions:   false,
+        loading:           false,
+        selectedIndex:     -1,
+        debounceTimer:     null as ReturnType<typeof setTimeout> | null,
         // Geolocation state
-        userLocation: null as { lat: number, lon: number } | null,
-        locationStatus: 'unknown',
-        locationTooltip: '',
+        userLocation:      null as { lat: number, lon: number } | null,
+        locationStatus:    'unknown',
+        locationTooltip:   '',
 
         init() {
             this.apiURL = this.$root.parentElement?.dataset.apiUrl || '';
@@ -59,7 +59,7 @@ export function createAddBuildingFormState() {
             if(!this.buildingName) {
                 this.$dispatch?.('show-toast', {
                     message: 'Building name is required.',
-                    type: 'error'
+                    type:    'error'
                 });
                 return;
             }
@@ -67,18 +67,18 @@ export function createAddBuildingFormState() {
             this.saving = true;
             try {
                 const response = await fetch(`${this.apiURL}buildings`, {
-                    method: 'POST',
+                    method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        buildingName: this.buildingName,
-                        street: this.street,
-                        city: this.city,
-                        state: this.state,
-                        zip: this.zip,
-                        description: this.description,
+                    body:    JSON.stringify({
+                        buildingName:  this.buildingName,
+                        street:        this.street,
+                        city:          this.city,
+                        state:         this.state,
+                        zip:           this.zip,
+                        description:   this.description,
                         specialtyType: this.specialtyType,
-                        contactInfo: {
-                            propertyWebsite: this.propertyWebsite || undefined,
+                        contactInfo:   {
+                            propertyWebsite:   this.propertyWebsite || undefined,
                             managementWebsite: this.managementWebsite || undefined
                         }
                     }),
@@ -90,7 +90,7 @@ export function createAddBuildingFormState() {
                     const result = await response.json();
                     this.$dispatch?.('show-toast', {
                         message: 'Building added successfully!',
-                        type: 'success'
+                        type:    'success'
                     });
 
                     // Redirect to the new building using the returned buildingID
@@ -101,14 +101,14 @@ export function createAddBuildingFormState() {
                 } else {
                     this.$dispatch?.('show-toast', {
                         message: 'Failed to add building.',
-                        type: 'error'
+                        type:    'error'
                     });
                 }
-            } catch(error) {
+            } catch (error) {
                 this.saving = false;
                 this.$dispatch?.('show-toast', {
                     message: 'Failed to add building: ' + (error as Error).message,
-                    type: 'error'
+                    type:    'error'
                 });
             }
         },
@@ -287,8 +287,8 @@ export function createAddBuildingFormState() {
                 const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject, {
                         enableHighAccuracy: false,
-                        timeout: 10000,
-                        maximumAge: 300000 // 5 minutes
+                        timeout:            10000,
+                        maximumAge:         300000 // 5 minutes
                     });
                 });
 
@@ -307,10 +307,10 @@ export function createAddBuildingFormState() {
 
         // Alpine magic properties are provided by AlpineComponentData
         $dispatch: (() => undefined) as ((name: string, detail?: unknown) => void),
-        $root: null as unknown as HTMLElement,
-        $el: null as unknown as HTMLElement,
-        $watch: (() => undefined) as ((property: string, callback: (...args: unknown[]) => void) => void),
+        $root:     null as unknown as HTMLElement,
+        $el:       null as unknown as HTMLElement,
+        $watch:    (() => undefined) as ((property: string, callback: (...args: unknown[]) => void) => void),
         $nextTick: (() => undefined) as ((callback: () => void) => void),
-        $store: {} as Record<string, unknown>
+        $store:    {} as Record<string, unknown>
     };
 }

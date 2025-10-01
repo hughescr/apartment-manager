@@ -43,25 +43,25 @@ describe('BuildingProvider Component', () => {
         it('should initialize missing building properties with defaults', async () => {
             const incompleteBuilding = {
                 ...mockBuildingData,
-                oneTimeFees: undefined,
-                monthlyFees: undefined,
-                parkingOptions: undefined,
-                storageOptions: undefined,
+                oneTimeFees:       undefined,
+                monthlyFees:       undefined,
+                parkingOptions:    undefined,
+                storageOptions:    undefined,
                 propertyAmenities: undefined,
-                rentSpecials: undefined,
-                photos: undefined
+                rentSpecials:      undefined,
+                photos:            undefined
             } as unknown as BuildingData;
 
             // Test default initialization logic directly
             const processedBuilding = {
                 ...incompleteBuilding,
-                oneTimeFees: incompleteBuilding.oneTimeFees || [],
-                monthlyFees: incompleteBuilding.monthlyFees || [],
-                parkingOptions: incompleteBuilding.parkingOptions || [],
-                storageOptions: incompleteBuilding.storageOptions || [],
+                oneTimeFees:       incompleteBuilding.oneTimeFees || [],
+                monthlyFees:       incompleteBuilding.monthlyFees || [],
+                parkingOptions:    incompleteBuilding.parkingOptions || [],
+                storageOptions:    incompleteBuilding.storageOptions || [],
                 propertyAmenities: incompleteBuilding.propertyAmenities || [],
-                rentSpecials: incompleteBuilding.rentSpecials || [],
-                photos: incompleteBuilding.photos || []
+                rentSpecials:      incompleteBuilding.rentSpecials || [],
+                photos:            incompleteBuilding.photos || []
             };
 
             // Test that defaults are applied
@@ -99,13 +99,13 @@ describe('BuildingProvider Component', () => {
             const processedBuilding = {
                 ...buildingWithoutPetPolicies,
                 petPolicies: buildingWithoutPetPolicies.petPolicies || {
-                    allowed: false,
+                    allowed:  false,
                     petTypes: []
                 }
             };
 
             expect(processedBuilding.petPolicies).toEqual({
-                allowed: false,
+                allowed:  false,
                 petTypes: []
             });
         });
@@ -137,28 +137,28 @@ describe('BuildingProvider Component', () => {
             const processedBuilding = {
                 ...buildingWithoutScreeningCriteria,
                 screeningCriteria: buildingWithoutScreeningCriteria.screeningCriteria || {
-                    incomeRatio: 3,
-                    minCreditScore: 600,
-                    maxOccupantsPerBedroom: 2,
+                    incomeRatio:             3,
+                    minCreditScore:          600,
+                    maxOccupantsPerBedroom:  2,
                     backgroundCheckRequired: true,
-                    evictionHistory: true,
-                    criminalHistory: true,
-                    references: 2,
-                    employmentVerification: true,
-                    rentalHistory: true
+                    evictionHistory:         true,
+                    criminalHistory:         true,
+                    references:              2,
+                    employmentVerification:  true,
+                    rentalHistory:           true
                 }
             };
 
             expect(processedBuilding.screeningCriteria).toEqual({
-                incomeRatio: 3,
-                minCreditScore: 600,
-                maxOccupantsPerBedroom: 2,
+                incomeRatio:             3,
+                minCreditScore:          600,
+                maxOccupantsPerBedroom:  2,
                 backgroundCheckRequired: true,
-                evictionHistory: true,
-                criminalHistory: true,
-                references: 2,
-                employmentVerification: true,
-                rentalHistory: true
+                evictionHistory:         true,
+                criminalHistory:         true,
+                references:              2,
+                employmentVerification:  true,
+                rentalHistory:           true
             });
         });
 
@@ -194,10 +194,10 @@ describe('BuildingProvider Component', () => {
         it('should preserve existing valid data when adding defaults', () => {
             const partialBuilding = {
                 ...mockBuildingData,
-                oneTimeFees: [{ name: 'Security Deposit', amount: 500 }],
+                oneTimeFees:       [{ name: 'Security Deposit', amount: 500 }],
                 propertyAmenities: ['pool', 'gym'],
-                petPolicies: {
-                    allowed: true,
+                petPolicies:       {
+                    allowed:  true,
                     petTypes: [{ type: 'cat', allowed: true }]
                 }
             };
@@ -213,7 +213,7 @@ describe('BuildingProvider Component', () => {
             const buildingWithSpecialChars = {
                 ...mockBuildingData,
                 description: 'Test "quotes" and \'single quotes\' and <html> tags',
-                street: '123 Main St & Co.'
+                street:      '123 Main St & Co.'
             };
 
             // Test that special characters are handled
@@ -224,7 +224,7 @@ describe('BuildingProvider Component', () => {
         it('should handle empty arrays and null values gracefully', () => {
             const buildingWithNulls = {
                 ...mockBuildingData,
-                latitude: null,
+                latitude:  null,
                 longitude: null,
                 yearBuilt: null
             } as unknown as BuildingData;

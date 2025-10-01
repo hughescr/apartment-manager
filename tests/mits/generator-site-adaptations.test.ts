@@ -22,10 +22,10 @@ describe('MITS Site Adaptations, Defaults and Performance', () => {
     describe('Site-Specific Adaptations', () => {
         it('should generate Apartments.com specific format', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Apartments.com uses floorplan/model structure
@@ -35,10 +35,10 @@ describe('MITS Site Adaptations, Defaults and Performance', () => {
 
         it('should generate Zillow specific format', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'zillow'
+                units:     mockUnits,
+                siteName:  'zillow'
             });
 
             // Zillow might have different requirements
@@ -50,10 +50,10 @@ describe('MITS Site Adaptations, Defaults and Performance', () => {
     describe('Default Values', () => {
         it('should provide sensible defaults for missing MITS required fields', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Defaults for missing required MITS fields
@@ -64,10 +64,10 @@ describe('MITS Site Adaptations, Defaults and Performance', () => {
 
         it('should generate valid management company defaults', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Management>');
@@ -82,10 +82,10 @@ describe('MITS Site Adaptations, Defaults and Performance', () => {
 
             const startTime = Date.now();
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: largeUnits,
-                siteName: 'apartments_com'
+                units:     largeUnits,
+                siteName:  'apartments_com'
             });
             const endTime = Date.now();
 

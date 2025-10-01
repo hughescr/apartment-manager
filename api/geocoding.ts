@@ -17,19 +17,19 @@ function createHeaders(): Record<string, string> {
  */
 interface GeocodingRequest {
     address: string
-    city?: string
-    state?: string
+    city?:   string
+    state?:  string
 }
 
 /**
  * Geocoding API response
  */
 interface GeocodingResponse {
-    success: boolean
-    result?: GeocodingResult
-    error?: string
+    success:     boolean
+    result?:     GeocodingResult
+    error?:      string
     cacheStats?: {
-        size: number
+        size:    number
         ttlDays: number
     }
 }
@@ -42,16 +42,16 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         logger.info('Geocoding request received', {
             method: event.requestContext.http.method,
-            path: event.rawPath
+            path:   event.rawPath
         });
 
         if(event.requestContext.http.method !== 'POST') {
             return {
                 statusCode: 405,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Method not allowed. Use POST.'
+                    error:   'Method not allowed. Use POST.'
                 }),
             };
         }
@@ -59,10 +59,10 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
         if(!event.body) {
             return {
                 statusCode: 400,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Request body is required'
+                    error:   'Request body is required'
                 }),
             };
         }
@@ -70,14 +70,14 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
         let requestData: GeocodingRequest;
         try {
             requestData = JSON.parse(event.body) as GeocodingRequest;
-        } catch(parseError) {
+        } catch (parseError) {
             logger.warn('Failed to parse request body', { error: parseError });
             return {
                 statusCode: 400,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Invalid JSON in request body'
+                    error:   'Invalid JSON in request body'
                 }),
             };
         }
@@ -86,18 +86,18 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
         if(!requestData.address || !trim(requestData.address)) {
             return {
                 statusCode: 400,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Address is required'
+                    error:   'Address is required'
                 }),
             };
         }
 
         logger.info('Geocoding address', {
             address: requestData.address,
-            city: requestData.city,
-            state: requestData.state
+            city:    requestData.city,
+            state:   requestData.state
         });
 
         // Perform geocoding
@@ -108,8 +108,8 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
         );
 
         const response: GeocodingResponse = {
-            success: true,
-            result: result || undefined,
+            success:    true,
+            result:     result || undefined,
             cacheStats: geocodingService.getCacheStats()
         };
 
@@ -118,26 +118,26 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
             response.error = 'No results found for the provided address';
         } else {
             logger.info('Geocoding successful', {
-                address: requestData.address,
+                address:     requestData.address,
                 coordinates: { lat: result.lat, lng: result.lng },
-                source: result.source
+                source:      result.source
             });
         }
 
         return {
             statusCode: 200,
-            headers: createHeaders(),
-            body: JSON.stringify(response),
+            headers:    createHeaders(),
+            body:       JSON.stringify(response),
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Geocoding API error', { error });
 
         return {
             statusCode: 500,
-            headers: createHeaders(),
-            body: JSON.stringify({
+            headers:    createHeaders(),
+            body:       JSON.stringify({
                 success: false,
-                error: 'Internal server error'
+                error:   'Internal server error'
             }),
         };
     }
@@ -154,10 +154,10 @@ export const status: APIGatewayProxyHandlerV2 = async (event) => {
         if(event.requestContext.http.method !== 'GET') {
             return {
                 statusCode: 405,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Method not allowed. Use GET.'
+                    error:   'Method not allowed. Use GET.'
                 }),
             };
         }
@@ -165,30 +165,30 @@ export const status: APIGatewayProxyHandlerV2 = async (event) => {
         const cacheStats = geocodingService.getCacheStats();
 
         const statusResponse = {
-            success: true,
-            service: 'OpenStreetMap Nominatim',
-            status: 'operational',
-            cache: cacheStats,
+            success:   true,
+            service:   'OpenStreetMap Nominatim',
+            status:    'operational',
+            cache:     cacheStats,
             rateLimit: {
                 requestsPerSecond: 1,
-                policy: 'Nominatim usage policy compliant'
+                policy:            'Nominatim usage policy compliant'
             }
         };
 
         return {
             statusCode: 200,
-            headers: createHeaders(),
-            body: JSON.stringify(statusResponse),
+            headers:    createHeaders(),
+            body:       JSON.stringify(statusResponse),
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Geocoding status API error', { error });
 
         return {
             statusCode: 500,
-            headers: createHeaders(),
-            body: JSON.stringify({
+            headers:    createHeaders(),
+            body:       JSON.stringify({
                 success: false,
-                error: 'Internal server error'
+                error:   'Internal server error'
             }),
         };
     }
@@ -205,10 +205,10 @@ export const clearCache: APIGatewayProxyHandlerV2 = async (event) => {
         if(event.requestContext.http.method !== 'DELETE') {
             return {
                 statusCode: 405,
-                headers: createHeaders(),
-                body: JSON.stringify({
+                headers:    createHeaders(),
+                body:       JSON.stringify({
                     success: false,
-                    error: 'Method not allowed. Use DELETE.'
+                    error:   'Method not allowed. Use DELETE.'
                 }),
             };
         }
@@ -223,23 +223,23 @@ export const clearCache: APIGatewayProxyHandlerV2 = async (event) => {
 
         return {
             statusCode: 200,
-            headers: createHeaders(),
-            body: JSON.stringify({
-                success: true,
-                message: 'Cache cleared successfully',
-                cleared: statsBefore.size,
+            headers:    createHeaders(),
+            body:       JSON.stringify({
+                success:   true,
+                message:   'Cache cleared successfully',
+                cleared:   statsBefore.size,
                 remaining: statsAfter.size
             }),
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Geocoding cache clear API error', { error });
 
         return {
             statusCode: 500,
-            headers: createHeaders(),
-            body: JSON.stringify({
+            headers:    createHeaders(),
+            body:       JSON.stringify({
                 success: false,
-                error: 'Internal server error'
+                error:   'Internal server error'
             }),
         };
     }

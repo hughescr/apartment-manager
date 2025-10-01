@@ -6,19 +6,19 @@ import _ from 'lodash';
 export interface Props {
     building: {
         buildingID: string
-        street: string
-        city: string
-        state: string
+        street:     string
+        city:       string
+        state:      string
     }
     unitTypes: {
-        modelID: string
+        modelID:   string
         modelName: string
-        beds: number
-        baths: number
-        sqft?: number
+        beds:      number
+        baths:     number
+        sqft?:     number
     }[]
-    apiUrl: string
-    isOpen?: boolean
+    apiUrl:    string
+    isOpen?:   boolean
     dialogId?: string
 }
 

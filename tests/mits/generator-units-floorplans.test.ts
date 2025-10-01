@@ -21,10 +21,10 @@ describe('MITS Units and Floorplans Generator', () => {
     describe('Floorplan (Model) Generation', () => {
         it('should generate floorplan entries for each unit type', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Floorplan>');
@@ -34,10 +34,10 @@ describe('MITS Units and Floorplans Generator', () => {
 
         it('should include room configuration', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Room>');
@@ -50,10 +50,10 @@ describe('MITS Units and Floorplans Generator', () => {
 
         it('should include square footage range', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<SquareFeet>');
@@ -63,10 +63,10 @@ describe('MITS Units and Floorplans Generator', () => {
 
         it('should include rent range', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<MarketRent>');
@@ -78,10 +78,10 @@ describe('MITS Units and Floorplans Generator', () => {
     describe('Unit Generation', () => {
         it('should only include units marked for the specified site', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'zillow'
+                units:     mockUnits,
+                siteName:  'zillow'
             });
 
             // Unit 101 should be included (zillow: true)
@@ -93,10 +93,10 @@ describe('MITS Units and Floorplans Generator', () => {
 
         it('should include unit availability information', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<ILSUnit>');
@@ -108,10 +108,10 @@ describe('MITS Units and Floorplans Generator', () => {
 
         it('should include unit rent and availability date', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain(`<MarketRent>${mockUnits[0].rent}</MarketRent>`);
@@ -120,10 +120,10 @@ describe('MITS Units and Floorplans Generator', () => {
 
         it('should link units to their floorplan', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain(`<FloorplanID>${mockUnits[0].modelID}</FloorplanID>`);

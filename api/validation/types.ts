@@ -7,17 +7,17 @@
  */
 export interface ValidationResult {
     success: boolean
-    data?: unknown
-    errors: ValidationError[]
+    data?:   unknown
+    errors:  ValidationError[]
 }
 
 /**
  * Detailed validation error with context
  */
 export interface ValidationError {
-    field: string
-    message: string
-    code?: string
+    field:    string
+    message:  string
+    code?:    string
     context?: string
 }
 
@@ -25,11 +25,11 @@ export interface ValidationError {
  * MITS missing field information
  */
 export interface MissingMITSField {
-    field: string
-    displayName: string
-    description: string
-    entityType: 'building' | 'unitType' | 'unit'
-    required: boolean
+    field:        string
+    displayName:  string
+    description:  string
+    entityType:   'building' | 'unitType' | 'unit'
+    required:     boolean
     mitsElement?: string
 }
 
@@ -37,8 +37,8 @@ export interface MissingMITSField {
  * Site publishing requirements
  */
 export interface SiteRequirements {
-    site: string
-    canPublish: boolean
+    site:          string
+    canPublish:    boolean
     missingFields: MissingMITSField[]
-    errors: ValidationError[]
+    errors:        ValidationError[]
 }

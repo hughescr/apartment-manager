@@ -83,13 +83,13 @@ describe('SaveIndicator Component Logic', () => {
             // Test button configuration
             const undoButton = {
                 classes: 'btn btn-outline btn-secondary min-h-[44px] order-2 sm:order-1',
-                type: 'button',
-                action: 'undoChanges()'
+                type:    'button',
+                action:  'undoChanges()'
             };
             const saveButton = {
                 classes: 'btn btn-primary min-h-[44px] order-1 sm:order-2',
-                type: 'button',
-                action: 'saveBuilding()'
+                type:    'button',
+                action:  'saveBuilding()'
             };
 
             expect(undoButton.classes).toContain('btn-secondary');
@@ -103,13 +103,13 @@ describe('SaveIndicator Component Logic', () => {
         it('should use correct Alpine.js directives for conditional display', () => {
             // Test Alpine directive configurations
             const directives = {
-                showContainer: 'x-show="showSave"',
+                showContainer:  'x-show="showSave"',
                 showNormalText: 'x-show="!saving"',
                 showSavingText: 'x-show="saving"',
-                showWarning: 'x-show="showSave && !saving"',
+                showWarning:    'x-show="showSave && !saving"',
                 disableButtons: ':disabled="saving"',
-                undoClick: 'x-on:click="undoChanges()"',
-                saveClick: 'x-on:click="saveBuilding()"'
+                undoClick:      'x-on:click="undoChanges()"',
+                saveClick:      'x-on:click="saveBuilding()"'
             };
 
             expect(directives.showContainer).toBe('x-show="showSave"');
@@ -128,12 +128,12 @@ describe('SaveIndicator Component Logic', () => {
         it('should use proper DaisyUI classes', () => {
             // Test DaisyUI class combinations
             const classes = {
-                container: 'flex flex-col sm:flex-row gap-3 sm:gap-2',
-                undoButton: 'btn btn-outline btn-secondary',
-                saveButton: 'btn btn-primary',
-                spinner: 'loading loading-spinner loading-sm',
+                container:   'flex flex-col sm:flex-row gap-3 sm:gap-2',
+                undoButton:  'btn btn-outline btn-secondary',
+                saveButton:  'btn btn-primary',
+                spinner:     'loading loading-spinner loading-sm',
                 warningText: 'text-warning text-sm mt-2',
-                icon: 'w-4 h-4 inline mr-1'
+                icon:        'w-4 h-4 inline mr-1'
             };
 
             expect(classes.container).toContain('flex flex-col sm:flex-row');
@@ -145,9 +145,9 @@ describe('SaveIndicator Component Logic', () => {
         it('should maintain responsive design principles', () => {
             // Test responsive design logic
             const responsive = {
-                containerGap: 'gap-3 sm:gap-2',
+                containerGap:       'gap-3 sm:gap-2',
                 containerDirection: 'flex-col sm:flex-row',
-                buttonOrdering: 'order-2 sm:order-1' // for undo
+                buttonOrdering:     'order-2 sm:order-1' // for undo
             };
 
             expect(responsive.containerGap).toContain('sm:gap-2');
@@ -160,8 +160,8 @@ describe('SaveIndicator Component Logic', () => {
         it('should provide appropriate semantic elements', () => {
             // Test semantic structure
             const elements = {
-                buttons: 2, // Two button elements
-                warningIcon: true,
+                buttons:        2, // Two button elements
+                warningIcon:    true,
                 loadingSpinner: true
             };
 
@@ -173,9 +173,9 @@ describe('SaveIndicator Component Logic', () => {
         it('should provide clear text labels', () => {
             // Test text content
             const labels = {
-                undo: 'Undo',
-                save: 'Save Changes',
-                saving: 'Saving...',
+                undo:    'Undo',
+                save:    'Save Changes',
+                saving:  'Saving...',
                 warning: 'You have unsaved changes'
             };
 
@@ -190,7 +190,7 @@ describe('SaveIndicator Component Logic', () => {
             // Test state variable names
             const stateVars = {
                 showSave: 'showSave',
-                saving: 'saving'
+                saving:   'saving'
             };
 
             expect(stateVars.showSave).toBe('showSave');
@@ -231,7 +231,7 @@ describe('SaveIndicator Component Logic', () => {
         it('should provide clear visual hierarchy', () => {
             // Test visual hierarchy
             const hierarchy = {
-                primary: 'btn-primary',     // Most important (Save)
+                primary:   'btn-primary',     // Most important (Save)
                 secondary: 'btn-outline btn-secondary' // Less important (Undo)
             };
 
@@ -244,10 +244,10 @@ describe('SaveIndicator Component Logic', () => {
         it('should use efficient Alpine.js directives', () => {
             // Test directive efficiency
             const directives = {
-                conditionalShow: 'x-show', // Better than v-if for frequent changes
-                eventHandlers: 'x-on:click', // Efficient event handling
+                conditionalShow:    'x-show', // Better than v-if for frequent changes
+                eventHandlers:      'x-on:click', // Efficient event handling
                 reactiveAttributes: ':disabled', // Reactive attributes
-                noFlash: 'x-cloak' // Prevent FOUC
+                noFlash:            'x-cloak' // Prevent FOUC
             };
 
             expect(directives.conditionalShow).toBe('x-show');
@@ -259,8 +259,8 @@ describe('SaveIndicator Component Logic', () => {
         it('should minimize DOM complexity', () => {
             // Test DOM efficiency
             const domStructure = {
-                maxNestingLevel: 3, // Keep nesting shallow
-                useSemanticElements: true,
+                maxNestingLevel:          3, // Keep nesting shallow
+                useSemanticElements:      true,
                 avoidUnnecessaryWrappers: true
             };
 

@@ -7,15 +7,15 @@ import { isString, trim } from 'lodash';
  */
 
 export interface StatusTransition {
-    from: VacancyClass | null
-    to: VacancyClass
+    from:    VacancyClass | null
+    to:      VacancyClass
     isValid: boolean
     reason?: string
 }
 
 export interface StatusValidationResult {
-    isValid: boolean
-    errors: string[]
+    isValid:   boolean
+    errors:    string[]
     warnings?: string[]
 }
 
@@ -75,7 +75,7 @@ export function validateVacancyClass(vacancyClass: VacancyClass | string | null 
     }
 
     return {
-        isValid: true,
+        isValid:  true,
         errors,
         warnings: warnings.length > 0 ? warnings : undefined
     };
@@ -86,8 +86,8 @@ export function validateVacancyClass(vacancyClass: VacancyClass | string | null 
  */
 export function validateStatusTransition(fromStatus: VacancyClass | null, toStatus: VacancyClass): StatusTransition {
     const transition: StatusTransition = {
-        from: fromStatus,
-        to: toStatus,
+        from:    fromStatus,
+        to:      toStatus,
         isValid: true
     };
 
@@ -111,10 +111,10 @@ export function validateStatusTransition(fromStatus: VacancyClass | null, toStat
  */
 export function getVacancyClassDescription(vacancyClass: VacancyClass): string {
     const descriptions: Record<VacancyClass, string> = {
-        Occupied: 'Unit is currently occupied by a tenant',
+        Occupied:   'Unit is currently occupied by a tenant',
         Unoccupied: 'Unit is vacant and available for rent',
-        Notice: 'Current tenant has given notice to vacate',
-        Down: 'Unit is unavailable due to maintenance or other issues'
+        Notice:     'Current tenant has given notice to vacate',
+        Down:       'Unit is unavailable due to maintenance or other issues'
     };
 
     return descriptions[vacancyClass] || 'Unknown status';
@@ -125,10 +125,10 @@ export function getVacancyClassDescription(vacancyClass: VacancyClass): string {
  */
 export function getStatusPriority(vacancyClass: VacancyClass): number {
     const priorities: Record<VacancyClass, number> = {
-        Down: 1,      // Highest priority - needs attention
-        Notice: 2,    // High priority - upcoming vacancy
+        Down:       1,      // Highest priority - needs attention
+        Notice:     2,    // High priority - upcoming vacancy
         Unoccupied: 3, // Medium priority - available for rent
-        Occupied: 4   // Lowest priority - stable state
+        Occupied:   4   // Lowest priority - stable state
     };
 
     return priorities[vacancyClass] || 999;
@@ -139,10 +139,10 @@ export function getStatusPriority(vacancyClass: VacancyClass): number {
  */
 export function suggestNextStatus(currentStatus: VacancyClass): VacancyClass[] {
     const suggestions: Record<VacancyClass, VacancyClass[]> = {
-        Occupied: ['Notice'], // Tenant might give notice
-        Notice: ['Unoccupied', 'Occupied'], // Notice can lead to vacancy or renewal
+        Occupied:   ['Notice'], // Tenant might give notice
+        Notice:     ['Unoccupied', 'Occupied'], // Notice can lead to vacancy or renewal
         Unoccupied: ['Occupied', 'Down'], // Vacant can be rented or need maintenance
-        Down: ['Unoccupied'] // Down units should be repaired and become available
+        Down:       ['Unoccupied'] // Down units should be repaired and become available
     };
 
     return suggestions[currentStatus] || [];
@@ -153,11 +153,11 @@ export function suggestNextStatus(currentStatus: VacancyClass): VacancyClass[] {
  */
 export function getStatusStatistics(units: { vacancyClass?: VacancyClass }[]): Record<VacancyClass, number> & { total: number } {
     const stats: Record<VacancyClass, number> & { total: number } = {
-        Occupied: 0,
+        Occupied:   0,
         Unoccupied: 0,
-        Notice: 0,
-        Down: 0,
-        total: 0
+        Notice:     0,
+        Down:       0,
+        total:      0
     };
 
     for(const unit of units) {

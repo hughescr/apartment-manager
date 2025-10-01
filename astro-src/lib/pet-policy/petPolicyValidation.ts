@@ -331,12 +331,12 @@ export function validateNumericInput(value: unknown, min = 0, max = Infinity): {
  * Gets field-specific validation limits
  */
 export const VALIDATION_LIMITS = {
-    maxCount: { min: 1, max: 10 },
-    weightLimit: { min: 1, max: 500 },
-    deposit: { min: 0, max: 10000 },
-    monthlyFee: { min: 0, max: 1000 },
-    oneTimeFee: { min: 0, max: 10000 },
-    notesLength: 1000,
+    maxCount:        { min: 1, max: 10 },
+    weightLimit:     { min: 1, max: 500 },
+    deposit:         { min: 0, max: 10000 },
+    monthlyFee:      { min: 0, max: 1000 },
+    oneTimeFee:      { min: 0, max: 10000 },
+    notesLength:     1000,
     breedNameLength: 100
 } as const;
 
@@ -350,7 +350,7 @@ export function validatePetPolicyForm(formData: FormData, required = false): Pet
             if(required) {
                 return {
                     isValid: false,
-                    errors: { general: 'Pet policy data is missing' }
+                    errors:  { general: 'Pet policy data is missing' }
                 };
             }
             return { isValid: true, errors: {} };
@@ -361,7 +361,7 @@ export function validatePetPolicyForm(formData: FormData, required = false): Pet
     } catch{
         return {
             isValid: false,
-            errors: { general: 'Invalid pet policy data format' }
+            errors:  { general: 'Invalid pet policy data format' }
         };
     }
 }

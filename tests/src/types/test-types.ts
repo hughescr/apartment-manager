@@ -55,7 +55,7 @@ import { FeeType, PetType } from '../../../src/types';
  * Creates a basic Fee object for testing
  */
 export const createTestFee = (overrides: Partial<Fee> = {}): Fee => ({
-    type: FeeType.APPLICATION,
+    type:   FeeType.APPLICATION,
     amount: 100,
     ...overrides
 });
@@ -64,10 +64,10 @@ export const createTestFee = (overrides: Partial<Fee> = {}): Fee => ({
  * Creates a basic PetPolicy object for testing
  */
 export const createTestPetPolicy = (overrides: Partial<PetPolicy> = {}): PetPolicy => ({
-    allowed: true,
-    types: [PetType.DOG],
+    allowed:     true,
+    types:       [PetType.DOG],
     weightLimit: 50,
-    deposit: 200,
+    deposit:     200,
     ...overrides
 });
 
@@ -75,12 +75,12 @@ export const createTestPetPolicy = (overrides: Partial<PetPolicy> = {}): PetPoli
  * Creates a basic BuildingData object for testing
  */
 export const createTestBuilding = (overrides: Partial<BuildingData> = {}): BuildingData => ({
-    buildingID: 'test-building-001',
+    buildingID:   'test-building-001',
     buildingName: 'Test Building',
-    street: '123 Test St',
-    city: 'Test City',
-    state: 'CA',
-    zip: '12345',
+    street:       '123 Test St',
+    city:         'Test City',
+    state:        'CA',
+    zip:          '12345',
     ...overrides
 });
 
@@ -89,12 +89,12 @@ export const createTestBuilding = (overrides: Partial<BuildingData> = {}): Build
  */
 export const createTestUnit = (overrides: Partial<UnitData> = {}): UnitData => ({
     buildingID: 'test-building-001',
-    unitID: 'test-unit-001',
+    unitID:     'test-unit-001',
     unitNumber: '101',
-    beds: 0, // Studio
-    baths: 1,
-    sqft: 500,
-    rent: 1200,
+    beds:       0, // Studio
+    baths:      1,
+    sqft:       500,
+    rent:       1200,
     ...overrides
 });
 
@@ -122,16 +122,16 @@ export const TestPatterns = {
     BOUNDARY_VALUES: {
         RENT: {
             negative: [-1, -100, -0.01],
-            zero: [0],
-            maximum: [999999, 1000000], // Test at boundary
+            zero:     [0],
+            maximum:  [999999, 1000000], // Test at boundary
         },
         SQUARE_FEET: {
             negative: [-1, -100],
-            zero: [0],
-            maximum: [99999, 100000],
+            zero:     [0],
+            maximum:  [99999, 100000],
         },
         PERCENTAGE: {
-            negative: [-1, -0.01],
+            negative:    [-1, -0.01],
             overHundred: [100.01, 200, 1000],
         },
     }

@@ -26,7 +26,7 @@ const DepositPublishedSchema = z.union([
         amount: z.number()
             .min(0, 'Deposit amount cannot be negative for MITS Deposit element')
             .max(50000, 'Deposit amount seems unusually high - please verify'),
-        refundable: z.boolean().optional(),
+        refundable:              z.boolean().optional(),
         partialRefundPercentage: z.number()
             .min(0, 'Partial refund percentage cannot be negative')
             .max(100, 'Partial refund percentage cannot exceed 100%')
@@ -194,7 +194,7 @@ export const UnitTypePublishedSchema = z.object({
     },
     {
         message: 'At least one square footage value (minSqft or maxSqft) is required for MITS Floorplan.SquareFeet element',
-        path: ['sqft']
+        path:    ['sqft']
     }
 )
 .refine(
@@ -204,7 +204,7 @@ export const UnitTypePublishedSchema = z.object({
     },
     {
         message: 'At least one rent value (minRent or maxRent) is required for MITS Floorplan.MarketRent element',
-        path: ['rent']
+        path:    ['rent']
     }
 )
 .refine(
@@ -217,7 +217,7 @@ export const UnitTypePublishedSchema = z.object({
     },
     {
         message: 'Minimum square footage cannot be greater than maximum square footage',
-        path: ['maxSqft']
+        path:    ['maxSqft']
     }
 )
 .refine(
@@ -230,7 +230,7 @@ export const UnitTypePublishedSchema = z.object({
     },
     {
         message: 'Minimum rent cannot be greater than maximum rent',
-        path: ['maxRent']
+        path:    ['maxRent']
     }
 )
 .refine(
@@ -243,7 +243,7 @@ export const UnitTypePublishedSchema = z.object({
     },
     {
         message: 'Minimum lease term cannot be greater than maximum lease term',
-        path: ['maxLeaseTerm']
+        path:    ['maxLeaseTerm']
     }
 );
 
@@ -254,8 +254,8 @@ export type UnitTypePublishedInput = z.infer<typeof UnitTypePublishedSchema>;
  */
 export const MITS_UNIT_TYPE_ERROR_MESSAGES = {
     MISSING_REQUIRED_FIELD: 'This field is required for MITS 4.1 Floorplan compliance and must be provided before publishing',
-    MISSING_SIZE_INFO: 'Square footage required: MITS Floorplan.SquareFeet element needs at least minSqft or maxSqft',
-    MISSING_RENT_INFO: 'Rent information required: MITS Floorplan.MarketRent element needs at least minRent or maxRent',
-    INVALID_ROOM_COUNT: 'Invalid room configuration: beds and baths are required for MITS Floorplan.Room elements',
-    INVALID_RANGE: 'Invalid range: minimum value cannot be greater than maximum value for MITS compliance'
+    MISSING_SIZE_INFO:      'Square footage required: MITS Floorplan.SquareFeet element needs at least minSqft or maxSqft',
+    MISSING_RENT_INFO:      'Rent information required: MITS Floorplan.MarketRent element needs at least minRent or maxRent',
+    INVALID_ROOM_COUNT:     'Invalid room configuration: beds and baths are required for MITS Floorplan.Room elements',
+    INVALID_RANGE:          'Invalid range: minimum value cannot be greater than maximum value for MITS compliance'
 } as const;

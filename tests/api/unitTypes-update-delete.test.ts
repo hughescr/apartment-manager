@@ -24,8 +24,8 @@ describe('Unit Types API - Update and Delete', () => {
             expect.assertions(3);
             const updates = {
                 modelName: '2 Bedroom Premium',
-                minRent: 1600,
-                maxRent: 1900
+                minRent:   1600,
+                maxRent:   1900
             };
             // Mock returns the updated item with unitID
             const updatedUnitType = { ...testUnitType, ...updates };
@@ -33,14 +33,14 @@ describe('Unit Types API - Update and Delete', () => {
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
-                body: JSON.stringify(updates),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(updates),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await update(event);
 
             expect(result.statusCode).toBe(200);
-            expect(JSON.parse(result.body as string)).toEqual(updatedUnitType);
+            expect(JSON.parse(result.body!)).toEqual(updatedUnitType);
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 
@@ -51,50 +51,50 @@ describe('Unit Types API - Update and Delete', () => {
             const updates = { modelName: 'Updated Name' };
             const updatedItem = {
                 buildingID: 'o6L6W8KUNhj1sPZCRx4tkw',
-                modelID: 'non-existent',
-                modelName: 'Updated Name',
-                beds: 1, // These would be required in real DynamoDB
-                baths: 1
+                modelID:    'non-existent',
+                modelName:  'Updated Name',
+                beds:       1, // These would be required in real DynamoDB
+                baths:      1
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...updatedItem, unitID: 'MODEL#non-existent' }));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'non-existent' },
-                body: JSON.stringify(updates),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(updates),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await update(event);
 
             expect(result.statusCode).toBe(200);
-            expect(JSON.parse(result.body as string)).toEqual(updatedItem);
+            expect(JSON.parse(result.body!)).toEqual(updatedItem);
         });
 
         it('should ignore attempts to change protected fields', async () => {
             expect.assertions(3);
             const invalidUpdates = {
-                modelID: 'new-id', // Will be ignored
+                modelID:    'new-id', // Will be ignored
                 buildingID: 'different-building', // Will be ignored
-                modelName: 'Updated Name' // This will be applied
+                modelName:  'Updated Name' // This will be applied
             };
 
             // The data layer will use the IDs from path params, not from body
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnitType,
                 modelName: 'Updated Name',
-                unitID: `MODEL#${testUnitType.modelID}`
+                unitID:    `MODEL#${testUnitType.modelID}`
             }));
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
-                body: JSON.stringify(invalidUpdates),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(invalidUpdates),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await update(event);
 
             expect(result.statusCode).toBe(200);
-            const updatedData = JSON.parse(result.body as string);
+            const updatedData = JSON.parse(result.body!);
             // Verify the IDs weren't changed
             expect(updatedData.modelID).toBe('model-2br');
             expect(updatedData.buildingID).toBe('o6L6W8KUNhj1sPZCRx4tkw');
@@ -104,14 +104,14 @@ describe('Unit Types API - Update and Delete', () => {
             expect.assertions(2);
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
-                body: 'invalid json {{{',
-                headers: { 'content-type': 'application/json' }
+                body:           'invalid json {{{',
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await update(event);
 
             expect(result.statusCode).toBe(400);
-            expect(JSON.parse(result.body as string)).toEqual({ error: 'Invalid request body' });
+            expect(JSON.parse(result.body!)).toEqual({ error: 'Invalid request body' });
         });
 
         it('should handle validation failures in update', async () => {
@@ -124,14 +124,14 @@ describe('Unit Types API - Update and Delete', () => {
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
-                body: JSON.stringify(invalidUpdates),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(invalidUpdates),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await update(event);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.error).toBe('Validation failed');
             expect(response.errors).toHaveProperty('minRent');
         });
@@ -139,23 +139,23 @@ describe('Unit Types API - Update and Delete', () => {
         it('should validate all fields in update like create', async () => {
             expect.assertions(5);
             const invalidUpdates = {
-                modelName: '   ', // Empty
-                beds: 15, // > 10
+                modelName:    '   ', // Empty
+                beds:         15, // > 10
                 maxOccupants: 0, // < 1
                 minLeaseTerm: 50, // > 36
-                minSqft: 15000 // > 10000
+                minSqft:      15000 // > 10000
             };
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
-                body: JSON.stringify(invalidUpdates),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(invalidUpdates),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await update(event);
 
             expect(result.statusCode).toBe(400);
-            const errors = JSON.parse(result.body as string).errors;
+            const errors = JSON.parse(result.body!).errors;
             expect(errors.modelName).toBe('Model name cannot be empty');
             expect(errors.beds).toBe('Number of beds must be between 0 and 10');
             expect(errors.maxOccupants).toBe('Number must be greater than or equal to 1');
@@ -170,8 +170,8 @@ describe('Unit Types API - Update and Delete', () => {
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
-                body: JSON.stringify({ modelName: 'Updated' }),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify({ modelName: 'Updated' }),
+                headers:        { 'content-type': 'application/json' }
             });
 
             // Similar to list endpoint - check actual behavior due to mocking complexity
@@ -179,7 +179,7 @@ describe('Unit Types API - Update and Delete', () => {
                 const result = await update(event);
                 // If it succeeds, verify basic API behavior
                 expect([200, 400, 500]).toContain(result.statusCode);
-            } catch(error) {
+            } catch (error) {
                 // If it throws as expected, verify the error
                 expect(error).toBeInstanceOf(Error);
                 expect((error as Error).message).toContain('Database error');
@@ -193,14 +193,14 @@ describe('Unit Types API - Update and Delete', () => {
 
             const event = createMockEvent({
                 pathParameters: { buildingID: 'o6L6W8KUNhj1sPZCRx4tkw', modelID: 'model-2br' },
-                body: '{}',
-                headers: { 'content-type': 'application/json' }
+                body:           '{}',
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await update(event);
 
             expect(result.statusCode).toBe(200);
-            expect(JSON.parse(result.body as string)).toEqual(testUnitType);
+            expect(JSON.parse(result.body!)).toEqual(testUnitType);
         });
     });
 

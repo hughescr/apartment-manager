@@ -41,11 +41,11 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
         it('should handle non-enumerable properties', () => {
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
             };
 
             Object.defineProperty(unit, 'hiddenProperty', {
-                value: 'hidden',
+                value:      'hidden',
                 enumerable: false
             });
 
@@ -78,7 +78,7 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
         it('should handle frozen objects', () => {
             const frozenUnit = createFrozenUnit({ beds: 1 });
 
-            const resolved = resolver.resolveUnitValues(frozenUnit as UnitData, unitTypeData, buildingData);
+            const resolved = resolver.resolveUnitValues(frozenUnit, unitTypeData, buildingData);
 
             // Should create a new object, not mutate the frozen one
             expect(resolved).not.toBe(frozenUnit);
@@ -88,11 +88,11 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
 
         it('should handle sealed objects', () => {
             const sealedUnit = createSealedUnit({
-                beds: undefined,
+                beds:  undefined,
                 baths: undefined
             });
 
-            const resolved = resolver.resolveUnitValues(sealedUnit as UnitData, unitTypeData, buildingData);
+            const resolved = resolver.resolveUnitValues(sealedUnit, unitTypeData, buildingData);
 
             // Should create a new object
             expect(resolved).not.toBe(sealedUnit);
@@ -105,14 +105,14 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
         it('should handle deeply nested inheritance (10+ levels)', () => {
             // Test with deeply nested amenity descriptions
             const deeplyNestedAmenities = Array.from({ length: 15 }, (_, i) => ({
-                name: `Level${i}`,
-                category: AmenityCategory.UNIT,
+                name:        `Level${i}`,
+                category:    AmenityCategory.UNIT,
                 description: createVeryLongString(1000) // Large description
             }));
 
             const unitWithDeep: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
                 unitAmenities: deeplyNestedAmenities.slice(10)
             };
 
@@ -147,8 +147,8 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
             const complexUnit = new ExtendedUnit();
             assign(complexUnit, {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: 2
+                unitID:     'UNIT-001',
+                beds:       2
             });
 
             const resolved = resolver.resolveUnitValues(complexUnit as unknown as UnitData, unitTypeData, buildingData);
@@ -161,8 +161,8 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
 
         it('should handle objects with custom toString methods', () => {
             const unitWithCustomToString: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:      'BLDG-001',
+                unitID:          'UNIT-001',
                 unitDescription: {
                     toString: constant('Custom string representation')
                 } as unknown as string
@@ -176,14 +176,14 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
 
         it('should handle objects with custom valueOf methods', () => {
             const customRent = {
-                valueOf: constant(1500),
+                valueOf:  constant(1500),
                 toString: constant('1500')
             };
 
             const unitWithCustomValueOf: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                rent: customRent as unknown as number
+                unitID:     'UNIT-001',
+                rent:       customRent as unknown as number
             };
 
             const resolved = resolver.resolveUnitValues(unitWithCustomValueOf, unitTypeData, buildingData);
@@ -197,8 +197,8 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
         it('should handle Proxy objects', () => {
             const target = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: 2
+                unitID:     'UNIT-001',
+                beds:       2
             };
 
             const proxy = new Proxy(target, {
@@ -220,7 +220,7 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
         it('should handle Proxy objects with traps', () => {
             const target = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
             };
 
             let getCallCount = 0;
@@ -247,8 +247,8 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
             const weakMap = new WeakMap();
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: 2
+                unitID:     'UNIT-001',
+                beds:       2
             };
 
             weakMap.set(unit, { metadata: 'test data' });
@@ -268,7 +268,7 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
         it('should handle objects that throw on property access', () => {
             const throwingUnit = new Proxy({
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
             }, {
                 get(target, prop) {
                     if(prop === 'beds') {
@@ -286,8 +286,8 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
         it('should handle circular references in objects', () => {
             const unit: UnitData & { self?: UnitData } = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: 2
+                unitID:     'UNIT-001',
+                beds:       2
             };
             unit.self = unit; // Create circular reference
 
@@ -303,8 +303,8 @@ describe('InheritanceResolver - Advanced JavaScript Features', () => {
             const promiseValue = Promise.resolve(1600);
             const unitWithPromise: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                rent: promiseValue as unknown as number
+                unitID:     'UNIT-001',
+                rent:       promiseValue as unknown as number
             };
 
             const resolved = resolver.resolveUnitValues(unitWithPromise, unitTypeData, buildingData);

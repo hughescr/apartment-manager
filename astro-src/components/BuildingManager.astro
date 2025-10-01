@@ -19,12 +19,12 @@ import AddUnitTypeDialog from './building/dialogs/AddUnitTypeDialog.astro';
 import type { BuildingData, UnitData, UnitTypeData } from '../types';
 
 export interface Props {
-    building: BuildingData
-    units: UnitData[]
+    building:  BuildingData
+    units:     UnitData[]
     unitTypes: UnitTypeData[]
-    apiURL: string
-    'class'?: string
-    style?: string
+    apiURL:    string
+    'class'?:  string
+    style?:    string
 }
 
 const { building, units, unitTypes, apiURL } = Astro.props;
@@ -94,9 +94,9 @@ const initialDataLoaded = true;
             <AddUnitDialog
               building={{
                     buildingID: buildingData.buildingID,
-                    street: buildingData.street || '',
-                    city: buildingData.city || '',
-                    state: buildingData.state || ''
+                    street:     buildingData.street || '',
+                    city:       buildingData.city || '',
+                    state:      buildingData.state || ''
                 }}
               unitTypes={unitTypes}
               apiUrl={apiURL}
@@ -104,9 +104,9 @@ const initialDataLoaded = true;
             <AddUnitTypeDialog
               building={{
                     buildingID: buildingData.buildingID,
-                    street: buildingData.street || '',
-                    city: buildingData.city || '',
-                    state: buildingData.state || ''
+                    street:     buildingData.street || '',
+                    city:       buildingData.city || '',
+                    state:      buildingData.state || ''
                 }}
               apiUrl={apiURL}
             />

@@ -3,25 +3,25 @@ import _ from 'lodash';
 const { map, isString, filter, identity } = _;
 
 export interface SelectOption {
-    value: string | number
-    label: string
+    value:     string | number
+    label:     string
     disabled?: boolean
 }
 
 export interface Props {
-    name: string
-    label?: string
+    name:         string
+    label?:       string
     placeholder?: string
-    required?: boolean
-    disabled?: boolean
-    xModel: string
-    options: SelectOption[] | string[]
-    value?: string | number
-    'class'?: string
-    error?: string
-    helpText?: string
-    showLabel?: boolean
-    onchange?: string
+    required?:    boolean
+    disabled?:    boolean
+    xModel:       string
+    options:      SelectOption[] | string[]
+    value?:       string | number
+    'class'?:     string
+    error?:       string
+    helpText?:    string
+    showLabel?:   boolean
+    onchange?:    string
 }
 
 const {

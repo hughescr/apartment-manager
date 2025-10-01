@@ -24,12 +24,12 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
         it('should accept minRent > maxRent (runtime validation needed)', () => {
             const unitType: UnitTypeData = {
                 buildingID: 'bldg-123',
-                modelID: 'model-1',
-                modelName: 'Invalid Rent Range',
-                beds: 2,
-                baths: 2,
-                minRent: 2000, // Higher than max
-                maxRent: 1500
+                modelID:    'model-1',
+                modelName:  'Invalid Rent Range',
+                beds:       2,
+                baths:      2,
+                minRent:    2000, // Higher than max
+                maxRent:    1500
             };
             expect(unitType.minRent).toBe(2000);
             expect(unitType.maxRent).toBe(1500);
@@ -39,12 +39,12 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
         it('should accept negative rent values', () => {
             const unitType: UnitTypeData = {
                 buildingID: 'bldg-123',
-                modelID: 'model-2',
-                modelName: 'Negative Rent',
-                beds: 1,
-                baths: 1,
-                minRent: -500,
-                maxRent: -100
+                modelID:    'model-2',
+                modelName:  'Negative Rent',
+                beds:       1,
+                baths:      1,
+                minRent:    -500,
+                maxRent:    -100
             };
             expect(unitType.minRent).toBe(-500);
             expect(unitType.maxRent).toBe(-100);
@@ -55,12 +55,12 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
         it('should accept minSqft > maxSqft (runtime validation needed)', () => {
             const unitType: UnitTypeData = {
                 buildingID: 'bldg-123',
-                modelID: 'model-1',
-                modelName: 'Invalid Sqft Range',
-                beds: 1,
-                baths: 1,
-                minSqft: 1200, // Larger than max
-                maxSqft: 800
+                modelID:    'model-1',
+                modelName:  'Invalid Sqft Range',
+                beds:       1,
+                baths:      1,
+                minSqft:    1200, // Larger than max
+                maxSqft:    800
             };
             expect(unitType.minSqft).toBe(1200);
             expect(unitType.maxSqft).toBe(800);
@@ -69,8 +69,8 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
         it('should accept zero or negative square footage', () => {
             const unit: UnitData = {
                 buildingID: 'bldg-123',
-                unitID: 'unit-123',
-                sqft: -100 // Invalid but type system allows it
+                unitID:     'unit-123',
+                sqft:       -100 // Invalid but type system allows it
             };
             expect(unit.sqft).toBe(-100);
         });
@@ -79,11 +79,11 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
     describe('Lease Term Validation', () => {
         it('should accept minLeaseTerm > maxLeaseTerm (runtime validation needed)', () => {
             const unitType: UnitTypeData = {
-                buildingID: 'bldg-123',
-                modelID: 'model-1',
-                modelName: 'Invalid Lease Terms',
-                beds: 2,
-                baths: 1,
+                buildingID:   'bldg-123',
+                modelID:      'model-1',
+                modelName:    'Invalid Lease Terms',
+                beds:         2,
+                baths:        1,
                 minLeaseTerm: 24, // Longer than max
                 maxLeaseTerm: 6
             };
@@ -93,7 +93,7 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
 
         it('should accept zero or negative lease terms', () => {
             const building: BuildingData = {
-                buildingID: 'bldg-123',
+                buildingID:  'bldg-123',
                 leaseLength: -12 // Invalid but allowed by types
             };
             expect(building.leaseLength).toBe(-12);
@@ -103,11 +103,11 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
     describe('Occupancy Validation', () => {
         it('should accept maxOccupants < beds (runtime validation needed)', () => {
             const unitType: UnitTypeData = {
-                buildingID: 'bldg-123',
-                modelID: 'model-1',
-                modelName: 'Low Occupancy',
-                beds: 3,
-                baths: 2,
+                buildingID:   'bldg-123',
+                modelID:      'model-1',
+                modelName:    'Low Occupancy',
+                beds:         3,
+                baths:        2,
                 maxOccupants: 1 // Less than number of beds
             };
             expect(unitType.beds).toBe(3);
@@ -116,8 +116,8 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
 
         it('should accept zero or negative occupants', () => {
             const unit: UnitData = {
-                buildingID: 'bldg-123',
-                unitID: 'unit-123',
+                buildingID:   'bldg-123',
+                unitID:       'unit-123',
                 maxOccupants: -5
             };
             expect(unit.maxOccupants).toBe(-5);
@@ -127,18 +127,18 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
     describe('Fee Conflicts', () => {
         it('should accept conflicting security deposit fee types', () => {
             const building: BuildingData = {
-                buildingID: 'bldg-123',
+                buildingID:  'bldg-123',
                 oneTimeFees: [
                     {
-                        type: FeeType.SECURITY_DEPOSIT,
-                        amount: 1000,
-                        refundable: true,
+                        type:        FeeType.SECURITY_DEPOSIT,
+                        amount:      1000,
+                        refundable:  true,
                         description: 'Refundable security deposit'
                     },
                     {
-                        type: FeeType.SECURITY_DEPOSIT,
-                        amount: 500,
-                        refundable: false,
+                        type:        FeeType.SECURITY_DEPOSIT,
+                        amount:      500,
+                        refundable:  false,
                         description: 'Non-refundable security deposit'
                     }
                 ]
@@ -151,7 +151,7 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
 
         it('should accept duplicate fee types with different amounts', () => {
             const building: BuildingData = {
-                buildingID: 'bldg-123',
+                buildingID:  'bldg-123',
                 monthlyFees: [
                     { type: FeeType.PARKING, amount: 100 },
                     { type: FeeType.PARKING, amount: 150 },
@@ -165,9 +165,9 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
     describe('Date Range Validation', () => {
         it('should accept startDate > endDate in RentSpecial', () => {
             const special: RentSpecial = {
-                title: 'Backwards Special',
-                startDate: '2024-12-31',
-                endDate: '2024-01-01', // Earlier than start
+                title:       'Backwards Special',
+                startDate:   '2024-12-31',
+                endDate:     '2024-01-01', // Earlier than start
                 description: 'Invalid date range'
             };
             expect(special.startDate).toBe('2024-12-31');
@@ -176,9 +176,9 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
 
         it('should accept invalid date formats', () => {
             const special: RentSpecial = {
-                title: 'Bad Dates',
-                startDate: 'not-a-date',
-                endDate: '2024-13-45', // Invalid month and day
+                title:       'Bad Dates',
+                startDate:   'not-a-date',
+                endDate:     '2024-13-45', // Invalid month and day
                 description: 'Invalid dates'
             };
             expect(special.startDate).toBe('not-a-date');
@@ -188,11 +188,11 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
         it('should accept unit available date before building was built', () => {
             const building: BuildingData = {
                 buildingID: 'bldg-123',
-                yearBuilt: 2020
+                yearBuilt:  2020
             };
             const unit: UnitData = {
-                buildingID: 'bldg-123',
-                unitID: 'unit-123',
+                buildingID:    'bldg-123',
+                unitID:        'unit-123',
                 availableDate: '2010-01-01' // Before building existed
             };
             expect(building.yearBuilt).toBe(2020);
@@ -204,9 +204,9 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
         it('should accept deposit greater than annual rent', () => {
             const unit: UnitData = {
                 buildingID: 'bldg-123',
-                unitID: 'unit-123',
-                rent: 1000, // $1000/month = $12,000/year
-                deposit: 50000 // $50,000 deposit
+                unitID:     'unit-123',
+                rent:       1000, // $1000/month = $12,000/year
+                deposit:    50000 // $50,000 deposit
             };
             expect(unit.rent).toBe(1000);
             expect(unit.deposit).toBe(50000);
@@ -214,11 +214,11 @@ describe('Business Logic Validation Tests (Type System Acceptance)', () => {
 
         it('should accept per-person rent exceeding total rent', () => {
             const unit: UnitData = {
-                buildingID: 'bldg-123',
-                unitID: 'unit-123',
-                rent: 1000,
+                buildingID:    'bldg-123',
+                unitID:        'unit-123',
+                rent:          1000,
                 perPersonRent: 800, // $800 per person could exceed total
-                maxOccupants: 4 // $3200 if fully occupied
+                maxOccupants:  4 // $3200 if fully occupied
             };
             expect(unit.rent).toBe(1000);
             expect(unit.perPersonRent).toBe(800);

@@ -27,16 +27,16 @@ describe('Fee Transformer', () => {
 
             expect(result).toHaveLength(5);
             expect(result[0]).toEqual({
-                type: 'Application Fee',
-                amount: 50,
+                type:        'Application Fee',
+                amount:      50,
                 description: 'Application fee',
-                refundable: false
+                refundable:  false
             });
             expect(result[1]).toEqual({
-                type: 'Security Deposit',
-                amount: 1000,
+                type:        'Security Deposit',
+                amount:      1000,
                 description: 'Security deposit',
-                refundable: true
+                refundable:  true
             });
         });
 
@@ -45,16 +45,16 @@ describe('Fee Transformer', () => {
 
             expect(result).toHaveLength(5);
             expect(result[0]).toEqual({
-                type: 'Application',
-                amount: 50,
+                type:        'Application',
+                amount:      50,
                 description: 'Application fee',
-                refundable: false
+                refundable:  false
             });
             expect(result[1]).toEqual({
-                type: 'Security Deposit',
-                amount: 1000,
+                type:        'Security Deposit',
+                amount:      1000,
                 description: 'Security deposit',
-                refundable: true
+                refundable:  true
             });
         });
 
@@ -431,8 +431,8 @@ describe('Fee Transformer', () => {
 
         it('should handle many fees', () => {
             const manyFees: Fee[] = Array.from({ length: 100 }, (_, i) => ({
-                type: FeeType.ADMIN,
-                amount: i + 1,
+                type:       FeeType.ADMIN,
+                amount:     i + 1,
                 refundable: false
             }));
 
@@ -661,8 +661,8 @@ describe('Fee Transformer', () => {
         // Concurrent operations
         it('should handle concurrent fee transformations', () => {
             const fees: Fee[] = Array.from({ length: 100 }, (_, i) => ({
-                type: FeeType.ADMIN,
-                amount: i,
+                type:       FeeType.ADMIN,
+                amount:     i,
                 refundable: false
             }));
 

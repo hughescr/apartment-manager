@@ -25,10 +25,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             const mockUnitsWithVacancyClass = createMockUnitsWithVacancyClass();
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithVacancyClass,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithVacancyClass,
+                siteName:  'apartments_com'
             });
 
             expect(xml).not.toContain('<UnitID>unit-down</UnitID>');
@@ -39,10 +39,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             const mockUnitsWithVacancyClass = createMockUnitsWithVacancyClass();
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithVacancyClass,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithVacancyClass,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<UnitID>unit-occupied</UnitID>');
@@ -53,10 +53,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             const mockUnitsWithVacancyClass = createMockUnitsWithVacancyClass();
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithVacancyClass,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithVacancyClass,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<UnitID>unit-unoccupied</UnitID>');
@@ -67,10 +67,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             const mockUnitsWithVacancyClass = createMockUnitsWithVacancyClass();
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithVacancyClass,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithVacancyClass,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<UnitID>unit-notice</UnitID>');
@@ -81,10 +81,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             const mockUnitsWithVacancyClass = createMockUnitsWithVacancyClass();
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnitsWithVacancyClass,
-                siteName: 'apartments_com'
+                units:     mockUnitsWithVacancyClass,
+                siteName:  'apartments_com'
             });
 
             // Count how many units should be included (all except Down)
@@ -101,25 +101,25 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             const legacyUnits: UnitData[] = [
                 {
                     ...mockUnits[0],
-                    unitID: 'unit-legacy-vacant',
-                    occupied: false,
-                    vacancyClass: undefined,
+                    unitID:        'unit-legacy-vacant',
+                    occupied:      false,
+                    vacancyClass:  undefined,
                     feedInclusion: { apartments_com: true }
                 },
                 {
                     ...mockUnits[0],
-                    unitID: 'unit-legacy-occupied',
-                    occupied: true,
-                    vacancyClass: undefined,
+                    unitID:        'unit-legacy-occupied',
+                    occupied:      true,
+                    vacancyClass:  undefined,
                     feedInclusion: { apartments_com: true }
                 }
             ];
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: legacyUnits,
-                siteName: 'apartments_com'
+                units:     legacyUnits,
+                siteName:  'apartments_com'
             });
 
             // Backward compatibility: occupied: false -> Unoccupied
@@ -137,10 +137,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: seniorBuilding,
+                building:  seniorBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<RentalType>Senior</RentalType>');
@@ -153,10 +153,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: studentBuilding,
+                building:  studentBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<RentalType>Student</RentalType>');
@@ -169,10 +169,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: affordableBuilding,
+                building:  affordableBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<RentalType>Affordable</RentalType>');
@@ -185,10 +185,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: regularBuilding,
+                building:  regularBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<RentalType>Market Rate</RentalType>');
@@ -201,10 +201,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: customBuilding,
+                building:  customBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<RentalType>Market Rate</RentalType>');
@@ -217,10 +217,10 @@ describe('MITS Vacancy Class and Rental Type Mapping', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: capitalizedBuilding,
+                building:  capitalizedBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<RentalType>Senior</RentalType>');

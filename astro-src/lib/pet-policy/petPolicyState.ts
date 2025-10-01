@@ -40,13 +40,13 @@ function petPolicyStateObject(modelName: string): any {
     return {
         // Configuration
         modelName,
-        petTypes: PET_TYPE_OPTIONS,
+        petTypes:     PET_TYPE_OPTIONS,
         commonBreeds: COMMON_BREED_RESTRICTIONS,
 
         // UI State
         showBreedRestrictions: false,
-        newBreedRestriction: '',
-        showAdvancedSettings: false,
+        newBreedRestriction:   '',
+        showAdvancedSettings:  false,
 
         /**
          * Initialize the component state
@@ -312,9 +312,9 @@ function petPolicyStateObject(modelName: string): any {
         get hasRestrictions(): boolean {
             const policy = this[modelName];
             return !!(
-                policy?.breedRestrictions?.length ||
-                policy?.maxCount ||
-                policy?.weightLimit
+                policy?.breedRestrictions?.length
+                || policy?.maxCount
+                || policy?.weightLimit
             );
         },
 
@@ -324,7 +324,7 @@ function petPolicyStateObject(modelName: string): any {
         getPolicySummary(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics): string {
             const policy = this[modelName];
 
-            if(!policy || !policy.allowed) {
+            if(!policy?.allowed) {
                 return 'No pets allowed';
             }
 

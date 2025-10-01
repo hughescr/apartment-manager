@@ -46,19 +46,19 @@ describe('Alpine.js Registry Integration Tests', () => {
 
             // Step 4: Create component instance with real data
             const mockUnitType = {
-                modelID: 'studio-deluxe',
-                modelName: 'Deluxe Studio',
+                modelID:    'studio-deluxe',
+                modelName:  'Deluxe Studio',
                 buildingID: 'building-123',
-                beds: 0,
-                baths: 1,
-                sqft: 550,
-                rent: 2800
+                beds:       0,
+                baths:      1,
+                sqft:       550,
+                rent:       2800
             };
 
             const dataset = {
-                unitType: JSON.stringify(mockUnitType),
+                unitType:          JSON.stringify(mockUnitType),
                 buildingAmenities: JSON.stringify([]),
-                apiUrl: '/api/v1/'
+                apiUrl:            '/api/v1/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -74,7 +74,7 @@ describe('Alpine.js Registry Integration Tests', () => {
         it('should handle component interactions with DOM elements', () => {
             const dataset = {
                 unitType: JSON.stringify({ modelID: 'test', rent: 2000 }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -99,12 +99,12 @@ describe('Alpine.js Registry Integration Tests', () => {
             // Create two different unit type card instances
             const dataset1 = {
                 unitType: JSON.stringify({ modelID: 'studio', rent: 2000 }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const dataset2 = {
                 unitType: JSON.stringify({ modelID: '1br', rent: 2800 }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const context1 = createMockAlpineContext(dataset1);
@@ -131,11 +131,11 @@ describe('Alpine.js Registry Integration Tests', () => {
     describe('LocationMap Integration', () => {
         it('should integrate with Leaflet library mock', async () => {
             const dataset = {
-                latModel: 'coordinates.lat',
-                lngModel: 'coordinates.lng',
+                latModel:   'coordinates.lat',
+                lngModel:   'coordinates.lng',
                 defaultLat: '37.7749',
                 defaultLng: '-122.4194',
-                apiUrl: '/api/'
+                apiUrl:     '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -158,25 +158,25 @@ describe('Alpine.js Registry Integration Tests', () => {
         it('should handle geocoding workflow integration', async () => {
             // Mock successful geocoding response
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: () => Promise.resolve({
                     success: true,
-                    result: {
-                        lat: 40.7589,
-                        lng: -73.9851,
+                    result:  {
+                        lat:         40.7589,
+                        lng:         -73.9851,
                         displayName: 'Times Square, New York, NY'
                     }
                 })
             });
 
             const dataset = {
-                latModel: 'coordinates.lat',
-                lngModel: 'coordinates.lng',
-                apiUrl: '/api/',
+                latModel:      'coordinates.lat',
+                lngModel:      'coordinates.lng',
+                apiUrl:        '/api/',
                 addressModels: JSON.stringify({
                     addressModel: 'address.street',
-                    cityModel: 'address.city',
-                    stateModel: 'address.state'
+                    cityModel:    'address.city',
+                    stateModel:   'address.state'
                 })
             };
 
@@ -184,8 +184,8 @@ describe('Alpine.js Registry Integration Tests', () => {
             // Set address properties directly on context for getNestedProperty to find
             mockContext.address = {
                 street: '1 Times Square',
-                city: 'New York',
-                state: 'NY'
+                city:   'New York',
+                state:  'NY'
             };
             mockContext.coordinates = { lat: null, lng: null };
 
@@ -206,19 +206,19 @@ describe('Alpine.js Registry Integration Tests', () => {
 
             // Verify API was called with correct data
             expect(mockFetch).toHaveBeenCalledWith('/api/geocoding', {
-                method: 'POST',
+                method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body:    JSON.stringify({
                     address: '1 Times Square',
-                    city: 'New York',
-                    state: 'NY'
+                    city:    'New York',
+                    state:   'NY'
                 })
             });
 
             // Verify dispatch was called for success toast
             expect(mockContext.$dispatch).toHaveBeenCalledWith('show-toast', {
                 message: 'Address geocoded: Times Square, New York, NY',
-                type: 'success'
+                type:    'success'
             });
         });
     });
@@ -226,20 +226,20 @@ describe('Alpine.js Registry Integration Tests', () => {
     describe('Real-world Usage Patterns', () => {
         it('should simulate typical unit card editing workflow', async () => {
             const originalUnit = {
-                unitID: 'unit-101',
-                modelID: 'studio',
+                unitID:     'unit-101',
+                modelID:    'studio',
                 buildingID: 'building-1',
                 unitNumber: '101',
-                beds: 0,
-                baths: 1,
-                sqft: 500,
-                rent: 2000,
-                deposit: { amount: 1500, refundable: true }
+                beds:       0,
+                baths:      1,
+                sqft:       500,
+                rent:       2000,
+                deposit:    { amount: 1500, refundable: true }
             };
 
             const dataset = {
                 unitType: JSON.stringify(originalUnit),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -268,7 +268,7 @@ describe('Alpine.js Registry Integration Tests', () => {
 
             // Step 6: Mock successful save
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: () => Promise.resolve({ success: true })
             });
 
@@ -277,9 +277,9 @@ describe('Alpine.js Registry Integration Tests', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 '/api/buildings/building-1/unit-types/studio',
                 expect.objectContaining({
-                    method: 'PUT',
+                    method:  'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: expect.stringContaining('"rent":2200')
+                    body:    expect.stringContaining('"rent":2200')
                 })
             );
         });
@@ -292,16 +292,16 @@ describe('Alpine.js Registry Integration Tests', () => {
             ];
 
             const unitType = {
-                modelID: 'deluxe-1br',
+                modelID:        'deluxe-1br',
                 modelAmenities: [
                     { id: 'balcony', name: 'Private Balcony', category: 'Unit Features' }
                 ]
             };
 
             const dataset = {
-                unitType: JSON.stringify(unitType),
+                unitType:          JSON.stringify(unitType),
                 buildingAmenities: JSON.stringify(buildingAmenities),
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -404,24 +404,24 @@ describe('Alpine.js Registry Integration Tests', () => {
         it('should handle large datasets efficiently', () => {
             // Create large building with many amenities and unit types
             const largeBuildingAmenities = Array(100).fill(null).map((_, i) => ({
-                id: `amenity-${i}`,
-                name: `Amenity ${i}`,
+                id:       `amenity-${i}`,
+                name:     `Amenity ${i}`,
                 category: i % 2 === 0 ? 'Recreation' : 'Convenience'
             }));
 
             const largeUnitType = {
-                modelID: 'luxury-penthouse',
-                beds: 3,
-                baths: 2.5,
-                sqft: 1800,
-                rent: 5000,
+                modelID:        'luxury-penthouse',
+                beds:           3,
+                baths:          2.5,
+                sqft:           1800,
+                rent:           5000,
                 modelAmenities: largeBuildingAmenities.slice(0, 50) // First 50 amenities
             };
 
             const dataset = {
-                unitType: JSON.stringify(largeUnitType),
+                unitType:          JSON.stringify(largeUnitType),
                 buildingAmenities: JSON.stringify(largeBuildingAmenities),
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);

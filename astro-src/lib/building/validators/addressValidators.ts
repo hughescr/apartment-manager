@@ -8,30 +8,30 @@ import { validateField } from './basicFieldValidators';
  */
 export const ADDRESS_VALIDATION_RULES: ValidationRule[] = [
     {
-        field: 'buildingID',
+        field:    'buildingID',
         required: true,
-        message: 'Building ID is required'
+        message:  'Building ID is required'
     },
     {
-        field: 'street',
+        field:    'street',
         required: true,
-        message: 'Street address is required'
+        message:  'Street address is required'
     },
     {
-        field: 'city',
+        field:    'city',
         required: true,
-        message: 'City is required'
+        message:  'City is required'
     },
     {
-        field: 'state',
+        field:    'state',
         required: true,
-        message: 'State is required'
+        message:  'State is required'
     },
     {
-        field: 'zip',
+        field:    'zip',
         required: true,
-        pattern: /^\d{5}(-\d{4})?$/,
-        message: 'ZIP code must be in format 12345 or 12345-6789'
+        pattern:  /^\d{5}(-\d{4})?$/,
+        message:  'ZIP code must be in format 12345 or 12345-6789'
     }
 ];
 

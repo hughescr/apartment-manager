@@ -5,9 +5,9 @@ import MediaGallerySection from '../marketing/MediaGallerySection.astro';
 import TourInformationSection from '../marketing/TourInformationSection.astro';
 
 export interface Props {
-    building: Building // Building object from the data layer
-    apiUrl: string
-    errors?: Record<string, string>
+    building:          Building // Building object from the data layer
+    apiUrl:            string
+    errors?:           Record<string, string>
     onBuildingUpdate?: string // Alpine.js expression to emit building updates
 }
 

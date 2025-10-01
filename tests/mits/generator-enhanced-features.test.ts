@@ -31,14 +31,14 @@ describe('MITS Enhanced Features', () => {
             const buildingWithWebsites = createBuildingWithWebsites();
 
             const xml = await generateMITSFeed({
-                building: buildingWithWebsites,
+                building:  buildingWithWebsites,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Property_ID section should use propertyWebsite
-            const propertyIdMatch = xml.match(/<Property_ID>[\s\S]*?<\/Property_ID>/);
+            const propertyIdMatch = /<Property_ID>[\s\S]*?<\/Property_ID>/.exec(xml);
             expect(propertyIdMatch?.[0]).toContain('https://property-specific.com');
         });
 
@@ -47,20 +47,20 @@ describe('MITS Enhanced Features', () => {
                 ...mockBuilding,
                 contactInfo: {
                     ...mockBuilding.contactInfo,
-                    propertyWebsite: 'https://property-info.com',
+                    propertyWebsite:   'https://property-info.com',
                     managementWebsite: 'https://mgmt-info.com'
                 }
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithWebsites,
+                building:  buildingWithWebsites,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Information section should use propertyWebsite
-            const informationMatch = xml.match(/<Information>[\s\S]*?<\/Information>/);
+            const informationMatch = /<Information>[\s\S]*?<\/Information>/.exec(xml);
             expect(informationMatch?.[0]).toContain('https://property-info.com');
         });
 
@@ -69,20 +69,20 @@ describe('MITS Enhanced Features', () => {
                 ...mockBuilding,
                 contactInfo: {
                     ...mockBuilding.contactInfo,
-                    propertyWebsite: 'https://property-mgmt-test.com',
+                    propertyWebsite:   'https://property-mgmt-test.com',
                     managementWebsite: 'https://management-only.com'
                 }
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithWebsites,
+                building:  buildingWithWebsites,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Management section should use managementWebsite
-            const managementMatch = xml.match(/<Management>[\s\S]*?<\/Management>/);
+            const managementMatch = /<Management>[\s\S]*?<\/Management>/.exec(xml);
             expect(managementMatch?.[0]).toContain('https://management-only.com');
         });
 
@@ -90,15 +90,15 @@ describe('MITS Enhanced Features', () => {
             const legacyBuilding = createLegacyBuildingWithWebsite();
 
             const xml = await generateMITSFeed({
-                building: legacyBuilding,
+                building:  legacyBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Should use legacy website in both Property_ID and Information
-            const propertyIdMatch = xml.match(/<Property_ID>[\s\S]*?<\/Property_ID>/);
-            const informationMatch = xml.match(/<Information>[\s\S]*?<\/Information>/);
+            const propertyIdMatch = /<Property_ID>[\s\S]*?<\/Property_ID>/.exec(xml);
+            const informationMatch = /<Information>[\s\S]*?<\/Information>/.exec(xml);
             expect(propertyIdMatch?.[0]).toContain('https://legacy-website.com');
             expect(informationMatch?.[0]).toContain('https://legacy-website.com');
         });
@@ -108,16 +108,16 @@ describe('MITS Enhanced Features', () => {
                 ...mockBuilding,
                 contactInfo: {
                     ...mockBuilding.contactInfo,
-                    website: 'https://old-legacy.com',
+                    website:         'https://old-legacy.com',
                     propertyWebsite: 'https://new-property.com'
                 } as ContactInfo & { website?: string }
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithBoth,
+                building:  buildingWithBoth,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Should use propertyWebsite, not legacy website
@@ -136,10 +136,10 @@ describe('MITS Enhanced Features', () => {
             ];
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: unitTypesWithNumberDeposit,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Value>1500</Value>');
@@ -159,10 +159,10 @@ describe('MITS Enhanced Features', () => {
             ];
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: unitTypesWithEnhancedDeposit,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Value>2000</Value>');
@@ -180,10 +180,10 @@ describe('MITS Enhanced Features', () => {
             ];
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: unitTypesWithNonRefundable,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Value>1800</Value>');
@@ -201,10 +201,10 @@ describe('MITS Enhanced Features', () => {
             ];
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: unitTypesWithPartialRefund,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Value>2500</Value>');
@@ -223,10 +223,10 @@ describe('MITS Enhanced Features', () => {
             ];
 
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: unitTypesWithComplexDeposit,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Value>3200</Value>');
@@ -254,10 +254,10 @@ describe('MITS Enhanced Features', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithoutPetDeposit,
+                building:  buildingWithoutPetDeposit,
                 unitTypes: unitTypesWithoutDeposit,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Should not include any deposit section when unit type deposits are undefined
@@ -273,17 +273,17 @@ describe('MITS Enhanced Features', () => {
             const basicPetBuilding: BuildingData = {
                 ...mockBuilding,
                 petPolicies: {
-                    allowed: true,
-                    deposit: 300,
+                    allowed:    true,
+                    deposit:    300,
                     monthlyFee: 25
                 }
             };
 
             const xml = await generateMITSFeed({
-                building: basicPetBuilding,
+                building:  basicPetBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Pet>');
@@ -298,17 +298,17 @@ describe('MITS Enhanced Features', () => {
             const enhancedPetBuilding: BuildingData = {
                 ...mockBuilding,
                 petPolicies: {
-                    allowed: true,
+                    allowed:  true,
                     petTypes: petTypes,
-                    notes: 'Detailed per-type policies apply'
+                    notes:    'Detailed per-type policies apply'
                 }
             };
 
             const xml = await generateMITSFeed({
-                building: enhancedPetBuilding,
+                building:  enhancedPetBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Basic pet policy structure should still be present
@@ -325,20 +325,20 @@ describe('MITS Enhanced Features', () => {
             const restrictivePetBuilding: BuildingData = {
                 ...mockBuilding,
                 petPolicies: {
-                    allowed: true,
-                    weightLimit: 30,
+                    allowed:           true,
+                    weightLimit:       30,
                     breedRestrictions: ['Pit Bull', 'German Shepherd', 'Rottweiler'],
-                    deposit: 500,
-                    monthlyFee: 40,
-                    notes: 'Weight and breed restrictions apply. Contact office for full list.'
+                    deposit:           500,
+                    monthlyFee:        40,
+                    notes:             'Weight and breed restrictions apply. Contact office for full list.'
                 }
             };
 
             const xml = await generateMITSFeed({
-                building: restrictivePetBuilding,
+                building:  restrictivePetBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Pet>');
@@ -354,17 +354,17 @@ describe('MITS Enhanced Features', () => {
             const complexPetBuilding: BuildingData = {
                 ...mockBuilding,
                 petPolicies: {
-                    allowed: true,
+                    allowed:  true,
                     petTypes: complexPetTypes,
-                    notes: 'Different policies apply per pet type. Contact office for details.'
+                    notes:    'Different policies apply per pet type. Contact office for details.'
                 }
             };
 
             const xml = await generateMITSFeed({
-                building: complexPetBuilding,
+                building:  complexPetBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Pet>');

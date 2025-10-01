@@ -66,31 +66,31 @@ describe('PhotonAutocompleteService', () => {
     describe('Query Preprocessing', () => {
         it('should expand street abbreviations', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: [{
-                    type: 'Feature',
+                    type:     'Feature',
                     geometry: {
-                        type: 'Point',
+                        type:        'Point',
                         coordinates: [-122.6587, 45.5152]
                     },
                     properties: {
-                        osm_id: 123456,
-                        osm_type: 'way',
-                        osm_key: 'highway',
-                        osm_value: 'residential',
+                        osm_id:      123456,
+                        osm_type:    'way',
+                        osm_key:     'highway',
+                        osm_value:   'residential',
                         housenumber: '2720',
-                        street: 'SE Steele Street',
-                        city: 'Portland',
-                        state: 'Oregon',
-                        postcode: '97202',
-                        country: 'United States',
+                        street:      'SE Steele Street',
+                        city:        'Portland',
+                        state:       'Oregon',
+                        postcode:    '97202',
+                        country:     'United States',
                         countrycode: 'US'
                     }
                 }]
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -108,12 +108,12 @@ describe('PhotonAutocompleteService', () => {
 
         it('should handle directional abbreviations correctly', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: []
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -129,12 +129,12 @@ describe('PhotonAutocompleteService', () => {
 
         it('should handle multiple abbreviations in one query', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: []
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -151,12 +151,12 @@ describe('PhotonAutocompleteService', () => {
     describe('API Request Configuration', () => {
         it('should not include osm_tag parameter (removed filtering)', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: []
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -172,12 +172,12 @@ describe('PhotonAutocompleteService', () => {
 
         it('should include bbox parameter for US bias', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: []
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -192,12 +192,12 @@ describe('PhotonAutocompleteService', () => {
 
         it('should set appropriate limit parameter', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: []
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -214,31 +214,31 @@ describe('PhotonAutocompleteService', () => {
     describe('Result Parsing', () => {
         it('should parse complete address results correctly', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: [{
-                    type: 'Feature',
+                    type:     'Feature',
                     geometry: {
-                        type: 'Point',
+                        type:        'Point',
                         coordinates: [-122.6587, 45.5152] // [lng, lat]
                     },
                     properties: {
-                        osm_id: 123456,
-                        osm_type: 'way',
-                        osm_key: 'highway',
-                        osm_value: 'residential',
+                        osm_id:      123456,
+                        osm_type:    'way',
+                        osm_key:     'highway',
+                        osm_value:   'residential',
                         housenumber: '2720',
-                        street: 'SE Steele Street',
-                        city: 'Portland',
-                        state: 'Oregon',
-                        postcode: '97202',
-                        country: 'United States',
+                        street:      'SE Steele Street',
+                        city:        'Portland',
+                        state:       'Oregon',
+                        postcode:    '97202',
+                        country:     'United States',
                         countrycode: 'US'
                     }
                 }]
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -263,29 +263,29 @@ describe('PhotonAutocompleteService', () => {
 
         it('should handle partial address information', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: [{
-                    type: 'Feature',
+                    type:     'Feature',
                     geometry: {
-                        type: 'Point',
+                        type:        'Point',
                         coordinates: [-122.6587, 45.5152]
                     },
                     properties: {
-                        osm_id: 789012,
-                        osm_type: 'node',
-                        osm_key: 'place',
-                        osm_value: 'city',
-                        name: 'Portland',
-                        city: 'Portland',
-                        state: 'Oregon',
-                        country: 'United States',
+                        osm_id:      789012,
+                        osm_type:    'node',
+                        osm_key:     'place',
+                        osm_value:   'city',
+                        name:        'Portland',
+                        city:        'Portland',
+                        state:       'Oregon',
+                        country:     'United States',
                         countrycode: 'US'
                     }
                 }]
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -302,36 +302,36 @@ describe('PhotonAutocompleteService', () => {
 
         it('should filter out invalid results', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: [
                     // Valid result
                     {
-                        type: 'Feature',
+                        type:     'Feature',
                         geometry: {
-                            type: 'Point',
+                            type:        'Point',
                             coordinates: [-122.6587, 45.5152]
                         },
                         properties: {
-                            osm_id: 123456,
-                            osm_type: 'way',
-                            osm_key: 'highway',
+                            osm_id:    123456,
+                            osm_type:  'way',
+                            osm_key:   'highway',
                             osm_value: 'residential',
-                            street: 'Main Street',
-                            city: 'Portland',
-                            state: 'Oregon'
+                            street:    'Main Street',
+                            city:      'Portland',
+                            state:     'Oregon'
                         }
                     },
                     // Invalid result (no name, street, or city)
                     {
-                        type: 'Feature',
+                        type:     'Feature',
                         geometry: {
-                            type: 'Point',
+                            type:        'Point',
                             coordinates: [-122.6587, 45.5152]
                         },
                         properties: {
-                            osm_id: 789012,
-                            osm_type: 'node',
-                            osm_key: 'natural',
+                            osm_id:    789012,
+                            osm_type:  'node',
+                            osm_key:   'natural',
                             osm_value: 'tree'
                         }
                     }
@@ -339,7 +339,7 @@ describe('PhotonAutocompleteService', () => {
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -354,27 +354,27 @@ describe('PhotonAutocompleteService', () => {
     describe('Caching Behavior', () => {
         it('should cache results and return cached data on subsequent calls', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: [{
-                    type: 'Feature',
+                    type:     'Feature',
                     geometry: {
-                        type: 'Point',
+                        type:        'Point',
                         coordinates: [-122.6587, 45.5152]
                     },
                     properties: {
-                        osm_id: 123456,
-                        osm_type: 'way',
-                        osm_key: 'highway',
+                        osm_id:    123456,
+                        osm_type:  'way',
+                        osm_key:   'highway',
                         osm_value: 'residential',
-                        street: 'Main Street',
-                        city: 'Portland',
-                        state: 'Oregon'
+                        street:    'Main Street',
+                        city:      'Portland',
+                        state:     'Oregon'
                     }
                 }]
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -394,27 +394,27 @@ describe('PhotonAutocompleteService', () => {
 
         it('should use original query for cache key, not processed query', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: [{
-                    type: 'Feature',
+                    type:     'Feature',
                     geometry: {
-                        type: 'Point',
+                        type:        'Point',
                         coordinates: [-122.6587, 45.5152]
                     },
                     properties: {
-                        osm_id: 123456,
-                        osm_type: 'way',
-                        osm_key: 'highway',
+                        osm_id:    123456,
+                        osm_type:  'way',
+                        osm_key:   'highway',
                         osm_value: 'residential',
-                        street: 'Main Street',
-                        city: 'Portland',
-                        state: 'Oregon'
+                        street:    'Main Street',
+                        city:      'Portland',
+                        state:     'Oregon'
                     }
                 }]
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -441,8 +441,8 @@ describe('PhotonAutocompleteService', () => {
 
         it('should handle API errors gracefully', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
+                ok:         false,
+                status:     500,
                 statusText: 'Internal Server Error'
             });
 
@@ -453,8 +453,8 @@ describe('PhotonAutocompleteService', () => {
 
         it('should handle rate limiting', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: false,
-                status: 429,
+                ok:         false,
+                status:     429,
                 statusText: 'Too Many Requests'
             });
 
@@ -493,31 +493,31 @@ describe('PhotonAutocompleteService', () => {
     describe('Portland Address Test Case', () => {
         it('should successfully process the specific Portland address from the bug report', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: [{
-                    type: 'Feature',
+                    type:     'Feature',
                     geometry: {
-                        type: 'Point',
+                        type:        'Point',
                         coordinates: [-122.6587, 45.5152]
                     },
                     properties: {
-                        osm_id: 123456,
-                        osm_type: 'way',
-                        osm_key: 'highway',
-                        osm_value: 'residential',
+                        osm_id:      123456,
+                        osm_type:    'way',
+                        osm_key:     'highway',
+                        osm_value:   'residential',
                         housenumber: '2720',
-                        street: 'SE Steele Street',
-                        city: 'Portland',
-                        state: 'Oregon',
-                        postcode: '97202',
-                        country: 'United States',
+                        street:      'SE Steele Street',
+                        city:        'Portland',
+                        state:       'Oregon',
+                        postcode:    '97202',
+                        country:     'United States',
                         countrycode: 'US'
                     }
                 }]
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -541,12 +541,12 @@ describe('PhotonAutocompleteService', () => {
             const userCoordinates = { lat: 45.5152, lon: -122.6784 }; // Portland, OR
 
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: []
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -565,12 +565,12 @@ describe('PhotonAutocompleteService', () => {
 
         it('uses US bounding box when no coordinates provided', async () => {
             const mockResponse = {
-                type: 'FeatureCollection',
+                type:     'FeatureCollection',
                 features: []
             };
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue(mockResponse)
             });
 
@@ -589,37 +589,37 @@ describe('PhotonAutocompleteService', () => {
             // Mock fetch with multiple results
             const mockFeatures = [
                 {
-                    type: 'Feature',
-                    geometry: { type: 'Point', coordinates: [-74.0060, 40.7128] }, // NYC (far)
+                    type:       'Feature',
+                    geometry:   { type: 'Point', coordinates: [-74.0060, 40.7128] }, // NYC (far)
                     properties: {
-                        osm_id: 1,
-                        osm_type: 'way',
-                        osm_key: 'highway',
+                        osm_id:    1,
+                        osm_type:  'way',
+                        osm_key:   'highway',
                         osm_value: 'primary',
-                        name: 'Main Street NYC',
-                        street: 'Main Street',
-                        city: 'New York',
-                        state: 'NY'
+                        name:      'Main Street NYC',
+                        street:    'Main Street',
+                        city:      'New York',
+                        state:     'NY'
                     }
                 },
                 {
-                    type: 'Feature',
-                    geometry: { type: 'Point', coordinates: [-122.6500, 45.5200] }, // Portland (close)
+                    type:       'Feature',
+                    geometry:   { type: 'Point', coordinates: [-122.6500, 45.5200] }, // Portland (close)
                     properties: {
-                        osm_id: 2,
-                        osm_type: 'way',
-                        osm_key: 'highway',
+                        osm_id:    2,
+                        osm_type:  'way',
+                        osm_key:   'highway',
                         osm_value: 'primary',
-                        name: 'Main Street Portland',
-                        street: 'Main Street',
-                        city: 'Portland',
-                        state: 'OR'
+                        name:      'Main Street Portland',
+                        street:    'Main Street',
+                        city:      'Portland',
+                        state:     'OR'
                     }
                 }
             ];
 
             mockFetch.mockResolvedValueOnce({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue({ type: 'FeatureCollection', features: mockFeatures })
             });
 
@@ -636,7 +636,7 @@ describe('PhotonAutocompleteService', () => {
 
             // Mock successful response
             mockFetch.mockResolvedValue({
-                ok: true,
+                ok:   true,
                 json: jest.fn().mockResolvedValue({ type: 'FeatureCollection', features: [] })
             });
 

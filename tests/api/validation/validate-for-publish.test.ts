@@ -25,18 +25,18 @@ describe('Validate for Publish API Endpoint', () => {
     describe('Single Entity Validation', () => {
         it('should validate a single building successfully', async () => {
             const validBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                buildingName: 'Test Building',
-                street: '123 Main St',
-                city: 'Dallas',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingName:  'Test Building',
+                street:        '123 Main St',
+                city:          'Dallas',
+                state:         'TX',
+                zip:           '75001',
+                latitude:      32.7767,
+                longitude:     -96.7970,
+                propertyType:  PropertyType.APARTMENT,
                 structureType: 'Apartment',
-                rentalType: 'Market Rate',
-                contactInfo: {
+                rentalType:    'Market Rate',
+                contactInfo:   {
                     email: 'test@example.com',
                     phone: '555-123-4567'
                 }
@@ -52,7 +52,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('building');
             expect(response.validationResults.basic.success).toBe(true);
@@ -64,12 +64,12 @@ describe('Validate for Publish API Endpoint', () => {
         it('should validate a single unit type successfully', async () => {
             const validUnitType = {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                modelID: 'model-1br',
-                modelName: '1 Bedroom',
-                beds: 1,
-                baths: 1,
-                minSqft: 650,
-                minRent: 1200
+                modelID:    'model-1br',
+                modelName:  '1 Bedroom',
+                beds:       1,
+                baths:      1,
+                minSqft:    650,
+                minRent:    1200
             };
 
             const event: Partial<APIGatewayProxyEventV2> = {
@@ -82,7 +82,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('unitType');
             expect(response.validationResults.basic.success).toBe(true);
@@ -91,14 +91,14 @@ describe('Validate for Publish API Endpoint', () => {
 
         it('should validate a single unit successfully', async () => {
             const validUnit = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'unit-101',
-                unitNumber: '101',
-                beds: 1,
-                baths: 1,
-                sqft: 700,
-                rent: 1250,
-                vacancyClass: 'Unoccupied',
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                unitID:        'unit-101',
+                unitNumber:    '101',
+                beds:          1,
+                baths:         1,
+                sqft:          700,
+                rent:          1250,
+                vacancyClass:  'Unoccupied',
                 availableDate: '2024-01-01'
             };
 
@@ -112,7 +112,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('unit');
             expect(response.validationResults.basic.success).toBe(true);
@@ -121,7 +121,7 @@ describe('Validate for Publish API Endpoint', () => {
 
         it('should return validation errors for invalid single entity', async () => {
             const invalidBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building'
                 // Missing required MITS fields
             };
@@ -136,7 +136,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.success).toBe(false);
             expect(response.validationResults.basic.success).toBe(false);
             expect(response.validationResults.basic.errors.length).toBeGreaterThan(0);
@@ -146,18 +146,18 @@ describe('Validate for Publish API Endpoint', () => {
 
         it('should indicate site validation not supported for single entities', async () => {
             const validBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                buildingName: 'Test Building',
-                street: '123 Main St',
-                city: 'Dallas',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingName:  'Test Building',
+                street:        '123 Main St',
+                city:          'Dallas',
+                state:         'TX',
+                zip:           '75001',
+                latitude:      32.7767,
+                longitude:     -96.7970,
+                propertyType:  PropertyType.APARTMENT,
                 structureType: 'Apartment',
-                rentalType: 'Market Rate',
-                contactInfo: {
+                rentalType:    'Market Rate',
+                contactInfo:   {
                     email: 'test@example.com',
                     phone: '555-123-4567'
                 }
@@ -165,17 +165,17 @@ describe('Validate for Publish API Endpoint', () => {
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
-                    entityType: 'building',
-                    entityData: validBuilding,
+                    entityType:            'building',
+                    entityData:            validBuilding,
                     includeSiteValidation: true,
-                    sites: ['apartments_com', 'zillow']
+                    sites:                 ['apartments_com', 'zillow']
                 })
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.validationResults.siteRequirements).toHaveLength(2);
             expect(response.validationResults.siteRequirements[0].canPublish).toBe(false);
             expect(response.validationResults.siteRequirements[0].errors[0].message).toContain('Site validation requires complete building data');
@@ -188,24 +188,24 @@ describe('Validate for Publish API Endpoint', () => {
         it('should validate multiple entities of the same type', async () => {
             const validUnits = [
                 {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'unit-101',
-                    unitNumber: '101',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 700,
-                    rent: 1250,
-                    vacancyClass: 'Unoccupied',
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    unitID:        'unit-101',
+                    unitNumber:    '101',
+                    beds:          1,
+                    baths:         1,
+                    sqft:          700,
+                    rent:          1250,
+                    vacancyClass:  'Unoccupied',
                     availableDate: '2024-01-01'
                 },
                 {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'unit-102',
-                    unitNumber: '102',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 720,
-                    rent: 1300,
+                    buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
+                    unitID:       'unit-102',
+                    unitNumber:   '102',
+                    beds:         1,
+                    baths:        1,
+                    sqft:         720,
+                    rent:         1300,
                     vacancyClass: 'Occupied'
                 }
             ];
@@ -213,14 +213,14 @@ describe('Validate for Publish API Endpoint', () => {
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
                     entityType: 'unit',
-                    entities: validUnits
+                    entities:   validUnits
                 })
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('unit');
             expect(response.entities).toBe(2);
@@ -235,19 +235,19 @@ describe('Validate for Publish API Endpoint', () => {
         it('should handle mixed valid and invalid entities in batch', async () => {
             const mixedUnits = [
                 {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'unit-101',
-                    unitNumber: '101',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 700,
-                    rent: 1250,
-                    vacancyClass: 'Unoccupied',
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    unitID:        'unit-101',
+                    unitNumber:    '101',
+                    beds:          1,
+                    baths:         1,
+                    sqft:          700,
+                    rent:          1250,
+                    vacancyClass:  'Unoccupied',
                     availableDate: '2024-01-01'
                 },
                 {
                     buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'unit-102',
+                    unitID:     'unit-102',
                     unitNumber: '102'
                     // Missing required fields
                 }
@@ -256,14 +256,14 @@ describe('Validate for Publish API Endpoint', () => {
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
                     entityType: 'unit',
-                    entities: mixedUnits
+                    entities:   mixedUnits
                 })
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.success).toBe(false);
             expect(response.validationResults[0].success).toBe(true);
             expect(response.validationResults[1].success).toBe(false);
@@ -275,50 +275,50 @@ describe('Validate for Publish API Endpoint', () => {
         it('should indicate site validation not supported for batch mode', async () => {
             const validUnits = [
                 {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'unit-101',
-                    unitNumber: '101',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 700,
-                    rent: 1250,
-                    vacancyClass: 'Unoccupied',
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    unitID:        'unit-101',
+                    unitNumber:    '101',
+                    beds:          1,
+                    baths:         1,
+                    sqft:          700,
+                    rent:          1250,
+                    vacancyClass:  'Unoccupied',
                     availableDate: '2024-01-01'
                 }
             ];
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
-                    entityType: 'unit',
-                    entities: validUnits,
+                    entityType:            'unit',
+                    entities:              validUnits,
                     includeSiteValidation: true,
-                    sites: ['apartments_com']
+                    sites:                 ['apartments_com']
                 })
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.summary.canPublishToSites.apartments_com).toBe(false);
         });
     });
 
     describe('Complete Building Validation', () => {
         const completeBuilding = {
-            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            unitID: 'BUILDING',  // This is for DynamoDB key, not validation
-            buildingName: 'Test Building',
-            street: '123 Main St',
-            city: 'Dallas',
-            state: 'TX',
-            zip: '75001',
-            latitude: 32.7767,
-            longitude: -96.7970,
-            propertyType: PropertyType.APARTMENT,
+            buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+            unitID:        'BUILDING',  // This is for DynamoDB key, not validation
+            buildingName:  'Test Building',
+            street:        '123 Main St',
+            city:          'Dallas',
+            state:         'TX',
+            zip:           '75001',
+            latitude:      32.7767,
+            longitude:     -96.7970,
+            propertyType:  PropertyType.APARTMENT,
             structureType: 'Apartment',
-            rentalType: 'Market Rate',
-            contactInfo: {
+            rentalType:    'Market Rate',
+            contactInfo:   {
                 email: 'test@example.com',
                 phone: '555-123-4567'
             },
@@ -328,30 +328,30 @@ describe('Validate for Publish API Endpoint', () => {
         const completeUnitTypes = [
             {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'MODEL#1br',  // This is for DynamoDB key, not validation
-                modelID: 'model-1br',
-                modelName: '1 Bedroom',
-                beds: 1,
-                baths: 1,
-                minSqft: 650,
-                maxSqft: 750,
-                minRent: 1200,
-                maxRent: 1400
+                unitID:     'MODEL#1br',  // This is for DynamoDB key, not validation
+                modelID:    'model-1br',
+                modelName:  '1 Bedroom',
+                beds:       1,
+                baths:      1,
+                minSqft:    650,
+                maxSqft:    750,
+                minRent:    1200,
+                maxRent:    1400
             }
         ];
 
         const completeUnits = [
             {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'UNIT#unit-101',  // Database format with UNIT# prefix for proper entity detection
-                unitNumber: '101',
-                beds: 1,
-                baths: 1,
-                sqft: 700,
-                rent: 1250,
-                vacancyClass: 'Unoccupied',
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                unitID:        'UNIT#unit-101',  // Database format with UNIT# prefix for proper entity detection
+                unitNumber:    '101',
+                beds:          1,
+                baths:         1,
+                sqft:          700,
+                rent:          1250,
+                vacancyClass:  'Unoccupied',
                 availableDate: '2024-01-01',
-                _et: 'Unit'  // Explicitly set entity type for filtering
+                _et:           'Unit'  // Explicitly set entity type for filtering
             }
         ];
 
@@ -389,7 +389,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
 
             expect(response.success).toBe(true);
             expect(response.buildingID).toBe('gSPgoPTdFcPqdeCYMBZMzy');
@@ -410,17 +410,17 @@ describe('Validate for Publish API Endpoint', () => {
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
-                    entityType: 'complete',
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                    entityType:            'complete',
+                    buildingID:            'gSPgoPTdFcPqdeCYMBZMzy',
                     includeSiteValidation: true,
-                    sites: ['apartments_com', 'zillow']
+                    sites:                 ['apartments_com', 'zillow']
                 })
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
 
             // Debug logging to see what's failing - use test framework reporting
             if(!response.summary.canPublishToSites.apartments_com) {
@@ -452,14 +452,14 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(404);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.error).toBe('Building not found');
         });
 
         it('should identify missing MITS fields in complete validation', async () => {
             const incompleteBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'BUILDING',
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
+                unitID:       'BUILDING',
                 buildingName: 'Test Building'
                 // Missing required MITS fields
             };
@@ -467,7 +467,7 @@ describe('Validate for Publish API Endpoint', () => {
             const incompleteUnits = [
                 {
                     buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'UNIT#101',
+                    unitID:     'UNIT#101',
                     unitNumber: '101'
                     // Missing required fields
                 }
@@ -489,7 +489,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.success).toBe(false);
             expect(response.validationResults.building.success).toBe(false);
             expect(response.validationResults.units[0].success).toBe(false);
@@ -510,17 +510,17 @@ describe('Validate for Publish API Endpoint', () => {
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
-                    entityType: 'complete',
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                    entityType:            'complete',
+                    buildingID:            'gSPgoPTdFcPqdeCYMBZMzy',
                     includeSiteValidation: true,
-                    sites: ['apartments_com']
+                    sites:                 ['apartments_com']
                 })
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.siteRequirements[0].canPublish).toBe(false);
             expect(response.summary.canPublishToSites.apartments_com).toBe(false);
 
@@ -533,14 +533,14 @@ describe('Validate for Publish API Endpoint', () => {
         it('should handle zillow site requirements', async () => {
             const unitsWithoutRent = [
                 {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'UNIT#101',
-                    unitNumber: '101',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 700,
-                    rent: 0, // Invalid rent for Zillow
-                    vacancyClass: 'Unoccupied',
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    unitID:        'UNIT#101',
+                    unitNumber:    '101',
+                    beds:          1,
+                    baths:         1,
+                    sqft:          700,
+                    rent:          0, // Invalid rent for Zillow
+                    vacancyClass:  'Unoccupied',
                     availableDate: '2024-01-01'
                 }
             ];
@@ -553,17 +553,17 @@ describe('Validate for Publish API Endpoint', () => {
 
             const event: Partial<APIGatewayProxyEventV2> = {
                 body: JSON.stringify({
-                    entityType: 'complete',
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                    entityType:            'complete',
+                    buildingID:            'gSPgoPTdFcPqdeCYMBZMzy',
                     includeSiteValidation: true,
-                    sites: ['zillow']
+                    sites:                 ['zillow']
                 })
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.siteRequirements[0].canPublish).toBe(false);
             expect(response.summary.canPublishToSites.zillow).toBe(false);
 
@@ -583,7 +583,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.error).toBe('Invalid request body');
         });
 
@@ -597,7 +597,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.error).toBe('Validation failed');
             expect(response.errors.entityType).toContain('entityType must be one of');
         });
@@ -612,7 +612,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.errors.entityType).toContain('entityType must be one of');
         });
 
@@ -627,7 +627,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.errors.buildingID).toContain('Invalid buildingID format');
         });
 
@@ -642,7 +642,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.error).toBe('Invalid request');
             expect(response.message).toContain('Must provide either entityData');
         });
@@ -660,7 +660,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(500);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.error).toBe('Internal server error during validation');
             expect(response.details).toBe('Database connection failed');
         });
@@ -673,7 +673,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
             expect(response.errors.entityType).toContain('entityType must be one of');
         });
     });
@@ -681,18 +681,18 @@ describe('Validate for Publish API Endpoint', () => {
     describe('Response Format Validation', () => {
         it('should return proper response format for single entity validation', async () => {
             const validBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                buildingName: 'Test Building',
-                street: '123 Main St',
-                city: 'Dallas',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingName:  'Test Building',
+                street:        '123 Main St',
+                city:          'Dallas',
+                state:         'TX',
+                zip:           '75001',
+                latitude:      32.7767,
+                longitude:     -96.7970,
+                propertyType:  PropertyType.APARTMENT,
                 structureType: 'Apartment',
-                rentalType: 'Market Rate',
-                contactInfo: {
+                rentalType:    'Market Rate',
+                contactInfo:   {
                     email: 'test@example.com',
                     phone: '555-123-4567'
                 }
@@ -706,7 +706,7 @@ describe('Validate for Publish API Endpoint', () => {
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
 
             // Verify response structure
             expect(response).toHaveProperty('success');
@@ -724,19 +724,19 @@ describe('Validate for Publish API Endpoint', () => {
 
         it('should return proper response format for complete validation', async () => {
             const completeBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'BUILDING',
-                buildingName: 'Test Building',
-                street: '123 Main St',
-                city: 'Dallas',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                unitID:        'BUILDING',
+                buildingName:  'Test Building',
+                street:        '123 Main St',
+                city:          'Dallas',
+                state:         'TX',
+                zip:           '75001',
+                latitude:      32.7767,
+                longitude:     -96.7970,
+                propertyType:  PropertyType.APARTMENT,
                 structureType: 'Apartment',
-                rentalType: 'Market Rate',
-                contactInfo: {
+                rentalType:    'Market Rate',
+                contactInfo:   {
                     email: 'test@example.com',
                     phone: '555-123-4567'
                 }
@@ -755,7 +755,7 @@ describe('Validate for Publish API Endpoint', () => {
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
-            const response = JSON.parse(result.body as string);
+            const response = JSON.parse(result.body!);
 
             // Verify complete validation response structure
             expect(response).toHaveProperty('success');

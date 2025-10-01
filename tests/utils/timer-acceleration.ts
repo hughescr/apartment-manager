@@ -4,7 +4,7 @@ type TimerClock = FakeTimers.InstalledClock;
 
 interface TimerAcceleratorOptions {
     shouldClearNativeTimers?: boolean
-    toFake?: string[]
+    toFake?:                  string[]
 }
 
 /**
@@ -12,7 +12,7 @@ interface TimerAcceleratorOptions {
  */
 const DEFAULT_TIMER_CONFIG: FakeTimers.FakeTimerInstallOpts = {
     shouldClearNativeTimers: true,
-    toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] as FakeTimers.FakeMethod[],
+    toFake:                  ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] as FakeTimers.FakeMethod[],
 };
 
 /**
@@ -303,22 +303,22 @@ export async function advanceCycles(intervalMs: number, cycles: number): Promise
 // Common time constants for convenience
 export const TIME = {
     MILLISECOND: 1,
-    SECOND: 1000,
-    MINUTE: 60 * 1000,
-    HOUR: 60 * 60 * 1000,
-    DAY: 24 * 60 * 60 * 1000,
-    WEEK: 7 * 24 * 60 * 60 * 1000,
+    SECOND:      1000,
+    MINUTE:      60 * 1000,
+    HOUR:        60 * 60 * 1000,
+    DAY:         24 * 60 * 60 * 1000,
+    WEEK:        7 * 24 * 60 * 60 * 1000,
 } as const;
 
 // Common debounce/throttle delays for testing
 export const COMMON_DELAYS = {
-    DEBOUNCE_SHORT: 100,
+    DEBOUNCE_SHORT:  100,
     DEBOUNCE_MEDIUM: 300,
-    DEBOUNCE_LONG: 500,
+    DEBOUNCE_LONG:   500,
     DEBOUNCE_SEARCH: 250,
-    THROTTLE_SHORT: 50,
+    THROTTLE_SHORT:  50,
     THROTTLE_MEDIUM: 100,
-    THROTTLE_LONG: 250,
+    THROTTLE_LONG:   250,
     THROTTLE_SCROLL: 16, // ~60fps
     ANIMATION_FRAME: 16, // 60fps
     NETWORK_TIMEOUT: 5000,

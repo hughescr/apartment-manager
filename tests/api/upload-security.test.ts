@@ -27,7 +27,7 @@ describe('Upload API - Security Edge Cases', () => {
 
         // Import test wrapper instead of original upload module to avoid SST Resource issues
         const uploadModule = await import('./upload-test-wrapper');
-        handler = uploadModule.handler as APIGatewayProxyHandlerV2;
+        handler = uploadModule.handler;
 
         // Get references to mocked functions from the test wrapper
         mockGetSignedUrl = uploadModule.mockGetSignedUrl;
@@ -53,30 +53,30 @@ describe('Upload API - Security Edge Cases', () => {
     });
 
     const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
-        headers: {},
+        headers:         {},
         isBase64Encoded: false,
-        rawPath: '/api/upload',
-        rawQueryString: '',
-        requestContext: {
-            accountId: 'test-account',
-            apiId: 'test-api',
-            domainName: 'test.com',
+        rawPath:         '/api/upload',
+        rawQueryString:  '',
+        requestContext:  {
+            accountId:    'test-account',
+            apiId:        'test-api',
+            domainName:   'test.com',
             domainPrefix: 'test',
-            http: {
-                method: 'POST',
-                path: '/api/upload',
-                protocol: 'HTTP/1.1',
-                sourceIp: '127.0.0.1',
+            http:         {
+                method:    'POST',
+                path:      '/api/upload',
+                protocol:  'HTTP/1.1',
+                sourceIp:  '127.0.0.1',
                 userAgent: 'test-agent',
             },
             requestId: 'test-request-id',
-            routeKey: 'POST /api/upload',
-            stage: 'test',
-            time: '01/Jan/2024:00:00:00 +0000',
+            routeKey:  'POST /api/upload',
+            stage:     'test',
+            time:      '01/Jan/2024:00:00:00 +0000',
             timeEpoch: 1704067200000,
         },
         routeKey: 'POST /api/upload',
-        version: '2.0',
+        version:  '2.0',
         ...overrides,
     });
 
@@ -86,9 +86,9 @@ describe('Upload API - Security Edge Cases', () => {
             mockGetSignedUrl.mockResolvedValueOnce('https://s3.example.com/signed-url');
             const event = createMockEvent({
                 body: JSON.stringify({
-                    filename: 'file\x00.jpg',
+                    filename:   'file\x00.jpg',
                     buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitId: 'unit-1'
+                    unitId:     'unit-1'
                 })
             });
 
@@ -114,7 +114,7 @@ describe('Upload API - Security Edge Cases', () => {
                     body: JSON.stringify({
                         filename,
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1'
+                        unitId:     'unit-1'
                     })
                 });
 
@@ -141,7 +141,7 @@ describe('Upload API - Security Edge Cases', () => {
                     body: JSON.stringify({
                         filename,
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1'
+                        unitId:     'unit-1'
                     })
                 });
 
@@ -168,7 +168,7 @@ describe('Upload API - Security Edge Cases', () => {
                     body: JSON.stringify({
                         filename,
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1'
+                        unitId:     'unit-1'
                     })
                 });
 
@@ -198,7 +198,7 @@ describe('Upload API - Security Edge Cases', () => {
                     body: JSON.stringify({
                         filename,
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1'
+                        unitId:     'unit-1'
                     })
                 });
 
@@ -227,7 +227,7 @@ describe('Upload API - Security Edge Cases', () => {
                     body: JSON.stringify({
                         filename,
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1'
+                        unitId:     'unit-1'
                     })
                 });
 
@@ -254,7 +254,7 @@ describe('Upload API - Security Edge Cases', () => {
                     body: JSON.stringify({
                         filename,
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1'
+                        unitId:     'unit-1'
                     })
                 });
 
@@ -287,7 +287,7 @@ describe('Upload API - Security Edge Cases', () => {
                     body: JSON.stringify({
                         filename,
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1'
+                        unitId:     'unit-1'
                     })
                 });
 
@@ -308,9 +308,9 @@ describe('Upload API - Security Edge Cases', () => {
 
             const event = createMockEvent({
                 body: JSON.stringify({
-                    filename: 'photo.png',
-                    buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitId: 'unit-1',
+                    filename:    'photo.png',
+                    buildingId:  'gSPgoPTdFcPqdeCYMBZMzy',
+                    unitId:      'unit-1',
                     contentType: 'image/jpeg'  // Mismatch with .png
                 })
             });
@@ -346,9 +346,9 @@ describe('Upload API - Security Edge Cases', () => {
                 mockGetSignedUrl.mockResolvedValueOnce('https://s3.example.com/signed-url');
                 const event = createMockEvent({
                     body: JSON.stringify({
-                        filename: 'photo.jpg',
+                        filename:   'photo.jpg',
                         buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitId: 'unit-1',
+                        unitId:     'unit-1',
                         contentType
                     })
                 });
@@ -371,9 +371,9 @@ describe('Upload API - Security Edge Cases', () => {
 
             const event = createMockEvent({
                 body: JSON.stringify({
-                    filename: 'photo.jpg',
+                    filename:   'photo.jpg',
                     buildingId: '../../../malicious',
-                    unitId: 'unit-1'
+                    unitId:     'unit-1'
                 })
             });
 
@@ -391,9 +391,9 @@ describe('Upload API - Security Edge Cases', () => {
 
             const event = createMockEvent({
                 body: JSON.stringify({
-                    filename: 'photo.jpg',
+                    filename:   'photo.jpg',
                     buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitId: '../../etc/passwd'
+                    unitId:     '../../etc/passwd'
                 })
             });
 
@@ -435,7 +435,7 @@ describe('Upload API - Security Edge Cases', () => {
         it('should reject deletion with null bytes in key', async () => {
             expect.assertions(2);
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/file\x00.jpg',
+                rawPath:        '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/file\x00.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -461,10 +461,10 @@ describe('Upload API - Security Edge Cases', () => {
 
             const event = createMockEvent({
                 headers: {},  // No Content-Type
-                body: JSON.stringify({
-                    filename: 'photo.jpg',
+                body:    JSON.stringify({
+                    filename:   'photo.jpg',
                     buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitId: 'unit-1'
+                    unitId:     'unit-1'
                 })
             });
 
@@ -479,10 +479,10 @@ describe('Upload API - Security Edge Cases', () => {
             expect.assertions(2);
             // Create a large payload
             const largePayload = {
-                filename: 'photo.jpg',
+                filename:   'photo.jpg',
                 buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitId: 'unit-1',
-                metadata: repeat('x', 1000000)  // 1MB of data
+                unitId:     'unit-1',
+                metadata:   repeat('x', 1000000)  // 1MB of data
             };
 
             const event = createMockEvent({
@@ -550,9 +550,9 @@ describe('Upload API - Security Edge Cases', () => {
             expect.assertions(2);
             const event = createMockEvent({
                 body: JSON.stringify({
-                    filename: '   ',
+                    filename:   '   ',
                     buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitId: 'unit-1'
+                    unitId:     'unit-1'
                 })
             });
 

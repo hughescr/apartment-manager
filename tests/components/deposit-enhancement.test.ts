@@ -24,7 +24,7 @@ describe('Enhanced Deposit Functionality', () => {
             const convertDeposit = (deposit: DepositInput) => {
                 if(isNumber(deposit)) {
                     return {
-                        amount: deposit,
+                        amount:     deposit,
                         refundable: true
                     };
                 }
@@ -34,22 +34,22 @@ describe('Enhanced Deposit Functionality', () => {
             const result = convertDeposit(legacyDeposit);
 
             expect(result).toEqual({
-                amount: 1000,
+                amount:     1000,
                 refundable: true
             });
         });
 
         it('should preserve enhanced deposit objects', () => {
             const enhancedDeposit = {
-                amount: 1500,
-                refundable: false,
+                amount:                  1500,
+                refundable:              false,
                 partialRefundPercentage: 75
             };
 
             const convertDeposit = (deposit: DepositInput) => {
                 if(isNumber(deposit)) {
                     return {
-                        amount: deposit,
+                        amount:     deposit,
                         refundable: true
                     };
                 }
@@ -65,7 +65,7 @@ describe('Enhanced Deposit Functionality', () => {
             const convertDeposit = (deposit: DepositInput) => {
                 if(isNumber(deposit)) {
                     return {
-                        amount: deposit,
+                        amount:     deposit,
                         refundable: true
                     };
                 }
@@ -251,8 +251,8 @@ describe('Enhanced Deposit Functionality', () => {
                     return '';
                 }
                 return new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
+                    style:                 'currency',
+                    currency:              'USD',
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
                 }).format(value);

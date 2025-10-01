@@ -2,16 +2,16 @@ import type { BuildingData, UnitData, UnitType } from '../../../types';
 import type { ExtendedUnitData } from '../types';
 
 export interface BulkUpdateData {
-    status?: string
-    rent?: number
+    status?:         string
+    rent?:           number
     rentUpdateType?: 'absolute' | 'percentage'
-    vacancyClass?: string
+    vacancyClass?:   string
 }
 
 export interface ApiResponse<T> {
     success: boolean
-    data?: T
-    error?: string
+    data?:   T
+    error?:  string
 }
 
 export class BuildingApiService {
@@ -23,7 +23,7 @@ export class BuildingApiService {
     async saveBuilding(building: BuildingData): Promise<ApiResponse<BuildingData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${building.buildingID}`, {
-                method: 'PUT',
+                method:  'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -52,10 +52,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to save building' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -72,10 +72,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to delete building' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -83,7 +83,7 @@ export class BuildingApiService {
     async addUnit(buildingID: string, unit: Partial<UnitData>): Promise<ApiResponse<ExtendedUnitData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units`, {
-                method: 'POST',
+                method:  'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -97,10 +97,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to add unit' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -108,7 +108,7 @@ export class BuildingApiService {
     async updateUnit(buildingID: string, unit: ExtendedUnitData): Promise<ApiResponse<ExtendedUnitData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/${unit.unitID}`, {
-                method: 'PUT',
+                method:  'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -122,10 +122,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to update unit' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -142,10 +142,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to delete unit' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -153,7 +153,7 @@ export class BuildingApiService {
     async bulkUpdateUnits(buildingID: string, unitIDs: string[], updates: BulkUpdateData): Promise<ApiResponse<void>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/bulk-update`, {
-                method: 'POST',
+                method:  'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -169,10 +169,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to bulk update units' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -180,7 +180,7 @@ export class BuildingApiService {
     async updateUnitField(buildingID: string, unitID: string, field: string, value: unknown): Promise<ApiResponse<ExtendedUnitData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/${unitID}/fields/${field}`, {
-                method: 'PATCH',
+                method:  'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -194,10 +194,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || `Failed to update ${field}` };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -206,7 +206,7 @@ export class BuildingApiService {
     async addUnitType(buildingId: string, unitType: UnitType): Promise<ApiResponse<UnitType>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingId}/unit-types`, {
-                method: 'POST',
+                method:  'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -220,10 +220,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to add unit type' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -231,7 +231,7 @@ export class BuildingApiService {
     async updateUnitType(buildingId: string, unitTypeId: string, unitType: Partial<UnitType>): Promise<ApiResponse<UnitType>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingId}/unit-types/${unitTypeId}`, {
-                method: 'PUT',
+                method:  'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -245,10 +245,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to update unit type' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -265,10 +265,10 @@ export class BuildingApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to delete unit type' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }

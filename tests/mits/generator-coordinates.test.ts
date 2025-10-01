@@ -28,15 +28,15 @@ describe('MITS Coordinate Handling', () => {
         it('should use building.latitude/longitude when available', async () => {
             const buildingWithCoords: BuildingData = {
                 ...mockBuilding,
-                latitude: 37.7749,
+                latitude:  37.7749,
                 longitude: -122.4194
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithCoords,
+                building:  buildingWithCoords,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Latitude>37.7749</Latitude>');
@@ -49,18 +49,18 @@ describe('MITS Coordinate Handling', () => {
 
             const buildingWithoutCoords: BuildingData = {
                 ...mockBuilding,
-                latitude: undefined,
+                latitude:  undefined,
                 longitude: undefined,
-                street: '123 Test St',
-                city: 'Test City',
-                state: 'CA'
+                street:    '123 Test St',
+                city:      'Test City',
+                state:     'CA'
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithoutCoords,
+                building:  buildingWithoutCoords,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(mockGeocode).toHaveBeenCalledWith('123 Test St', 'Test City', 'CA');
@@ -74,18 +74,18 @@ describe('MITS Coordinate Handling', () => {
 
             const buildingWithoutCoords: BuildingData = {
                 ...mockBuilding,
-                latitude: undefined,
+                latitude:  undefined,
                 longitude: undefined,
-                street: 'Invalid Address',
-                city: 'Unknown City',
-                state: 'XX'
+                street:    'Invalid Address',
+                city:      'Unknown City',
+                state:     'XX'
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithoutCoords,
+                building:  buildingWithoutCoords,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Latitude>34.0522</Latitude>');
@@ -95,16 +95,16 @@ describe('MITS Coordinate Handling', () => {
         it('should handle coordinatesVerified flag without affecting output', async () => {
             const buildingWithVerifiedCoords: BuildingData = {
                 ...mockBuilding,
-                latitude: 40.7128,
-                longitude: -74.0060,
+                latitude:            40.7128,
+                longitude:           -74.0060,
                 coordinatesVerified: true
             };
 
             const xml = await generateMITSFeed({
-                building: buildingWithVerifiedCoords,
+                building:  buildingWithVerifiedCoords,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Latitude>40.7128</Latitude>');

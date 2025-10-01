@@ -25,12 +25,12 @@ describe('Edge Cases and Boundary Conditions', () => {
     it('should handle zero values appropriately', () => {
         const unit: UnitData = {
             buildingID: 'bldg-123',
-            unitID: 'unit-123',
-            beds: 0, // Studio
-            baths: 0, // Should probably be at least 1, but testing edge case
-            sqft: 0, // Invalid but testing
-            rent: 0, // Free rent special?
-            deposit: 0 // No deposit special
+            unitID:     'unit-123',
+            beds:       0, // Studio
+            baths:      0, // Should probably be at least 1, but testing edge case
+            sqft:       0, // Invalid but testing
+            rent:       0, // Free rent special?
+            deposit:    0 // No deposit special
         };
         expect(unit.beds).toBe(0);
         expect(unit.rent).toBe(0);
@@ -38,10 +38,10 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle negative values in numeric fields', () => {
         const building: BuildingData = {
-            buildingID: 'bldg-123',
-            yearBuilt: -1, // Invalid but testing
+            buildingID:    'bldg-123',
+            yearBuilt:     -1, // Invalid but testing
             numberStories: -5, // Invalid but testing
-            totalUnits: -10 // Invalid but testing
+            totalUnits:    -10 // Invalid but testing
         };
         expect(building.yearBuilt).toBe(-1);
     });
@@ -49,7 +49,7 @@ describe('Edge Cases and Boundary Conditions', () => {
     it('should handle very large numbers', () => {
         const restriction: IncomeRestriction = {
             maxIncomeByHouseholdSize: {
-                '1': Number.MAX_SAFE_INTEGER,
+                '1':  Number.MAX_SAFE_INTEGER,
                 '10': 999999999
             }
         };
@@ -58,11 +58,11 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle empty strings', () => {
         const building: BuildingData = {
-            buildingID: '', // Should probably not be empty but testing
-            street: '',
-            city: '',
-            state: '',
-            zip: '',
+            buildingID:  '', // Should probably not be empty but testing
+            street:      '',
+            city:        '',
+            state:       '',
+            zip:         '',
             description: ''
         };
         expect(building.buildingID).toBe('');
@@ -71,11 +71,11 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle null/undefined in optional Record fields', () => {
         const unit: UnitData = {
-            buildingID: 'bldg-123',
-            unitID: 'unit-123',
-            feedInclusion: undefined,
+            buildingID:       'bldg-123',
+            unitID:           'unit-123',
+            feedInclusion:    undefined,
             manualReferences: undefined,
-            feedLastPulled: undefined,
+            feedLastPulled:   undefined,
             feedLastModified: undefined
         };
         expect(unit.feedInclusion).toBeUndefined();
@@ -86,8 +86,8 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle ISO date strings', () => {
         const unit: UnitData = {
-            buildingID: 'bldg-123',
-            unitID: 'unit-123',
+            buildingID:    'bldg-123',
+            unitID:        'unit-123',
             availableDate: '2024-12-31T23:59:59.999Z'
         };
         expect(unit.availableDate).toBe('2024-12-31T23:59:59.999Z');
@@ -95,15 +95,15 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle complex nested empty structures', () => {
         const building: BuildingData = {
-            buildingID: 'bldg-123',
-            rentSpecials: [],
+            buildingID:         'bldg-123',
+            rentSpecials:       [],
             incomeRestrictions: {
                 maxIncomeByHouseholdSize: {}
             },
             utilitiesIncluded: {},
-            petPolicies: {
-                allowed: true,
-                types: [],
+            petPolicies:       {
+                allowed:           true,
+                types:             [],
                 breedRestrictions: []
             },
             contactInfo: {
@@ -119,16 +119,16 @@ describe('Edge Cases and Boundary Conditions', () => {
 
     it('should handle maximum array lengths', () => {
         const manyAmenities: Amenity[] = times(1000, i => ({
-            name: `Amenity ${i}`,
+            name:     `Amenity ${i}`,
             category: AmenityCategory.UNIT
         }));
 
         const unitType: UnitTypeData = {
-            buildingID: 'bldg-123',
-            modelID: 'model-1',
-            modelName: 'Test',
-            beds: 1,
-            baths: 1,
+            buildingID:     'bldg-123',
+            modelID:        'model-1',
+            modelName:      'Test',
+            beds:           1,
+            baths:          1,
             modelAmenities: manyAmenities
         };
 

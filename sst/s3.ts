@@ -6,12 +6,12 @@ const uploadedDocs = new sst.aws.Bucket('ApartmentsUploads', {
 
 const photosBucket = new sst.aws.Bucket('PhotosBucket', {
     access: 'public',
-    cors: {
-        allowOrigins: ['*'],
-        allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'],
-        allowHeaders: ['*'],
+    cors:   {
+        allowOrigins:  ['*'],
+        allowMethods:  ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'],
+        allowHeaders:  ['*'],
         exposeHeaders: ['ETag'],
-        maxAge: '3000 seconds'
+        maxAge:        '3000 seconds'
     }
 });
 

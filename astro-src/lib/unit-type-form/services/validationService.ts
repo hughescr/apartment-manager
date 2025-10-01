@@ -3,7 +3,7 @@ import { keys, trim } from 'lodash';
 
 export interface ValidationErrors {
     [key: string]: string | undefined
-    submit?: string // API/network errors
+    submit?:       string // API/network errors
 }
 
 /**

@@ -63,8 +63,8 @@ export function createSafeLogger(context: string) {
             logger.error(`[${context}] ${message}`, isError(error)
                 ? {
                     message: error.message,
-                    stack: error.stack,
-                    name: error.name
+                    stack:   error.stack,
+                    name:    error.name
                 }
                 : sanitizeForLogging(error));
         }
@@ -129,8 +129,8 @@ export function createMigrationLogger(scriptName: string) {
             logger.error(`❌ [${scriptName}] ${message}`, isError(error)
                 ? {
                     message: error.message,
-                    stack: error.stack,
-                    name: error.name
+                    stack:   error.stack,
+                    name:    error.name
                 }
                 : sanitizeForLogging(error));
         },

@@ -50,8 +50,8 @@ export async function getUserLocation(
     // Use browser coordinates if available
     if(browserCoords) {
         return {
-            lat: browserCoords.lat,
-            lon: browserCoords.lon,
+            lat:    browserCoords.lat,
+            lon:    browserCoords.lon,
             source: 'browser'
         };
     }

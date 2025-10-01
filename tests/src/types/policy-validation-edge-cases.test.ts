@@ -26,8 +26,8 @@ describe('Policy Validation Edge Cases', () => {
         it('should accept invalid time formats', () => {
             const contact: ContactInfo = {
                 officeHours: {
-                    [DayOfWeek.MONDAY]: { open: '25:00', close: '12:70' }, // Invalid hours
-                    [DayOfWeek.TUESDAY]: { open: 'not-a-time', close: '17:00' },
+                    [DayOfWeek.MONDAY]:    { open: '25:00', close: '12:70' }, // Invalid hours
+                    [DayOfWeek.TUESDAY]:   { open: 'not-a-time', close: '17:00' },
                     [DayOfWeek.WEDNESDAY]: { open: '12:00 PM', close: '5:00 PM' } // Wrong format
                 }
             };
@@ -70,15 +70,15 @@ describe('Policy Validation Edge Cases', () => {
     describe('Weight Limits', () => {
         it('should accept negative and extreme pet weight limits', () => {
             const policy: PetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:     true,
+                types:       [PetType.DOG],
                 weightLimit: -25 // Negative weight
             };
             expect(policy.weightLimit).toBe(-25);
 
             const policy2: PetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:     true,
+                types:       [PetType.DOG],
                 weightLimit: 10000 // 10,000 lbs
             };
             expect(policy2.weightLimit).toBe(10000);
@@ -86,8 +86,8 @@ describe('Policy Validation Edge Cases', () => {
 
         it('should accept zero weight limit', () => {
             const policy: PetPolicy = {
-                allowed: true,
-                types: [PetType.BIRD, PetType.FISH],
+                allowed:     true,
+                types:       [PetType.BIRD, PetType.FISH],
                 weightLimit: 0 // Only weightless pets?
             };
             expect(policy.weightLimit).toBe(0);
@@ -97,48 +97,48 @@ describe('Policy Validation Edge Cases', () => {
     describe('Storage Dimension Format Validation', () => {
         it('should accept invalid storage dimension formats', () => {
             const storage: StorageOption = {
-                type: StorageType.EXTERNAL_UNIT,
+                type:       StorageType.EXTERNAL_UNIT,
                 dimensions: '5x', // Missing second dimension
-                included: false
+                included:   false
             };
             expect(storage.dimensions).toBe('5x');
 
             const storage2: StorageOption = {
-                type: StorageType.EXTERNAL_UNIT,
+                type:       StorageType.EXTERNAL_UNIT,
                 dimensions: 'x10', // Missing first dimension
-                included: false
+                included:   false
             };
             expect(storage2.dimensions).toBe('x10');
 
             const storage3: StorageOption = {
-                type: StorageType.EXTERNAL_UNIT,
+                type:       StorageType.EXTERNAL_UNIT,
                 dimensions: 'large', // Not a dimension format
-                included: false
+                included:   false
             };
             expect(storage3.dimensions).toBe('large');
 
             const storage4: StorageOption = {
-                type: StorageType.EXTERNAL_UNIT,
+                type:       StorageType.EXTERNAL_UNIT,
                 dimensions: '5.5x10.5x8', // Three dimensions (might be valid for height)
-                included: false
+                included:   false
             };
             expect(storage4.dimensions).toBe('5.5x10.5x8');
         });
 
         it('should accept negative dimensions', () => {
             const storage: StorageOption = {
-                type: StorageType.CLOSET,
+                type:       StorageType.CLOSET,
                 dimensions: '-5x-10', // Negative dimensions
-                included: true
+                included:   true
             };
             expect(storage.dimensions).toBe('-5x-10');
         });
 
         it('should accept non-numeric dimensions', () => {
             const storage: StorageOption = {
-                type: StorageType.BASEMENT,
+                type:       StorageType.BASEMENT,
                 dimensions: 'hugexmassive', // Non-numeric
-                included: false
+                included:   false
             };
             expect(storage.dimensions).toBe('hugexmassive');
         });
@@ -147,12 +147,12 @@ describe('Policy Validation Edge Cases', () => {
     describe('Pet Policy Conflicts', () => {
         it('should accept pets not allowed but types populated', () => {
             const policy: PetPolicy = {
-                allowed: false,
-                types: [PetType.DOG, PetType.CAT], // Shouldn't have types if not allowed
-                maxCount: 2,
+                allowed:     false,
+                types:       [PetType.DOG, PetType.CAT], // Shouldn't have types if not allowed
+                maxCount:    2,
                 weightLimit: 50,
-                deposit: 500,
-                monthlyFee: 50
+                deposit:     500,
+                monthlyFee:  50
             };
             expect(policy.allowed).toBe(false);
             expect(policy.types).toHaveLength(2);
@@ -162,7 +162,7 @@ describe('Policy Validation Edge Cases', () => {
         it('should accept NO_PETS in allowed pet types', () => {
             const policy: PetPolicy = {
                 allowed: true,
-                types: [PetType.DOG, PetType.NO_PETS] // Contradictory
+                types:   [PetType.DOG, PetType.NO_PETS] // Contradictory
             };
             expect(policy.allowed).toBe(true);
             expect(policy.types).toContain(PetType.NO_PETS);
@@ -170,11 +170,11 @@ describe('Policy Validation Edge Cases', () => {
 
         it('should accept conflicting pet count and weight policies', () => {
             const policy: PetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: 0, // No pets allowed by count
+                allowed:     true,
+                types:       [PetType.DOG],
+                maxCount:    0, // No pets allowed by count
                 weightLimit: 100, // But weight limit suggests pets are allowed
-                deposit: 1000 // And deposit required
+                deposit:     1000 // And deposit required
             };
             expect(policy.maxCount).toBe(0);
             expect(policy.weightLimit).toBe(100);
@@ -183,9 +183,9 @@ describe('Policy Validation Edge Cases', () => {
 
         it('should accept negative pet fees and deposits', () => {
             const policy: PetPolicy = {
-                allowed: true,
-                types: [PetType.CAT],
-                deposit: -500, // They pay you?
+                allowed:    true,
+                types:      [PetType.CAT],
+                deposit:    -500, // They pay you?
                 monthlyFee: -25,
                 oneTimeFee: -100
             };
@@ -199,10 +199,10 @@ describe('Policy Validation Edge Cases', () => {
         it('should accept tour hours when specific tour types disabled', () => {
             const tours: TourAvailability = {
                 selfGuidedTours: false,
-                virtualTours: false,
-                inPersonTours: false,
-                tourHours: {
-                    [DayOfWeek.MONDAY]: { open: '09:00', close: '17:00' },
+                virtualTours:    false,
+                inPersonTours:   false,
+                tourHours:       {
+                    [DayOfWeek.MONDAY]:  { open: '09:00', close: '17:00' },
                     [DayOfWeek.TUESDAY]: { open: '10:00', close: '18:00' }
                 }
             };
@@ -212,7 +212,7 @@ describe('Policy Validation Edge Cases', () => {
 
         it('should accept tour scheduling URL without tour hours', () => {
             const tours: TourAvailability = {
-                inPersonTours: true,
+                inPersonTours:     true,
                 tourSchedulingUrl: 'https://example.com/schedule',
                 // No tour hours provided for scheduling
             };

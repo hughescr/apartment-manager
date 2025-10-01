@@ -88,7 +88,7 @@ describe('Building Data Layer - Data Validation', () => {
                     types: ['invalid-pet' as PetType, PetType.DOG]
                 },
                 parkingOptions: [{
-                    type: 'invalid-parking' as ParkingType,
+                    type:     'invalid-parking' as ParkingType,
                     included: false
                 }]
             };
@@ -105,11 +105,11 @@ describe('Building Data Layer - Data Validation', () => {
             expect.assertions(6);
             // Only include defined fields in the response
             const emptyValuesResponse = {
-                buildingID: 'empty-test',
-                street: '',
-                zip: '12345',
+                buildingID:  'empty-test',
+                street:      '',
+                zip:         '12345',
                 description: '',
-                unitID: 'BUILDING'
+                unitID:      'BUILDING'
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse(emptyValuesResponse));
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(emptyValuesResponse));
@@ -128,12 +128,12 @@ describe('Building Data Layer - Data Validation', () => {
         it('should handle empty arrays vs undefined arrays', async () => {
             expect.assertions(4);
             const emptyArraysBuilding = {
-                buildingID: 'empty-arrays-test',
-                street: '789 Empty Arrays St',
-                photos: [], // empty array
+                buildingID:        'empty-arrays-test',
+                street:            '789 Empty Arrays St',
+                photos:            [], // empty array
                 propertyAmenities: [], // empty array
                 // rentSpecials is undefined (not included)
-                oneTimeFees: []
+                oneTimeFees:       []
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...emptyArraysBuilding, unitID: 'BUILDING' }));
 
@@ -152,8 +152,8 @@ describe('Building Data Layer - Data Validation', () => {
                     maxIncomeByHouseholdSize: {} // empty object
                 },
                 utilitiesIncluded: {}, // empty object
-                contactInfo: {
-                    name: '',
+                contactInfo:       {
+                    name:  '',
                     phone: undefined, // undefined instead of null
                     // email is undefined
                 }
@@ -172,7 +172,7 @@ describe('Building Data Layer - Data Validation', () => {
             expect.assertions(1);
             const buildingWithoutId = {
                 street: '123 Test St',
-                city: 'Testville'
+                city:   'Testville'
             };
 
             expect(createBuilding(buildingWithoutId as unknown as BuildingData)).rejects.toThrow();
@@ -195,8 +195,8 @@ describe('Building Data Layer - Data Validation', () => {
             expect.assertions(3);
             const reasonableStringsBuilding = {
                 ...testBuilding,
-                buildingID: repeat('a', 100), // 100 characters
-                description: repeat('b', 1000), // 1KB
+                buildingID:          repeat('a', 100), // 100 characters
+                description:         repeat('b', 1000), // 1KB
                 propertyDescription: repeat('c', 10000) // 10KB
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...reasonableStringsBuilding, unitID: 'BUILDING' }));
@@ -210,9 +210,9 @@ describe('Building Data Layer - Data Validation', () => {
         it('should handle empty strings', async () => {
             expect.assertions(3);
             const emptyStringsBuilding = {
-                buildingID: 'empty-strings-test',
-                street: '',
-                description: '',
+                buildingID:          'empty-strings-test',
+                street:              '',
+                description:         '',
                 propertyDescription: ''
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...emptyStringsBuilding, unitID: 'BUILDING' }));
@@ -229,9 +229,9 @@ describe('Building Data Layer - Data Validation', () => {
             expect.assertions(4);
             const validNumericBuilding = {
                 ...testBuilding,
-                yearBuilt: 1900,
-                numberStories: 1,
-                totalUnits: 1,
+                yearBuilt:      1900,
+                numberStories:  1,
+                totalUnits:     1,
                 applicationFee: 0
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...validNumericBuilding, unitID: 'BUILDING' }));
@@ -248,7 +248,7 @@ describe('Building Data Layer - Data Validation', () => {
             const decimalValuesBuilding = {
                 ...testBuilding,
                 applicationFee: 99.99,
-                leaseLength: 12.5
+                leaseLength:    12.5
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...decimalValuesBuilding, unitID: 'BUILDING' }));
 

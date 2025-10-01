@@ -25,14 +25,14 @@ describe('Alpine.js Factory Functions', () => {
 
     describe('createUnitTypeCardFactory', () => {
         const mockUnitType = {
-            modelID: 'studio-1',
-            modelName: 'Studio Apartment',
+            modelID:    'studio-1',
+            modelName:  'Studio Apartment',
             buildingID: 'building-1',
-            beds: 0,
-            baths: 1,
-            sqft: 450,
-            rent: 2000,
-            deposit: { amount: 1000, refundable: true }
+            beds:       0,
+            baths:      1,
+            sqft:       450,
+            rent:       2000,
+            deposit:    { amount: 1000, refundable: true }
         };
 
         const mockBuildingAmenities = [
@@ -42,9 +42,9 @@ describe('Alpine.js Factory Functions', () => {
 
         it('should extract configuration from data attributes correctly', () => {
             const dataset = {
-                unitType: JSON.stringify(mockUnitType),
+                unitType:          JSON.stringify(mockUnitType),
                 buildingAmenities: JSON.stringify(mockBuildingAmenities),
-                apiUrl: '/api/v1/'
+                apiUrl:            '/api/v1/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -68,9 +68,9 @@ describe('Alpine.js Factory Functions', () => {
 
         it('should handle malformed JSON in data attributes gracefully', () => {
             const dataset = {
-                unitType: 'invalid-json{',
+                unitType:          'invalid-json{',
                 buildingAmenities: '[invalid-json',
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -85,9 +85,9 @@ describe('Alpine.js Factory Functions', () => {
 
         it('should initialize proper state structure', () => {
             const dataset = {
-                unitType: JSON.stringify(mockUnitType),
+                unitType:          JSON.stringify(mockUnitType),
                 buildingAmenities: JSON.stringify(mockBuildingAmenities),
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -116,7 +116,7 @@ describe('Alpine.js Factory Functions', () => {
         it('should create deep copy for originalUnitType', () => {
             const dataset = {
                 unitType: JSON.stringify(mockUnitType),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -133,16 +133,16 @@ describe('Alpine.js Factory Functions', () => {
     describe('createLocationMapFactory', () => {
         it('should extract all map configuration from data attributes', () => {
             const dataset = {
-                latModel: 'building.coordinates.lat',
-                lngModel: 'building.coordinates.lng',
+                latModel:      'building.coordinates.lat',
+                lngModel:      'building.coordinates.lng',
                 verifiedModel: 'building.coordinates.verified',
-                defaultLat: '37.7749',
-                defaultLng: '-122.4194',
-                apiUrl: '/api/v1/',
+                defaultLat:    '37.7749',
+                defaultLng:    '-122.4194',
+                apiUrl:        '/api/v1/',
                 addressModels: JSON.stringify({
                     addressModel: 'building.address.street',
-                    cityModel: 'building.address.city',
-                    stateModel: 'building.address.state'
+                    cityModel:    'building.address.city',
+                    stateModel:   'building.address.state'
                 })
             };
 
@@ -179,8 +179,8 @@ describe('Alpine.js Factory Functions', () => {
 
         it('should handle malformed addressModels JSON', () => {
             const dataset = {
-                latModel: 'lat',
-                lngModel: 'lng',
+                latModel:      'lat',
+                lngModel:      'lng',
                 addressModels: 'invalid-json{'
             };
 
@@ -218,7 +218,7 @@ describe('Alpine.js Factory Functions', () => {
     describe('createUnitTypeFormFactory', () => {
         it('should extract configuration from data attributes', () => {
             const dataset = {
-                apiUrl: '/api/v1/',
+                apiUrl:     '/api/v1/',
                 buildingId: 'building-123'
             };
 
@@ -250,7 +250,7 @@ describe('Alpine.js Factory Functions', () => {
 
         it('should handle config object pattern', () => {
             const config = {
-                apiURL: '/api/v2/',
+                apiURL:     '/api/v2/',
                 buildingID: 'building-789'
             };
 
@@ -263,7 +263,7 @@ describe('Alpine.js Factory Functions', () => {
 
         it('should handle JSON string config pattern', () => {
             const configString = JSON.stringify({
-                apiURL: '/api/v3/',
+                apiURL:     '/api/v3/',
                 buildingID: 'building-999'
             });
 
@@ -279,7 +279,7 @@ describe('Alpine.js Factory Functions', () => {
         it('should handle $root and $el context variations', () => {
             const dataset = {
                 unitType: JSON.stringify({ modelID: 'test' }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             // Test with $root context

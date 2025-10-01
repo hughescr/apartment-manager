@@ -15,67 +15,67 @@ describe('Inheritance System Consistency Tests', () => {
         fieldInheritanceManager = new FieldInheritanceManager();
 
         mockBuilding = {
-            buildingID: 'consistency-building',
+            buildingID:   'consistency-building',
             buildingName: 'Consistency Test Building',
-            street: '123 Consistency St',
-            city: 'Test City',
-            state: 'CA',
-            zip: '90210',
-            latitude: 34.0522,
-            longitude: -118.2437,
-            leaseLength: 12 // Building-level default
+            street:       '123 Consistency St',
+            city:         'Test City',
+            state:        'CA',
+            zip:          '90210',
+            latitude:     34.0522,
+            longitude:    -118.2437,
+            leaseLength:  12 // Building-level default
         };
 
         mockUnitTypes = [
             {
-                buildingID: 'consistency-building',
-                modelID: 'studio-standard',
-                modelName: 'Studio Standard',
-                beds: 0,
-                baths: 1,
-                minRent: 1300,
-                maxRent: 1500,
-                minSqft: 400,
-                maxSqft: 500,
-                deposit: 1300,
-                minLeaseTerm: 6,
-                maxLeaseTerm: 18,
-                maxOccupants: 2,
-                perPersonRent: 1300,
+                buildingID:     'consistency-building',
+                modelID:        'studio-standard',
+                modelName:      'Studio Standard',
+                beds:           0,
+                baths:          1,
+                minRent:        1300,
+                maxRent:        1500,
+                minSqft:        400,
+                maxSqft:        500,
+                deposit:        1300,
+                minLeaseTerm:   6,
+                maxLeaseTerm:   18,
+                maxOccupants:   2,
+                perPersonRent:  1300,
                 countAvailable: 5
             },
             {
-                buildingID: 'consistency-building',
-                modelID: 'one-bed-luxury',
-                modelName: 'One Bedroom Luxury',
-                beds: 1,
-                baths: 1.5,
-                minRent: 2000,
-                maxRent: 2000, // Same min/max
-                minSqft: 800,
-                maxSqft: 800, // Same min/max
-                deposit: 2000,
-                minLeaseTerm: 12,
-                maxLeaseTerm: 24,
-                maxOccupants: 3,
-                perPersonRent: 1000,
+                buildingID:     'consistency-building',
+                modelID:        'one-bed-luxury',
+                modelName:      'One Bedroom Luxury',
+                beds:           1,
+                baths:          1.5,
+                minRent:        2000,
+                maxRent:        2000, // Same min/max
+                minSqft:        800,
+                maxSqft:        800, // Same min/max
+                deposit:        2000,
+                minLeaseTerm:   12,
+                maxLeaseTerm:   24,
+                maxOccupants:   3,
+                perPersonRent:  1000,
                 countAvailable: 3
             },
             {
-                buildingID: 'consistency-building',
-                modelID: 'two-bed-executive',
-                modelName: 'Two Bedroom Executive',
-                beds: 2,
-                baths: 2,
-                minRent: 2800,
-                maxRent: 3200,
-                minSqft: 1100,
-                maxSqft: 1300,
-                deposit: 2800,
-                minLeaseTerm: 12,
-                maxLeaseTerm: 36,
-                maxOccupants: 5,
-                perPersonRent: 1400,
+                buildingID:     'consistency-building',
+                modelID:        'two-bed-executive',
+                modelName:      'Two Bedroom Executive',
+                beds:           2,
+                baths:          2,
+                minRent:        2800,
+                maxRent:        3200,
+                minSqft:        1100,
+                maxSqft:        1300,
+                deposit:        2800,
+                minLeaseTerm:   12,
+                maxLeaseTerm:   36,
+                maxOccupants:   5,
+                perPersonRent:  1400,
                 countAvailable: 2
             }
         ];
@@ -83,96 +83,96 @@ describe('Inheritance System Consistency Tests', () => {
         testUnits = [
             {
                 // Complete inheritance scenario
-                buildingID: 'consistency-building',
-                unitID: 'unit-full-inherit',
-                unitNumber: 'FI01',
-                modelID: 'studio-standard',
-                beds: undefined,
-                baths: undefined,
-                sqft: undefined,
-                rent: undefined,
-                deposit: undefined,
-                maxOccupants: undefined,
+                buildingID:    'consistency-building',
+                unitID:        'unit-full-inherit',
+                unitNumber:    'FI01',
+                modelID:       'studio-standard',
+                beds:          undefined,
+                baths:         undefined,
+                sqft:          undefined,
+                rent:          undefined,
+                deposit:       undefined,
+                maxOccupants:  undefined,
                 perPersonRent: undefined,
-                minLeaseTerm: undefined,
-                maxLeaseTerm: undefined,
-                occupied: false,
+                minLeaseTerm:  undefined,
+                maxLeaseTerm:  undefined,
+                occupied:      false,
                 availableDate: '2025-02-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             {
                 // Mixed inheritance and overrides
-                buildingID: 'consistency-building',
-                unitID: 'unit-mixed',
-                unitNumber: 'MX01',
-                modelID: 'one-bed-luxury',
-                beds: undefined,           // Inherit: 1
-                baths: 2,             // Override: 2 vs 1.5
-                sqft: undefined,           // Inherit: 800 (same min/max)
-                rent: 2100,           // Override: 2100 vs 2000
-                deposit: undefined,        // Inherit: 2000
-                maxOccupants: 4,      // Override: 4 vs 3
+                buildingID:    'consistency-building',
+                unitID:        'unit-mixed',
+                unitNumber:    'MX01',
+                modelID:       'one-bed-luxury',
+                beds:          undefined,           // Inherit: 1
+                baths:         2,             // Override: 2 vs 1.5
+                sqft:          undefined,           // Inherit: 800 (same min/max)
+                rent:          2100,           // Override: 2100 vs 2000
+                deposit:       undefined,        // Inherit: 2000
+                maxOccupants:  4,      // Override: 4 vs 3
                 perPersonRent: undefined,  // Inherit: 1000
-                minLeaseTerm: undefined,   // Inherit: 12
-                maxLeaseTerm: 30,     // Override: 30 vs 24
-                occupied: false,
+                minLeaseTerm:  undefined,   // Inherit: 12
+                maxLeaseTerm:  30,     // Override: 30 vs 24
+                occupied:      false,
                 availableDate: '2025-02-15',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             {
                 // Range inheritance (different min/max values)
-                buildingID: 'consistency-building',
-                unitID: 'unit-ranges',
-                unitNumber: 'RG01',
-                modelID: 'two-bed-executive',
-                beds: undefined,           // Inherit: 2
-                baths: undefined,          // Inherit: 2
-                sqft: undefined,           // Inherit: 1100-1300 range
-                rent: undefined,           // Inherit: 2800-3200 range
-                deposit: 3000,        // Override: 3000 vs 2800
-                maxOccupants: undefined,   // Inherit: 5
+                buildingID:    'consistency-building',
+                unitID:        'unit-ranges',
+                unitNumber:    'RG01',
+                modelID:       'two-bed-executive',
+                beds:          undefined,           // Inherit: 2
+                baths:         undefined,          // Inherit: 2
+                sqft:          undefined,           // Inherit: 1100-1300 range
+                rent:          undefined,           // Inherit: 2800-3200 range
+                deposit:       3000,        // Override: 3000 vs 2800
+                maxOccupants:  undefined,   // Inherit: 5
                 perPersonRent: undefined,  // Inherit: 1400
-                minLeaseTerm: undefined,   // Inherit: 12
-                maxLeaseTerm: undefined,   // Inherit: 36
-                occupied: false,
+                minLeaseTerm:  undefined,   // Inherit: 12
+                maxLeaseTerm:  undefined,   // Inherit: 36
+                occupied:      false,
                 availableDate: '2025-03-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             {
                 // Custom unit (no unit type)
-                buildingID: 'consistency-building',
-                unitID: 'unit-custom',
-                unitNumber: 'CU01',
-                modelID: '', // No unit type
-                beds: 3,
-                baths: 2.5,
-                sqft: 1500,
-                rent: 3500,
-                deposit: 3500,
-                maxOccupants: 6,
+                buildingID:    'consistency-building',
+                unitID:        'unit-custom',
+                unitNumber:    'CU01',
+                modelID:       '', // No unit type
+                beds:          3,
+                baths:         2.5,
+                sqft:          1500,
+                rent:          3500,
+                deposit:       3500,
+                maxOccupants:  6,
                 perPersonRent: 1750,
-                minLeaseTerm: 12,
-                maxLeaseTerm: 24,
-                occupied: false,
+                minLeaseTerm:  12,
+                maxLeaseTerm:  24,
+                occupied:      false,
                 availableDate: '2025-03-15',
                 feedInclusion: { apartments_com: true, zillow: true }
             },
             {
                 // Edge case: zero values (should be preserved, not inherited)
-                buildingID: 'consistency-building',
-                unitID: 'unit-zeros',
-                unitNumber: 'ZR01',
-                modelID: 'studio-standard',
-                beds: 0,             // Explicit 0 (studio)
-                baths: undefined,         // Inherit: 1
-                sqft: undefined,          // Inherit: 400 (minSqft)
-                rent: 0,             // Explicit 0 (free unit)
-                deposit: 0,          // Explicit 0 (no deposit)
-                maxOccupants: undefined,  // Inherit: 2
+                buildingID:    'consistency-building',
+                unitID:        'unit-zeros',
+                unitNumber:    'ZR01',
+                modelID:       'studio-standard',
+                beds:          0,             // Explicit 0 (studio)
+                baths:         undefined,         // Inherit: 1
+                sqft:          undefined,          // Inherit: 400 (minSqft)
+                rent:          0,             // Explicit 0 (free unit)
+                deposit:       0,          // Explicit 0 (no deposit)
+                maxOccupants:  undefined,  // Inherit: 2
                 perPersonRent: undefined, // Inherit: 1300
-                minLeaseTerm: undefined,  // Inherit: 6
-                maxLeaseTerm: undefined,  // Inherit: 18
-                occupied: false,
+                minLeaseTerm:  undefined,  // Inherit: 6
+                maxLeaseTerm:  undefined,  // Inherit: 18
+                occupied:      false,
                 availableDate: '2025-04-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             }
@@ -283,18 +283,18 @@ describe('Inheritance System Consistency Tests', () => {
         it('should produce identical results across all inheritance systems', async () => {
             const testScenarios = [
                 {
-                    name: 'Complete inheritance',
-                    unit: testUnits[0],
+                    name:     'Complete inheritance',
+                    unit:     testUnits[0],
                     unitType: mockUnitTypes[0]
                 },
                 {
-                    name: 'Mixed inheritance/overrides',
-                    unit: testUnits[1],
+                    name:     'Mixed inheritance/overrides',
+                    unit:     testUnits[1],
                     unitType: mockUnitTypes[1]
                 },
                 {
-                    name: 'Range inheritance',
-                    unit: testUnits[2],
+                    name:     'Range inheritance',
+                    unit:     testUnits[2],
                     unitType: mockUnitTypes[2]
                 }
             ];
@@ -351,10 +351,10 @@ describe('Inheritance System Consistency Tests', () => {
     describe('MITS Generation Consistency', () => {
         it('should generate MITS XML that reflects inheritance resolver results', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: filter(testUnits, u => u.modelID !== ''), // Filter out custom units with empty modelID
-                siteName: 'apartments_com'
+                units:     filter(testUnits, u => u.modelID !== ''), // Filter out custom units with empty modelID
+                siteName:  'apartments_com'
             });
 
             // Test each unit's MITS representation matches inheritance resolver
@@ -394,9 +394,9 @@ describe('Inheritance System Consistency Tests', () => {
             for(let i = 1; i <= 1000; i++) {
                 largeUnitSet.push({
                     buildingID: 'consistency-building',
-                    unitID: `perf-unit-${i}`,
+                    unitID:     `perf-unit-${i}`,
                     unitNumber: `${i}`,
-                    modelID: (() => {
+                    modelID:    (() => {
                         if(i % 3 === 0) {
                             return 'studio-standard';
                         }
@@ -405,11 +405,11 @@ describe('Inheritance System Consistency Tests', () => {
                         }
                         return 'two-bed-executive';
                     })(),
-                    beds: i % 5 === 0 ? i % 3 : undefined,      // Some overrides
-                    baths: i % 7 === 0 ? 1.5 : undefined,       // Some overrides
-                    sqft: i % 11 === 0 ? 800 + i : undefined,   // Some overrides
-                    rent: i % 13 === 0 ? 2000 + i : undefined,  // Some overrides
-                    occupied: i % 10 === 0,                 // 10% occupied
+                    beds:          i % 5 === 0 ? i % 3 : undefined,      // Some overrides
+                    baths:         i % 7 === 0 ? 1.5 : undefined,       // Some overrides
+                    sqft:          i % 11 === 0 ? 800 + i : undefined,   // Some overrides
+                    rent:          i % 13 === 0 ? 2000 + i : undefined,  // Some overrides
+                    occupied:      i % 10 === 0,                 // 10% occupied
                     availableDate: i % 10 === 0 ? undefined : '2025-04-01',
                     feedInclusion: { apartments_com: true, zillow: true }
                 });
@@ -436,10 +436,10 @@ describe('Inheritance System Consistency Tests', () => {
             // Test MITS generation performance
             const mitsStartTime = Date.now();
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: filter(largeUnitSet, u => !u.occupied), // Only available units
-                siteName: 'apartments_com'
+                units:     filter(largeUnitSet, u => !u.occupied), // Only available units
+                siteName:  'apartments_com'
             });
             const mitsTime = Date.now() - mitsStartTime;
 
@@ -491,31 +491,31 @@ describe('Inheritance System Consistency Tests', () => {
         it('should validate inheritance logic with complex unit type relationships', async () => {
             // Test unit type with incomplete data
             const incompleteUnitType: UnitTypeData = {
-                buildingID: 'consistency-building',
-                modelID: 'incomplete-type',
-                modelName: 'Incomplete Type',
-                beds: 1,
-                baths: 1,
+                buildingID:     'consistency-building',
+                modelID:        'incomplete-type',
+                modelName:      'Incomplete Type',
+                beds:           1,
+                baths:          1,
                 // Missing rent ranges
-                minRent: undefined as unknown as number,
-                maxRent: undefined as unknown as number,
+                minRent:        undefined as unknown as number,
+                maxRent:        undefined as unknown as number,
                 // Missing sqft ranges
-                minSqft: undefined as unknown as number,
-                maxSqft: undefined as unknown as number,
-                deposit: 1500,
+                minSqft:        undefined as unknown as number,
+                maxSqft:        undefined as unknown as number,
+                deposit:        1500,
                 countAvailable: 1
             };
 
             const unitWithIncompleteType: UnitData = {
-                buildingID: 'consistency-building',
-                unitID: 'incomplete-test',
-                unitNumber: 'IT01',
-                modelID: 'incomplete-type',
-                beds: undefined,    // Should inherit: 1
-                baths: undefined,   // Should inherit: 1
-                sqft: undefined,    // Cannot inherit (no data)
-                rent: undefined,    // Cannot inherit (no data)
-                occupied: false,
+                buildingID:    'consistency-building',
+                unitID:        'incomplete-test',
+                unitNumber:    'IT01',
+                modelID:       'incomplete-type',
+                beds:          undefined,    // Should inherit: 1
+                baths:         undefined,   // Should inherit: 1
+                sqft:          undefined,    // Cannot inherit (no data)
+                rent:          undefined,    // Cannot inherit (no data)
+                occupied:      false,
                 availableDate: '2025-04-01',
                 feedInclusion: { apartments_com: true, zillow: true }
             };
@@ -562,8 +562,8 @@ describe('Inheritance System Consistency Tests', () => {
 
                 if(operation.value === undefined) {
                     // Should inherit if unit type has value
-                    const hasTypeValue = unitType[operation.field as keyof UnitTypeData] !== null &&
-                      unitType[operation.field as keyof UnitTypeData] !== undefined;
+                    const hasTypeValue = unitType[operation.field as keyof UnitTypeData] !== null
+                      && unitType[operation.field as keyof UnitTypeData] !== undefined;
                     expect(isInherited).toBe(hasTypeValue);
                 } else {
                     // Should not inherit (has explicit value)
@@ -677,7 +677,7 @@ describe('Inheritance System Consistency Tests', () => {
                     const inherited = map(['beds', 'baths', 'sqft', 'rent'], field => ({
                         field,
                         isInherited: freshFieldManager.isInherited(unit, unitType ?? null, field as FieldName), // Use correct FieldName type and convert undefined to null
-                        effective: freshFieldManager.getEffectiveValue(unit, unitType ?? null, field as FieldName) // Use correct FieldName type and convert undefined to null
+                        effective:   freshFieldManager.getEffectiveValue(unit, unitType ?? null, field as FieldName) // Use correct FieldName type and convert undefined to null
                     }));
 
                     cycleResults[`unit-${unitIndex}`] = {

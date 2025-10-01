@@ -110,14 +110,14 @@ describe('TabNavigator Component Logic', () => {
         it('should define mobile and desktop navigation structures', () => {
             // Test responsive navigation concepts
             const mobileNavigation = {
-                type: 'dropdown',
-                classes: 'block sm:hidden mb-6',
+                type:          'dropdown',
+                classes:       'block sm:hidden mb-6',
                 showActiveTab: true
             };
 
             const desktopNavigation = {
-                type: 'horizontal-tabs',
-                classes: 'hidden sm:flex tabs tabs-boxed mb-6 flex-wrap',
+                type:        'horizontal-tabs',
+                classes:     'hidden sm:flex tabs tabs-boxed mb-6 flex-wrap',
                 showAllTabs: true
             };
 
@@ -155,9 +155,9 @@ describe('TabNavigator Component Logic', () => {
         it('should define correct Alpine.js directives', () => {
             // Test directive configurations
             const directives = {
-                activeTabText: 'x-text="getTabDisplayName(activeSectionTab)"',
-                tabClick: (tabKey: string) => `@click="activeSectionTab = '${tabKey}'"`,
-                activeClass: (tabKey: string) => `:class="{'tab-active': activeSectionTab === '${tabKey}'}"`,
+                activeTabText:     'x-text="getTabDisplayName(activeSectionTab)"',
+                tabClick:          (tabKey: string) => `@click="activeSectionTab = '${tabKey}'"`,
+                activeClass:       (tabKey: string) => `:class="{'tab-active': activeSectionTab === '${tabKey}'}"`,
                 mobileActiveClass: (tabKey: string) => `:class="{'active': activeSectionTab === '${tabKey}'}"`
             };
 
@@ -170,8 +170,8 @@ describe('TabNavigator Component Logic', () => {
         it('should handle state variable references', () => {
             // Test state variable usage
             const stateVariables = {
-                activeTab: 'activeSectionTab',
-                readAccess: 'activeSectionTab ===',
+                activeTab:   'activeSectionTab',
+                readAccess:  'activeSectionTab ===',
                 writeAccess: 'activeSectionTab ='
             };
 
@@ -185,14 +185,14 @@ describe('TabNavigator Component Logic', () => {
         it('should define proper DaisyUI class combinations', () => {
             // Test CSS class configurations
             const classes = {
-                mobileContainer: 'block sm:hidden mb-6',
-                mobileDropdown: 'dropdown dropdown-end w-full',
-                mobileButton: 'btn btn-outline w-full justify-between min-h-[44px]',
-                mobileMenu: 'dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full border border-base-200',
-                mobileItem: 'min-h-[44px]',
-                desktopContainer: 'hidden sm:flex tabs tabs-boxed mb-6 flex-wrap',
-                desktopTab: 'tab min-h-[44px]',
-                responsiveText: 'hidden md:inline',
+                mobileContainer:      'block sm:hidden mb-6',
+                mobileDropdown:       'dropdown dropdown-end w-full',
+                mobileButton:         'btn btn-outline w-full justify-between min-h-[44px]',
+                mobileMenu:           'dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full border border-base-200',
+                mobileItem:           'min-h-[44px]',
+                desktopContainer:     'hidden sm:flex tabs tabs-boxed mb-6 flex-wrap',
+                desktopTab:           'tab min-h-[44px]',
+                responsiveText:       'hidden md:inline',
                 responsiveMobileText: 'md:hidden'
             };
 
@@ -222,9 +222,9 @@ describe('TabNavigator Component Logic', () => {
         it('should define proper ARIA and semantic attributes', () => {
             // Test accessibility features
             const accessibility = {
-                tabindex: 'tabindex="0"',
-                buttonElement: '<button',
-                semanticStructure: true,
+                tabindex:           'tabindex="0"',
+                buttonElement:      '<button',
+                semanticStructure:  true,
                 keyboardNavigation: '@click='
             };
 
@@ -329,10 +329,10 @@ describe('TabNavigator Component Logic', () => {
         it('should use efficient Alpine.js patterns', () => {
             // Test Alpine.js efficiency
             const efficientPatterns = {
-                eventHandlers: '@click=', // Direct event binding
+                eventHandlers:      '@click=', // Direct event binding
                 conditionalClasses: ':class=', // Reactive classes
-                textBinding: 'x-text=', // Text updates
-                showHide: 'x-show=' // Conditional display
+                textBinding:        'x-text=', // Text updates
+                showHide:           'x-show=' // Conditional display
             };
 
             expect(efficientPatterns.eventHandlers).toBe('@click=');

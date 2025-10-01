@@ -24,10 +24,10 @@ export function transformFees(
     const validFees = filter(compactFees, (fee): fee is Fee => fee && isObject(fee) && !!fee.type);
 
     return map(validFees, fee => ({
-        type: transformFeeTypeName(fee.type, siteId),
-        amount: Number(fee.amount) || 0,
+        type:        transformFeeTypeName(fee.type, siteId),
+        amount:      Number(fee.amount) || 0,
         description: fee.description,
-        refundable: fee.refundable
+        refundable:  fee.refundable
     }));
 }
 
@@ -41,28 +41,28 @@ function transformFeeTypeName(feeType: FeeType, siteId: string): string {
     // This could use the enum transformer, but keeping it simple for now
     const mappings: Record<string, Record<FeeType, string>> = {
         apartments_com: {
-            [FeeType.APPLICATION]: 'Application Fee',
-            [FeeType.ADMIN]: 'Administrative Fee',
+            [FeeType.APPLICATION]:      'Application Fee',
+            [FeeType.ADMIN]:            'Administrative Fee',
             [FeeType.SECURITY_DEPOSIT]: 'Security Deposit',
-            [FeeType.PET_DEPOSIT]: 'Pet Deposit',
-            [FeeType.PET_FEE]: 'Pet Fee',
-            [FeeType.PARKING]: 'Parking Fee',
-            [FeeType.STORAGE]: 'Storage Fee',
-            [FeeType.MOVE_IN]: 'Move-in Fee',
-            [FeeType.KEY_DEPOSIT]: 'Key Deposit',
-            [FeeType.CLEANING]: 'Cleaning Fee'
+            [FeeType.PET_DEPOSIT]:      'Pet Deposit',
+            [FeeType.PET_FEE]:          'Pet Fee',
+            [FeeType.PARKING]:          'Parking Fee',
+            [FeeType.STORAGE]:          'Storage Fee',
+            [FeeType.MOVE_IN]:          'Move-in Fee',
+            [FeeType.KEY_DEPOSIT]:      'Key Deposit',
+            [FeeType.CLEANING]:         'Cleaning Fee'
         },
         zillow: {
-            [FeeType.APPLICATION]: 'Application',
-            [FeeType.ADMIN]: 'Administrative',
+            [FeeType.APPLICATION]:      'Application',
+            [FeeType.ADMIN]:            'Administrative',
             [FeeType.SECURITY_DEPOSIT]: 'Security Deposit',
-            [FeeType.PET_DEPOSIT]: 'Pet Deposit',
-            [FeeType.PET_FEE]: 'Pet',
-            [FeeType.PARKING]: 'Parking',
-            [FeeType.STORAGE]: 'Storage',
-            [FeeType.MOVE_IN]: 'Move-in',
-            [FeeType.KEY_DEPOSIT]: 'Key Deposit',
-            [FeeType.CLEANING]: 'Cleaning'
+            [FeeType.PET_DEPOSIT]:      'Pet Deposit',
+            [FeeType.PET_FEE]:          'Pet',
+            [FeeType.PARKING]:          'Parking',
+            [FeeType.STORAGE]:          'Storage',
+            [FeeType.MOVE_IN]:          'Move-in',
+            [FeeType.KEY_DEPOSIT]:      'Key Deposit',
+            [FeeType.CLEANING]:         'Cleaning'
         }
     };
 
@@ -80,10 +80,10 @@ export function categorizeFees(
     oneTimeFees: Fee[] | undefined,
     monthlyFees: Fee[] | undefined
 ): {
-        oneTime: Fee[]
-        monthly: Fee[]
-        deposits: Fee[]
-    } {
+    oneTime:  Fee[]
+    monthly:  Fee[]
+    deposits: Fee[]
+} {
     const oneTime: Fee[] = [];
     const monthly: Fee[] = monthlyFees || [];
     const deposits: Fee[] = [];
@@ -91,9 +91,9 @@ export function categorizeFees(
     // Separate deposits from other one-time fees
     if(oneTimeFees) {
         for(const fee of oneTimeFees) {
-            if(fee.type === FeeType.SECURITY_DEPOSIT ||
-              fee.type === FeeType.PET_DEPOSIT ||
-              fee.type === FeeType.KEY_DEPOSIT) {
+            if(fee.type === FeeType.SECURITY_DEPOSIT
+              || fee.type === FeeType.PET_DEPOSIT
+              || fee.type === FeeType.KEY_DEPOSIT) {
                 deposits.push(fee);
             } else {
                 oneTime.push(fee);
@@ -178,7 +178,7 @@ export function mergeFees(...sources: (Fee[] | undefined)[]): Fee[] {
                     // Combine amounts for the same fee type
                     feeMap.set(fee.type, {
                         ...fee,
-                        amount: existing.amount + fee.amount,
+                        amount:      existing.amount + fee.amount,
                         description: fee.description || existing.description
                     });
                 } else {

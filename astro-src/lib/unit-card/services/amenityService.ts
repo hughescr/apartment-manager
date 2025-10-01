@@ -177,7 +177,7 @@ export class AmenityService {
      * Remove an amenity from unit-specific amenities
      */
     removeUnitAmenity(amenity: Amenity): void {
-        if(!this.state.unit || !this.state.unit.unitAmenities) {
+        if(!this.state.unit?.unitAmenities) {
             return;
         }
 

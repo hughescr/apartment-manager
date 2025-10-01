@@ -21,9 +21,9 @@ function createMockItemResponse(item: Record<string, unknown>, unitID: string) {
         ...item,
         buildingID: item.buildingID || 'test-building',
         unitID,
-        _ct: new Date().toISOString(),
-        _md: new Date().toISOString(),
-        _et: unitID === 'BUILDING' ? 'Building' : 'Unit'
+        _ct:        new Date().toISOString(),
+        _md:        new Date().toISOString(),
+        _et:        unitID === 'BUILDING' ? 'Building' : 'Unit'
     };
 }
 
@@ -31,7 +31,7 @@ function handleMockPutCommand(cmd: { input?: Record<string, unknown> }) {
     // DynamoDB Toolbox sends data in input.Item
     const item = (cmd.input?.Item || cmd.input || {}) as Record<string, unknown>;
     const unitID = isString(item.unitID)
-        ? item.unitID as string
+        ? item.unitID
         : 'BUILDING';
     return Promise.resolve({
         Attributes: createMockItemResponse(item, unitID)
@@ -78,9 +78,9 @@ function createTestDynamoClient(): DynamoDBDocumentClient {
     };
 
     return {
-        send: mockSend,
-        destroy: () => Promise.resolve(),
-        config: {} as unknown,
+        send:            mockSend,
+        destroy:         () => Promise.resolve(),
+        config:          {} as unknown,
         middlewareStack: {} as unknown
     } as unknown as DynamoDBDocumentClient;
 }
@@ -106,9 +106,9 @@ export function getDynamoClient(injectedClient?: DynamoDBDocumentClient): Dynamo
             const mockSend = createTestDynamoClient().send;
 
             _dynamoClient = {
-                send: mockSend,
-                destroy: () => Promise.resolve(),
-                config: {} as unknown,
+                send:            mockSend,
+                destroy:         () => Promise.resolve(),
+                config:          {} as unknown,
                 middlewareStack: {} as unknown
             } as unknown as DynamoDBDocumentClient;
         }
@@ -117,17 +117,17 @@ export function getDynamoClient(injectedClient?: DynamoDBDocumentClient): Dynamo
 
     if(!_dynamoClient) {
         const client = new DynamoDBClient({
-            maxAttempts: 4,
-            retryMode: 'adaptive',
+            maxAttempts:    4,
+            retryMode:      'adaptive',
             requestHandler: {
-                requestTimeout: 30000,
+                requestTimeout:    30000,
                 connectionTimeout: 5000
             }
         });
         _dynamoClient = DynamoDBDocumentClient.from(client, {
             marshallOptions: {
                 removeUndefinedValues: true,
-                convertEmptyValues: false,
+                convertEmptyValues:    false,
             },
             unmarshallOptions: {
                 wrapNumbers: false,
@@ -154,10 +154,10 @@ export function getS3Client(injectedClient?: S3Client): S3Client {
 
     if(!_s3Client) {
         _s3Client = new S3Client({
-            maxAttempts: 4,
-            retryMode: 'adaptive',
+            maxAttempts:    4,
+            retryMode:      'adaptive',
             requestHandler: {
-                requestTimeout: 60000,
+                requestTimeout:    60000,
                 connectionTimeout: 5000
             }
         });
@@ -172,15 +172,15 @@ function createTestSSMClient(): SSMClient {
         if(cmd.constructor.name === 'PutParameterCommand') {
             return Promise.resolve({
                 Version: 1,
-                Tier: 'Standard'
+                Tier:    'Standard'
             });
         }
         if(cmd.constructor.name === 'GetParameterCommand') {
             return Promise.resolve({
                 Parameter: {
-                    Name: '/apartment-manager/test/credentials/test-site',
-                    Value: '{"apiKey":"test-key"}',
-                    Type: 'SecureString',
+                    Name:    '/apartment-manager/test/credentials/test-site',
+                    Value:   '{"apiKey":"test-key"}',
+                    Type:    'SecureString',
                     Version: 1
                 }
             });
@@ -191,16 +191,16 @@ function createTestSSMClient(): SSMClient {
         if(cmd.constructor.name === 'DescribeParametersCommand') {
             return Promise.resolve({
                 Parameters: [],
-                NextToken: undefined
+                NextToken:  undefined
             });
         }
         return Promise.reject(new Error(`Unmocked SSM command: ${cmd.constructor.name}`));
     };
 
     return {
-        send: mockSend,
-        destroy: () => Promise.resolve(),
-        config: {} as unknown,
+        send:            mockSend,
+        destroy:         () => Promise.resolve(),
+        config:          {} as unknown,
         middlewareStack: {} as unknown
     } as unknown as SSMClient;
 }
@@ -227,9 +227,9 @@ export function getSSMClient(injectedClient?: SSMClient): SSMClient {
             const mockSend = createTestSSMClient().send;
 
             _ssmClient = {
-                send: mockSend,
-                destroy: () => Promise.resolve(),
-                config: {} as unknown,
+                send:            mockSend,
+                destroy:         () => Promise.resolve(),
+                config:          {} as unknown,
                 middlewareStack: {} as unknown
             } as unknown as SSMClient;
         }
@@ -238,11 +238,11 @@ export function getSSMClient(injectedClient?: SSMClient): SSMClient {
 
     if(!_ssmClient) {
         _ssmClient = new SSMClient({
-            region: 'us-west-2',
-            maxAttempts: 4,
-            retryMode: 'adaptive',
+            region:         'us-west-2',
+            maxAttempts:    4,
+            retryMode:      'adaptive',
             requestHandler: {
-                requestTimeout: 30000,
+                requestTimeout:    30000,
                 connectionTimeout: 5000
             }
         });

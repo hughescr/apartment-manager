@@ -12,9 +12,9 @@ import type { BuildingData, UnitData, UnitTypeData } from '../../types';
  */
 export interface BaseComponentProps {
     /** Additional CSS classes */
-    'class'?: string
+    'class'?:                string
     /** Unique identifier for the component */
-    id?: string
+    id?:                     string
     /** Data attributes for testing and JavaScript access */
     [key: `data-${string}`]: string
 }
@@ -24,17 +24,17 @@ export interface BaseComponentProps {
  */
 export interface BaseFormProps extends BaseComponentProps {
     /** Form field name */
-    name: string
+    name:         string
     /** Field label text */
-    label?: string
+    label?:       string
     /** Whether the field is required */
-    required?: boolean
+    required?:    boolean
     /** Whether the field is disabled */
-    disabled?: boolean
+    disabled?:    boolean
     /** Validation error message */
-    error?: string
+    error?:       string
     /** Help text for the field */
-    helpText?: string
+    helpText?:    string
     /** Placeholder text */
     placeholder?: string
 }
@@ -55,10 +55,10 @@ export interface AlpineModelProps {
  * BuildingProvider component props
  */
 export interface BuildingProviderProps extends BaseComponentProps {
-    building: BuildingData
-    units: UnitData[]
+    building:  BuildingData
+    units:     UnitData[]
     unitTypes: UnitTypeData[]
-    apiURL: string
+    apiURL:    string
 }
 
 /**
@@ -66,8 +66,8 @@ export interface BuildingProviderProps extends BaseComponentProps {
  */
 export interface BuildingsComponentProps extends BaseComponentProps {
     buildings: {
-        building: BuildingData
-        units: UnitData[]
+        building:  BuildingData
+        units:     UnitData[]
         unitTypes: UnitTypeData[]
     }[]
     apiURL: string
@@ -78,8 +78,8 @@ export interface BuildingsComponentProps extends BaseComponentProps {
  */
 export interface BuildingInfoTabProps extends BaseComponentProps {
     building: BuildingData
-    apiUrl: string
-    errors?: Record<string, string>
+    apiUrl:   string
+    errors?:  Record<string, string>
 }
 
 /**
@@ -87,7 +87,7 @@ export interface BuildingInfoTabProps extends BaseComponentProps {
  */
 export interface MarketingTabProps extends BaseComponentProps {
     building: BuildingData
-    apiUrl: string
+    apiUrl:   string
 }
 
 /**
@@ -95,7 +95,7 @@ export interface MarketingTabProps extends BaseComponentProps {
  */
 export interface PricingPoliciesTabProps extends BaseComponentProps {
     building: BuildingData
-    errors: Record<string, string>
+    errors:   Record<string, string>
 }
 
 // ===== UNIT COMPONENT PROPS =====
@@ -104,27 +104,27 @@ export interface PricingPoliciesTabProps extends BaseComponentProps {
  * UnitCard component props
  */
 export interface UnitCardProps extends BaseComponentProps {
-    unit: UnitData
+    unit:       UnitData
     unitTypes?: UnitTypeData[]
-    apiUrl?: string
+    apiUrl?:    string
 }
 
 /**
  * Unit type card props
  */
 export interface UnitTypeCardProps extends BaseComponentProps {
-    unitType: UnitTypeData
+    unitType:   UnitTypeData
     buildingId: string
-    apiUrl: string
+    apiUrl:     string
 }
 
 /**
  * Unit type form props
  */
 export interface UnitTypeFormProps extends BaseComponentProps {
-    unitType?: UnitTypeData
+    unitType?:  UnitTypeData
     buildingId: string
-    apiUrl: string
+    apiUrl:     string
     isEditing?: boolean
 }
 
@@ -137,9 +137,9 @@ export interface BaseDialogProps extends BaseComponentProps {
     /** Dialog identifier */
     dialogId?: string
     /** Whether dialog is initially open */
-    isOpen?: boolean
+    isOpen?:   boolean
     /** Dialog title */
-    title?: string
+    title?:    string
     /** Maximum width class */
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 }
@@ -150,16 +150,16 @@ export interface BaseDialogProps extends BaseComponentProps {
 export interface AddUnitDialogProps extends BaseDialogProps {
     building: {
         buildingID: string
-        street: string
-        city: string
-        state: string
+        street:     string
+        city:       string
+        state:      string
     }
     unitTypes: {
-        modelID: string
+        modelID:   string
         modelName: string
-        beds: number
-        baths: number
-        sqft?: number
+        beds:      number
+        baths:     number
+        sqft?:     number
     }[]
     apiUrl: string
 }
@@ -191,19 +191,19 @@ export interface BulkRentDialogProps extends BaseDialogProps {
  */
 export interface BaseInputProps extends BaseFormProps, AlpineModelProps {
     /** Input type */
-    type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'date' | 'datetime-local' | 'time'
+    type?:         'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'date' | 'datetime-local' | 'time'
     /** Minimum value (for number inputs) */
-    min?: number | string
+    min?:          number | string
     /** Maximum value (for number inputs) */
-    max?: number | string
+    max?:          number | string
     /** Step value (for number inputs) */
-    step?: number | string
+    step?:         number | string
     /** Input pattern for validation */
-    pattern?: string
+    pattern?:      string
     /** Auto-complete attribute */
     autocomplete?: string
     /** Input size */
-    size?: 'xs' | 'sm' | 'md' | 'lg'
+    size?:         'xs' | 'sm' | 'md' | 'lg'
 }
 
 /**
@@ -212,16 +212,16 @@ export interface BaseInputProps extends BaseFormProps, AlpineModelProps {
 export interface BaseSelectProps extends BaseFormProps, AlpineModelProps {
     /** Select options */
     options: {
-        value: string | number
-        label: string
+        value:     string | number
+        label:     string
         disabled?: boolean
     }[]
     /** Whether to include a default empty option */
     includeEmpty?: boolean
     /** Empty option label */
-    emptyLabel?: string
+    emptyLabel?:   string
     /** Select size */
-    size?: 'xs' | 'sm' | 'md' | 'lg'
+    size?:         'xs' | 'sm' | 'md' | 'lg'
 }
 
 /**
@@ -229,9 +229,9 @@ export interface BaseSelectProps extends BaseFormProps, AlpineModelProps {
  */
 export interface BaseTextareaProps extends BaseFormProps, AlpineModelProps {
     /** Number of visible rows */
-    rows?: number
+    rows?:       number
     /** Maximum character length */
-    maxLength?: number
+    maxLength?:  number
     /** Whether to resize automatically */
     autoResize?: boolean
 }
@@ -241,9 +241,9 @@ export interface BaseTextareaProps extends BaseFormProps, AlpineModelProps {
  */
 export interface AmenitySelectorProps extends BaseFormProps, AlpineModelProps {
     /** Whether to show the label */
-    showLabel?: boolean
+    showLabel?:   boolean
     /** Available amenity categories */
-    categories?: string[]
+    categories?:  string[]
     /** Whether to allow custom amenities */
     allowCustom?: boolean
 }
@@ -253,15 +253,15 @@ export interface AmenitySelectorProps extends BaseFormProps, AlpineModelProps {
  */
 export interface PhotoUploaderProps extends BaseFormProps, AlpineModelProps {
     /** Building ID for file organization */
-    buildingId?: string
+    buildingId?:  string
     /** Unit ID for unit-specific photos */
-    unitId?: string
+    unitId?:      string
     /** Unit type ID for unit type photos */
-    unitTypeId?: string
+    unitTypeId?:  string
     /** Maximum number of photos */
-    maxPhotos?: number
+    maxPhotos?:   number
     /** Accepted file types */
-    accept?: string
+    accept?:      string
     /** Maximum file size in MB */
     maxFileSize?: number
 }
@@ -271,11 +271,11 @@ export interface PhotoUploaderProps extends BaseFormProps, AlpineModelProps {
  */
 export interface FeeListEditorProps extends BaseFormProps, AlpineModelProps {
     /** Fee type (oneTime or monthly) */
-    feeType: 'oneTime' | 'monthly'
+    feeType:     'oneTime' | 'monthly'
     /** Available fee categories */
     categories?: string[]
     /** Whether fees are required */
-    required?: boolean
+    required?:   boolean
 }
 
 /**
@@ -283,13 +283,13 @@ export interface FeeListEditorProps extends BaseFormProps, AlpineModelProps {
  */
 export interface PetPolicyEditorProps extends BaseFormProps, AlpineModelProps {
     /** Available pet types */
-    petTypes?: string[]
+    petTypes?:      string[]
     /** Default pet policy */
     defaultPolicy?: {
-        allowed: boolean
-        petTypes: string[]
-        deposit?: number
-        rent?: number
+        allowed:       boolean
+        petTypes:      string[]
+        deposit?:      number
+        rent?:         number
         restrictions?: string[]
     }
 }
@@ -299,15 +299,15 @@ export interface PetPolicyEditorProps extends BaseFormProps, AlpineModelProps {
  */
 export interface LocationMapPickerProps extends BaseFormProps, AlpineModelProps {
     /** Initial latitude */
-    latitude?: number
+    latitude?:          number
     /** Initial longitude */
-    longitude?: number
+    longitude?:         number
     /** Map zoom level */
-    zoom?: number
+    zoom?:              number
     /** Whether to show address search */
     showAddressSearch?: boolean
     /** API key for map service */
-    apiKey?: string
+    apiKey?:            string
 }
 
 /**
@@ -323,9 +323,9 @@ export interface ScreeningCriteriaFormProps extends BaseFormProps, AlpineModelPr
  */
 export interface OfficeHoursEditorProps extends BaseFormProps, AlpineModelProps {
     /** Default hours format */
-    format?: '12' | '24'
+    format?:              '12' | '24'
     /** Days to include */
-    includeDays?: string[]
+    includeDays?:         string[]
     /** Whether to allow different hours per day */
     allowDifferentHours?: boolean
 }
@@ -337,11 +337,11 @@ export interface OfficeHoursEditorProps extends BaseFormProps, AlpineModelProps 
  */
 export interface SavingIndicatorProps extends BaseComponentProps {
     /** Saving state */
-    saving?: boolean
+    saving?:        boolean
     /** Custom saving message */
     savingMessage?: string
     /** Show as inline or block */
-    inline?: boolean
+    inline?:        boolean
 }
 
 /**
@@ -349,9 +349,9 @@ export interface SavingIndicatorProps extends BaseComponentProps {
  */
 export interface ValidationErrorProps extends BaseComponentProps {
     /** Error message */
-    error?: string
+    error?:    string
     /** Field name for error */
-    field?: string
+    field?:    string
     /** Whether to show icon */
     showIcon?: boolean
 }
@@ -362,16 +362,16 @@ export interface ValidationErrorProps extends BaseComponentProps {
 export interface TabNavigatorProps extends BaseComponentProps {
     /** Available tabs */
     tabs: {
-        key: string
-        label: string
+        key:          string
+        label:        string
         mobileLabel?: string
-        disabled?: boolean
-        badge?: string | number
+        disabled?:    boolean
+        badge?:       string | number
     }[]
     /** Active tab key */
     activeTab?: string
     /** Tab style */
-    variant?: 'pills' | 'bordered' | 'lifted'
+    variant?:   'pills' | 'bordered' | 'lifted'
 }
 
 /**
@@ -381,7 +381,7 @@ export interface TabPanelsProps extends BaseComponentProps {
     /** Active panel key */
     activePanel?: string
     /** Whether to lazy-load panels */
-    lazy?: boolean
+    lazy?:        boolean
 }
 
 // ===== UTILITY COMPONENT PROPS =====
@@ -393,11 +393,11 @@ export interface DynamicListManagerProps extends BaseFormProps, AlpineModelProps
     /** Item template */
     itemTemplate?: string
     /** Minimum items */
-    minItems?: number
+    minItems?:     number
     /** Maximum items */
-    maxItems?: number
+    maxItems?:     number
     /** Default item value */
-    defaultItem?: unknown
+    defaultItem?:  unknown
     /** Item validation function */
     validateItem?: (item: unknown) => boolean
 }
@@ -407,11 +407,11 @@ export interface DynamicListManagerProps extends BaseFormProps, AlpineModelProps
  */
 export interface InheritableFieldProps extends BaseInputProps {
     /** Inherited value */
-    inheritedValue?: string | number
+    inheritedValue?:     string | number
     /** Inheritance source */
-    inheritanceSource?: 'floorplan' | 'building' | 'none'
+    inheritanceSource?:  'floorplan' | 'building' | 'none'
     /** Whether field is currently inherited */
-    isInherited?: boolean
+    isInherited?:        boolean
     /** Reset to inherited callback */
     onResetToInherited?: () => void
 }
@@ -422,29 +422,29 @@ export interface InheritableFieldProps extends BaseInputProps {
  * Layout props
  */
 export interface LayoutProps extends BaseComponentProps {
-    title?: string
+    title?:       string
     description?: string
     /** Additional head content */
-    head?: string
+    head?:        string
     /** Body classes */
-    bodyClass?: string
+    bodyClass?:   string
 }
 
 /**
  * Base head props
  */
 export interface BaseHeadProps extends BaseComponentProps {
-    title: string
+    title:       string
     description: string
     /** Open Graph image */
-    image?: string
+    image?:      string
     /** Canonical URL */
-    canonical?: string
+    canonical?:  string
     /** Additional meta tags */
     meta?: {
-        name?: string
+        name?:     string
         property?: string
-        content: string
+        content:   string
     }[]
 }
 
@@ -454,8 +454,8 @@ export interface BaseHeadProps extends BaseComponentProps {
  * Unit details grid props (new component)
  */
 export interface UnitDetailsGridProps extends BaseComponentProps {
-    unit: UnitData
-    unitTypes?: UnitTypeData[]
+    unit:             UnitData
+    unitTypes?:       UnitTypeData[]
     showInheritance?: boolean
 }
 
@@ -463,7 +463,7 @@ export interface UnitDetailsGridProps extends BaseComponentProps {
  * Unit descriptions props (new component)
  */
 export interface UnitDescriptionsProps extends BaseComponentProps {
-    unit: UnitData
+    unit:      UnitData
     readonly?: boolean
 }
 
@@ -471,7 +471,7 @@ export interface UnitDescriptionsProps extends BaseComponentProps {
  * Unit website status props (new component)
  */
 export interface UnitWebsiteStatusProps extends BaseComponentProps {
-    unit: UnitData
+    unit:      UnitData
     readonly?: boolean
 }
 
@@ -479,7 +479,7 @@ export interface UnitWebsiteStatusProps extends BaseComponentProps {
  * Unit vacancy status props (new component)
  */
 export interface UnitVacancyStatusProps extends BaseComponentProps {
-    unit: UnitData
+    unit:      UnitData
     readonly?: boolean
 }
 
@@ -487,19 +487,19 @@ export interface UnitVacancyStatusProps extends BaseComponentProps {
  * Unit basic info props (new component)
  */
 export interface UnitBasicInfoProps extends BaseComponentProps {
-    unit: UnitData
+    unit:       UnitData
     unitTypes?: UnitTypeData[]
-    readonly?: boolean
+    readonly?:  boolean
 }
 
 /**
  * Unit deposit section props (new component)
  */
 export interface UnitDepositSectionProps extends BaseComponentProps {
-    unit: UnitData
-    readonly?: boolean
+    unit:             UnitData
+    readonly?:        boolean
     showInheritance?: boolean
-    inheritedValue?: number | null
+    inheritedValue?:  number | null
 }
 
 // ===== PROPS UTILITY TYPES =====

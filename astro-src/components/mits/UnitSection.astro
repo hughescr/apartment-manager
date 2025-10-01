@@ -14,8 +14,8 @@ const { unit } = Astro.props;
 
 // Enhanced unit data types for future-proofing
 interface EnhancedUnitData extends UnitData {
-    vacancyClass?: 'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
-    vacateDate?: string
+    vacancyClass?:  'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
+    vacateDate?:    string
     madeReadyDate?: string
 }
 

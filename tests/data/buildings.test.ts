@@ -25,7 +25,7 @@ describe('Building Data Layer', () => {
     // Helper functions for mock implementations
     const createItemResponse = (item: Record<string, unknown>, unitID: string) => ({
         Attributes: { ...item, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() },
-        Item: { ...item, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() }
+        Item:       { ...item, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() }
     });
 
     const handlePutCommand = (cmd: { input?: Record<string, unknown> }) => {
@@ -189,16 +189,16 @@ describe('Building Data Layer', () => {
                 allowed: false
             },
             screeningCriteria: {
-                incomeRatio: 2.5,
-                minCreditScore: 700,
+                incomeRatio:             2.5,
+                minCreditScore:          700,
                 backgroundCheckRequired: true,
-                employmentVerification: true
+                employmentVerification:  true
             },
             photos: ['https://s3.example.com/new-photo1.jpg']
         };
         const expectedResult = {
             buildingID: testBuilding.buildingID,
-            street: testBuilding.street,
+            street:     testBuilding.street,
             ...updatedFields
         };
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'BUILDING' }));
@@ -259,7 +259,7 @@ describe('Building Data Layer', () => {
             const largeBuilding = {
                 ...testBuilding,
                 propertyDescription: largeDescription,
-                photos: fill(Array(100), 'https://s3.example.com/very-long-photo-url-that-takes-up-space.jpg')
+                photos:              fill(Array(100), 'https://s3.example.com/very-long-photo-url-that-takes-up-space.jpg')
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...largeBuilding, unitID: 'BUILDING' }));
 
@@ -271,10 +271,10 @@ describe('Building Data Layer', () => {
             expect.assertions(3);
             const longStringBuilding = {
                 ...testBuilding,
-                description: repeat('A', 10000),
+                description:         repeat('A', 10000),
                 propertyDescription: repeat('B', 50000),
-                street: '123 ' + repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
-                contactInfo: {
+                street:              '123 ' + repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
+                contactInfo:         {
                     ...testBuilding.contactInfo,
                     website: 'https://' + repeat('subdomain.', 50) + 'example.com/path/to/very/deep/page'
                 }
@@ -291,10 +291,10 @@ describe('Building Data Layer', () => {
             expect.assertions(4);
             const maxArrayBuilding = {
                 ...testBuilding,
-                photos: fill(Array(1000), 'https://s3.example.com/photo.jpg'),
+                photos:            fill(Array(1000), 'https://s3.example.com/photo.jpg'),
                 propertyAmenities: fill(Array(500), { name: 'Amenity', category: AmenityCategory.PROPERTY }),
-                rentSpecials: fill(Array(100), { title: 'Special', description: 'Deal' }),
-                oneTimeFees: fill(Array(50), { type: FeeType.APPLICATION, amount: 50 })
+                rentSpecials:      fill(Array(100), { title: 'Special', description: 'Deal' }),
+                oneTimeFees:       fill(Array(50), { type: FeeType.APPLICATION, amount: 50 })
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...maxArrayBuilding, unitID: 'BUILDING' }));
 
@@ -372,7 +372,7 @@ describe('Building Data Layer', () => {
                     types: ['invalid-pet' as PetType, PetType.DOG]
                 },
                 parkingOptions: [{
-                    type: 'invalid-parking' as ParkingType,
+                    type:     'invalid-parking' as ParkingType,
                     included: false
                 }]
             };
@@ -389,21 +389,21 @@ describe('Building Data Layer', () => {
         it('should handle empty strings vs null vs undefined', async () => {
             expect.assertions(6);
             const emptyValuesBuilding = {
-                buildingID: 'empty-test',
-                street: '', // empty string
-                city: undefined, // undefined (DynamoDB Toolbox doesn't accept null for strings)
+                buildingID:          'empty-test',
+                street:              '', // empty string
+                city:                undefined, // undefined (DynamoDB Toolbox doesn't accept null for strings)
                 // state is undefined (not included)
-                zip: '12345',
-                description: '',
+                zip:                 '12345',
+                description:         '',
                 propertyDescription: undefined // undefined instead of null
             };
             // Only include defined fields in the response
             const emptyValuesResponse = {
-                buildingID: 'empty-test',
-                street: '',
-                zip: '12345',
+                buildingID:  'empty-test',
+                street:      '',
+                zip:         '12345',
                 description: '',
-                unitID: 'BUILDING'
+                unitID:      'BUILDING'
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse(emptyValuesResponse));
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(emptyValuesResponse));
@@ -422,12 +422,12 @@ describe('Building Data Layer', () => {
         it('should handle empty arrays vs undefined arrays', async () => {
             expect.assertions(4);
             const emptyArraysBuilding = {
-                buildingID: 'empty-arrays-test',
-                street: '789 Empty Arrays St',
-                photos: [], // empty array
+                buildingID:        'empty-arrays-test',
+                street:            '789 Empty Arrays St',
+                photos:            [], // empty array
                 propertyAmenities: [], // empty array
                 // rentSpecials is undefined (not included)
-                oneTimeFees: []
+                oneTimeFees:       []
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...emptyArraysBuilding, unitID: 'BUILDING' }));
 
@@ -446,8 +446,8 @@ describe('Building Data Layer', () => {
                     maxIncomeByHouseholdSize: {} // empty object
                 },
                 utilitiesIncluded: {}, // empty object
-                contactInfo: {
-                    name: '',
+                contactInfo:       {
+                    name:  '',
                     phone: undefined, // undefined instead of null
                     // email is undefined
                 }
@@ -467,11 +467,11 @@ describe('Building Data Layer', () => {
             expect.assertions(5);
             const specialCharsBuilding = {
                 ...testBuilding,
-                street: '123 O\'Brien St. #456',
-                description: 'Test "building" with <special> & characters',
+                street:              '123 O\'Brien St. #456',
+                description:         'Test "building" with <special> & characters',
                 propertyDescription: 'Line 1\nLine 2\tTabbed\rCarriage Return',
-                contactInfo: {
-                    name: 'José García-López',
+                contactInfo:         {
+                    name:  'José García-López',
                     email: 'test+special@example.com'
                 }
             };
@@ -489,10 +489,10 @@ describe('Building Data Layer', () => {
             expect.assertions(4);
             const unicodeBuilding = {
                 ...testBuilding,
-                street: '北京市朝阳区建国路123号', // Chinese characters
-                description: 'مبنى سكني فاخر', // Arabic text
+                street:              '北京市朝阳区建国路123号', // Chinese characters
+                description:         'مبنى سكني فاخر', // Arabic text
                 propertyDescription: '🏢 Modern building with 🌳 garden and 🏊 pool! 😊',
-                contactInfo: {
+                contactInfo:         {
                     name: 'Владимир Петров' // Cyrillic characters
                 }
             };
@@ -547,16 +547,16 @@ describe('Building Data Layer', () => {
             const deeplyNestedBuilding = {
                 ...testBuilding,
                 incomeRestrictions: {
-                    amiLimit: 80,
+                    amiLimit:                 80,
                     maxIncomeByHouseholdSize: {
-                        '1': 50000,
-                        '2': 60000,
-                        '3': 70000,
-                        '4': 80000,
-                        '5': 90000,
-                        '6': 100000,
-                        '7': 110000,
-                        '8': 120000,
+                        '1':  50000,
+                        '2':  60000,
+                        '3':  70000,
+                        '4':  80000,
+                        '5':  90000,
+                        '6':  100000,
+                        '7':  110000,
+                        '8':  120000,
                         '9+': 130000 // string key
                     } as Record<number, number>
                 }
@@ -568,7 +568,7 @@ describe('Building Data Layer', () => {
             expect(result.incomeRestrictions!.maxIncomeByHouseholdSize['1']).toBe(50000);
             expect(result.incomeRestrictions!.maxIncomeByHouseholdSize['5']).toBe(90000);
             expect(result.incomeRestrictions!.maxIncomeByHouseholdSize['8']).toBe(120000);
-            const householdSizes = result.incomeRestrictions!.maxIncomeByHouseholdSize as Record<string, number>;
+            const householdSizes = result.incomeRestrictions!.maxIncomeByHouseholdSize;
             expect(householdSizes['9+']).toBe(130000);
         });
 
@@ -577,15 +577,15 @@ describe('Building Data Layer', () => {
             const complexPetPolicyBuilding = {
                 ...testBuilding,
                 petPolicies: {
-                    allowed: true,
-                    types: [PetType.DOG, PetType.CAT, PetType.BIRD, PetType.FISH, PetType.SMALL_ANIMAL],
-                    maxCount: 3,
-                    weightLimit: 75,
+                    allowed:           true,
+                    types:             [PetType.DOG, PetType.CAT, PetType.BIRD, PetType.FISH, PetType.SMALL_ANIMAL],
+                    maxCount:          3,
+                    weightLimit:       75,
                     breedRestrictions: ['Pit Bull', 'Rottweiler', 'German Shepherd', 'Doberman'],
-                    deposit: 500,
-                    monthlyFee: 50,
-                    oneTimeFee: 250,
-                    notes: 'Service animals exempt from all restrictions. Exotic pets require approval.'
+                    deposit:           500,
+                    monthlyFee:        50,
+                    oneTimeFee:        250,
+                    notes:             'Service animals exempt from all restrictions. Exotic pets require approval.'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...complexPetPolicyBuilding, unitID: 'BUILDING' }));
@@ -608,18 +608,18 @@ describe('Building Data Layer', () => {
             const complexTourBuilding = {
                 ...testBuilding,
                 tourAvailability: {
-                    selfGuidedTours: true,
-                    virtualTours: true,
-                    inPersonTours: true,
+                    selfGuidedTours:   true,
+                    virtualTours:      true,
+                    inPersonTours:     true,
                     tourSchedulingUrl: 'https://example.com/schedule',
-                    tourHours: {
-                        [DayOfWeek.MONDAY]: { open: '09:00', close: '18:00' },
-                        [DayOfWeek.TUESDAY]: { open: '09:00', close: '18:00' },
+                    tourHours:         {
+                        [DayOfWeek.MONDAY]:    { open: '09:00', close: '18:00' },
+                        [DayOfWeek.TUESDAY]:   { open: '09:00', close: '18:00' },
                         [DayOfWeek.WEDNESDAY]: { open: '09:00', close: '20:00' },
-                        [DayOfWeek.THURSDAY]: { open: '09:00', close: '20:00' },
-                        [DayOfWeek.FRIDAY]: { open: '09:00', close: '17:00' },
-                        [DayOfWeek.SATURDAY]: { open: '10:00', close: '16:00' },
-                        [DayOfWeek.SUNDAY]: { open: '12:00', close: '16:00' }
+                        [DayOfWeek.THURSDAY]:  { open: '09:00', close: '20:00' },
+                        [DayOfWeek.FRIDAY]:    { open: '09:00', close: '17:00' },
+                        [DayOfWeek.SATURDAY]:  { open: '10:00', close: '16:00' },
+                        [DayOfWeek.SUNDAY]:    { open: '12:00', close: '16:00' }
                     }
                 }
             };
@@ -643,35 +643,35 @@ describe('Building Data Layer', () => {
             const buildingWithOldWebsite = {
                 ...testBuilding,
                 contactInfo: {
-                    name: 'Test Contact',
-                    phone: '555-1234',
-                    email: 'test@example.com',
+                    name:            'Test Contact',
+                    phone:           '555-1234',
+                    email:           'test@example.com',
                     propertyWebsite: 'https://property-website.com'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithOldWebsite, unitID: 'BUILDING' }));
 
             const result = await createBuilding(buildingWithOldWebsite);
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-website.com');
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.managementWebsite).toBeUndefined();
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).propertyWebsite).toBe('https://property-website.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).managementWebsite).toBeUndefined();
         });
         it('should handle both propertyWebsite and managementWebsite fields', async () => {
             expect.assertions(4);
             const buildingWithBothWebsites = {
                 ...testBuilding,
                 contactInfo: {
-                    name: 'Test Contact',
-                    phone: '555-1234',
-                    email: 'test@example.com',
-                    propertyWebsite: 'https://property-specific.com',
+                    name:              'Test Contact',
+                    phone:             '555-1234',
+                    email:             'test@example.com',
+                    propertyWebsite:   'https://property-specific.com',
                     managementWebsite: 'https://management-company.com'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithBothWebsites, unitID: 'BUILDING' }));
 
             const result = await createBuilding(buildingWithBothWebsites);
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-specific.com');
-            expect((result.contactInfo as ContactInfo & { managementWebsite?: string })!.managementWebsite).toBe('https://management-company.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).propertyWebsite).toBe('https://property-specific.com');
+            expect((result.contactInfo as ContactInfo & { managementWebsite?: string }).managementWebsite).toBe('https://management-company.com');
             expect(result.contactInfo!.email).toBe('test@example.com');
             expect(result.contactInfo!.name).toBe('Test Contact');
         });
@@ -680,17 +680,17 @@ describe('Building Data Layer', () => {
             const buildingWithPropertyWebsiteOnly = {
                 ...testBuilding,
                 contactInfo: {
-                    name: 'Test Contact',
-                    phone: '555-1234',
-                    email: 'test@example.com',
+                    name:            'Test Contact',
+                    phone:           '555-1234',
+                    email:           'test@example.com',
                     propertyWebsite: 'https://property-only.com'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithPropertyWebsiteOnly, unitID: 'BUILDING' }));
 
             const result = await createBuilding(buildingWithPropertyWebsiteOnly);
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-only.com');
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.managementWebsite).toBeUndefined();
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).propertyWebsite).toBe('https://property-only.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).managementWebsite).toBeUndefined();
             expect(result.contactInfo!.email).toBe('test@example.com');
         });
     });
@@ -701,10 +701,10 @@ describe('Building Data Layer', () => {
             expect.assertions(5);
             const boundaryValuesBuilding = {
                 ...testBuilding,
-                yearBuilt: 0,
-                numberStories: -1,
-                totalUnits: 0,
-                leaseLength: -12,
+                yearBuilt:      0,
+                numberStories:  -1,
+                totalUnits:     0,
+                leaseLength:    -12,
                 applicationFee: -50
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...boundaryValuesBuilding, unitID: 'BUILDING' }));
@@ -721,9 +721,9 @@ describe('Building Data Layer', () => {
             expect.assertions(4);
             const maxValuesBuilding = {
                 ...testBuilding,
-                yearBuilt: 9999,
-                numberStories: Number.MAX_SAFE_INTEGER,
-                totalUnits: 1000000,
+                yearBuilt:      9999,
+                numberStories:  Number.MAX_SAFE_INTEGER,
+                totalUnits:     1000000,
                 applicationFee: 999999.99
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...maxValuesBuilding, unitID: 'BUILDING' }));
@@ -739,9 +739,9 @@ describe('Building Data Layer', () => {
             expect.assertions(3);
             const floatValuesBuilding = {
                 ...testBuilding,
-                yearBuilt: 2020.5,
+                yearBuilt:     2020.5,
                 numberStories: 3.14159,
-                totalUnits: 10.99
+                totalUnits:    10.99
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...floatValuesBuilding, unitID: 'BUILDING' }));
 
@@ -760,13 +760,13 @@ describe('Building Data Layer', () => {
             // First, create a building with populated arrays
             const buildingWithArrays = {
                 ...testBuilding,
-                buildingID: 'nS3r6WvF2qHm9yLkCtPbXz', // Short-uuid format
+                buildingID:   'nS3r6WvF2qHm9yLkCtPbXz', // Short-uuid format
                 buildingName: '123 Test Array',
                 rentSpecials: [
                     { title: 'Summer Special', description: '$500 off first month' },
                     { title: 'Winter Special', description: '2 months free' }
                 ],
-                photos: ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'],
+                photos:      ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'],
                 oneTimeFees: [
                     { type: FeeType.APPLICATION, amount: 50, description: 'Application fee' },
                     { type: FeeType.ADMIN, amount: 100, description: 'Admin fee' }
@@ -786,10 +786,10 @@ describe('Building Data Layer', () => {
 
             // Now update the building to clear all arrays (simulate user deleting all items)
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
@@ -798,7 +798,7 @@ describe('Building Data Layer', () => {
             const expectedMergedData = {
                 ...buildingWithArrays,
                 ...updateWithEmptyArrays, // Arrays should be empty as saved
-                unitID: 'BUILDING',
+                unitID:    'BUILDING',
                 updatedAt: new Date().toISOString()
             };
 
@@ -838,13 +838,13 @@ describe('Building Data Layer', () => {
 
             // Create a building with non-empty arrays first
             const buildingWithArrays = {
-                buildingID: 'pT7v4YxJ8zNe1wQfMsKhLu', // Short-uuid format
-                buildingName: '123 Edge Case',
-                street: '123 Edge Case St',
-                rentSpecials: [{ title: 'Special', description: 'Deal' }],
-                photos: ['photo1.jpg'],
-                oneTimeFees: [{ type: FeeType.APPLICATION, amount: 50, description: 'App fee' }],
-                monthlyFees: [{ type: FeeType.PARKING, amount: 100, description: 'Parking' }],
+                buildingID:        'pT7v4YxJ8zNe1wQfMsKhLu', // Short-uuid format
+                buildingName:      '123 Edge Case',
+                street:            '123 Edge Case St',
+                rentSpecials:      [{ title: 'Special', description: 'Deal' }],
+                photos:            ['photo1.jpg'],
+                oneTimeFees:       [{ type: FeeType.APPLICATION, amount: 50, description: 'App fee' }],
+                monthlyFees:       [{ type: FeeType.PARKING, amount: 100, description: 'Parking' }],
                 propertyAmenities: [{ name: 'Pool', category: AmenityCategory.COMMUNITY }]
             };
 
@@ -854,26 +854,26 @@ describe('Building Data Layer', () => {
 
             // Update to clear all arrays
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
             // Create a scenario where the mock might not handle defaults correctly
             // Simulate the raw data without default merging (which could cause undefined)
             const rawDataWithoutDefaults = {
-                buildingID: 'pT7v4YxJ8zNe1wQfMsKhLu', // Short-uuid format
-                buildingName: '123 Edge Case',
-                street: '123 Edge Case St',
+                buildingID:        'pT7v4YxJ8zNe1wQfMsKhLu', // Short-uuid format
+                buildingName:      '123 Edge Case',
+                street:            '123 Edge Case St',
                 // Note: Arrays are explicitly empty, not undefined
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: [],
-                unitID: 'BUILDING'
+                unitID:            'BUILDING'
             };
 
             dynamoDbMock
@@ -896,19 +896,19 @@ describe('Building Data Layer', () => {
 
             // Create building data that doesn't include the array fields at all
             const buildingWithoutArrayFields = {
-                buildingID: 'qU8w5ZyK9xPf2vRgNtLjMr', // Short-uuid format
+                buildingID:   'qU8w5ZyK9xPf2vRgNtLjMr', // Short-uuid format
                 buildingName: '456 Missing Arrays',
-                street: '456 Missing Arrays St',
+                street:       '456 Missing Arrays St',
                 // Deliberately omit all array fields to simulate DynamoDB returning incomplete data
-                unitID: 'BUILDING'
+                unitID:       'BUILDING'
             };
 
             // Update to clear all arrays - but existing building doesn't have them
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
@@ -933,23 +933,23 @@ describe('Building Data Layer', () => {
 
             // Update to clear all arrays
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
             // Create a building without array fields to simulate incomplete database data
             const buildingWithoutArrays = {
-                buildingID: 'rV9x6AzL2yQg3wShOuMkNs', // Short-uuid format
+                buildingID:   'rV9x6AzL2yQg3wShOuMkNs', // Short-uuid format
                 buildingName: '789 Missing Arrays',
-                street: '789 Missing Arrays St',
-                city: 'Test City',
-                state: 'TS',
-                zip: '12345',
-                description: 'Building with missing array fields',
-                unitID: 'BUILDING'
+                street:       '789 Missing Arrays St',
+                city:         'Test City',
+                state:        'TS',
+                zip:          '12345',
+                description:  'Building with missing array fields',
+                unitID:       'BUILDING'
                 // Note: array fields intentionally missing to test default handling
             };
 
@@ -979,14 +979,14 @@ describe('Building Data Layer', () => {
 
             const buildingWithPetPolicy = {
                 ...testBuilding,
-                buildingID: 'sW1y7BmQ3zRh4xTjPvNlOt', // Short-uuid format
+                buildingID:   'sW1y7BmQ3zRh4xTjPvNlOt', // Short-uuid format
                 buildingName: 'Pet Policy Test',
-                petPolicies: {
-                    allowed: true,
-                    types: [PetType.DOG, PetType.CAT],
+                petPolicies:  {
+                    allowed:           true,
+                    types:             [PetType.DOG, PetType.CAT],
                     breedRestrictions: ['Pit Bull', 'Rottweiler'],
-                    maxCount: 2,
-                    weightLimit: 50
+                    maxCount:          2,
+                    weightLimit:       50
                 }
             };
 
@@ -997,11 +997,11 @@ describe('Building Data Layer', () => {
             // Update to clear nested arrays in petPolicies
             const updateWithEmptyPetArrays = {
                 petPolicies: {
-                    allowed: true,
-                    types: [], // Clear pet types
+                    allowed:           true,
+                    types:             [], // Clear pet types
                     breedRestrictions: [], // Clear breed restrictions
-                    maxCount: 0,
-                    weightLimit: 0
+                    maxCount:          0,
+                    weightLimit:       0
                 }
             };
 
@@ -1009,7 +1009,7 @@ describe('Building Data Layer', () => {
             const expectedMergedPetData = {
                 ...buildingWithPetPolicy,
                 ...updateWithEmptyPetArrays,
-                unitID: 'BUILDING',
+                unitID:    'BUILDING',
                 updatedAt: new Date().toISOString()
             };
 

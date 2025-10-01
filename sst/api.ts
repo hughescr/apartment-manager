@@ -5,28 +5,28 @@ import { parameterStorePermissions } from './parameter-store';
 import { radarSecretKey } from './secrets';
 
 export const api = new sst.aws.Function('API', {
-    handler: 'api/index.handler',
-    url: true,
-    link: [buildingsUnitsTable, radarSecretKey],
+    handler:     'api/index.handler',
+    url:         true,
+    link:        [buildingsUnitsTable, radarSecretKey],
     permissions: [parameterStorePermissions],
-    logging: {
+    logging:     {
         retention: '1 month',
-        format: 'json',
+        format:    'json',
     }
 });
 
 export const uploadApi = new sst.aws.Function('UploadAPI', {
-    handler: 'api/upload.handler',
-    url: true,
-    link: [photosBucket],
+    handler:     'api/upload.handler',
+    url:         true,
+    link:        [photosBucket],
     permissions: [
         {
-            actions: ['s3:PutObject', 's3:DeleteObject', 's3:GetObject'],
+            actions:   ['s3:PutObject', 's3:DeleteObject', 's3:GetObject'],
             resources: [photosBucket.arn.apply(arn => `${arn}/*`)]
         }
     ],
     logging: {
         retention: '1 month',
-        format: 'json',
+        format:    'json',
     }
 });

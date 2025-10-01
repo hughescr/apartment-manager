@@ -25,8 +25,8 @@ describe('Bulk Operations Service - Core Tests', () => {
 
     describe('performBulkStatusUpdate', () => {
         const validParams: BulkStatusUpdateParams = {
-            buildingID: 'building-123',
-            unitIDs: ['unit-1', 'unit-2', 'unit-3'],
+            buildingID:   'building-123',
+            unitIDs:      ['unit-1', 'unit-2', 'unit-3'],
             vacancyClass: 'Unoccupied'
         };
 
@@ -321,8 +321,8 @@ describe('Bulk Operations Service - Core Tests', () => {
                 .mockResolvedValueOnce({ Attributes: {} });
 
             await performBulkStatusUpdate({
-                buildingID: 'building-123',
-                unitIDs: ['unit-1'],
+                buildingID:   'building-123',
+                unitIDs:      ['unit-1'],
                 vacancyClass: 'Occupied'
             });
 
@@ -340,8 +340,8 @@ describe('Bulk Operations Service - Core Tests', () => {
 
             const startTime = Date.now();
             const result = await performBulkStatusUpdate({
-                buildingID: 'building-123',
-                unitIDs: maxUnits,
+                buildingID:   'building-123',
+                unitIDs:      maxUnits,
                 vacancyClass: 'Unoccupied'
             });
             const endTime = Date.now();

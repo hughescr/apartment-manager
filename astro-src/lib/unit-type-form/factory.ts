@@ -4,7 +4,7 @@
 import { createUnitTypeFormState } from './state/unitTypeFormState';
 
 interface UnitTypeFormConfig {
-    apiURL: string
+    apiURL:     string
     buildingID: string
 }
 

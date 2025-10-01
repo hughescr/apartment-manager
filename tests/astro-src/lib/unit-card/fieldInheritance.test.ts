@@ -11,37 +11,37 @@ describe('FieldInheritanceManager', () => {
         manager = new FieldInheritanceManager();
 
         mockUnit = {
-            buildingID: 'test-building',
-            unitID: 'test-unit',
-            unitNumber: '101',
-            modelID: 'test-model',
-            beds: undefined,
-            baths: undefined,
-            sqft: undefined,
-            rent: undefined,
-            occupied: false,
+            buildingID:    'test-building',
+            unitID:        'test-unit',
+            unitNumber:    '101',
+            modelID:       'test-model',
+            beds:          undefined,
+            baths:         undefined,
+            sqft:          undefined,
+            rent:          undefined,
+            occupied:      false,
             availableDate: '2025-02-01',
             feedInclusion: {
                 apartments_com: true,
-                zillow: true
+                zillow:         true
             }
         };
 
         mockUnitType = {
-            buildingID: 'test-building',
-            modelID: 'test-model',
-            modelName: 'Test Model',
-            beds: 2,
-            baths: 1.5,
-            minRent: 1500,
-            maxRent: 1800,
-            minSqft: 800,
-            maxSqft: 900,
-            deposit: 1500,
-            minLeaseTerm: 12,
-            maxLeaseTerm: 24,
-            maxOccupants: 4,
-            perPersonRent: 750,
+            buildingID:     'test-building',
+            modelID:        'test-model',
+            modelName:      'Test Model',
+            beds:           2,
+            baths:          1.5,
+            minRent:        1500,
+            maxRent:        1800,
+            minSqft:        800,
+            maxSqft:        900,
+            deposit:        1500,
+            minLeaseTerm:   12,
+            maxLeaseTerm:   24,
+            maxOccupants:   4,
+            perPersonRent:  750,
             countAvailable: 5
         };
     });
@@ -343,7 +343,7 @@ describe('FieldInheritanceManager', () => {
         it('should handle partial unit type data', () => {
             const partialUnitType = {
                 ...mockUnitType,
-                beds: undefined as unknown as number,
+                beds:    undefined as unknown as number,
                 maxSqft: undefined as unknown as number,
                 maxRent: undefined as unknown as number
             };

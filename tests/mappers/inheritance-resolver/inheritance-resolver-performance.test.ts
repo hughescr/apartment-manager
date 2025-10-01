@@ -71,20 +71,20 @@ describe('InheritanceResolver - Performance Tests', () => {
         it('should handle massive fee resolution efficiently', () => {
             // Create large fee arrays
             const unitFees = Array.from({ length: 500 }, (_, i) => ({
-                type: `UNIT_FEE_${i}` as unknown as FeeType,
-                amount: 50 + i,
+                type:       `UNIT_FEE_${i}` as unknown as FeeType,
+                amount:     50 + i,
                 refundable: i % 2 === 0
             }));
 
             const buildingOneTimeFees = Array.from({ length: 500 }, (_, i) => ({
-                type: `BUILDING_ONETIME_${i}` as unknown as FeeType,
-                amount: 100 + i,
+                type:       `BUILDING_ONETIME_${i}` as unknown as FeeType,
+                amount:     100 + i,
                 refundable: i % 3 === 0
             }));
 
             const buildingMonthlyFees = Array.from({ length: 500 }, (_, i) => ({
-                type: `BUILDING_MONTHLY_${i}` as unknown as FeeType,
-                amount: 75 + i,
+                type:       `BUILDING_MONTHLY_${i}` as unknown as FeeType,
+                amount:     75 + i,
                 refundable: i % 4 === 0
             }));
 
@@ -102,8 +102,8 @@ describe('InheritanceResolver - Performance Tests', () => {
             const deepAmenities = createDeepAmenityNesting(15);
 
             const unitWithDeep: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
                 unitAmenities: deepAmenities.slice(10)
             };
 
@@ -131,12 +131,12 @@ describe('InheritanceResolver - Performance Tests', () => {
             // Create 1000 similar units for bulk processing
             const units = Array.from({ length: 1000 }, (_unused, i) => ({
                 buildingID: 'BLDG-001',
-                unitID: `UNIT-${padStart(String(i), 4, '0')}`,
+                unitID:     `UNIT-${padStart(String(i), 4, '0')}`,
                 unitNumber: String(i + 1),
-                beds: undefined, // Force inheritance
-                baths: undefined, // Force inheritance
-                sqft: 900 + (i % 100),
-                rent: 1500 + (i % 300)
+                beds:       undefined, // Force inheritance
+                baths:      undefined, // Force inheritance
+                sqft:       900 + (i % 100),
+                rent:       1500 + (i % 300)
             }));
 
             const startTime = performance.now();
@@ -166,7 +166,7 @@ describe('InheritanceResolver - Performance Tests', () => {
             const modelAmenities = [
                 ...baseAmenities.slice(50, 150), // 50 overlap with unit, 50 overlap with building
                 ...Array.from({ length: 100 }, (_, i) => ({
-                    name: `ModelSpecific${i}`,
+                    name:     `ModelSpecific${i}`,
                     category: AmenityCategory.UNIT
                 }))
             ];
@@ -174,7 +174,7 @@ describe('InheritanceResolver - Performance Tests', () => {
             const buildingAmenities = [
                 ...baseAmenities.slice(100, 200), // 50 overlap with unit, 50 overlap with model
                 ...Array.from({ length: 100 }, (_, i) => ({
-                    name: `BuildingSpecific${i}`,
+                    name:     `BuildingSpecific${i}`,
                     category: AmenityCategory.PROPERTY
                 }))
             ];
@@ -199,7 +199,7 @@ describe('InheritanceResolver - Performance Tests', () => {
             // Create a unit with many dynamic properties
             const unitWithMassiveFields: Record<string, unknown> = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
             };
 
             // Add 1000 dynamic fields
@@ -252,11 +252,11 @@ describe('InheritanceResolver - Performance Tests', () => {
 
         it('should handle flattenForSingleTier with complex data efficiently', () => {
             const complexUnit: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                unitNumber: '101',
-                beds: undefined, // Force inheritance
-                baths: undefined, // Force inheritance
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
+                unitNumber:    '101',
+                beds:          undefined, // Force inheritance
+                baths:         undefined, // Force inheritance
                 unitAmenities: createLargeAmenitySet(500)
             };
 
@@ -286,7 +286,7 @@ describe('InheritanceResolver - Performance Tests', () => {
             // Test performance when most fields are undefined/missing
             const sparseUnits = Array.from({ length: 1000 }, (_, i) => ({
                 buildingID: 'BLDG-001',
-                unitID: `SPARSE-${i}`,
+                unitID:     `SPARSE-${i}`,
                 // Most fields undefined to force maximum inheritance
                 ...(i % 100 === 0 ? { unitNumber: String(i) } : {}), // Only every 100th has unitNumber
                 ...(i % 200 === 0 ? { beds: 3 } : {}), // Only every 200th has beds
@@ -313,9 +313,9 @@ describe('InheritanceResolver - Performance Tests', () => {
         it('should not cause memory leaks with repeated operations', () => {
             const baseUnit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: undefined,
-                baths: undefined
+                unitID:     'UNIT-001',
+                beds:       undefined,
+                baths:      undefined
             };
 
             // Perform 1000 resolution operations to check for memory leaks
@@ -343,8 +343,8 @@ describe('InheritanceResolver - Performance Tests', () => {
                 if(i % 3 === 0) {
                     operations.push(resolver.resolveUnitValues({
                         buildingID: 'BLDG-001',
-                        unitID: `CONCURRENT-${i}`,
-                        beds: undefined
+                        unitID:     `CONCURRENT-${i}`,
+                        beds:       undefined
                     }, unitTypeData, buildingData));
                 } else if(i % 3 === 1) {
                     operations.push(resolver.mergeAmenities(
@@ -355,9 +355,9 @@ describe('InheritanceResolver - Performance Tests', () => {
                 } else {
                     operations.push(resolver.validateRequiredFields({
                         buildingID: 'BLDG-001',
-                        unitID: `VALIDATION-${i}`,
-                        beds: 2,
-                        rent: 1500
+                        unitID:     `VALIDATION-${i}`,
+                        beds:       2,
+                        rent:       1500
                     }, ['buildingID', 'unitID', 'beds', 'rent']));
                 }
             }

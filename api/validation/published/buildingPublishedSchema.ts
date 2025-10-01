@@ -21,82 +21,82 @@ import { isValidBuildingId } from '../../../src/utils/building-id.js';
 // Contact info schema removed - now defined inline with proper required_error
 // Enhanced complex structure schemas for published validation
 const PetTypePolicyPublishedSchema = z.object({
-    type: z.string().min(1, 'Pet type is required'),
-    weightLimit: z.number().min(0).optional(),
-    countLimit: z.number().int().min(0).optional(),
-    fee: z.number().min(0).optional(),
-    deposit: z.number().min(0).optional(),
+    type:              z.string().min(1, 'Pet type is required'),
+    weightLimit:       z.number().min(0).optional(),
+    countLimit:        z.number().int().min(0).optional(),
+    fee:               z.number().min(0).optional(),
+    deposit:           z.number().min(0).optional(),
     breedRestrictions: z.array(z.string()).optional(),
 });
 
 const PetPolicyPublishedSchema = z.object({
-    allowed: z.boolean(),
-    types: z.array(z.string()).optional(),
-    maxCount: z.number().int().min(0).optional(),
-    weightLimit: z.number().min(0).optional(),
+    allowed:           z.boolean(),
+    types:             z.array(z.string()).optional(),
+    maxCount:          z.number().int().min(0).optional(),
+    weightLimit:       z.number().min(0).optional(),
     breedRestrictions: z.array(z.string()).optional(),
-    deposit: z.number().min(0).optional(),
-    monthlyFee: z.number().min(0).optional(),
-    oneTimeFee: z.number().min(0).optional(),
-    notes: z.string().optional(),
-    petTypes: z.array(PetTypePolicyPublishedSchema).optional(),
+    deposit:           z.number().min(0).optional(),
+    monthlyFee:        z.number().min(0).optional(),
+    oneTimeFee:        z.number().min(0).optional(),
+    notes:             z.string().optional(),
+    petTypes:          z.array(PetTypePolicyPublishedSchema).optional(),
 });
 
 const FeePublishedSchema = z.object({
-    type: z.string().min(1, 'Fee type is required'),
-    amount: z.number().min(0, 'Fee amount cannot be negative'),
+    type:        z.string().min(1, 'Fee type is required'),
+    amount:      z.number().min(0, 'Fee amount cannot be negative'),
     description: z.string().optional(),
-    refundable: z.boolean().optional(),
+    refundable:  z.boolean().optional(),
 });
 
 const ParkingOptionPublishedSchema = z.object({
-    type: z.string().min(1, 'Parking type is required'),
-    included: z.boolean(),
-    fee: z.number().min(0).optional(),
-    spaces: z.number().int().min(0).optional(),
+    type:        z.string().min(1, 'Parking type is required'),
+    included:    z.boolean(),
+    fee:         z.number().min(0).optional(),
+    spaces:      z.number().int().min(0).optional(),
     description: z.string().optional(),
 });
 
 const StorageOptionPublishedSchema = z.object({
-    type: z.string().min(1, 'Storage type is required'),
-    included: z.boolean(),
-    fee: z.number().min(0).optional(),
-    dimensions: z.string().optional(),
+    type:        z.string().min(1, 'Storage type is required'),
+    included:    z.boolean(),
+    fee:         z.number().min(0).optional(),
+    dimensions:  z.string().optional(),
     description: z.string().optional(),
 });
 
 const AmenityPublishedSchema = z.object({
-    name: z.string().min(1, 'Amenity name is required'),
-    category: z.string().min(1, 'Amenity category is required'),
+    name:        z.string().min(1, 'Amenity name is required'),
+    category:    z.string().min(1, 'Amenity category is required'),
     description: z.string().optional(),
 });
 
 const RentSpecialPublishedSchema = z.object({
-    id: z.union([z.string(), z.number()]).optional(),
-    title: z.string().min(1, 'Rent special title is required'),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    id:          z.union([z.string(), z.number()]).optional(),
+    title:       z.string().min(1, 'Rent special title is required'),
+    startDate:   z.string().optional(),
+    endDate:     z.string().optional(),
     description: z.string().optional(),
 }).refine(data => !(data.startDate && data.endDate && new Date(data.startDate) > new Date(data.endDate)), {
     message: 'Start date must be before end date',
-    path: ['endDate'],
+    path:    ['endDate'],
 });
 
 const ScreeningCriteriaPublishedSchema = z.object({
-    minCreditScore: z.number().int().min(300).max(850).optional(),
-    incomeRatio: z.number().min(0).max(10).optional(),
-    maxOccupantsPerBedroom: z.number().int().min(0).max(5).optional(),
+    minCreditScore:          z.number().int().min(300).max(850).optional(),
+    incomeRatio:             z.number().min(0).max(10).optional(),
+    maxOccupantsPerBedroom:  z.number().int().min(0).max(5).optional(),
     backgroundCheckRequired: z.boolean().optional(),
-    evictionHistory: z.boolean().optional(),
-    criminalHistory: z.boolean().optional(),
-    references: z.number().optional(),
-    employmentVerification: z.boolean().optional(),
-    rentalHistory: z.boolean().optional(),
-    notes: z.string().optional(),
+    evictionHistory:         z.boolean().optional(),
+    criminalHistory:         z.boolean().optional(),
+    references:              z.number().optional(),
+    employmentVerification:  z.boolean().optional(),
+    rentalHistory:           z.boolean().optional(),
+    notes:                   z.string().optional(),
 }).partial();
 
 const IncomeRestrictionsPublishedSchema = z.object({
-    amiLimit: z.number().min(0).max(200).optional(),
+    amiLimit:                 z.number().min(0).max(200).optional(),
     maxIncomeByHouseholdSize: z.record(z.string(), z.number()).optional(),
 }).partial();
 
@@ -185,7 +185,7 @@ export const BuildingPublishedSchema = z.object({
 
     // Frontend uses specialtyType, but MITS requires rentalType
     specialtyType: z.enum(['market-rate', 'affordable', 'student', 'senior']).optional(),
-    rentalType: z.enum(['Market Rate', 'Affordable', 'Student', 'Senior'], {
+    rentalType:    z.enum(['Market Rate', 'Affordable', 'Student', 'Senior'], {
         message: 'Rental type is required for MITS ILS_Identification.RentalType element'
     }),
     // MITS Information contact requirements - REQUIRED
@@ -208,10 +208,10 @@ export const BuildingPublishedSchema = z.object({
             ),
 
         // Optional fields that enhance MITS compliance
-        propertyWebsite: z.url({ error: 'Property website must be a valid URL' }).optional(),
+        propertyWebsite:   z.url({ error: 'Property website must be a valid URL' }).optional(),
         managementWebsite: z.url({ error: 'Management website must be a valid URL' }).optional(),
-        officeHours: z.record(z.string(), z.object({
-            open: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
+        officeHours:       z.record(z.string(), z.object({
+            open:  z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
             close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
         })).optional(),
     }, {
@@ -221,18 +221,18 @@ export const BuildingPublishedSchema = z.object({
             contact => contact.email && contact.phone,
             {
                 message: 'Both email and phone are required in contactInfo for MITS Information.Email and Information.PhoneNumber elements',
-                path: ['contactInfo']
+                path:    ['contactInfo']
             }
         ),
 
     // MITS Tour availability with required boolean fields
     tourAvailability: z.object({
-        selfGuidedTours: z.boolean().optional(),
-        virtualTours: z.boolean().optional(),
-        inPersonTours: z.boolean().optional(),
+        selfGuidedTours:   z.boolean().optional(),
+        virtualTours:      z.boolean().optional(),
+        inPersonTours:     z.boolean().optional(),
         tourSchedulingUrl: z.url({ error: 'Tour scheduling URL must be a valid URL' }).optional(),
-        tourHours: z.record(z.string(), z.object({
-            open: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
+        tourHours:         z.record(z.string(), z.object({
+            open:  z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
             close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
         })).optional(),
     }).optional(),
@@ -264,7 +264,7 @@ export const BuildingPublishedSchema = z.object({
         .optional(),
 
     propertyHighlights: z.array(z.object({
-        id: z.union([z.string(), z.number()]),
+        id:        z.union([z.string(), z.number()]),
         highlight: z.string().min(1, 'Highlight text cannot be empty')
     }))
         .max(10, 'Maximum 10 property highlights allowed for MITS compliance')
@@ -285,15 +285,15 @@ export const BuildingPublishedSchema = z.object({
     acceptsOnlineApplications: z.boolean().optional(),
 
     // Complex structures that support MITS elements - now with proper validation
-    petPolicies: PetPolicyPublishedSchema.optional(), // MITS Policy.Pet element
-    parkingOptions: z.array(ParkingOptionPublishedSchema).optional(),
-    storageOptions: z.array(StorageOptionPublishedSchema).optional(),
+    petPolicies:       PetPolicyPublishedSchema.optional(), // MITS Policy.Pet element
+    parkingOptions:    z.array(ParkingOptionPublishedSchema).optional(),
+    storageOptions:    z.array(StorageOptionPublishedSchema).optional(),
     propertyAmenities: z.array(AmenityPublishedSchema).optional(), // MITS Amenity elements
-    oneTimeFees: z.array(FeePublishedSchema).optional(),
-    monthlyFees: z.array(FeePublishedSchema).optional(),
+    oneTimeFees:       z.array(FeePublishedSchema).optional(),
+    monthlyFees:       z.array(FeePublishedSchema).optional(),
     utilitiesIncluded: z.record(z.string(), z.boolean()).optional(),
-    rentSpecials: z.array(RentSpecialPublishedSchema).optional(),
-    notes: z.string().optional(),
+    rentSpecials:      z.array(RentSpecialPublishedSchema).optional(),
+    notes:             z.string().optional(),
 
     // MITS screening criteria (optional but recommended)
     screeningCriteria: ScreeningCriteriaPublishedSchema.optional(),
@@ -319,7 +319,7 @@ export const BuildingPublishedSchema = z.object({
     },
     {
         message: 'Building coordinates appear to be invalid - please verify latitude and longitude are correct for MITS Location accuracy',
-        path: ['coordinates']
+        path:    ['coordinates']
     }
 );
 
@@ -330,8 +330,8 @@ export type BuildingPublishedInput = z.infer<typeof BuildingPublishedSchema>;
  */
 export const MITS_BUILDING_ERROR_MESSAGES = {
     MISSING_REQUIRED_FIELD: 'This field is required for MITS 4.1 compliance and must be provided before publishing to rental sites',
-    INVALID_COORDINATES: 'Invalid coordinates: MITS requires accurate latitude/longitude for Property_ID.Location element',
-    INVALID_ADDRESS: 'Complete address is required: MITS Address element needs street, city, state, and ZIP code',
-    INVALID_CONTACT: 'Contact information is incomplete: MITS requires both email and phone number in Information element',
+    INVALID_COORDINATES:    'Invalid coordinates: MITS requires accurate latitude/longitude for Property_ID.Location element',
+    INVALID_ADDRESS:        'Complete address is required: MITS Address element needs street, city, state, and ZIP code',
+    INVALID_CONTACT:        'Contact information is incomplete: MITS requires both email and phone number in Information element',
     INVALID_CLASSIFICATION: 'Property classification is required: MITS needs propertyType, structureType, and rentalType for proper categorization'
 } as const;

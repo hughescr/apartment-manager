@@ -5,7 +5,7 @@ export type ValidationErrors = Record<string, string>;
 
 export interface ValidationResult {
     isValid: boolean
-    errors: ValidationErrors
+    errors:  ValidationErrors
 }
 
 export class UnitFormValidator {
@@ -123,17 +123,17 @@ export class UnitFormValidator {
 
     private getFieldLabel(fieldName: string): string {
         const labels: Record<string, string> = {
-            unitID: 'Unit number',
-            beds: 'Bedrooms',
-            baths: 'Bathrooms',
-            sqft: 'Square footage',
-            rent: 'Rent',
-            maxOccupants: 'Maximum occupants',
+            unitID:        'Unit number',
+            beds:          'Bedrooms',
+            baths:         'Bathrooms',
+            sqft:          'Square footage',
+            rent:          'Rent',
+            maxOccupants:  'Maximum occupants',
             perPersonRent: 'Per person rent',
-            minLeaseTerm: 'Minimum lease term',
-            maxLeaseTerm: 'Maximum lease term',
-            deposit: 'Deposit',
-            vacateDate: 'Vacate date',
+            minLeaseTerm:  'Minimum lease term',
+            maxLeaseTerm:  'Maximum lease term',
+            deposit:       'Deposit',
+            vacateDate:    'Vacate date',
             madeReadyDate: 'Made ready date'
         };
         return labels[fieldName] || fieldName;

@@ -9,22 +9,22 @@ import { filter, isArray, isError, trim } from 'lodash';
  */
 
 export interface BulkOperationResult {
-    success: boolean
+    success:        boolean
     processedUnits: number
-    errors: string[]
+    errors:         string[]
 }
 
 export interface BulkStatusUpdateParams {
-    buildingID: string
-    unitIDs: string[]
+    buildingID:   string
+    unitIDs:      string[]
     vacancyClass: VacancyClass
 }
 
 export interface BulkRentUpdateParams {
     buildingID: string
-    unitIDs: string[]
+    unitIDs:    string[]
     updateType: 'absolute' | 'percentage'
-    value: number
+    value:      number
 }
 
 /**
@@ -33,9 +33,9 @@ export interface BulkRentUpdateParams {
 export async function performBulkStatusUpdate(params: BulkStatusUpdateParams): Promise<BulkOperationResult> {
     const { buildingID, unitIDs, vacancyClass } = params;
     const result: BulkOperationResult = {
-        success: true,
+        success:        true,
         processedUnits: 0,
-        errors: []
+        errors:         []
     };
 
     logger.info(`Starting bulk status update for ${unitIDs.length} units in building ${buildingID}`);
@@ -52,7 +52,7 @@ export async function performBulkStatusUpdate(params: BulkStatusUpdateParams): P
 
             result.processedUnits++;
             logger.debug(`Updated unit ${unitID} status to ${vacancyClass}`);
-        } catch(error) {
+        } catch (error) {
             const errorMessage = `Failed to update unit ${unitID}: ${isError(error) ? error.message : 'Unknown error'}`;
             result.errors.push(errorMessage);
             logger.error(errorMessage, { error, unitID, buildingID });
@@ -62,7 +62,7 @@ export async function performBulkStatusUpdate(params: BulkStatusUpdateParams): P
     result.success = result.errors.length === 0;
     logger.info(`Bulk status update completed: ${result.processedUnits}/${unitIDs.length} units processed`, {
         success: result.success,
-        errors: result.errors.length
+        errors:  result.errors.length
     });
 
     return result;
@@ -74,9 +74,9 @@ export async function performBulkStatusUpdate(params: BulkStatusUpdateParams): P
 export async function performBulkRentUpdate(params: BulkRentUpdateParams): Promise<BulkOperationResult> {
     const { buildingID, unitIDs, updateType, value } = params;
     const result: BulkOperationResult = {
-        success: true,
+        success:        true,
         processedUnits: 0,
-        errors: []
+        errors:         []
     };
 
     logger.info(`Starting bulk rent update for ${unitIDs.length} units in building ${buildingID}`, {
@@ -107,7 +107,7 @@ export async function performBulkRentUpdate(params: BulkRentUpdateParams): Promi
                 updateType,
                 value
             });
-        } catch(error) {
+        } catch (error) {
             const errorMessage = `Failed to update unit ${unitID} rent: ${isError(error) ? error.message : 'Unknown error'}`;
             result.errors.push(errorMessage);
             logger.error(errorMessage, { error, unitID, buildingID });
@@ -117,7 +117,7 @@ export async function performBulkRentUpdate(params: BulkRentUpdateParams): Promi
     result.success = result.errors.length === 0;
     logger.info(`Bulk rent update completed: ${result.processedUnits}/${unitIDs.length} units processed`, {
         success: result.success,
-        errors: result.errors.length
+        errors:  result.errors.length
     });
 
     return result;
@@ -197,7 +197,7 @@ export function validateBulkStatusParams(vacancyClass: VacancyClass | ''): { isV
 
     if(!vacancyClass || trim(vacancyClass) === '') {
         errors.push('Vacancy class is required');
-    } else if(!validStatuses.includes(vacancyClass as VacancyClass)) {
+    } else if(!validStatuses.includes(vacancyClass)) {
         errors.push(`Invalid vacancy class. Must be one of: ${validStatuses.join(', ')}`);
     }
 

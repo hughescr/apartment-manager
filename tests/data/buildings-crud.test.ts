@@ -40,8 +40,8 @@ describe('Building Data Layer - CRUD Operations', () => {
             // Create minimal building data with explicit buildingID
             const buildingData = {
                 buildingID: 'test-building-1',
-                street: '123 Test St',
-                city: 'Testville'
+                street:     '123 Test St',
+                city:       'Testville'
             };
 
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingData, unitID: 'BUILDING', updatedAt: '2025-08-14T17:45:41.248Z' }));
@@ -129,16 +129,16 @@ describe('Building Data Layer - CRUD Operations', () => {
                     allowed: false
                 },
                 screeningCriteria: {
-                    incomeRatio: 2.5,
-                    minCreditScore: 700,
+                    incomeRatio:             2.5,
+                    minCreditScore:          700,
                     backgroundCheckRequired: true,
-                    employmentVerification: true
+                    employmentVerification:  true
                 },
                 photos: ['https://s3.example.com/new-photo1.jpg']
             };
             const expectedResult = {
                 buildingID: testBuilding.buildingID,
-                street: testBuilding.street,
+                street:     testBuilding.street,
                 ...updatedFields
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'BUILDING' }));

@@ -20,7 +20,7 @@ export function createDateFormatter(format: string): TransformerFunction<string 
 
         // Parse the date using our flexible parser
         const dateTime = parseDateToDateTime(value);
-        if(!dateTime || !dateTime.isValid) {
+        if(!dateTime?.isValid) {
             return undefined;
         }
 
@@ -130,7 +130,7 @@ export function daysUntil(value: string | undefined): number | undefined {
     }
 
     const targetDateTime = parseDateToDateTime(value);
-    if(!targetDateTime || !targetDateTime.isValid) {
+    if(!targetDateTime?.isValid) {
         return undefined;
     }
 
@@ -152,16 +152,16 @@ export function isDateInPast(value: string | undefined): boolean {
     }
 
     const dateTime = parseDateToDateTime(value);
-    if(!dateTime || !dateTime.isValid) {
+    if(!dateTime?.isValid) {
         return false;
     }
 
     const now = DateTime.now();
 
     // Check if the input has time components by looking for indicators
-    const hasTimeComponent = value.includes('T') ||
-      value.includes(':') ||
-      /\d{2}:\d{2}/.test(value);
+    const hasTimeComponent = value.includes('T')
+      || value.includes(':')
+      || /\d{2}:\d{2}/.test(value);
 
     if(hasTimeComponent) {
         // For datetime values, use precise comparison

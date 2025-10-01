@@ -358,8 +358,8 @@ describe('Photo Transformer', () => {
         it('should create transformer with all options', () => {
             const transformer = createPhotoTransformer('apartments_com', {
                 validate: true,
-                sort: true,
-                limit: 2
+                sort:     true,
+                limit:    2
             });
 
             const photos = [
@@ -379,8 +379,8 @@ describe('Photo Transformer', () => {
         it('should handle undefined photos', () => {
             const transformer = createPhotoTransformer('apartments_com', {
                 validate: true,
-                sort: true,
-                limit: 5
+                sort:     true,
+                limit:    5
             });
 
             const result = transformer(undefined);
@@ -390,8 +390,8 @@ describe('Photo Transformer', () => {
         it('should handle empty photos', () => {
             const transformer = createPhotoTransformer('apartments_com', {
                 validate: true,
-                sort: true,
-                limit: 5
+                sort:     true,
+                limit:    5
             });
 
             const result = transformer([]);

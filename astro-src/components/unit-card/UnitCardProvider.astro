@@ -2,11 +2,10 @@
 // astro-src/components/unit-card/UnitCardProvider.astro
 import Saving from '../Saving.astro';
 import { Resource } from 'sst';
-import type { UnitData, UnitTypeData } from '../../types';
-import { PhotoUploader } from '../forms';
+import type { UnitData, UnitTypeData } from '../../../src/types/index.ts';
+import { PhotoUploader } from '../forms/index.ts';
 // These imports are used in the inline script section but TypeScript/ESLint can't detect them
 // Prefixed with _ to satisfy ESLint's unused variable rule
-import { isArray as _isArray, isNumber as _isNumber, isObject as _isObject, find as _find, some as _some, map as _map, trim as _trim, keys as _keys } from 'lodash';
 
 // Import all sub-components
 import UnitBasicInfo from './UnitBasicInfo.astro';

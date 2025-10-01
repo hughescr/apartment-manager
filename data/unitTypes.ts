@@ -19,7 +19,7 @@ export async function getUnitTypes(buildingID: string) {
         .entities(UnitTypeEntity)
         .query({
             partition: buildingID,
-            range: { beginsWith: 'MODEL#' }
+            range:     { beginsWith: 'MODEL#' }
         })
         .options({ consistent: true })
         .send();
@@ -31,7 +31,7 @@ export async function getUnitTypes(buildingID: string) {
             (result as UnitTypeData & { updatedAt?: Date }).updatedAt = new Date(typedItem.updatedAt);
         }
         return result;
-    }) as UnitTypeData[];
+    });
 }
 
 export async function getUnitType(buildingID: string, modelID: string) {
@@ -46,7 +46,7 @@ export async function getUnitType(buildingID: string, modelID: string) {
     const result = omit(Item, ['unitID', 'created', 'modified', '_et', '_ct', '_md']) as UnitTypeData;
     // Convert updatedAt from string to Date if present
     if(Item?.updatedAt) {
-        result.updatedAt = new Date(Item.updatedAt as string);
+        result.updatedAt = new Date(Item.updatedAt);
     }
     return result;
 }
@@ -84,7 +84,7 @@ function prepareUnitTypeDataForDB(updates: Partial<UnitTypeData>, buildingID: st
         ...updates,
         buildingID,
         modelID,
-        unitID: `MODEL#${modelID}`,
+        unitID:    `MODEL#${modelID}`,
         updatedAt: now.toISOString()
     };
 }
@@ -129,7 +129,7 @@ async function fallbackToPutItemCommandForUnitType(buildingID: string, modelID: 
         ...updates,
         buildingID,
         modelID,
-        unitID: `MODEL#${modelID}`,
+        unitID:    `MODEL#${modelID}`,
         updatedAt: now.toISOString()
     };
 
@@ -155,13 +155,13 @@ export async function updateUnitType(buildingID: string, modelID: string, update
         // If UpdateItemCommand returns undefined Attributes, fall back to PutItemCommand
         logger.warn('UpdateItemCommand returned undefined Attributes, falling back to PutItemCommand with merge logic');
         return await fallbackToPutItemCommandForUnitType(buildingID, modelID, updates);
-    } catch(error) {
+    } catch (error) {
         // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
         logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic:', error);
 
         try {
             return await fallbackToPutItemCommandForUnitType(buildingID, modelID, updates);
-        } catch(fallbackError) {
+        } catch (fallbackError) {
             logger.error('Both UpdateItemCommand and PutItemCommand fallback failed:', fallbackError);
             throw fallbackError;
         }
@@ -175,7 +175,7 @@ export async function deleteUnitType(buildingID: string, modelID: string): Promi
             .key({ buildingID, unitID: `MODEL#${modelID}` })
             .send();
         return true;
-    } catch(error) {
+    } catch (error) {
         logger.error('Error deleting unit type:', error);
         return false;
     }

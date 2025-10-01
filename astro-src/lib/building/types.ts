@@ -6,7 +6,7 @@ export type { UnitTypeData };
 // Extended UnitData with runtime properties
 export interface ExtendedUnitData extends UnitData {
     lastUpdated?: string
-    status?: string  // For runtime status display
+    status?:      string  // For runtime status display
     currentRent?: number  // For runtime rent value
     editingRent?: boolean  // UI state for inline rent editing
     savingField?: string | null  // UI state for showing saving indicators
@@ -14,25 +14,25 @@ export interface ExtendedUnitData extends UnitData {
 
 // Building-specific UI state interfaces
 export interface BuildingUIState {
-    original: BuildingData | null
-    building: BuildingData | null
-    units: ExtendedUnitData[]
-    unitTypes: UnitTypeData[]
-    apiURL: string
-    showSave: boolean
-    saving: boolean
-    activeSectionTab: string
-    errors: Record<string, string>
-    showAddUnitDialog: boolean
-    newUnit: { unitID: string, modelID: string }
+    original:              BuildingData | null
+    building:              BuildingData | null
+    units:                 ExtendedUnitData[]
+    unitTypes:             UnitTypeData[]
+    apiURL:                string
+    showSave:              boolean
+    saving:                boolean
+    activeSectionTab:      string
+    errors:                Record<string, string>
+    showAddUnitDialog:     boolean
+    newUnit:               { unitID: string, modelID: string }
     showAddUnitTypeDialog: boolean
 }
 
 // Simplified units filtering state (no bulk operations)
 export interface UnitsFilterState {
     filteredUnits: ExtendedUnitData[]
-    statusFilter: string
-    searchQuery: string
+    statusFilter:  string
+    searchQuery:   string
 }
 
 // LocationMapPicker state
@@ -46,23 +46,23 @@ export interface BuildingState extends BuildingUIState, UnitsFilterState, Locati
 // Event types for the event bus
 // Event types for the event bus
 export interface BuildingEvents {
-    'building:updated': { building: BuildingData }
-    'building:save': { building: BuildingData }
-    'building:saving': { saving: boolean }
-    'building:reset': { building: BuildingData }
-    'building:validate': { isValid: boolean, errors: Record<string, string> }
-    'tab:change': { activeTab: string }
-    'units:filter': { filter: string, query: string }
-    'toast:show': { message: string, toastType: 'success' | 'error' | 'warning' }
-    'photos:updated': { photos: string[] }
-    'tours:updated': { selfGuidedTours?: boolean, virtualTours?: boolean, inPersonTours?: boolean }
+    'building:updated':   { building: BuildingData }
+    'building:save':      { building: BuildingData }
+    'building:saving':    { saving: boolean }
+    'building:reset':     { building: BuildingData }
+    'building:validate':  { isValid: boolean, errors: Record<string, string> }
+    'tab:change':         { activeTab: string }
+    'units:filter':       { filter: string, query: string }
+    'toast:show':         { message: string, toastType: 'success' | 'error' | 'warning' }
+    'photos:updated':     { photos: string[] }
+    'tours:updated':      { selfGuidedTours?: boolean, virtualTours?: boolean, inPersonTours?: boolean }
     'location:geocoding': { geocoding: boolean }
 }
 
 // Tab configuration
 export interface TabConfig {
-    key: string
-    label: string
+    key:          string
+    label:        string
     mobileLabel?: string
 }
 
@@ -75,15 +75,15 @@ export const TAB_CONFIGS: TabConfig[] = [
 
 // Validation types
 export interface ValidationRule {
-    field: string
+    field:     string
     required?: boolean
-    pattern?: RegExp
-    min?: number
-    max?: number
-    message: string
+    pattern?:  RegExp
+    min?:      number
+    max?:      number
+    message:   string
 }
 
 export interface ValidationResult {
     isValid: boolean
-    errors: Record<string, string>
+    errors:  Record<string, string>
 }

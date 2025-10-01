@@ -8,8 +8,8 @@ import {
 describe('Partial Types for Updates', () => {
     it('PartialBuildingData should exclude buildingID', () => {
         const partialBuilding: PartialBuildingData = {
-            street: '456 New St',
-            city: 'Portland',
+            street:     '456 New St',
+            city:       'Portland',
             // @ts-expect-error - buildingID should not be allowed
             buildingID: 'should-not-be-allowed'
         };
@@ -18,7 +18,7 @@ describe('Partial Types for Updates', () => {
 
     it('PartialUnitData should exclude buildingID and unitID', () => {
         const partialUnit: PartialUnitData = {
-            rent: 1500,
+            rent:     1500,
             occupied: true
         };
         expect(partialUnit.rent).toBe(1500);

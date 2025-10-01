@@ -3,13 +3,13 @@ import type { UnitData } from '../../types';
 
 export interface SaveResult {
     success: boolean
-    unit?: UnitData
-    error?: string
+    unit?:   UnitData
+    error?:  string
 }
 
 export interface DeleteResult {
     success: boolean
-    error?: string
+    error?:  string
 }
 
 export class UnitApiClient {
@@ -18,7 +18,7 @@ export class UnitApiClient {
     async saveUnit(unit: UnitData, buildingID: string): Promise<SaveResult> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/${unit.unitID}`, {
-                method: 'PUT',
+                method:  'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -29,19 +29,19 @@ export class UnitApiClient {
                 const updatedUnit = await response.json();
                 return {
                     success: true,
-                    unit: updatedUnit
+                    unit:    updatedUnit
                 };
             } else {
                 const errorText = await response.text();
                 return {
                     success: false,
-                    error: errorText || 'Failed to save unit'
+                    error:   errorText || 'Failed to save unit'
                 };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error:   isError(error) ? error.message : 'Network error occurred'
             };
         }
     }
@@ -60,13 +60,13 @@ export class UnitApiClient {
                 const errorText = await response.text();
                 return {
                     success: false,
-                    error: errorText || 'Failed to delete unit'
+                    error:   errorText || 'Failed to delete unit'
                 };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error:   isError(error) ? error.message : 'Network error occurred'
             };
         }
     }
@@ -74,7 +74,7 @@ export class UnitApiClient {
     async updateUnitField(unitID: string, buildingID: string, fieldName: string, value: unknown): Promise<SaveResult> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/${unitID}/fields/${fieldName}`, {
-                method: 'PATCH',
+                method:  'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -85,19 +85,19 @@ export class UnitApiClient {
                 const updatedUnit = await response.json();
                 return {
                     success: true,
-                    unit: updatedUnit
+                    unit:    updatedUnit
                 };
             } else {
                 const errorText = await response.text();
                 return {
                     success: false,
-                    error: errorText || `Failed to update ${fieldName}`
+                    error:   errorText || `Failed to update ${fieldName}`
                 };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: isError(error) ? error.message : 'Network error occurred'
+                error:   isError(error) ? error.message : 'Network error occurred'
             };
         }
     }

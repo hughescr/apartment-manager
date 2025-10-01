@@ -95,11 +95,11 @@ describe('Alpine.js Registry System', () => {
                 '[alpine-registry] Alpine components registered:',
                 expect.objectContaining({
                     buildingStateData: 'building state management',
-                    petPolicyData: 'pet policy state',
-                    unitTypeFormData: 'unit type form state (now centralized with factory)',
-                    unitCardData: 'unit card state (now centralized)',
-                    locationMapData: 'location map (now centralized with factory)',
-                    unitTypeCardData: 'unit type card (now centralized with factory)'
+                    petPolicyData:     'pet policy state',
+                    unitTypeFormData:  'unit type form state (now centralized with factory)',
+                    unitCardData:      'unit card state (now centralized)',
+                    locationMapData:   'location map (now centralized with factory)',
+                    unitTypeCardData:  'unit type card (now centralized with factory)'
                 })
             );
 
@@ -130,8 +130,8 @@ describe('Alpine.js Registry System', () => {
         it('should set up event listener for alpine:init when Alpine is not immediately available', () => {
             // Mock window without Alpine initially
             const mockWindowWithoutAlpine = {
-                Alpine: undefined,
-                addEventListener: jest.fn(),
+                Alpine:              undefined,
+                addEventListener:    jest.fn(),
                 removeEventListener: jest.fn()
             };
 

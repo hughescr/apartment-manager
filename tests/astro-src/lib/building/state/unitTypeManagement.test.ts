@@ -52,24 +52,24 @@ describe('UnitTypeManagement - Async Operations', () => {
 
         testBuilding = createTestBuildingData();
         testUnitType = {
-            modelID: 'model-2br',
-            modelName: '2 Bedroom Deluxe',
-            beds: 2,
-            baths: 2,
+            modelID:    'model-2br',
+            modelName:  '2 Bedroom Deluxe',
+            beds:       2,
+            baths:      2,
             buildingID: testBuilding.buildingID,
-            minRent: 1800,
-            maxRent: 2200
+            minRent:    1800,
+            maxRent:    2200
         };
 
         const mockContext = createMockAlpineContext();
         mockState = {
-            unitTypes: [],
-            showAddUnitTypeDialog: false,
+            unitTypes:              [],
+            showAddUnitTypeDialog:  false,
             showEditUnitTypeDialog: false,
-            newUnitType: {},
-            selectedUnitType: null,
-            building: testBuilding,
-            apiURL: testApiURL,
+            newUnitType:            {},
+            selectedUnitType:       null,
+            building:               testBuilding,
+            apiURL:                 testApiURL,
             ...mockContext
         } as UnitTypeManagementState & AlpineMagics;
 
@@ -97,7 +97,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             // Mock CRUD operations
@@ -108,7 +108,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful API response
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: true,
-                data: createdUnitType
+                data:    createdUnitType
             });
 
             await management.addUnitType();
@@ -127,7 +127,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockState.showAddUnitTypeDialog).toBe(false);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type added successfully',
-                type: 'success'
+                type:    'success'
             });
             expect(mockState.$dispatch).toHaveBeenCalledWith('unit-types:updated', {
                 unitTypes: [createdUnitType]
@@ -146,8 +146,8 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock validation failure
             mockValidateUnitType.mockReturnValue({
                 isValid: false,
-                errors: {
-                    modelID: 'Model ID is required',
+                errors:  {
+                    modelID:   'Model ID is required',
                     modelName: 'Model name cannot be empty'
                 }
             });
@@ -159,7 +159,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockApiServiceAddUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Model ID is required',
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.showAddUnitTypeDialog).toBe(true); // Should remain open
         });
@@ -176,7 +176,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             await management.addUnitType();
@@ -185,7 +185,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockApiServiceAddUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Building ID not available',
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.showAddUnitTypeDialog).toBe(true);
         });
@@ -201,7 +201,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             const createdUnitType: UnitTypeData = { ...testUnitType as Required<typeof testUnitType>, buildingID: testBuilding.buildingID };
@@ -211,7 +211,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             const errorMessage = 'Unit type already exists';
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: false,
-                error: errorMessage
+                error:   errorMessage
             });
 
             await management.addUnitType();
@@ -222,7 +222,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockAddUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: errorMessage,
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.showAddUnitTypeDialog).toBe(true);
         });
@@ -238,7 +238,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             const createdUnitType: UnitTypeData = { ...testUnitType as Required<typeof testUnitType>, buildingID: testBuilding.buildingID };
@@ -255,7 +255,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockApiServiceAddUnitType).toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Network connection failed',
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.showAddUnitTypeDialog).toBe(true);
         });
@@ -275,7 +275,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             const createdUnitType: UnitTypeData = { ...testUnitType as Required<typeof testUnitType>, buildingID: testBuilding.buildingID };
@@ -292,7 +292,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(offlineState.showAddUnitTypeDialog).toBe(false);
             expect(offlineState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type added successfully',
-                type: 'success'
+                type:    'success'
             });
         });
 
@@ -302,7 +302,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             const createdUnitType: UnitTypeData = { ...testUnitType as Required<typeof testUnitType>, buildingID: testBuilding.buildingID };
@@ -312,7 +312,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful API response with additional data
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: true,
-                data: apiResponseData
+                data:    apiResponseData
             });
 
             await management.addUnitType();
@@ -344,7 +344,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful API response
             mockApiServiceUpdateUnitType.mockResolvedValue({
                 success: true,
-                data: updatedUnitType
+                data:    updatedUnitType
             });
 
             await management.updateUnitType(testModelID, testUpdates);
@@ -378,7 +378,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockUpdateUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Building ID not available',
-                type: 'error'
+                type:    'error'
             });
         });
 
@@ -388,7 +388,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             const errorMessage = 'Unit type not found';
             mockApiServiceUpdateUnitType.mockResolvedValue({
                 success: false,
-                error: errorMessage
+                error:   errorMessage
             });
 
             await management.updateUnitType(testModelID, testUpdates);
@@ -397,7 +397,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockUpdateUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: errorMessage,
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.unitTypes).toEqual([existingUnitType]); // Unchanged
         });
@@ -410,7 +410,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             // Mock successful API response without data
             mockApiServiceUpdateUnitType.mockResolvedValue({
                 success: true,
-                data: null
+                data:    null
             });
 
             await management.updateUnitType(testModelID, testUpdates);
@@ -457,7 +457,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockUpdateUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Connection timeout',
-                type: 'error'
+                type:    'error'
             });
         });
     });
@@ -494,7 +494,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockState.unitTypes).toHaveLength(1);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type deleted successfully',
-                type: 'success'
+                type:    'success'
             });
             expect(mockState.$dispatch).toHaveBeenCalledWith('unit-types:updated', expect.any(Object));
             expect(mockState.$dispatch).toHaveBeenCalledTimes(2);
@@ -523,7 +523,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockRemoveUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Building ID not available',
-                type: 'error'
+                type:    'error'
             });
         });
 
@@ -533,7 +533,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             const errorMessage = 'Cannot delete: units of this type exist';
             mockApiServiceDeleteUnitType.mockResolvedValue({
                 success: false,
-                error: errorMessage
+                error:   errorMessage
             });
 
             await management.deleteUnitType(testModelID);
@@ -542,7 +542,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockRemoveUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: errorMessage,
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.unitTypes).toHaveLength(2); // Unchanged
         });
@@ -589,7 +589,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(offlineState.unitTypes).toHaveLength(1);
             expect(offlineState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type deleted successfully',
-                type: 'success'
+                type:    'success'
             });
         });
 
@@ -605,7 +605,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockRemoveUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Network error',
-                type: 'error'
+                type:    'error'
             });
         });
 
@@ -620,7 +620,7 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockRemoveUnitType).not.toHaveBeenCalled();
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'An unexpected error occurred',
-                type: 'error'
+                type:    'error'
             });
         });
     });
@@ -633,14 +633,14 @@ describe('UnitTypeManagement - Async Operations', () => {
 
             expect(mockState.showAddUnitTypeDialog).toBe(true);
             expect(mockState.newUnitType).toEqual({
-                modelID: '',
-                modelName: '',
-                beds: 1,
-                baths: 1,
-                minSqft: undefined,
-                maxSqft: undefined,
-                minRent: undefined,
-                maxRent: undefined,
+                modelID:    '',
+                modelName:  '',
+                beds:       1,
+                baths:      1,
+                minSqft:    undefined,
+                maxSqft:    undefined,
+                minRent:    undefined,
+                maxRent:    undefined,
                 buildingID: testBuilding.buildingID
             });
         });

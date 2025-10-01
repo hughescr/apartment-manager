@@ -25,7 +25,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
     describe('BuildingDraftSchema', () => {
         const minimalBuildingData = {
-            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+            buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
             buildingName: 'Test Building'
         };
 
@@ -82,7 +82,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
         it('should require buildingName to be non-empty', () => {
             const invalidData = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: ''
             };
 
@@ -97,17 +97,17 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
         it('should accept valid optional fields when provided', () => {
             const completeData: BuildingDraftInput = {
                 ...minimalBuildingData,
-                street: '123 Main St',
-                city: 'Testville',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                street:         '123 Main St',
+                city:           'Testville',
+                state:          'TX',
+                zip:            '75001',
+                latitude:       32.7767,
+                longitude:      -96.7970,
+                propertyType:   PropertyType.APARTMENT,
                 applicationFee: 100,
-                numberStories: 3,
-                leaseLength: 12,
-                contactInfo: {
+                numberStories:  3,
+                leaseLength:    12,
+                contactInfo:    {
                     email: 'test@example.com',
                     phone: '555-123-4567'
                 },
@@ -156,7 +156,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
         it('should validate coordinate ranges when provided', () => {
             const invalidData = {
                 ...minimalBuildingData,
-                latitude: 91, // Invalid - outside valid range
+                latitude:  91, // Invalid - outside valid range
                 longitude: -181 // Invalid - outside valid range
             };
 
@@ -174,8 +174,8 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
     describe('UnitTypeDraftSchema', () => {
         const minimalUnitTypeData = {
             buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            modelID: 'model-1br',
-            modelName: '1 Bedroom Apartment'
+            modelID:    'model-1br',
+            modelName:  '1 Bedroom Apartment'
         };
 
         it('should accept minimal data with only required fields', () => {
@@ -205,7 +205,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const invalidData = {
                 ...minimalUnitTypeData,
                 buildingID: 'invalid id!',
-                modelID: 'bad model id!'
+                modelID:    'bad model id!'
             };
 
             const result = UnitTypeDraftSchema.safeParse(invalidData);
@@ -221,17 +221,17 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
         it('should accept valid optional fields when provided', () => {
             const completeData: UnitTypeDraftInput = {
                 ...minimalUnitTypeData,
-                beds: 1,
-                baths: 1.5,
-                minRent: 1200,
-                maxRent: 1400,
-                minSqft: 650,
-                maxSqft: 750,
+                beds:           1,
+                baths:          1.5,
+                minRent:        1200,
+                maxRent:        1400,
+                minSqft:        650,
+                maxSqft:        750,
                 countAvailable: 3,
-                maxOccupants: 2,
-                deposit: 1200,
-                minLeaseTerm: 6,
-                maxLeaseTerm: 12
+                maxOccupants:   2,
+                deposit:        1200,
+                minLeaseTerm:   6,
+                maxLeaseTerm:   12
             };
 
             const result = UnitTypeDraftSchema.safeParse(completeData);
@@ -310,7 +310,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
     describe('UnitDraftSchema', () => {
         const minimalUnitData = {
             buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            unitID: 'unit-101',
+            unitID:     'unit-101',
             unitNumber: '101'
         };
 
@@ -341,7 +341,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             const invalidData = {
                 ...minimalUnitData,
                 buildingID: 'invalid id!',
-                unitID: 'bad unit id!'
+                unitID:     'bad unit id!'
             };
 
             const result = UnitDraftSchema.safeParse(invalidData);
@@ -357,7 +357,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
         it('should require unitNumber to be non-empty', () => {
             const invalidData = {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'unit-101',
+                unitID:     'unit-101',
                 unitNumber: ''
             };
 
@@ -372,16 +372,16 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
         it('should accept valid optional fields when provided', () => {
             const completeData = {
                 ...minimalUnitData,
-                modelID: 'model-1br',
-                beds: 1,
-                baths: 1,
-                rent: 1250,
-                sqft: 700,
-                vacancyClass: 'Available',
+                modelID:       'model-1br',
+                beds:          1,
+                baths:         1,
+                rent:          1250,
+                sqft:          700,
+                vacancyClass:  'Available',
                 dateAvailable: '2024-01-01',
-                maxOccupants: 2,
-                deposit: 1250,
-                leaseLength: 12
+                maxOccupants:  2,
+                deposit:       1250,
+                leaseLength:   12
             };
 
             const result = UnitDraftSchema.safeParse(completeData);
@@ -456,13 +456,13 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             // Test unit type ID validation
             const unitTypeValid = UnitTypeDraftSchema.safeParse({
                 buildingID: validId,
-                modelID: validId,
-                modelName: 'Test Model'
+                modelID:    validId,
+                modelName:  'Test Model'
             });
             const unitTypeInvalid = UnitTypeDraftSchema.safeParse({
                 buildingID: invalidId,
-                modelID: invalidId,
-                modelName: 'Test Model'
+                modelID:    invalidId,
+                modelName:  'Test Model'
             });
             expect(unitTypeValid.success).toBe(true);
             expect(unitTypeInvalid.success).toBe(false);
@@ -470,12 +470,12 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             // Test unit ID validation
             const unitValid = UnitDraftSchema.safeParse({
                 buildingID: validId,
-                unitID: validId,
+                unitID:     validId,
                 unitNumber: '101'
             });
             const unitInvalid = UnitDraftSchema.safeParse({
                 buildingID: invalidId,
-                unitID: invalidId,
+                unitID:     invalidId,
                 unitNumber: '101'
             });
             expect(unitValid.success).toBe(true);
@@ -487,7 +487,7 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
 
             // Step 1: Just the bare minimum
             const step1 = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'My Building'
             };
             expect(BuildingDraftSchema.safeParse(step1).success).toBe(true);
@@ -502,9 +502,9 @@ describe('Draft Schema Validation - Permissive for Work-in-Progress', () => {
             // Step 3: Add more complete address
             const step3 = {
                 ...step2,
-                city: 'Testville',
+                city:  'Testville',
                 state: 'TX',
-                zip: '75001'
+                zip:   '75001'
             };
             expect(BuildingDraftSchema.safeParse(step3).success).toBe(true);
 

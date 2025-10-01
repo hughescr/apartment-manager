@@ -38,7 +38,7 @@ export class ApiService {
 
             if(result.success && result.unit) {
                 // Update both current and original unit on successful save
-                this.state.unit = result.unit as UnitData;
+                this.state.unit = result.unit;
                 this.state.originalUnit = JSON.parse(JSON.stringify(this.state.unit));
                 this.state.errors = {};
 
@@ -50,7 +50,7 @@ export class ApiService {
             } else {
                 this.handleSaveError(result.error || 'Failed to save unit');
             }
-        } catch(error) {
+        } catch (error) {
             const errorMessage = isError(error) ? error.message : 'Network error. Please try again.';
             this.handleSaveError(errorMessage);
         } finally {
@@ -95,7 +95,7 @@ export class ApiService {
                     this.state.events.showToast(errorMessage, 'error');
                 }
             }
-        } catch(error) {
+        } catch (error) {
             const errorMessage = isError(error) ? error.message : 'Network error during delete';
 
             if(this.state.events) {
@@ -123,7 +123,7 @@ export class ApiService {
 
             if(result.success && result.unit) {
                 // Update current unit with server response
-                this.state.unit = result.unit as UnitData;
+                this.state.unit = result.unit;
                 this.state.originalUnit = JSON.parse(JSON.stringify(this.state.unit));
 
                 // Trigger success events
@@ -134,7 +134,7 @@ export class ApiService {
             }
 
             return result;
-        } catch(error) {
+        } catch (error) {
             const errorMessage = isError(error) ? error.message : 'Network error occurred';
             return { success: false, error: errorMessage };
         }

@@ -9,116 +9,116 @@ import type {
  */
 export const completeBuildingExpected: MappedBuilding = {
     externalId: 'wgey4dDPEd8qEMGtGoMef7',
-    name: 'wgey4dDPEd8qEMGtGoMef7',
-    address: {
+    name:       'wgey4dDPEd8qEMGtGoMef7',
+    address:    {
         street: '1234 Luxury Lane',
-        city: 'San Francisco',
-        state: 'CA',
-        zip: '94102'
+        city:   'San Francisco',
+        state:  'CA',
+        zip:    '94102'
     },
     propertyType: 'Apartment',
-    yearBuilt: 2022,
-    totalUnits: 50,
-    description: 'Experience luxury living in the heart of San Francisco. Our premium apartment complex offers stunning views, modern amenities, and a prime location near downtown. Each unit features high-end finishes, stainless steel appliances, and floor-to-ceiling windows. Residents enjoy access to our rooftop terrace, fitness center, and 24/7 concierge service.',
-    photos: [
+    yearBuilt:    2022,
+    totalUnits:   50,
+    description:  'Experience luxury living in the heart of San Francisco. Our premium apartment complex offers stunning views, modern amenities, and a prime location near downtown. Each unit features high-end finishes, stainless steel appliances, and floor-to-ceiling windows. Residents enjoy access to our rooftop terrace, fitness center, and 24/7 concierge service.',
+    photos:       [
         'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/exterior.jpg',
         'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/lobby.jpg',
         'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/pool.jpg',
         'https://s3.amazonaws.com/bucket/wgey4dDPEd8qEMGtGoMef7/gym.jpg'
     ],
     leaseTerms: {
-        minMonths: 12,
-        maxMonths: 12,
+        minMonths:     12,
+        maxMonths:     12,
         defaultMonths: 12
     },
     fees: [
         {
-            type: 'Application Fee',
-            amount: 75,
+            type:        'Application Fee',
+            amount:      75,
             description: 'Non-refundable application processing fee',
-            refundable: false
+            refundable:  false
         },
         {
-            type: 'Administrative Fee',
-            amount: 250,
+            type:        'Administrative Fee',
+            amount:      250,
             description: 'Administrative fee for lease preparation',
-            refundable: false
+            refundable:  false
         },
         {
-            type: 'Move-in Fee',
-            amount: 150,
+            type:        'Move-in Fee',
+            amount:      150,
             description: 'Move-in coordination fee',
-            refundable: false
+            refundable:  false
         },
         {
-            type: 'Pet Fee',
-            amount: 50,
+            type:        'Pet Fee',
+            amount:      50,
             description: 'Monthly pet rent per pet',
-            refundable: undefined
+            refundable:  undefined
         },
         {
-            type: 'Parking Fee',
-            amount: 200,
+            type:        'Parking Fee',
+            amount:      200,
             description: 'Monthly parking fee for garage space',
-            refundable: undefined
+            refundable:  undefined
         },
         {
-            type: 'Storage Fee',
-            amount: 75,
+            type:        'Storage Fee',
+            amount:      75,
             description: 'Monthly storage unit fee',
-            refundable: undefined
+            refundable:  undefined
         },
         {
-            type: 'Security Deposit',
-            amount: 2500,
+            type:        'Security Deposit',
+            amount:      2500,
             description: 'Refundable security deposit',
-            refundable: true
+            refundable:  true
         },
         {
-            type: 'Key Deposit',
-            amount: 100,
+            type:        'Key Deposit',
+            amount:      100,
             description: 'Refundable key and fob deposit',
-            refundable: true
+            refundable:  true
         }
     ],
     utilities: {
-        Water: true,
-        Sewer: true,
-        Trash: true,
-        Gas: false,
+        Water:       true,
+        Sewer:       true,
+        Trash:       true,
+        Gas:         false,
         Electricity: false,
-        Cable: false,
-        Internet: true,
-        Heat: true,
-        'A/C': true
+        Cable:       false,
+        Internet:    true,
+        Heat:        true,
+        'A/C':       true
     },
     parking: [
         {
-            type: 'Garage',
-            included: false,
-            fee: 200,
+            type:        'Garage',
+            included:    false,
+            fee:         200,
             description: 'Secure underground parking with 24/7 access'
         },
         {
-            type: 'Covered',
-            included: false,
-            fee: 150,
+            type:        'Covered',
+            included:    false,
+            fee:         150,
             description: 'Covered parking in adjacent structure'
         },
         {
-            type: 'Uncovered',
-            included: true,
-            fee: undefined,
+            type:        'Uncovered',
+            included:    true,
+            fee:         undefined,
             description: 'One uncovered space included with lease'
         }
     ],
     petPolicy: {
-        allowed: true,
-        types: ['Dogs', 'Cats', 'Birds', 'Fish'],
-        maxCount: 2,
-        weightLimit: 75,
-        deposit: 500,
-        monthlyFee: 50,
+        allowed:      true,
+        types:        ['Dogs', 'Cats', 'Birds', 'Fish'],
+        maxCount:     2,
+        weightLimit:  75,
+        deposit:      500,
+        monthlyFee:   50,
         restrictions: 'All pets must be registered with management. Dogs require proof of training.'
     },
     amenities: [
@@ -131,50 +131,50 @@ export const completeBuildingExpected: MappedBuilding = {
         { name: 'Controlled Access', category: 'Community' }
     ],
     contactInfo: {
-        name: 'Luxury Living Leasing Office',
-        phone: '(415) 555-0123',
-        email: 'leasing@luxuryliving.com',
+        name:            'Luxury Living Leasing Office',
+        phone:           '(415) 555-0123',
+        email:           'leasing@luxuryliving.com',
         propertyWebsite: 'https://www.luxuryliving.com',
-        officeHours: {
-            monday: { open: '09:00', close: '18:00' },
-            tuesday: { open: '09:00', close: '18:00' },
+        officeHours:     {
+            monday:    { open: '09:00', close: '18:00' },
+            tuesday:   { open: '09:00', close: '18:00' },
             wednesday: { open: '09:00', close: '18:00' },
-            thursday: { open: '09:00', close: '18:00' },
-            friday: { open: '09:00', close: '18:00' },
-            saturday: { open: '10:00', close: '17:00' },
-            sunday: { open: '12:00', close: '16:00' }
+            thursday:  { open: '09:00', close: '18:00' },
+            friday:    { open: '09:00', close: '18:00' },
+            saturday:  { open: '10:00', close: '17:00' },
+            sunday:    { open: '12:00', close: '16:00' }
         }
     },
     tourOptions: {
-        selfGuidedTours: true,
-        virtualTours: true,
-        inPersonTours: true,
+        selfGuidedTours:   true,
+        virtualTours:      true,
+        inPersonTours:     true,
         tourSchedulingUrl: 'https://www.luxuryliving.com/schedule-tour',
-        tourHours: {
-            monday: { open: '09:00', close: '17:00' },
-            tuesday: { open: '09:00', close: '17:00' },
+        tourHours:         {
+            monday:    { open: '09:00', close: '17:00' },
+            tuesday:   { open: '09:00', close: '17:00' },
             wednesday: { open: '09:00', close: '17:00' },
-            thursday: { open: '09:00', close: '17:00' },
-            friday: { open: '09:00', close: '17:00' },
-            saturday: { open: '10:00', close: '16:00' },
-            sunday: { open: '12:00', close: '16:00' }
+            thursday:  { open: '09:00', close: '17:00' },
+            friday:    { open: '09:00', close: '17:00' },
+            saturday:  { open: '10:00', close: '16:00' },
+            sunday:    { open: '12:00', close: '16:00' }
         }
     },
     applicationFee: 75,
-    rentSpecials: [
+    rentSpecials:   [
         {
-            title: 'Move-In Special',
-            startDate: '2024-01-01',
-            endDate: '2024-03-31',
+            title:       'Move-In Special',
+            startDate:   '2024-01-01',
+            endDate:     '2024-03-31',
             description: 'Get one month free when you sign a 12-month lease'
         },
         {
-            title: 'Refer a Friend',
+            title:       'Refer a Friend',
             description: 'Receive $500 off your rent when you refer a friend who signs a lease'
         }
     ],
     incomeRestrictions: {
-        amiLimit: 120,
+        amiLimit:                 120,
         maxIncomeByHouseholdSize: {
             '1': 95000,
             '2': 108000,
@@ -183,16 +183,16 @@ export const completeBuildingExpected: MappedBuilding = {
         }
     },
     screeningCriteria: {
-        incomeRatio: 3,
-        minCreditScore: 700,
-        maxOccupantsPerBedroom: 2,
+        incomeRatio:             3,
+        minCreditScore:          700,
+        maxOccupantsPerBedroom:  2,
         backgroundCheckRequired: true,
-        evictionHistory: true,
-        criminalHistory: true,
-        references: 3,
-        employmentVerification: true,
-        rentalHistory: true,
-        notes: 'All applicants over 18 must submit separate applications'
+        evictionHistory:         true,
+        criminalHistory:         true,
+        references:              3,
+        employmentVerification:  true,
+        rentalHistory:           true,
+        notes:                   'All applicants over 18 must submit separate applications'
     }
 };
 
@@ -201,22 +201,22 @@ export const completeBuildingExpected: MappedBuilding = {
  */
 export const minimalBuildingExpected: MappedBuilding = {
     externalId: 'building-minimal-001',
-    name: 'building-minimal-001',
-    address: {
+    name:       'building-minimal-001',
+    address:    {
         street: '',
-        city: '',
-        state: '',
-        zip: ''
+        city:   '',
+        state:  '',
+        zip:    ''
     },
     propertyType: 'Apartment',
-    leaseTerms: {
-        minMonths: undefined,
-        maxMonths: undefined,
+    leaseTerms:   {
+        minMonths:     undefined,
+        maxMonths:     undefined,
         defaultMonths: 12
     },
-    fees: [],
+    fees:      [],
     utilities: {},
-    parking: [],
+    parking:   [],
     amenities: []
 };
 
@@ -225,68 +225,68 @@ export const minimalBuildingExpected: MappedBuilding = {
  */
 export const petFriendlyBuildingExpected: MappedBuilding = {
     externalId: 'building-pet-friendly-001',
-    name: 'building-pet-friendly-001',
-    address: {
+    name:       'building-pet-friendly-001',
+    address:    {
         street: '456 Paw Print Place',
-        city: 'Portland',
-        state: 'OR',
-        zip: '97201'
+        city:   'Portland',
+        state:  'OR',
+        zip:    '97201'
     },
     propertyType: 'Apartment',
-    leaseTerms: {
-        minMonths: undefined,
-        maxMonths: undefined,
+    leaseTerms:   {
+        minMonths:     undefined,
+        maxMonths:     undefined,
         defaultMonths: 12
     },
-    fees: [],
+    fees:      [],
     utilities: {},
-    parking: [
+    parking:   [
         {
-            type: 'Garage',
+            type:     'Garage',
             included: true
         },
         {
-            type: 'Garage',
-            included: false,
-            fee: 150,
+            type:        'Garage',
+            included:    false,
+            fee:         150,
             description: 'Additional garage space'
         },
         {
-            type: 'Covered',
+            type:     'Covered',
             included: false,
-            fee: 75
+            fee:      75
         },
         {
-            type: 'Uncovered',
+            type:     'Uncovered',
             included: false,
-            fee: 50
+            fee:      50
         },
         {
-            type: 'Street',
-            included: true,
+            type:        'Street',
+            included:    true,
             description: 'Street parking permits available'
         }
     ],
     petPolicy: {
-        allowed: true,
-        types: ['Dogs', 'Cats', 'Birds', 'Small Animals'],
-        maxCount: 3,
-        weightLimit: 100,
-        deposit: 300,
-        monthlyFee: 35,
+        allowed:      true,
+        types:        ['Dogs', 'Cats', 'Birds', 'Small Animals'],
+        maxCount:     3,
+        weightLimit:  100,
+        deposit:      300,
+        monthlyFee:   35,
         restrictions: 'We love pets! All breeds welcome. Pet interview required.'
     },
     amenities: [
         {
-            name: 'Dog Park',
+            name:     'Dog Park',
             category: 'Property'
         },
         {
-            name: 'Pet Washing Station',
+            name:     'Pet Washing Station',
             category: 'Property'
         },
         {
-            name: 'Dog Walking Service',
+            name:     'Dog Walking Service',
             category: 'Community'
         }
     ]
@@ -297,10 +297,10 @@ export const petFriendlyBuildingExpected: MappedBuilding = {
  */
 export const completeUnitTypeExpected: MappedUnitType = {
     externalId: 'model-complete-001',
-    modelName: 'Deluxe Corner Unit',
-    beds: 2,
-    baths: 2.5,
-    sqft: {
+    modelName:  'Deluxe Corner Unit',
+    beds:       2,
+    baths:      2.5,
+    sqft:       {
         min: 1200,
         max: 1350
     },
@@ -308,11 +308,11 @@ export const completeUnitTypeExpected: MappedUnitType = {
         min: 3500,
         max: 4000
     },
-    deposit: 3500,
-    maxOccupants: 5,
+    deposit:        3500,
+    maxOccupants:   5,
     countAvailable: 2,
-    dateAvailable: '02/15/2024',
-    amenities: [
+    dateAvailable:  '02/15/2024',
+    amenities:      [
         { name: 'Floor-to-Ceiling Windows', category: 'Unit' },
         { name: 'Premium Appliances', category: 'Unit' },
         { name: 'Wine Fridge', category: 'Unit' },
@@ -327,31 +327,31 @@ export const completeUnitTypeExpected: MappedUnitType = {
  */
 export const minimalUnitTypeExpected: MappedUnitType = {
     externalId: 'model-minimal-001',
-    modelName: 'Basic Model',
-    beds: 1,
-    baths: 1,
-    sqft: {},
-    rent: {},
-    amenities: [],
-    photos: []
+    modelName:  'Basic Model',
+    beds:       1,
+    baths:      1,
+    sqft:       {},
+    rent:       {},
+    amenities:  [],
+    photos:     []
 };
 
 /**
  * Expected mapped output for complete unit on Apartments.com
  */
 export const completeUnitExpected: MappedUnit = {
-    externalId: 'unit-complete-001',
-    unitNumber: '1201',
-    modelName: 'Deluxe Corner Unit',
-    beds: 2,
-    baths: 2,
-    sqft: 1100,
-    rent: 3200,
-    deposit: 3200,
+    externalId:    'unit-complete-001',
+    unitNumber:    '1201',
+    modelName:     'Deluxe Corner Unit',
+    beds:          2,
+    baths:         2,
+    sqft:          1100,
+    rent:          3200,
+    deposit:       3200,
     dateAvailable: '02/01/2024',
-    description: 'Stunning corner unit on the 12th floor featuring floor-to-ceiling windows, hardwood floors throughout, and breathtaking city views. Recently renovated kitchen with quartz countertops and stainless steel appliances. Master suite includes walk-in closet and spa-like bathroom.',
-    maxOccupants: 4,
-    leaseTerms: {
+    description:   'Stunning corner unit on the 12th floor featuring floor-to-ceiling windows, hardwood floors throughout, and breathtaking city views. Recently renovated kitchen with quartz countertops and stainless steel appliances. Master suite includes walk-in closet and spa-like bathroom.',
+    maxOccupants:  4,
+    leaseTerms:    {
         minMonths: 12,
         maxMonths: 24
     },
@@ -374,10 +374,10 @@ export const completeUnitExpected: MappedUnit = {
         'https://s3.amazonaws.com/bucket/unit-complete-001/view.jpg'
     ],
     rentSpecial: {
-        title: 'Corner Unit Special',
+        title:       'Corner Unit Special',
         description: '$500 off first month rent',
-        startDate: '2024-01-01',
-        endDate: '2024-03-31'
+        startDate:   '2024-01-01',
+        endDate:     '2024-03-31'
     }
 };
 
@@ -385,27 +385,27 @@ export const completeUnitExpected: MappedUnit = {
  * Expected mapped output for inheriting unit on Apartments.com
  */
 export const inheritingUnitExpected: MappedUnit = {
-    externalId: 'unit-inheriting-001',
-    unitNumber: '305',
-    modelName: 'Classic One Bedroom',
-    beds: 1,
-    baths: 1,
-    sqft: 650, // Inherited from model minSqft
-    rent: 2000, // Inherited from model minRent
-    deposit: 2000, // Inherited from model
+    externalId:    'unit-inheriting-001',
+    unitNumber:    '305',
+    modelName:     'Classic One Bedroom',
+    beds:          1,
+    baths:         1,
+    sqft:          650, // Inherited from model minSqft
+    rent:          2000, // Inherited from model minRent
+    deposit:       2000, // Inherited from model
     dateAvailable: '01/15/2024',
-    maxOccupants: 3, // Inherited from model
-    leaseTerms: {
+    maxOccupants:  3, // Inherited from model
+    leaseTerms:    {
         minMonths: 12, // Inherited from model
         maxMonths: 15 // Inherited from model
     },
     amenities: [
         {
-            name: 'Walk-In Closet',
+            name:     'Walk-In Closet',
             category: 'Unit'
         },
         {
-            name: 'Balcony',
+            name:     'Balcony',
             category: 'Unit'
         }
     ],
@@ -418,11 +418,11 @@ export const inheritingUnitExpected: MappedUnit = {
 export const minimalUnitExpected: MappedUnit = {
     externalId: 'unit-minimal-001',
     unitNumber: 'unit-minimal-001',
-    beds: 0,
-    baths: 0,
-    rent: 0,
-    amenities: [],
-    photos: []
+    beds:       0,
+    baths:      0,
+    rent:       0,
+    amenities:  [],
+    photos:     []
 };
 
 /**
@@ -430,32 +430,32 @@ export const minimalUnitExpected: MappedUnit = {
  */
 export const studentHousingBuildingExpected: MappedBuilding = {
     externalId: 'building-student-001',
-    name: 'building-student-001',
-    address: {
+    name:       'building-student-001',
+    address:    {
         street: '100 Campus Court',
-        city: 'Berkeley',
-        state: 'CA',
-        zip: '94720'
+        city:   'Berkeley',
+        state:  'CA',
+        zip:    '94720'
     },
     propertyType: 'Apartment',
-    description: 'Student housing near UC Berkeley campus. Individual rooms available with shared common areas.',
-    leaseTerms: {
-        minMonths: 9,
-        maxMonths: 9,
+    description:  'Student housing near UC Berkeley campus. Individual rooms available with shared common areas.',
+    leaseTerms:   {
+        minMonths:     9,
+        maxMonths:     9,
         defaultMonths: 9
     },
-    fees: [],
+    fees:      [],
     utilities: {
-        Water: true,
-        Sewer: true,
-        Trash: true,
+        Water:       true,
+        Sewer:       true,
+        Trash:       true,
         Electricity: true,
-        Internet: true,
-        Heat: true,
-        'A/C': true
+        Internet:    true,
+        Heat:        true,
+        'A/C':       true
     },
-    parking: [],
-    amenities: [],
+    parking:            [],
+    amenities:          [],
     incomeRestrictions: {
         maxIncomeByHouseholdSize: {
             '1': 35000,
@@ -465,11 +465,11 @@ export const studentHousingBuildingExpected: MappedBuilding = {
         }
     },
     screeningCriteria: {
-        incomeRatio: 2,
-        minCreditScore: 600,
-        maxOccupantsPerBedroom: 1,
+        incomeRatio:             2,
+        minCreditScore:          600,
+        maxOccupantsPerBedroom:  1,
         backgroundCheckRequired: true,
-        employmentVerification: false,
-        notes: 'Must provide proof of enrollment'
+        employmentVerification:  false,
+        notes:                   'Must provide proof of enrollment'
     }
 };

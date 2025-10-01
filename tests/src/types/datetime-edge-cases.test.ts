@@ -25,9 +25,9 @@ describe('Date and Time Edge Cases', () => {
     describe('Malformed ISO Dates', () => {
         it('should accept completely invalid date strings', () => {
             const special: RentSpecial = {
-                title: 'Invalid Dates',
-                startDate: 'not-a-date',
-                endDate: 'definitely not a date either',
+                title:       'Invalid Dates',
+                startDate:   'not-a-date',
+                endDate:     'definitely not a date either',
                 description: 'Testing invalid date formats'
             };
             expect(special.startDate).toBe('not-a-date');
@@ -36,15 +36,15 @@ describe('Date and Time Edge Cases', () => {
 
         it('should accept dates with invalid months and days', () => {
             const unit: UnitData = {
-                buildingID: 'bldg-123',
-                unitID: 'unit-123',
+                buildingID:    'bldg-123',
+                unitID:        'unit-123',
                 availableDate: '2024-13-32' // Month 13, Day 32
             };
             expect(unit.availableDate).toBe('2024-13-32');
 
             const unit2: UnitData = {
-                buildingID: 'bldg-456',
-                unitID: 'unit-456',
+                buildingID:    'bldg-456',
+                unitID:        'unit-456',
                 availableDate: '2024-00-00' // Month 0, Day 0
             };
             expect(unit2.availableDate).toBe('2024-00-00');
@@ -52,9 +52,9 @@ describe('Date and Time Edge Cases', () => {
 
         it('should accept dates with wrong separators', () => {
             const special: RentSpecial = {
-                title: 'Wrong Separators',
-                startDate: '2024/12/31', // Slashes instead of hyphens
-                endDate: '2024.12.31', // Dots instead of hyphens
+                title:       'Wrong Separators',
+                startDate:   '2024/12/31', // Slashes instead of hyphens
+                endDate:     '2024.12.31', // Dots instead of hyphens
                 description: 'Testing wrong date separators'
             };
             expect(special.startDate).toBe('2024/12/31');
@@ -63,21 +63,21 @@ describe('Date and Time Edge Cases', () => {
 
         it('should accept dates with missing components', () => {
             const unitType: UnitTypeData = {
-                buildingID: 'bldg-123',
-                modelID: 'model-1',
-                modelName: 'Test',
-                beds: 1,
-                baths: 1,
+                buildingID:    'bldg-123',
+                modelID:       'model-1',
+                modelName:     'Test',
+                beds:          1,
+                baths:         1,
                 dateAvailable: '2024-12' // Missing day
             };
             expect(unitType.dateAvailable).toBe('2024-12');
 
             const unitType2: UnitTypeData = {
-                buildingID: 'bldg-456',
-                modelID: 'model-2',
-                modelName: 'Test2',
-                beds: 2,
-                baths: 1,
+                buildingID:    'bldg-456',
+                modelID:       'model-2',
+                modelName:     'Test2',
+                beds:          2,
+                baths:         1,
                 dateAvailable: '2024' // Only year
             };
             expect(unitType2.dateAvailable).toBe('2024');
@@ -85,8 +85,8 @@ describe('Date and Time Edge Cases', () => {
 
         it('should accept dates with extra components', () => {
             const unit: UnitData = {
-                buildingID: 'bldg-123',
-                unitID: 'unit-123',
+                buildingID:    'bldg-123',
+                unitID:        'unit-123',
                 availableDate: '2024-12-31-01' // Extra component
             };
             expect(unit.availableDate).toBe('2024-12-31-01');
@@ -96,29 +96,29 @@ describe('Date and Time Edge Cases', () => {
     describe('Timezone Handling in Dates', () => {
         it('should accept dates with various timezone formats', () => {
             const unit1: UnitData = {
-                buildingID: 'bldg-1',
-                unitID: 'unit-1',
+                buildingID:    'bldg-1',
+                unitID:        'unit-1',
                 availableDate: '2024-12-31T23:59:59Z' // UTC
             };
             expect(unit1.availableDate).toBe('2024-12-31T23:59:59Z');
 
             const unit2: UnitData = {
-                buildingID: 'bldg-2',
-                unitID: 'unit-2',
+                buildingID:    'bldg-2',
+                unitID:        'unit-2',
                 availableDate: '2024-12-31T23:59:59+00:00' // UTC with offset
             };
             expect(unit2.availableDate).toBe('2024-12-31T23:59:59+00:00');
 
             const unit3: UnitData = {
-                buildingID: 'bldg-3',
-                unitID: 'unit-3',
+                buildingID:    'bldg-3',
+                unitID:        'unit-3',
                 availableDate: '2024-12-31T23:59:59-08:00' // PST
             };
             expect(unit3.availableDate).toBe('2024-12-31T23:59:59-08:00');
 
             const unit4: UnitData = {
-                buildingID: 'bldg-4',
-                unitID: 'unit-4',
+                buildingID:    'bldg-4',
+                unitID:        'unit-4',
                 availableDate: '2024-12-31T23:59:59.999Z' // With milliseconds
             };
             expect(unit4.availableDate).toBe('2024-12-31T23:59:59.999Z');
@@ -126,15 +126,15 @@ describe('Date and Time Edge Cases', () => {
 
         it('should accept invalid timezone offsets', () => {
             const unit: UnitData = {
-                buildingID: 'bldg-123',
-                unitID: 'unit-123',
+                buildingID:    'bldg-123',
+                unitID:        'unit-123',
                 availableDate: '2024-12-31T23:59:59+25:00' // Invalid offset
             };
             expect(unit.availableDate).toBe('2024-12-31T23:59:59+25:00');
 
             const unit2: UnitData = {
-                buildingID: 'bldg-456',
-                unitID: 'unit-456',
+                buildingID:    'bldg-456',
+                unitID:        'unit-456',
                 availableDate: '2024-12-31T23:59:59-99:99' // Invalid offset
             };
             expect(unit2.availableDate).toBe('2024-12-31T23:59:59-99:99');
@@ -145,7 +145,7 @@ describe('Date and Time Edge Cases', () => {
         it('should accept hours outside 0-23 range', () => {
             const contact: ContactInfo = {
                 officeHours: {
-                    [DayOfWeek.MONDAY]: { open: '25:00', close: '30:00' },
+                    [DayOfWeek.MONDAY]:  { open: '25:00', close: '30:00' },
                     [DayOfWeek.TUESDAY]: { open: '-5:00', close: '99:00' }
                 }
             };
@@ -157,7 +157,7 @@ describe('Date and Time Edge Cases', () => {
             const tours: TourAvailability = {
                 tourHours: {
                     [DayOfWeek.WEDNESDAY]: { open: '12:70', close: '14:99' },
-                    [DayOfWeek.THURSDAY]: { open: '09:-30', close: '17:150' }
+                    [DayOfWeek.THURSDAY]:  { open: '09:-30', close: '17:150' }
                 }
             };
             expect(tours.tourHours?.[DayOfWeek.WEDNESDAY]?.open).toBe('12:70');
@@ -167,7 +167,7 @@ describe('Date and Time Edge Cases', () => {
         it('should accept non-numeric time values', () => {
             const contact: ContactInfo = {
                 officeHours: {
-                    [DayOfWeek.FRIDAY]: { open: 'noon', close: 'midnight' },
+                    [DayOfWeek.FRIDAY]:   { open: 'noon', close: 'midnight' },
                     [DayOfWeek.SATURDAY]: { open: 'morning', close: 'evening' }
                 }
             };
@@ -178,8 +178,8 @@ describe('Date and Time Edge Cases', () => {
         it('should accept time with wrong separators', () => {
             const tours: TourAvailability = {
                 tourHours: {
-                    [DayOfWeek.SUNDAY]: { open: '09.00', close: '17.00' }, // Dots
-                    [DayOfWeek.MONDAY]: { open: '09-00', close: '17-00' }, // Hyphens
+                    [DayOfWeek.SUNDAY]:  { open: '09.00', close: '17.00' }, // Dots
+                    [DayOfWeek.MONDAY]:  { open: '09-00', close: '17-00' }, // Hyphens
                     [DayOfWeek.TUESDAY]: { open: '09 00', close: '17 00' } // Spaces
                 }
             };
@@ -191,8 +191,8 @@ describe('Date and Time Edge Cases', () => {
         it('should accept 12-hour format with AM/PM', () => {
             const contact: ContactInfo = {
                 officeHours: {
-                    [DayOfWeek.MONDAY]: { open: '9:00 AM', close: '5:00 PM' },
-                    [DayOfWeek.TUESDAY]: { open: '9:00AM', close: '5:00PM' }, // No space
+                    [DayOfWeek.MONDAY]:    { open: '9:00 AM', close: '5:00 PM' },
+                    [DayOfWeek.TUESDAY]:   { open: '9:00AM', close: '5:00PM' }, // No space
                     [DayOfWeek.WEDNESDAY]: { open: '9:00 am', close: '5:00 pm' } // Lowercase
                 }
             };
@@ -204,8 +204,8 @@ describe('Date and Time Edge Cases', () => {
         it('should accept empty or missing time components', () => {
             const tours: TourAvailability = {
                 tourHours: {
-                    [DayOfWeek.MONDAY]: { open: '', close: '' },
-                    [DayOfWeek.TUESDAY]: { open: ':', close: ':' },
+                    [DayOfWeek.MONDAY]:    { open: '', close: '' },
+                    [DayOfWeek.TUESDAY]:   { open: ':', close: ':' },
                     [DayOfWeek.WEDNESDAY]: { open: '9:', close: ':30' }
                 }
             };
@@ -219,7 +219,7 @@ describe('Date and Time Edge Cases', () => {
         it('should accept tour hours crossing midnight', () => {
             const tours: TourAvailability = {
                 tourHours: {
-                    [DayOfWeek.FRIDAY]: { open: '22:00', close: '02:00' }, // 10 PM to 2 AM
+                    [DayOfWeek.FRIDAY]:   { open: '22:00', close: '02:00' }, // 10 PM to 2 AM
                     [DayOfWeek.SATURDAY]: { open: '23:30', close: '00:30' } // 11:30 PM to 12:30 AM
                 }
             };
@@ -233,9 +233,9 @@ describe('Date and Time Edge Cases', () => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing invalid day name as key for edge case validation
                     ['INVALID_DAY' as any]: { open: '09:00', close: '17:00' },
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing custom string as day name key for edge case validation
-                    ['everyday' as any]: { open: '10:00', close: '18:00' },
+                    ['everyday' as any]:    { open: '10:00', close: '18:00' },
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing empty string as day name key for edge case validation
-                    ['' as any]: { open: '11:00', close: '19:00' }
+                    ['' as any]:            { open: '11:00', close: '19:00' }
                 }
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing invalid day name key for test verification
@@ -248,11 +248,11 @@ describe('Date and Time Edge Cases', () => {
             const contact: ContactInfo = {
                 officeHours: {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing numeric zero as day name key for edge case validation
-                    [0 as any]: { open: '09:00', close: '17:00' }, // Numeric 0
+                    [0 as any]:   { open: '09:00', close: '17:00' }, // Numeric 0
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing string '1' as day name key for edge case validation
                     ['1' as any]: { open: '10:00', close: '18:00' }, // String '1'
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing out-of-range number as day name key for edge case validation
-                    [7 as any]: { open: '11:00', close: '19:00' } // Out of range
+                    [7 as any]:   { open: '11:00', close: '19:00' } // Out of range
                 }
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing numeric zero key for test verification
@@ -267,22 +267,22 @@ describe('Date and Time Edge Cases', () => {
     describe('Date Parsing Edge Cases', () => {
         it('should accept leap year edge cases', () => {
             const unit1: UnitData = {
-                buildingID: 'bldg-1',
-                unitID: 'unit-1',
+                buildingID:    'bldg-1',
+                unitID:        'unit-1',
                 availableDate: '2024-02-29' // Valid leap year
             };
             expect(unit1.availableDate).toBe('2024-02-29');
 
             const unit2: UnitData = {
-                buildingID: 'bldg-2',
-                unitID: 'unit-2',
+                buildingID:    'bldg-2',
+                unitID:        'unit-2',
                 availableDate: '2023-02-29' // Invalid - not a leap year
             };
             expect(unit2.availableDate).toBe('2023-02-29');
 
             const unit3: UnitData = {
-                buildingID: 'bldg-3',
-                unitID: 'unit-3',
+                buildingID:    'bldg-3',
+                unitID:        'unit-3',
                 availableDate: '2100-02-29' // Invalid - 2100 is not a leap year
             };
             expect(unit3.availableDate).toBe('2100-02-29');
@@ -290,9 +290,9 @@ describe('Date and Time Edge Cases', () => {
 
         it('should accept DST transition dates', () => {
             const special: RentSpecial = {
-                title: 'DST Special',
-                startDate: '2024-03-10T02:30:00', // During spring forward (might not exist)
-                endDate: '2024-11-03T01:30:00', // During fall back (happens twice)
+                title:       'DST Special',
+                startDate:   '2024-03-10T02:30:00', // During spring forward (might not exist)
+                endDate:     '2024-11-03T01:30:00', // During fall back (happens twice)
                 description: 'Testing DST transition dates'
             };
             expect(special.startDate).toBe('2024-03-10T02:30:00');
@@ -302,19 +302,19 @@ describe('Date and Time Edge Cases', () => {
         it('should accept extreme years', () => {
             const building: BuildingData = {
                 buildingID: 'bldg-123',
-                yearBuilt: 0
+                yearBuilt:  0
             };
             expect(building.yearBuilt).toBe(0);
 
             const building2: BuildingData = {
                 buildingID: 'bldg-456',
-                yearBuilt: 9999
+                yearBuilt:  9999
             };
             expect(building2.yearBuilt).toBe(9999);
 
             const building3: BuildingData = {
                 buildingID: 'bldg-789',
-                yearBuilt: -1000 // BC dates
+                yearBuilt:  -1000 // BC dates
             };
             expect(building3.yearBuilt).toBe(-1000);
         });
@@ -322,33 +322,33 @@ describe('Date and Time Edge Cases', () => {
         it('should accept various date string formats', () => {
             const units: UnitData[] = [
                 {
-                    buildingID: 'bldg-1',
-                    unitID: 'unit-1',
+                    buildingID:    'bldg-1',
+                    unitID:        'unit-1',
                     availableDate: 'December 31, 2024' // Full month name
                 },
                 {
-                    buildingID: 'bldg-2',
-                    unitID: 'unit-2',
+                    buildingID:    'bldg-2',
+                    unitID:        'unit-2',
                     availableDate: 'Dec 31, 2024' // Abbreviated month
                 },
                 {
-                    buildingID: 'bldg-3',
-                    unitID: 'unit-3',
+                    buildingID:    'bldg-3',
+                    unitID:        'unit-3',
                     availableDate: '31/12/2024' // DD/MM/YYYY
                 },
                 {
-                    buildingID: 'bldg-4',
-                    unitID: 'unit-4',
+                    buildingID:    'bldg-4',
+                    unitID:        'unit-4',
                     availableDate: '12/31/2024' // MM/DD/YYYY
                 },
                 {
-                    buildingID: 'bldg-5',
-                    unitID: 'unit-5',
+                    buildingID:    'bldg-5',
+                    unitID:        'unit-5',
                     availableDate: '2024-W52-7' // ISO week date
                 },
                 {
-                    buildingID: 'bldg-6',
-                    unitID: 'unit-6',
+                    buildingID:    'bldg-6',
+                    unitID:        'unit-6',
                     availableDate: '2024-365' // Ordinal date
                 }
             ];
@@ -361,29 +361,29 @@ describe('Date and Time Edge Cases', () => {
 
         it('should accept special date values', () => {
             const unit1: UnitData = {
-                buildingID: 'bldg-1',
-                unitID: 'unit-1',
+                buildingID:    'bldg-1',
+                unitID:        'unit-1',
                 availableDate: 'now'
             };
             expect(unit1.availableDate).toBe('now');
 
             const unit2: UnitData = {
-                buildingID: 'bldg-2',
-                unitID: 'unit-2',
+                buildingID:    'bldg-2',
+                unitID:        'unit-2',
                 availableDate: 'today'
             };
             expect(unit2.availableDate).toBe('today');
 
             const unit3: UnitData = {
-                buildingID: 'bldg-3',
-                unitID: 'unit-3',
+                buildingID:    'bldg-3',
+                unitID:        'unit-3',
                 availableDate: 'tomorrow'
             };
             expect(unit3.availableDate).toBe('tomorrow');
 
             const unit4: UnitData = {
-                buildingID: 'bldg-4',
-                unitID: 'unit-4',
+                buildingID:    'bldg-4',
+                unitID:        'unit-4',
                 availableDate: 'ASAP'
             };
             expect(unit4.availableDate).toBe('ASAP');

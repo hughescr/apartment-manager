@@ -6,7 +6,7 @@ import { isArray } from 'lodash';
 
 // Type definitions for test objects
 interface Amenity {
-    name: string
+    name:     string
     category: string
 }
 
@@ -39,7 +39,7 @@ describe('Amenity Inheritance System', () => {
             const component = {
                 buildingAmenities,
                 unitType: {
-                    id: 'model1',
+                    id:             'model1',
                     modelAmenities: [] as AmenityArray
                 },
 
@@ -68,7 +68,7 @@ describe('Amenity Inheritance System', () => {
             ];
 
             const unitType = {
-                id: 'premium-unit',
+                id:             'premium-unit',
                 modelAmenities: customAmenities
             };
 
@@ -298,8 +298,8 @@ describe('Amenity Inheritance System', () => {
         it('should return none when no amenities exist at any level', () => {
             const component = {
                 buildingAmenities: null as AmenityArray,
-                selectedUnitType: null as UnitTypeWithAmenities,
-                unit: {
+                selectedUnitType:  null as UnitTypeWithAmenities,
+                unit:              {
                     unitAmenities: null as AmenityArray
                 },
 
@@ -322,7 +322,7 @@ describe('Amenity Inheritance System', () => {
         it('should show correct inheritance explanation for each source', () => {
             const component = {
                 buildingAmenities: [{ name: 'Pool', category: 'Recreation' }],
-                selectedUnitType: {
+                selectedUnitType:  {
                     modelAmenities: [{ name: 'Balcony', category: 'Unit Features' }]
                 },
 
@@ -499,7 +499,7 @@ describe('Amenity Inheritance System', () => {
         it('should handle missing building amenities gracefully', () => {
             const component = {
                 buildingAmenities: null as AmenityArray,
-                unitType: {
+                unitType:          {
                     modelAmenities: null as AmenityArray
                 },
 
@@ -516,7 +516,7 @@ describe('Amenity Inheritance System', () => {
         it('should handle missing unit type gracefully', () => {
             const component = {
                 selectedUnitType: null as RecordType | null,
-                unit: {
+                unit:             {
                     beds: undefined
                 } as RecordType,
 

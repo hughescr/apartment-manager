@@ -7,23 +7,23 @@ import { FieldInheritanceManager, type FieldName } from '../../../../astro-src/l
 import type { ExtendedUnitData, UnitTypeData } from '../../../../astro-src/lib/building/types';
 
 interface MockAlpineComponent {
-    editUnit: ExtendedUnitData
-    selectedUnitType: UnitTypeData | null
-    inheritanceManager: FieldInheritanceManager
-    isFieldInherited: (fieldName: FieldName) => boolean
-    getInheritedValue: (fieldName: FieldName) => unknown
-    getEffectiveValue: (fieldName: FieldName) => unknown
+    editUnit:            ExtendedUnitData
+    selectedUnitType:    UnitTypeData | null
+    inheritanceManager:  FieldInheritanceManager
+    isFieldInherited:    (fieldName: FieldName) => boolean
+    getInheritedValue:   (fieldName: FieldName) => unknown
+    getEffectiveValue:   (fieldName: FieldName) => unknown
     getFieldPlaceholder: (fieldName: FieldName, defaultPlaceholder?: string) => string
     getInheritanceBadge: (fieldName: FieldName) => string | null
-    clearOverride: (fieldName: FieldName) => void
+    clearOverride:       (fieldName: FieldName) => void
     hasOverriddenFields: () => boolean
 }
 
 interface MockAlpineComponentWithOptions extends MockAlpineComponent {
-    getUnitTypes: () => UnitTypeData[]
-    unitTypeOptions: { value: string, label: string }[]
+    getUnitTypes:          () => UnitTypeData[]
+    unitTypeOptions:       { value: string, label: string }[]
     previewUnitTypeChange: (newModelID: string) => boolean
-    onUnitTypeChange: () => void
+    onUnitTypeChange:      () => void
 }
 
 describe('EditUnitDialog - Inheritance Logic', () => {
@@ -36,61 +36,61 @@ describe('EditUnitDialog - Inheritance Logic', () => {
 
         mockUnitTypes = [
             {
-                buildingID: 'building-1',
-                modelID: 'studio-type',
-                modelName: 'Studio',
-                beds: 0,
-                baths: 1,
-                minSqft: 500,
-                maxSqft: 600,
-                minRent: 2000,
-                maxRent: 2200,
+                buildingID:   'building-1',
+                modelID:      'studio-type',
+                modelName:    'Studio',
+                beds:         0,
+                baths:        1,
+                minSqft:      500,
+                maxSqft:      600,
+                minRent:      2000,
+                maxRent:      2200,
                 maxOccupants: 2,
-                deposit: 1000
+                deposit:      1000
             },
             {
-                buildingID: 'building-1',
-                modelID: '1br-type',
-                modelName: '1 Bedroom',
-                beds: 1,
-                baths: 1,
-                minSqft: 750,
-                maxSqft: 850,
-                minRent: 2800,
-                maxRent: 3200,
+                buildingID:   'building-1',
+                modelID:      '1br-type',
+                modelName:    '1 Bedroom',
+                beds:         1,
+                baths:        1,
+                minSqft:      750,
+                maxSqft:      850,
+                minRent:      2800,
+                maxRent:      3200,
                 maxOccupants: 2,
-                deposit: 1500
+                deposit:      1500
             },
             {
-                buildingID: 'building-1',
-                modelID: '2br-type',
-                modelName: '2 Bedroom',
-                beds: 2,
-                baths: 2,
-                minSqft: 1000,
-                maxSqft: 1200,
-                minRent: 3500,
-                maxRent: 4000,
+                buildingID:   'building-1',
+                modelID:      '2br-type',
+                modelName:    '2 Bedroom',
+                beds:         2,
+                baths:        2,
+                minSqft:      1000,
+                maxSqft:      1200,
+                minRent:      3500,
+                maxRent:      4000,
                 maxOccupants: 4,
-                deposit: 2000
+                deposit:      2000
             }
         ];
         mockUnit = {
-            unitID: 'unit-101',
-            buildingID: 'building-1',
-            unitNumber: '101',
-            modelID: 'studio-type',
-            beds: undefined,
-            baths: undefined,
-            sqft: undefined,
-            rent: undefined,
+            unitID:       'unit-101',
+            buildingID:   'building-1',
+            unitNumber:   '101',
+            modelID:      'studio-type',
+            beds:         undefined,
+            baths:        undefined,
+            sqft:         undefined,
+            rent:         undefined,
             vacancyClass: 'Unoccupied',
-            description: 'Corner unit with great view',
-            lastUpdated: '2025-01-01T00:00:00Z',
-            status: 'available',
-            currentRent: 0,
-            editingRent: false,
-            savingField: null
+            description:  'Corner unit with great view',
+            lastUpdated:  '2025-01-01T00:00:00Z',
+            status:       'available',
+            currentRent:  0,
+            editingRent:  false,
+            savingField:  null
         };
     });
 
@@ -107,10 +107,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should detect overridden fields when unit has values', () => {
             const unitWithOverrides = {
                 ...mockUnit,
-                beds: 1,
+                beds:  1,
                 baths: 1.5,
-                sqft: 700,
-                rent: 2500
+                sqft:  700,
+                rent:  2500
             };
             const selectedUnitType = mockUnitTypes[0]; // Studio
 
@@ -130,10 +130,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should handle undefined values as inherited', () => {
             const unitWithUndefinedValues = {
                 ...mockUnit,
-                beds: undefined,
+                beds:  undefined,
                 baths: undefined,
-                sqft: undefined, // Undefined should be inherited
-                rent: undefined  // Undefined should be inherited
+                sqft:  undefined, // Undefined should be inherited
+                rent:  undefined  // Undefined should be inherited
             };
             const selectedUnitType = mockUnitTypes[0];
 
@@ -186,10 +186,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should return null when unit type lacks the field', () => {
             const incompleteUnitType = {
                 buildingID: 'test-building',
-                modelID: 'incomplete',
-                modelName: 'Incomplete',
-                beds: 1,
-                baths: 1
+                modelID:    'incomplete',
+                modelName:  'Incomplete',
+                beds:       1,
+                baths:      1
             };
 
             expect(inheritanceManager.getInheritedValue(incompleteUnitType, 'beds')).toBe(1);
@@ -200,10 +200,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should return unit value when unit has overrides', () => {
             const unitWithOverrides = {
                 ...mockUnit,
-                beds: 2,
+                beds:  2,
                 baths: 2.5,
-                sqft: 1100,
-                rent: 3500
+                sqft:  1100,
+                rent:  3500
             };
             const selectedUnitType = mockUnitTypes[0]; // Studio
 
@@ -225,10 +225,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should handle mixed scenario with some overrides and some inheritance', () => {
             const partialOverrideUnit = {
                 ...mockUnit,
-                beds: 3, // Override
+                beds:  3, // Override
                 baths: undefined, // Inherit
-                sqft: 1500, // Override
-                rent: undefined // Inherit
+                sqft:  1500, // Override
+                rent:  undefined // Inherit
             };
             const selectedUnitType = mockUnitTypes[2]; // 2BR
 
@@ -245,8 +245,8 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         beforeEach(() => {
             // Mock the Alpine.js component behavior
             mockAlpineComponent = {
-                editUnit: { ...mockUnit },
-                selectedUnitType: mockUnitTypes[0],
+                editUnit:           { ...mockUnit },
+                selectedUnitType:   mockUnitTypes[0],
                 inheritanceManager: new FieldInheritanceManager(),
 
                 // Mock methods that would be in the actual Alpine component
@@ -273,8 +273,8 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                 getInheritanceBadge(fieldName: FieldName) {
                     if(this.isFieldInherited(fieldName)) {
                         return 'Inherited from floorplan';
-                    } else if(this.selectedUnitType && this.editUnit[fieldName as keyof ExtendedUnitData] !== null &&
-                      this.editUnit[fieldName as keyof ExtendedUnitData] !== undefined && this.editUnit[fieldName as keyof ExtendedUnitData] !== '') {
+                    } else if(this.selectedUnitType && this.editUnit[fieldName as keyof ExtendedUnitData] !== null
+                      && this.editUnit[fieldName as keyof ExtendedUnitData] !== undefined && this.editUnit[fieldName as keyof ExtendedUnitData] !== '') {
                         return 'Custom override';
                     }
                     return null;
@@ -337,10 +337,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             it('should show custom override badge for overridden fields', () => {
                 mockAlpineComponent.editUnit = {
                     ...mockUnit,
-                    beds: 2,
+                    beds:  2,
                     baths: 2.5,
-                    sqft: 1200,
-                    rent: 3800
+                    sqft:  1200,
+                    rent:  3800
                 };
                 mockAlpineComponent.selectedUnitType = mockUnitTypes[0];
 
@@ -364,10 +364,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             it('should clear individual field overrides', () => {
                 mockAlpineComponent.editUnit = {
                     ...mockUnit,
-                    beds: 3,
+                    beds:  3,
                     baths: 2.5,
-                    sqft: 1200,
-                    rent: 3500
+                    sqft:  1200,
+                    rent:  3500
                 };
                 mockAlpineComponent.clearOverride('beds');
                 expect(mockAlpineComponent.editUnit.beds).toBeUndefined();
@@ -407,7 +407,7 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             it('should detect when unit has overridden fields', () => {
                 mockAlpineComponent.editUnit = {
                     ...mockUnit,
-                    beds: 2,
+                    beds:  2,
                     baths: 2
                 };
                 mockAlpineComponent.selectedUnitType = mockUnitTypes[0];
@@ -425,7 +425,7 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             it('should return false when no unit type is selected', () => {
                 mockAlpineComponent.editUnit = {
                     ...mockUnit,
-                    beds: 2,
+                    beds:  2,
                     baths: 2
                 };
                 mockAlpineComponent.selectedUnitType = null;
@@ -440,10 +440,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
 
         beforeEach(() => {
             mockAlpineComponent = {
-                editUnit: { ...mockUnit },
-                selectedUnitType: null,
+                editUnit:           { ...mockUnit },
+                selectedUnitType:   null,
                 inheritanceManager: new FieldInheritanceManager(),
-                getUnitTypes: jest.fn().mockReturnValue(mockUnitTypes),
+                getUnitTypes:       jest.fn().mockReturnValue(mockUnitTypes),
 
                 // Add all required MockAlpineComponent methods
                 isFieldInherited(fieldName: FieldName) {
@@ -469,8 +469,8 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                 getInheritanceBadge(fieldName: FieldName) {
                     if(this.isFieldInherited(fieldName)) {
                         return 'Inherited from floorplan';
-                    } else if(this.selectedUnitType && this.editUnit[fieldName as keyof ExtendedUnitData] !== null &&
-                      this.editUnit[fieldName as keyof ExtendedUnitData] !== undefined && this.editUnit[fieldName as keyof ExtendedUnitData] !== '') {
+                    } else if(this.selectedUnitType && this.editUnit[fieldName as keyof ExtendedUnitData] !== null
+                      && this.editUnit[fieldName as keyof ExtendedUnitData] !== undefined && this.editUnit[fieldName as keyof ExtendedUnitData] !== '') {
                         return 'Custom override';
                     }
                     return null;
@@ -524,7 +524,7 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                             return value;
                         }
                         if(typeof value === 'string') {
-                            const match = value.match(/-?\d+(?:\.\d+)?/);
+                            const match = /-?\d+(?:\.\d+)?/.exec(value);
                             if(match) {
                                 const parsed = Number(match[0]);
                                 return Number.isNaN(parsed) ? null : parsed;
@@ -544,8 +544,8 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                         if(willInherit && newInheritedValue !== null && normalizedCurrentValue !== normalizedNewValue) {
                             changes.push({
                                 field: field,
-                                from: currentValue?.toString() || 'Not set',
-                                to: newInheritedValue
+                                from:  currentValue?.toString() || 'Not set',
+                                to:    newInheritedValue
                             });
                         }
                     });
@@ -628,10 +628,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             it('should reset fields to null when selecting unit type', () => {
                 mockAlpineComponent.editUnit = {
                     ...mockUnit,
-                    beds: 0,
+                    beds:  0,
                     baths: 0,
-                    sqft: 0,
-                    rent: 0
+                    sqft:  0,
+                    rent:  0
                 };
                 mockAlpineComponent.selectedUnitType = mockUnitTypes[0];
 
@@ -656,10 +656,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
             it('should preserve existing non-zero values when selecting unit type', () => {
                 mockAlpineComponent.editUnit = {
                     ...mockUnit,
-                    beds: 3,
+                    beds:  3,
                     baths: 2.5,
-                    sqft: 1500,
-                    rent: 4000
+                    sqft:  1500,
+                    rent:  4000
                 };
                 mockAlpineComponent.selectedUnitType = mockUnitTypes[0];
 
@@ -678,12 +678,12 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should handle unit types without complete field sets', () => {
             const incompleteUnitType = {
                 buildingID: 'test-building',
-                modelID: 'incomplete',
-                modelName: 'Incomplete',
-                beds: 1,
-                baths: 1,
-                minSqft: undefined,
-                maxSqft: undefined
+                modelID:    'incomplete',
+                modelName:  'Incomplete',
+                beds:       1,
+                baths:      1,
+                minSqft:    undefined,
+                maxSqft:    undefined
             };
 
             expect(inheritanceManager.isInherited(mockUnit, incompleteUnitType, 'beds')).toBe(true);
@@ -694,10 +694,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should handle zero values correctly', () => {
             const unitWithZeros = {
                 ...mockUnit,
-                beds: 0,
+                beds:  0,
                 baths: 0.5,
-                sqft: 0,
-                rent: 0
+                sqft:  0,
+                rent:  0
             };
             const selectedUnitType = mockUnitTypes[0];
 
@@ -711,10 +711,10 @@ describe('EditUnitDialog - Inheritance Logic', () => {
         it('should handle undefined values in unit data', () => {
             const unitWithUndefined = {
                 ...mockUnit,
-                beds: undefined,
+                beds:  undefined,
                 baths: undefined,
-                sqft: undefined,
-                rent: undefined
+                sqft:  undefined,
+                rent:  undefined
             };
             const selectedUnitType = mockUnitTypes[0];
 

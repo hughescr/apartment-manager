@@ -2,10 +2,10 @@
 import type { BuildingData, UnitData, UnitTypeData } from '../../types';
 
 export interface Props {
-    building: BuildingData
-    units: UnitData[]
+    building:  BuildingData
+    units:     UnitData[]
     unitTypes: UnitTypeData[]
-    apiURL: string
+    apiURL:    string
 }
 
 const { building, units, unitTypes, apiURL: _apiURL } = Astro.props;
@@ -53,15 +53,15 @@ if(!building.petPolicies) {
 // Screening criteria - initialize with sensible defaults
 if(!building.screeningCriteria) {
     building.screeningCriteria = {
-        incomeRatio: 3,
-        minCreditScore: 600,
-        maxOccupantsPerBedroom: 2,
+        incomeRatio:             3,
+        minCreditScore:          600,
+        maxOccupantsPerBedroom:  2,
         backgroundCheckRequired: true,
-        evictionHistory: true,
-        criminalHistory: true,
-        references: 2,
-        employmentVerification: true,
-        rentalHistory: true
+        evictionHistory:         true,
+        criminalHistory:         true,
+        references:              2,
+        employmentVerification:  true,
+        rentalHistory:           true
     };
 }
 
@@ -84,7 +84,7 @@ if(!building.tourAvailability.tourHours) {
 // Income restrictions - initialize with sensible defaults
 if(!building.incomeRestrictions) {
     building.incomeRestrictions = {
-        amiLimit: undefined,
+        amiLimit:                 undefined,
         maxIncomeByHouseholdSize: {}
     };
 }

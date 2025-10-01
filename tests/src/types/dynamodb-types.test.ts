@@ -11,10 +11,10 @@ describe('DynamoDB Entity Types', () => {
         it('should accept valid DynamoDBItem', () => {
             const item: DynamoDBItem = {
                 partitionKey: 'bldg-123',
-                sortKey: 'BUILDING',
-                entityType: 'building',
-                gsi1pk: 'MODEL#model-1',
-                gsi1sk: 'bldg-123'
+                sortKey:      'BUILDING',
+                entityType:   'building',
+                gsi1pk:       'MODEL#model-1',
+                gsi1sk:       'bldg-123'
             };
             expect(item.entityType).toBe('building');
             expect(item.gsi1pk).toBe('MODEL#model-1');
@@ -23,8 +23,8 @@ describe('DynamoDB Entity Types', () => {
         it('should accept DynamoDBItem without GSI keys', () => {
             const item: DynamoDBItem = {
                 partitionKey: 'bldg-123',
-                sortKey: 'BUILDING',
-                entityType: 'unit'
+                sortKey:      'BUILDING',
+                entityType:   'unit'
             };
             expect(item.gsi1pk).toBeUndefined();
             expect(item.gsi1sk).toBeUndefined();
@@ -34,11 +34,11 @@ describe('DynamoDB Entity Types', () => {
     describe('BuildingDynamoDBItem', () => {
         it('should have proper structure for building entity', () => {
             const buildingItem: BuildingDynamoDBItem = {
-                buildingID: 'bldg-123',
-                street: '123 Main St',
-                entityType: 'building',
+                buildingID:   'bldg-123',
+                street:       '123 Main St',
+                entityType:   'building',
                 partitionKey: 'bldg-123',
-                sortKey: 'BUILDING'
+                sortKey:      'BUILDING'
             };
             expect(buildingItem.entityType).toBe('building');
             expect(buildingItem.partitionKey).toBe(buildingItem.buildingID);
@@ -49,12 +49,12 @@ describe('DynamoDB Entity Types', () => {
     describe('UnitDynamoDBItem', () => {
         it('should have proper structure for unit entity', () => {
             const unitItem: UnitDynamoDBItem = {
-                buildingID: 'bldg-123',
-                unitID: 'unit-456',
-                beds: 2,
-                entityType: 'unit',
+                buildingID:   'bldg-123',
+                unitID:       'unit-456',
+                beds:         2,
+                entityType:   'unit',
                 partitionKey: 'bldg-123',
-                sortKey: 'UNIT#unit-456'
+                sortKey:      'UNIT#unit-456'
             };
             expect(unitItem.entityType).toBe('unit');
             expect(unitItem.partitionKey).toBe(unitItem.buildingID);
@@ -65,16 +65,16 @@ describe('DynamoDB Entity Types', () => {
     describe('UnitTypeDynamoDBItem', () => {
         it('should have proper structure for unitType entity with GSI', () => {
             const unitTypeItem: UnitTypeDynamoDBItem = {
-                buildingID: 'bldg-123',
-                modelID: 'model-1',
-                modelName: '2BR',
-                beds: 2,
-                baths: 2,
-                entityType: 'unitType',
+                buildingID:   'bldg-123',
+                modelID:      'model-1',
+                modelName:    '2BR',
+                beds:         2,
+                baths:        2,
+                entityType:   'unitType',
                 partitionKey: 'bldg-123',
-                sortKey: 'MODEL#model-1',
-                gsi1pk: 'MODEL#model-1',
-                gsi1sk: 'bldg-123'
+                sortKey:      'MODEL#model-1',
+                gsi1pk:       'MODEL#model-1',
+                gsi1sk:       'bldg-123'
             };
             expect(unitTypeItem.entityType).toBe('unitType');
             expect(unitTypeItem.sortKey).toBe('MODEL#model-1');

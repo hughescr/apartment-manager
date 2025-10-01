@@ -25,17 +25,17 @@ export async function list(_event: APIGatewayProxyEventV2): Promise<APIGatewayPr
 
         return {
             statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
                 sites: siteStatuses
             })
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Failed to list credentials:', error);
         return {
             statusCode: 500,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
                 error: 'Failed to list credentials'
             })
         };
@@ -51,8 +51,8 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
         if(!site) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
                     error: 'Site parameter is required'
                 })
             };
@@ -62,8 +62,8 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
         if(!/^[a-z0-9-]+$/.test(site)) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
                     error: 'Invalid site name. Use lowercase letters, numbers, and hyphens only.'
                 })
             };
@@ -72,8 +72,8 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
         if(!event.body) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
                     error: 'Request body is required'
                 })
             };
@@ -82,17 +82,17 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
         let credentials: SiteCredentials;
         try {
             credentials = JSON.parse(event.body);
-        } catch(parseError) {
+        } catch (parseError) {
             logger.warn('Failed to parse credentials request body', {
-                error: parseError,
-                context: 'store credentials request parsing',
+                error:      parseError,
+                context:    'store credentials request parsing',
                 httpMethod: event.requestContext.http.method
             });
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    error: 'Invalid JSON in request body',
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
+                    error:   'Invalid JSON in request body',
                     details: isError(parseError) ? parseError.message : 'Invalid JSON format'
                 })
             };
@@ -102,8 +102,8 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
         if(!credentials.username && !credentials.apiKey && !credentials.feedUrl) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
                     error: 'At least one credential field is required (username, apiKey, or feedUrl)'
                 })
             };
@@ -113,18 +113,18 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
 
         return {
             statusCode: 201,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
                 message: `Credentials stored for ${site}`,
                 site
             })
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Failed to store credentials:', error);
         return {
             statusCode: 500,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
                 error: 'Failed to store credentials'
             })
         };
@@ -140,8 +140,8 @@ export async function get(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
         if(!site) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
                     error: 'Site parameter is required'
                 })
             };
@@ -152,8 +152,8 @@ export async function get(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
         if(!exists) {
             return {
                 statusCode: 404,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
                     error: `No credentials found for ${site}`
                 })
             };
@@ -162,29 +162,29 @@ export async function get(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
         // Get credential to check which fields are present (without exposing values)
         const credential = await getCredential(site);
         const fields = {
-            hasUsername: !!credential?.username,
-            hasPassword: !!credential?.password,
-            hasApiKey: !!credential?.apiKey,
+            hasUsername:  !!credential?.username,
+            hasPassword:  !!credential?.password,
+            hasApiKey:    !!credential?.apiKey,
             hasApiSecret: !!credential?.apiSecret,
-            hasFeedUrl: !!credential?.feedUrl,
-            hasMetadata: !!credential?.metadata && (credential.metadata ? keys(credential.metadata).length : 0) > 0
+            hasFeedUrl:   !!credential?.feedUrl,
+            hasMetadata:  !!credential?.metadata && (credential.metadata ? keys(credential.metadata).length : 0) > 0
         };
 
         return {
             statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
                 site,
                 exists: true,
                 fields
             })
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Failed to check credentials:', error);
         return {
             statusCode: 500,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
                 error: 'Failed to check credentials'
             })
         };
@@ -208,8 +208,8 @@ export async function del(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
         if(!site) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({
                     error: 'Site parameter is required'
                 })
             };
@@ -219,15 +219,15 @@ export async function del(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
 
         return {
             statusCode: 204,
-            headers: { 'Content-Type': 'application/json' },
-            body: ''
+            headers:    { 'Content-Type': 'application/json' },
+            body:       ''
         };
-    } catch(error) {
+    } catch (error) {
         logger.error('Failed to delete credentials:', error);
         return {
             statusCode: 500,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
                 error: 'Failed to delete credentials'
             })
         };

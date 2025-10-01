@@ -17,9 +17,9 @@ export class UnitTypeApiService {
             );
 
             const response = await fetch(apiURL + 'buildings/' + buildingID + '/unit-types', {
-                method: 'POST',
+                method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToSend),
+                body:    JSON.stringify(dataToSend),
             });
 
             if(response.ok) {
@@ -28,13 +28,13 @@ export class UnitTypeApiService {
                 const errorData = await response.json();
                 return {
                     success: false,
-                    error: errorData.error || 'Failed to create unit type'
+                    error:   errorData.error || 'Failed to create unit type'
                 };
             }
         } catch{
             return {
                 success: false,
-                error: 'Network error. Please try again.'
+                error:   'Network error. Please try again.'
             };
         }
     }

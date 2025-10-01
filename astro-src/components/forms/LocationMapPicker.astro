@@ -2,26 +2,26 @@
 import _ from 'lodash';
 export interface Props {
     /** Alpine.js x-model for latitude binding */
-    latModel: string
+    latModel:         string
     /** Alpine.js x-model for longitude binding */
-    lngModel: string
+    lngModel:         string
     /** Alpine.js x-model for coordinatesVerified binding */
-    verifiedModel?: string
+    verifiedModel?:   string
     /** Address fields for geocoding - Alpine.js expressions */
-    addressModel?: string
-    cityModel?: string
-    stateModel?: string
+    addressModel?:    string
+    cityModel?:       string
+    stateModel?:      string
     /** Initial center coordinates if not provided by models */
-    defaultLat?: number
-    defaultLng?: number
+    defaultLat?:      number
+    defaultLng?:      number
     /** Height of the map container */
-    height?: string
+    height?:          string
     /** API URL for geocoding endpoint */
-    apiUrl: string
+    apiUrl:           string
     /** CSS classes for the container */
-    'class'?: string
+    'class'?:         string
     /** Help text to display */
-    helpText?: string
+    helpText?:        string
     /** Show coordinates display */
     showCoordinates?: boolean
 }

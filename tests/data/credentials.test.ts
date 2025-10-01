@@ -39,9 +39,9 @@ describe('Credentials Data Layer', () => {
     describe('storeCredential', () => {
         test('should store credentials successfully', async () => {
             const credentials: SiteCredentials = {
-                apiKey: 'test-api-key',
+                apiKey:    'test-api-key',
                 apiSecret: 'test-api-secret',
-                feedUrl: 'https://example.com/feed'
+                feedUrl:   'https://example.com/feed'
             };
 
             const result = await storeCredential('apartments-com', credentials);
@@ -69,15 +69,15 @@ describe('Credentials Data Layer', () => {
     describe('getCredential', () => {
         test('should retrieve credentials successfully', async () => {
             const storedCredentials = {
-                apiKey: 'retrieved-key',
+                apiKey:    'retrieved-key',
                 apiSecret: 'retrieved-secret'
             };
 
             ssmMock.mockResolvedValueOnce({
                 Parameter: {
-                    Name: '/apartment-manager/test/credentials/zillow',
+                    Name:  '/apartment-manager/test/credentials/zillow',
                     Value: JSON.stringify(storedCredentials),
-                    Type: 'SecureString'
+                    Type:  'SecureString'
                 }
             });
 
@@ -192,7 +192,7 @@ describe('Credentials Data Layer', () => {
         test('should return empty array when no credentials exist', async () => {
             ssmMock.mockResolvedValueOnce({
                 Parameters: [],
-                NextToken: undefined
+                NextToken:  undefined
             });
 
             const result = await listCredentials();
@@ -213,9 +213,9 @@ describe('Credentials Data Layer', () => {
         test('should return true for existing credentials', async () => {
             ssmMock.mockResolvedValueOnce({
                 Parameter: {
-                    Name: '/apartment-manager/test/credentials/test-site',
+                    Name:  '/apartment-manager/test/credentials/test-site',
                     Value: '{"apiKey":"key"}',
-                    Type: 'SecureString'
+                    Type:  'SecureString'
                 }
             });
 
@@ -259,7 +259,7 @@ describe('Credentials Data Layer', () => {
 
         test('should handle API key credentials', async () => {
             const credentials: SiteCredentials = {
-                apiKey: 'test-key-123',
+                apiKey:    'test-key-123',
                 apiSecret: 'test-secret-456'
             };
 
@@ -284,11 +284,11 @@ describe('Credentials Data Layer', () => {
 
         test('should handle metadata', async () => {
             const credentials: SiteCredentials = {
-                apiKey: 'key',
+                apiKey:   'key',
                 metadata: {
                     accountId: '12345',
-                    region: 'us-west',
-                    tier: 'premium'
+                    region:    'us-west',
+                    tier:      'premium'
                 }
             };
 

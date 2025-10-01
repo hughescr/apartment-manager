@@ -21,10 +21,10 @@ describe('hasUnsavedChanges', () => {
     test('returns false when building and original are identical', () => {
         const buildingData = {
             buildingID: 'test',
-            street: '123 Main St',
-            city: 'San Francisco',
-            state: 'CA',
-            zip: '94102'
+            street:     '123 Main St',
+            city:       'San Francisco',
+            state:      'CA',
+            zip:        '94102'
         } as BuildingData;
 
         const original = JSON.parse(JSON.stringify(buildingData));
@@ -34,10 +34,10 @@ describe('hasUnsavedChanges', () => {
     test('returns true when building data has changed', () => {
         const original = {
             buildingID: 'test',
-            street: '123 Main St',
-            city: 'San Francisco',
-            state: 'CA',
-            zip: '94102'
+            street:     '123 Main St',
+            city:       'San Francisco',
+            state:      'CA',
+            zip:        '94102'
         } as BuildingData;
 
         const building = {
@@ -51,10 +51,10 @@ describe('hasUnsavedChanges', () => {
     test('returns false when only undefined properties differ', () => {
         const original = {
             buildingID: 'test',
-            street: '123 Main St',
-            city: 'San Francisco',
-            state: 'CA',
-            zip: '94102'
+            street:     '123 Main St',
+            city:       'San Francisco',
+            state:      'CA',
+            zip:        '94102'
         } as BuildingData;
 
         const building = {
@@ -67,7 +67,7 @@ describe('hasUnsavedChanges', () => {
 
     test('handles array properties correctly', () => {
         const original = {
-            buildingID: 'test',
+            buildingID:  'test',
             oneTimeFees: [{ type: FeeType.SECURITY_DEPOSIT, amount: 500 }]
         } as BuildingData;
 
@@ -81,7 +81,7 @@ describe('hasUnsavedChanges', () => {
 
     test('detects changes in array properties', () => {
         const original = {
-            buildingID: 'test',
+            buildingID:  'test',
             oneTimeFees: [{ type: FeeType.SECURITY_DEPOSIT, amount: 500 }]
         } as BuildingData;
 
@@ -98,7 +98,7 @@ describe('hasUnsavedChanges', () => {
 
     test('handles nested object properties correctly', () => {
         const original = {
-            buildingID: 'test',
+            buildingID:  'test',
             contactInfo: {
                 phone: '555-1234',
                 email: 'test@example.com'
@@ -112,7 +112,7 @@ describe('hasUnsavedChanges', () => {
 
     test('detects changes in nested object properties', () => {
         const original = {
-            buildingID: 'test',
+            buildingID:  'test',
             contactInfo: {
                 phone: '555-1234',
                 email: 'test@example.com'
@@ -133,14 +133,14 @@ describe('hasUnsavedChanges', () => {
     test('handles property reordering correctly', () => {
         const original = {
             buildingID: 'test',
-            street: '123 Main St',
-            city: 'San Francisco'
+            street:     '123 Main St',
+            city:       'San Francisco'
         } as BuildingData;
 
         const building = {
-            city: 'San Francisco',
+            city:       'San Francisco',
             buildingID: 'test',
-            street: '123 Main St'
+            street:     '123 Main St'
         } as BuildingData;
 
         expect(hasUnsavedChanges(building, original)).toBe(false);
@@ -151,11 +151,11 @@ describe('hasUnsavedChanges', () => {
         // but might have slightly different serialization
         const serverData = {
             buildingID: 'test',
-            street: '123 Main St',
-            city: 'San Francisco',
-            state: 'CA',
-            zip: '94102',
-            yearBuilt: 2020,
+            street:     '123 Main St',
+            city:       'San Francisco',
+            state:      'CA',
+            zip:        '94102',
+            yearBuilt:  2020,
             totalUnits: 50
         } as BuildingData;
 
@@ -170,15 +170,15 @@ describe('hasUnsavedChanges', () => {
 
     test('handles very small coordinate differences as equal', () => {
         const building: BuildingData = {
-            buildingID: 'test',
-            latitude: 37.7749295,
-            longitude: -122.4194155,
+            buildingID:          'test',
+            latitude:            37.7749295,
+            longitude:           -122.4194155,
             coordinatesVerified: true
         };
         const original: BuildingData = {
-            buildingID: 'test',
-            latitude: 37.7749295 + 1e-15, // Tiny floating point difference
-            longitude: -122.4194155 + 1e-15,
+            buildingID:          'test',
+            latitude:            37.7749295 + 1e-15, // Tiny floating point difference
+            longitude:           -122.4194155 + 1e-15,
             coordinatesVerified: true
         };
 
@@ -188,15 +188,15 @@ describe('hasUnsavedChanges', () => {
 
     test('detects actual coordinate differences', () => {
         const building: BuildingData = {
-            buildingID: 'test',
-            latitude: 37.7749295,
-            longitude: -122.4194155,
+            buildingID:          'test',
+            latitude:            37.7749295,
+            longitude:           -122.4194155,
             coordinatesVerified: true
         };
         const original: BuildingData = {
-            buildingID: 'test',
-            latitude: 37.7748295, // Different by 0.0001
-            longitude: -122.4194155,
+            buildingID:          'test',
+            latitude:            37.7748295, // Different by 0.0001
+            longitude:           -122.4194155,
             coordinatesVerified: true
         };
 
@@ -206,15 +206,15 @@ describe('hasUnsavedChanges', () => {
 
     test('handles coordinate verification flag changes', () => {
         const building: BuildingData = {
-            buildingID: 'test',
-            latitude: 37.7749295,
-            longitude: -122.4194155,
+            buildingID:          'test',
+            latitude:            37.7749295,
+            longitude:           -122.4194155,
             coordinatesVerified: true
         };
         const original: BuildingData = {
-            buildingID: 'test',
-            latitude: 37.7749295,
-            longitude: -122.4194155,
+            buildingID:          'test',
+            latitude:            37.7749295,
+            longitude:           -122.4194155,
             coordinatesVerified: false
         };
 

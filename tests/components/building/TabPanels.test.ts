@@ -37,11 +37,11 @@ describe('TabPanels Component Logic', () => {
 
         it('should provide default content for each tab', () => {
             const defaultContent = {
-                'building-info': 'Building information content will be displayed here.',
+                'building-info':    'Building information content will be displayed here.',
                 'floorplans-units': 'Floorplans and unit types content will be displayed here.',
                 'pricing-policies': 'Pricing and policies content will be displayed here.',
-                marketing: 'Marketing content will be displayed here.',
-                units: 'Units management content will be displayed here.'
+                marketing:          'Marketing content will be displayed here.',
+                units:              'Units management content will be displayed here.'
             };
 
             forEach(defaultContent, (content) => {
@@ -53,11 +53,11 @@ describe('TabPanels Component Logic', () => {
 
         it('should define proper tab titles', () => {
             const tabTitles = {
-                'building-info': 'Building Info',
+                'building-info':    'Building Info',
                 'floorplans-units': 'Floorplans & Units',
                 'pricing-policies': 'Pricing & Policies',
-                marketing: 'Marketing',
-                units: 'Units'
+                marketing:          'Marketing',
+                units:              'Units'
             };
 
             chain(tabTitles).values().forEach((title) => {
@@ -106,12 +106,12 @@ describe('TabPanels Component Logic', () => {
     describe('CSS Classes and Styling Logic', () => {
         it('should define proper CSS class combinations', () => {
             const classes = {
-                container: 'building-tab-content',
-                tabPanel: 'space-y-6',
+                container:   'building-tab-content',
+                tabPanel:    'space-y-6',
                 defaultCard: 'card bg-base-100 shadow-lg',
-                cardBody: 'card-body',
-                cardTitle: 'card-title',
-                cloakStyle: '[x-cloak] { display: none !important; }'
+                cardBody:    'card-body',
+                cardTitle:   'card-title',
+                cloakStyle:  '[x-cloak] { display: none !important; }'
             };
 
             expect(classes.container).toBe('building-tab-content');
@@ -130,8 +130,8 @@ describe('TabPanels Component Logic', () => {
 
         it('should define proper card styling for default content', () => {
             const cardClasses = {
-                card: 'card bg-base-100 shadow-lg',
-                body: 'card-body',
+                card:  'card bg-base-100 shadow-lg',
+                body:  'card-body',
                 title: 'card-title'
             };
 
@@ -180,7 +180,7 @@ describe('TabPanels Component Logic', () => {
 
                 const defaults = {
                     'building-info': 'Building information content will be displayed here.',
-                    units: 'Units management content will be displayed here.'
+                    units:           'Units management content will be displayed here.'
                 };
 
                 return (defaults as Record<string, string>)[slotName] || 'Default content';
@@ -194,9 +194,9 @@ describe('TabPanels Component Logic', () => {
     describe('Alpine.js Integration Logic', () => {
         it('should define correct Alpine.js directives', () => {
             const directives = {
-                showDirective: 'x-show="activeSectionTab === \'building-info\'"',
+                showDirective:  'x-show="activeSectionTab === \'building-info\'"',
                 cloakDirective: 'x-cloak',
-                stateVariable: 'activeSectionTab'
+                stateVariable:  'activeSectionTab'
             };
 
             expect(directives.showDirective).toContain('x-show');
@@ -246,8 +246,8 @@ describe('TabPanels Component Logic', () => {
             // Test composition logic
             const _contentTypes = {
                 'default': 'Building information content will be displayed here.',
-                custom: 'Custom slot content with specific information',
-                complex: 'Complex Alpine.js content will be displayed here.'
+                custom:    'Custom slot content with specific information',
+                complex:   'Complex Alpine.js content will be displayed here.'
             };
 
             chain(_contentTypes).values().forEach((_desc) => {
@@ -285,8 +285,8 @@ describe('TabPanels Component Logic', () => {
             // Test content descriptions
             const _descriptions = {
                 'building-info': 'Building information content will be displayed here.',
-                units: 'Units management content will be displayed here.',
-                marketing: 'Marketing content will be displayed here.'
+                units:           'Units management content will be displayed here.',
+                marketing:       'Marketing content will be displayed here.'
             };
 
             chain(_descriptions).values().forEach((_type) => {
@@ -298,10 +298,10 @@ describe('TabPanels Component Logic', () => {
         it('should use semantic HTML structure', () => {
             // Test semantic structure
             const structure = {
-                container: 'div',
-                tabPanel: 'div',
+                container:   'div',
+                tabPanel:    'div',
                 defaultCard: 'div',
-                heading: 'h3'
+                heading:     'h3'
             };
 
             expect(structure.container).toBe('div');
@@ -322,8 +322,8 @@ describe('TabPanels Component Logic', () => {
             // Test Alpine.js efficiency
             const patterns = {
                 conditionalDisplay: 'x-show', // Better than v-if for frequent changes
-                preventFouc: 'x-cloak',
-                stateReading: 'activeSectionTab'
+                preventFouc:        'x-cloak',
+                stateReading:       'activeSectionTab'
             };
 
             expect(patterns.conditionalDisplay).toBe('x-show');
@@ -363,7 +363,7 @@ describe('TabPanels Component Logic', () => {
             // Test partial slots
             const slots = {
                 'building-info': '<div>Custom Building Info</div>',
-                units: '<div>Custom Units</div>'
+                units:           '<div>Custom Units</div>'
                 // Other slots missing
             };
 

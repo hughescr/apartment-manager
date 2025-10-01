@@ -21,44 +21,44 @@ describe('Pet Policy Inheritance - Policy Hierarchy', () => {
     beforeEach(() => {
         // Building-level policy (most permissive baseline)
         buildingPolicy = {
-            allowed: true,
-            types: [PetType.DOG, PetType.CAT, PetType.BIRD],
-            maxCount: 3,
-            weightLimit: 100,
+            allowed:           true,
+            types:             [PetType.DOG, PetType.CAT, PetType.BIRD],
+            maxCount:          3,
+            weightLimit:       100,
             breedRestrictions: ['Pit Bull', 'Rottweiler'],
-            deposit: 500,
-            monthlyFee: 25,
-            oneTimeFee: 150,
-            notes: 'Building-wide policy',
-            petTypes: []
+            deposit:           500,
+            monthlyFee:        25,
+            oneTimeFee:        150,
+            notes:             'Building-wide policy',
+            petTypes:          []
         };
 
         // Unit type policy (moderate restrictions)
         unitTypePolicy = {
-            allowed: true,
-            types: [PetType.DOG, PetType.CAT],
-            maxCount: 2,
-            weightLimit: 75,
+            allowed:           true,
+            types:             [PetType.DOG, PetType.CAT],
+            maxCount:          2,
+            weightLimit:       75,
             breedRestrictions: ['Pit Bull', 'Rottweiler', 'German Shepherd'],
-            deposit: 600,
-            monthlyFee: 30,
-            oneTimeFee: 100,
-            notes: 'Unit type specific policy',
-            petTypes: []
+            deposit:           600,
+            monthlyFee:        30,
+            oneTimeFee:        100,
+            notes:             'Unit type specific policy',
+            petTypes:          []
         };
 
         // Unit-specific policy (most restrictive)
         unitPolicy = {
-            allowed: true,
-            types: [PetType.CAT],
-            maxCount: 1,
-            weightLimit: 25,
+            allowed:           true,
+            types:             [PetType.CAT],
+            maxCount:          1,
+            weightLimit:       25,
             breedRestrictions: ['All aggressive breeds'],
-            deposit: 750,
-            monthlyFee: 35,
-            oneTimeFee: 50,
-            notes: 'Unit-specific restrictions',
-            petTypes: []
+            deposit:           750,
+            monthlyFee:        35,
+            oneTimeFee:        50,
+            notes:             'Unit-specific restrictions',
+            petTypes:          []
         };
     });
 
@@ -125,11 +125,11 @@ describe('Pet Policy Inheritance - Policy Hierarchy', () => {
             const unitWithAdvanced = cloneDeep(unitPolicy);
             unitWithAdvanced.petTypes = [
                 {
-                    type: PetType.CAT,
-                    weightLimit: 15,
-                    countLimit: 1,
-                    fee: 40,
-                    deposit: 300,
+                    type:              PetType.CAT,
+                    weightLimit:       15,
+                    countLimit:        1,
+                    fee:               40,
+                    deposit:           300,
                     breedRestrictions: ['Persian']
                 }
             ];
@@ -156,7 +156,7 @@ describe('Pet Policy Inheritance - Policy Hierarchy', () => {
         it('should handle cost inheritance with partial overrides', () => {
             const partialOverride: ExtendedPetPolicy = {
                 allowed: true,
-                types: [PetType.DOG],
+                types:   [PetType.DOG],
                 deposit: 1000, // Override only deposit
                 // Other fees inherited from building policy
             };
@@ -170,9 +170,9 @@ describe('Pet Policy Inheritance - Policy Hierarchy', () => {
 
         it('should handle zero fee overrides correctly', () => {
             const zeroFeeOverride: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                deposit: 0, // Explicit zero override
+                allowed:    true,
+                types:      [PetType.DOG],
+                deposit:    0, // Explicit zero override
                 monthlyFee: 0,
                 oneTimeFee: 0
             };
@@ -196,10 +196,10 @@ describe('Pet Policy Inheritance - Policy Hierarchy', () => {
 
         it('should catch validation errors in inherited policies', () => {
             const invalidOverride: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:  true,
+                types:    [PetType.DOG],
                 maxCount: -1, // Invalid
-                deposit: -100 // Invalid
+                deposit:  -100 // Invalid
             };
 
             const merged = mergePoliciesToMostRestrictive(buildingPolicy, invalidOverride);
@@ -217,11 +217,11 @@ describe('Pet Policy Inheritance - Policy Hierarchy', () => {
             const buildingWithInvalidAdvanced = cloneDeep(buildingPolicy);
             buildingWithInvalidAdvanced.petTypes = [
                 {
-                    type: PetType.DOG,
-                    weightLimit: -10, // Invalid
-                    countLimit: 15, // Invalid
-                    fee: -25, // Invalid
-                    deposit: 15000, // Invalid
+                    type:              PetType.DOG,
+                    weightLimit:       -10, // Invalid
+                    countLimit:        15, // Invalid
+                    fee:               -25, // Invalid
+                    deposit:           15000, // Invalid
                     breedRestrictions: ['Valid', ''] // One invalid
                 }
             ];
@@ -240,27 +240,27 @@ describe('Pet Policy Inheritance - Complex Scenarios', () => {
     describe('Real-world inheritance patterns', () => {
         it('should handle luxury building with strict unit overrides', () => {
             const luxuryBuildingPolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG, PetType.CAT],
-                maxCount: 2,
-                weightLimit: 50,
+                allowed:           true,
+                types:             [PetType.DOG, PetType.CAT],
+                maxCount:          2,
+                weightLimit:       50,
                 breedRestrictions: [],
-                deposit: 2000, // High-end building
-                monthlyFee: 100,
-                oneTimeFee: 500,
-                notes: 'Luxury building - premium pet services'
+                deposit:           2000, // High-end building
+                monthlyFee:        100,
+                oneTimeFee:        500,
+                notes:             'Luxury building - premium pet services'
             };
 
             const penthouseUnitPolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG, PetType.CAT, PetType.BIRD, PetType.FISH],
-                maxCount: 3, // More permissive for premium unit
-                weightLimit: 75,
+                allowed:           true,
+                types:             [PetType.DOG, PetType.CAT, PetType.BIRD, PetType.FISH],
+                maxCount:          3, // More permissive for premium unit
+                weightLimit:       75,
                 breedRestrictions: [],
-                deposit: 1500, // Lower deposit for premium tenants
-                monthlyFee: 75,
-                oneTimeFee: 250,
-                notes: 'Penthouse unit - relaxed pet policy'
+                deposit:           1500, // Lower deposit for premium tenants
+                monthlyFee:        75,
+                oneTimeFee:        250,
+                notes:             'Penthouse unit - relaxed pet policy'
             };
 
             const merged = mergePoliciesToMostRestrictive(luxuryBuildingPolicy, penthouseUnitPolicy);
@@ -276,27 +276,27 @@ describe('Pet Policy Inheritance - Complex Scenarios', () => {
 
         it('should handle student housing with progressive restrictions', () => {
             const campusPolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.FISH, PetType.BIRD, PetType.SMALL_ANIMAL],
-                maxCount: 1,
-                weightLimit: 10,
+                allowed:           true,
+                types:             [PetType.FISH, PetType.BIRD, PetType.SMALL_ANIMAL],
+                maxCount:          1,
+                weightLimit:       10,
                 breedRestrictions: [],
-                deposit: 200,
-                monthlyFee: 15,
-                oneTimeFee: 50,
-                notes: 'Campus housing - small pets only'
+                deposit:           200,
+                monthlyFee:        15,
+                oneTimeFee:        50,
+                notes:             'Campus housing - small pets only'
             };
 
             const upperclassmanPolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.CAT],
-                maxCount: 1,
-                weightLimit: 15,
+                allowed:           true,
+                types:             [PetType.CAT],
+                maxCount:          1,
+                weightLimit:       15,
                 breedRestrictions: ['Aggressive breeds prohibited'],
-                deposit: 300,
-                monthlyFee: 25,
-                oneTimeFee: 75,
-                notes: 'Upperclassman dorms - cats allowed'
+                deposit:           300,
+                monthlyFee:        25,
+                oneTimeFee:        75,
+                notes:             'Upperclassman dorms - cats allowed'
             };
 
             const merged = mergePoliciesToMostRestrictive(campusPolicy, upperclassmanPolicy);
@@ -310,37 +310,37 @@ describe('Pet Policy Inheritance - Complex Scenarios', () => {
 
         it('should handle senior living with health-based restrictions', () => {
             const seniorCommunityPolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG, PetType.CAT],
-                maxCount: 1,
-                weightLimit: 30,
+                allowed:           true,
+                types:             [PetType.DOG, PetType.CAT],
+                maxCount:          1,
+                weightLimit:       30,
                 breedRestrictions: ['High-energy breeds prohibited'],
-                deposit: 500,
-                monthlyFee: 50,
-                oneTimeFee: 100,
-                notes: 'Senior community - therapy pets welcomed',
-                petTypes: [
+                deposit:           500,
+                monthlyFee:        50,
+                oneTimeFee:        100,
+                notes:             'Senior community - therapy pets welcomed',
+                petTypes:          [
                     {
-                        type: PetType.DOG,
-                        weightLimit: 30,
-                        countLimit: 1,
-                        fee: 50,
-                        deposit: 500,
+                        type:              PetType.DOG,
+                        weightLimit:       30,
+                        countLimit:        1,
+                        fee:               50,
+                        deposit:           500,
                         breedRestrictions: ['Must be certified therapy animal']
                     }
                 ]
             };
 
             const assistedLivingPolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: 1,
-                weightLimit: 25, // More restrictive
+                allowed:           true,
+                types:             [PetType.DOG],
+                maxCount:          1,
+                weightLimit:       25, // More restrictive
                 breedRestrictions: ['Must have therapy certification'],
-                deposit: 250, // Reduced for medical necessity
-                monthlyFee: 25, // Reduced for medical necessity
-                oneTimeFee: 0,
-                notes: 'Assisted living - certified therapy animals only'
+                deposit:           250, // Reduced for medical necessity
+                monthlyFee:        25, // Reduced for medical necessity
+                oneTimeFee:        0,
+                notes:             'Assisted living - certified therapy animals only'
             };
 
             const merged = mergePoliciesToMostRestrictive(seniorCommunityPolicy, assistedLivingPolicy);
@@ -368,20 +368,20 @@ describe('Pet Policy Inheritance - Complex Scenarios', () => {
 
         it('should handle undefined vs null field inheritance', () => {
             const basePolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: 2,
+                allowed:     true,
+                types:       [PetType.DOG],
+                maxCount:    2,
                 weightLimit: 50,
-                deposit: 500,
-                monthlyFee: 25
+                deposit:     500,
+                monthlyFee:  25
             };
 
             const nullOverride: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: undefined, // Explicitly undefined
+                allowed:     true,
+                types:       [PetType.DOG],
+                maxCount:    undefined, // Explicitly undefined
                 weightLimit: undefined, // Explicitly undefined
-                deposit: 0 // Explicit zero
+                deposit:     0 // Explicit zero
             };
 
             const merged = mergePoliciesToMostRestrictive(basePolicy, nullOverride);
@@ -393,16 +393,16 @@ describe('Pet Policy Inheritance - Complex Scenarios', () => {
 
         it('should handle circular inheritance scenarios', () => {
             const policy1: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:  true,
+                types:    [PetType.DOG],
                 maxCount: 1,
-                deposit: 500
+                deposit:  500
             };
 
             const policy2: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.CAT],
-                maxCount: 2,
+                allowed:    true,
+                types:      [PetType.CAT],
+                maxCount:   2,
                 monthlyFee: 25
             };
 
@@ -543,7 +543,7 @@ function mergePetTypePolicy(
     override: PetTypePolicy
 ): PetTypePolicy {
     return {
-        type: override.type,
+        type:        override.type,
         weightLimit: override.weightLimit !== undefined
             ? Math.min(base.weightLimit || Infinity, override.weightLimit)
             : base.weightLimit,

@@ -2,28 +2,28 @@ import type { BuildingData, UnitData, UnitTypeData } from '../types/index';
 
 // Type aliases for enhanced data structures (future-proofing)
 type EnhancedBuildingData = BuildingData & {
-    latitude?: number
-    longitude?: number
+    latitude?:      number
+    longitude?:     number
     specialtyType?: string
     contactInfo?: {
-        propertyWebsite?: string
+        propertyWebsite?:   string
         managementWebsite?: string
-        website?: string
-        name?: string
-        phone?: string
-        email?: string
+        website?:           string
+        name?:              string
+        phone?:             string
+        email?:             string
     }
 };
 
 type EnhancedUnitData = UnitData & {
-    vacancyClass?: 'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
-    vacateDate?: string
+    vacancyClass?:  'Occupied' | 'Unoccupied' | 'Notice' | 'Down'
+    vacateDate?:    string
     madeReadyDate?: string
 };
 
 interface EnhancedDeposit {
-    amount: number
-    refundable?: boolean
+    amount:                   number
+    refundable?:              boolean
     partialRefundPercentage?: number
 }
 
@@ -51,10 +51,10 @@ import type {
 } from './schema';
 
 export interface MultiBuildingFeedOptions {
-    buildings: BuildingData[]
+    buildings:           BuildingData[]
     unitTypesByBuilding: Record<string, UnitTypeData[]>
-    unitsByBuilding: Record<string, UnitData[]>
-    siteName: 'apartments_com' | 'zillow'
+    unitsByBuilding:     Record<string, UnitData[]>
+    siteName:            'apartments_com' | 'zillow'
 }
 
 const MITS_NAMESPACE = 'http://www.mitsproject.org/namespace';
@@ -80,7 +80,7 @@ function formatDate(date: Date | string | undefined): string {
     }
     if(isString(date)) {
         // If already ISO format, return as-is
-        if(date.match(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})?Z?)?$/)) {
+        if(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})?Z?)?$/.exec(date)) {
             return date.includes('T') ? date : `${date}T00:00:00Z`;
         }
         const newDate = new Date(date);
@@ -564,7 +564,7 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
         // Future enhancement: make this configurable per site
 
         return true;
-    }) as UnitData[];
+    });
 
     // Create a unit type lookup for efficient inheritance resolution
     const unitTypeMap = new Map(map(unitTypes, ut => [ut.modelID, ut]));
@@ -714,7 +714,7 @@ export async function generateMultiBuildingMITSFeed(options: MultiBuildingFeedOp
         });
 
         // Extract just the PhysicalProperty content (remove XML declaration and wrapper)
-        const match = buildingXML.match(/<PhysicalProperty[^>]*>([\s\S]*)<\/PhysicalProperty>/);
+        const match = /<PhysicalProperty[^>]*>([\s\S]*)<\/PhysicalProperty>/.exec(buildingXML);
         if(match?.[1]) {
             xml += `
     <PhysicalProperty>${match[1]}</PhysicalProperty>`;

@@ -2,12 +2,12 @@ import type { UnitTypeData } from '../../../types';
 import { UnitTypeValidationService, UnitTypeApiService, type ValidationErrors } from '../services';
 
 export interface UnitTypeFormState {
-    apiURL: string
+    apiURL:     string
     buildingID: string
-    saving: boolean
-    showForm: boolean
-    errors: ValidationErrors
-    unitType: Partial<UnitTypeData>
+    saving:     boolean
+    showForm:   boolean
+    errors:     ValidationErrors
+    unitType:   Partial<UnitTypeData>
 }
 
 /**
@@ -18,48 +18,48 @@ export function createUnitTypeFormState(apiURL: string, buildingID: string) {
     return {
         apiURL,
         buildingID,
-        saving: false,
+        saving:   false,
         showForm: false,
-        errors: {} as ValidationErrors,
+        errors:   {} as ValidationErrors,
 
         unitType: {
-            buildingID: buildingID,
-            modelID: '',
-            modelName: '',
+            buildingID:     buildingID,
+            modelID:        '',
+            modelName:      '',
             countAvailable: undefined,
-            dateAvailable: '',
-            beds: 1,
-            baths: 1,
-            maxOccupants: undefined,
-            minRent: undefined,
-            maxRent: undefined,
-            perPersonRent: undefined,
-            minSqft: undefined,
-            maxSqft: undefined,
-            deposit: undefined,
-            minLeaseTerm: undefined,
-            maxLeaseTerm: undefined,
+            dateAvailable:  '',
+            beds:           1,
+            baths:          1,
+            maxOccupants:   undefined,
+            minRent:        undefined,
+            maxRent:        undefined,
+            perPersonRent:  undefined,
+            minSqft:        undefined,
+            maxSqft:        undefined,
+            deposit:        undefined,
+            minLeaseTerm:   undefined,
+            maxLeaseTerm:   undefined,
             modelAmenities: []
         },
 
         resetForm() {
             this.unitType = {
-                buildingID: this.buildingID,
-                modelID: '',
-                modelName: '',
+                buildingID:     this.buildingID,
+                modelID:        '',
+                modelName:      '',
                 countAvailable: undefined,
-                dateAvailable: '',
-                beds: 1,
-                baths: 1,
-                maxOccupants: undefined,
-                minRent: undefined,
-                maxRent: undefined,
-                perPersonRent: undefined,
-                minSqft: undefined,
-                maxSqft: undefined,
-                deposit: undefined,
-                minLeaseTerm: undefined,
-                maxLeaseTerm: undefined,
+                dateAvailable:  '',
+                beds:           1,
+                baths:          1,
+                maxOccupants:   undefined,
+                minRent:        undefined,
+                maxRent:        undefined,
+                perPersonRent:  undefined,
+                minSqft:        undefined,
+                maxSqft:        undefined,
+                deposit:        undefined,
+                minLeaseTerm:   undefined,
+                maxLeaseTerm:   undefined,
                 modelAmenities: []
             };
             this.errors = {} as ValidationErrors;

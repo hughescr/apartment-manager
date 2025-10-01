@@ -80,9 +80,9 @@ describe('InheritanceResolver - Edge Cases', () => {
 
         it('should handle empty arrays vs null vs undefined in validation', () => {
             const unitWithVariousEmpty: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                photos: [],
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
+                photos:        [],
                 unitAmenities: null as unknown as Amenity[]
             };
 
@@ -120,13 +120,13 @@ describe('InheritanceResolver - Edge Cases', () => {
         it('should handle undefined vs missing properties', () => {
             const unitExplicitUndefined: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: undefined
+                unitID:     'UNIT-001',
+                beds:       undefined
             };
 
             const unitMissingProperty: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
                 // beds is missing entirely
             };
 
@@ -148,8 +148,8 @@ describe('InheritanceResolver - Edge Cases', () => {
 
             const unitWithSparsePhotos: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                photos: sparsePhotos
+                unitID:     'UNIT-001',
+                photos:     sparsePhotos
             };
 
             const resolved = resolver.resolveUnitValues(unitWithSparsePhotos, unitTypeData, buildingData);
@@ -178,8 +178,8 @@ describe('InheritanceResolver - Edge Cases', () => {
         it('should handle arrays with mixed types', () => {
             const unitWithMixedPhotos: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                photos: mixedPhotos as unknown as string[]
+                unitID:     'UNIT-001',
+                photos:     mixedPhotos as unknown as string[]
             };
 
             const resolved = resolver.resolveUnitValues(unitWithMixedPhotos, unitTypeData, buildingData);
@@ -199,8 +199,8 @@ describe('InheritanceResolver - Edge Cases', () => {
     describe('Date Object Handling', () => {
         it('should handle Date objects in date fields', () => {
             const unitWithDateObj: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
                 availableDate: validDate as unknown as string
             };
 
@@ -213,8 +213,8 @@ describe('InheritanceResolver - Edge Cases', () => {
 
         it('should handle invalid Date objects', () => {
             const unitWithInvalidDate: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
                 availableDate: invalidDate as unknown as string
             };
 
@@ -228,8 +228,8 @@ describe('InheritanceResolver - Edge Cases', () => {
     describe('RegExp Object Handling', () => {
         it('should handle RegExp objects in string fields', () => {
             const unitWithRegex: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:      'BLDG-001',
+                unitID:          'UNIT-001',
                 unitDescription: regexPattern as unknown as string
             };
 
@@ -244,8 +244,8 @@ describe('InheritanceResolver - Edge Cases', () => {
         it('should handle function values in fields', () => {
             const testFunction = constant('test value');
             const unitWithFunction: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:      'BLDG-001',
+                unitID:          'UNIT-001',
                 unitDescription: testFunction as unknown as string
             };
 
@@ -261,8 +261,8 @@ describe('InheritanceResolver - Edge Cases', () => {
             }
 
             const unitWithConstructor: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:      'BLDG-001',
+                unitID:          'UNIT-001',
                 unitDescription: new CustomDescription() as unknown as string
             };
 
@@ -284,10 +284,10 @@ describe('InheritanceResolver - Edge Cases', () => {
         it('should handle very long strings', () => {
             const veryLongString = createVeryLongString(10000);
             const unitWithLongStrings: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:      'BLDG-001',
+                unitID:          'UNIT-001',
                 unitDescription: veryLongString,
-                unitNumber: veryLongString
+                unitNumber:      veryLongString
             };
 
             const resolved = resolver.resolveUnitValues(unitWithLongStrings, unitTypeData, buildingData);
@@ -334,21 +334,21 @@ describe('InheritanceResolver - Edge Cases', () => {
             const result = resolver.applyDefaults(unit, complexDefaults);
 
             expect(result.photos).toEqual(['default1.jpg', 'default2.jpg']);
-            expect(result.unitAmenities).toEqual(complexDefaults.unitAmenities!);
+            expect(result.unitAmenities).toEqual(complexDefaults.unitAmenities);
         });
     });
 
     describe('Deeply Nested undefined values', () => {
         it('should handle deeply nested undefined values', () => {
             const unitWithNested: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
                 unitAmenities: undefined
             };
 
             const resolved = resolver.resolveUnitValues(unitWithNested, unitTypeData, buildingData);
 
-            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities!);
+            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities);
         });
 
         it('should handle circular reference prevention', () => {
@@ -367,7 +367,7 @@ describe('InheritanceResolver - Edge Cases', () => {
 
         it('should handle very long amenity lists', () => {
             const manyAmenities = Array.from({ length: 100 }, (_, i) => ({
-                name: `Amenity ${i}`,
+                name:     `Amenity ${i}`,
                 category: AmenityCategory.PROPERTY
             }));
 
@@ -381,8 +381,8 @@ describe('InheritanceResolver - Edge Cases', () => {
         it('should not mutate original objects during resolution', () => {
             const originalUnit = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: undefined
+                unitID:     'UNIT-001',
+                beds:       undefined
             };
 
             const unitCopy = { ...originalUnit };

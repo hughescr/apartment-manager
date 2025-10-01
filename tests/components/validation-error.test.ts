@@ -6,10 +6,10 @@ import { describe, it, expect } from 'bun:test';
 describe('ValidationError Component', () => {
     const mockProps = {
         fieldName: 'buildingID',
-        errors: {
+        errors:    {
             buildingID: 'Building ID is required',
-            street: 'Street address is required',
-            email: 'Please enter a valid email address'
+            street:     'Street address is required',
+            email:      'Please enter a valid email address'
         }
     };
 
@@ -21,7 +21,7 @@ describe('ValidationError Component', () => {
     it('should not show error when field has no error', () => {
         const propsWithoutError = {
             fieldName: 'city',
-            errors: {
+            errors:    {
                 street: 'Street address is required'
             }
         };
@@ -32,7 +32,7 @@ describe('ValidationError Component', () => {
     it('should handle nested field names', () => {
         const nestedProps = {
             fieldName: 'contactInfo.email',
-            errors: {
+            errors:    {
                 'contactInfo.email': 'Invalid email format'
             }
         };
@@ -43,7 +43,7 @@ describe('ValidationError Component', () => {
     it('should handle array field names', () => {
         const arrayProps = {
             fieldName: 'rentSpecial0Title',
-            errors: {
+            errors:    {
                 rentSpecial0Title: 'Title is required',
                 rentSpecial0Dates: 'End date must be after start date'
             }
@@ -56,8 +56,8 @@ describe('ValidationError Component', () => {
 describe('ValidationError CSS Classes', () => {
     it('should use proper DaisyUI error classes', () => {
         const expectedClasses = {
-            container: 'label-text-alt text-error',
-            textColor: 'text-error',
+            container:  'label-text-alt text-error',
+            textColor:  'text-error',
             visibility: 'x-show'
         };
 

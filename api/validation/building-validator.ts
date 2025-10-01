@@ -25,8 +25,8 @@ export function validateBuildingForSave(data: unknown): ValidationResult {
     if(isEmpty(data) || (isPlainObject(data) && isEmpty(data as Record<string, unknown>))) {
         return {
             success: true,
-            data: {},
-            errors: []
+            data:    {},
+            errors:  []
         };
     }
 
@@ -35,7 +35,7 @@ export function validateBuildingForSave(data: unknown): ValidationResult {
     if(securityErrors.length > 0) {
         return {
             success: false,
-            errors: securityErrors
+            errors:  securityErrors
         };
     }
 
@@ -46,17 +46,17 @@ export function validateBuildingForSave(data: unknown): ValidationResult {
     if(result.success) {
         return {
             success: true,
-            data: sanitizedData,  // Return sanitized data, not Zod's parsed result
-            errors: []
+            data:    sanitizedData,  // Return sanitized data, not Zod's parsed result
+            errors:  []
         };
     }
 
     // Transform Zod errors to user-friendly format
     const errors = map(result.error.issues, (issue): ValidationError => ({
-        field: issue.path.join('.'),
+        field:   issue.path.join('.'),
         message: issue.message,
-        code: issue.code,
-        context: `Draft validation allows incomplete data. This field has an issue but you can still save.`
+        code:    issue.code,
+        context: 'Draft validation allows incomplete data. This field has an issue but you can still save.'
     }));
 
     return {
@@ -79,8 +79,8 @@ export function validateBuildingForPublish(data: unknown): ValidationResult {
     if(result.success) {
         return {
             success: true,
-            data: result.data,
-            errors: []
+            data:    result.data,
+            errors:  []
         };
     }
 
@@ -91,9 +91,9 @@ export function validateBuildingForPublish(data: unknown): ValidationResult {
         const mitsContext = (errorMessages as Record<string, string>)[fieldPath] || 'Required for MITS 4.1 compliance';
 
         return {
-            field: fieldPath,
+            field:   fieldPath,
             message: issue.message,
-            code: issue.code,
+            code:    issue.code,
             context: `MITS Requirement: ${mitsContext}`
         };
     });

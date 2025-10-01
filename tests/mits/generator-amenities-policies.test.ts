@@ -21,10 +21,10 @@ describe('MITS Amenities and Policies Generator', () => {
     describe('Amenities', () => {
         it('should include property amenities', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Amenity>');
@@ -36,10 +36,10 @@ describe('MITS Amenities and Policies Generator', () => {
     describe('Pet Policy', () => {
         it('should include basic pet policy', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Pet>');
@@ -53,15 +53,15 @@ describe('MITS Amenities and Policies Generator', () => {
                 ...mockBuilding,
                 petPolicies: {
                     allowed: false,
-                    notes: 'Sorry, no pets allowed'
+                    notes:   'Sorry, no pets allowed'
                 }
             };
 
             const xml = await generateMITSFeed({
-                building: noPetBuilding,
+                building:  noPetBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Pet>');
@@ -70,7 +70,7 @@ describe('MITS Amenities and Policies Generator', () => {
 
             // Should not include deposit/fee in the Pet policy section for no-pets policy
             // Check that the Pet section specifically doesn't contain deposit/fee
-            const petMatch = xml.match(/<Pet>[\s\S]*?<\/Pet>/);
+            const petMatch = /<Pet>[\s\S]*?<\/Pet>/.exec(xml);
             expect(petMatch?.[0]).not.toContain('<Deposit>');
             expect(petMatch?.[0]).not.toContain('<Fee>');
         });
@@ -82,10 +82,10 @@ describe('MITS Amenities and Policies Generator', () => {
             };
 
             const xml = await generateMITSFeed({
-                building: noPolicyBuilding,
+                building:  noPolicyBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Should not include Pet section if no policy defined

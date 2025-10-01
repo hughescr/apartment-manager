@@ -6,7 +6,7 @@ import type { BuildingData } from '../../types';
 import { escapeXML } from './MITSUtils.astro';
 
 export interface Props {
-    building: BuildingData
+    building:  BuildingData
     unitCount: number
 }
 
@@ -15,12 +15,12 @@ const { building, unitCount } = Astro.props;
 // Enhanced building data types for future-proofing
 interface EnhancedBuildingData extends BuildingData {
     contactInfo?: {
-        propertyWebsite?: string
+        propertyWebsite?:   string
         managementWebsite?: string
-        website?: string
-        name?: string
-        phone?: string
-        email?: string
+        website?:           string
+        name?:              string
+        phone?:             string
+        email?:             string
     }
 }
 

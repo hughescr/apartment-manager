@@ -27,15 +27,15 @@ import { BaseInput, BaseSelect } from './forms';
                   class="w-full"
                   inputClass="w-full"
                   inputAttrs={{
-                      '@input': 'handleStreetInput($event)',
-                      '@keydown': 'handleKeydown($event)',
-                      '@blur': 'updateBuildingNameFromAddress(); setTimeout(() => hideSuggestions(), 150)',
-                      '@focus': 'street.length >= 3 && suggestions.length > 0 ? showSuggestions = true : null',
-                      'x-bind:aria-expanded': 'showSuggestions',
+                      '@input':                       'handleStreetInput($event)',
+                      '@keydown':                     'handleKeydown($event)',
+                      '@blur':                        'updateBuildingNameFromAddress(); setTimeout(() => hideSuggestions(), 150)',
+                      '@focus':                       'street.length >= 3 && suggestions.length > 0 ? showSuggestions = true : null',
+                      'x-bind:aria-expanded':         'showSuggestions',
                       'x-bind:aria-activedescendant': 'selectedIndex >= 0 ? `suggestion-${selectedIndex}` : null',
-                      autocomplete: 'off',
-                      role: 'combobox',
-                      'aria-haspopup': 'listbox'
+                      autocomplete:                   'off',
+                      role:                           'combobox',
+                      'aria-haspopup':                'listbox'
                   }}
                 />
 

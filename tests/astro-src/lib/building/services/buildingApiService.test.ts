@@ -20,15 +20,15 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
     describe('addUnitType', () => {
         const testUnitType: UnitType = {
-            modelID: 'model-2br',
-            modelName: '2 Bedroom Deluxe',
-            beds: 2,
-            baths: 2,
+            modelID:    'model-2br',
+            modelName:  '2 Bedroom Deluxe',
+            beds:       2,
+            baths:      2,
             buildingID: testBuildingId,
-            minRent: 1800,
-            maxRent: 2200,
-            minSqft: 950,
-            maxSqft: 1100
+            minRent:    1800,
+            maxRent:    2200,
+            minSqft:    950,
+            maxSqft:    1100
         };
 
         test('should successfully add unit type with valid data', async () => {
@@ -36,9 +36,9 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const responseData = { ...testUnitType, unitID: `MODEL#${testUnitType.modelID}` };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 201,
-                json: () => Promise.resolve(responseData)
+                json:   () => Promise.resolve(responseData)
             }));
 
             const result = await apiService.addUnitType(testBuildingId, testUnitType);
@@ -50,7 +50,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 `${testApiURL}/buildings/${testBuildingId}/unit-types`,
                 {
-                    method: 'POST',
+                    method:  'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -64,9 +64,9 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const errorMessage = 'Validation failed: Model ID already exists';
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 400,
-                text: () => Promise.resolve(errorMessage)
+                text:   () => Promise.resolve(errorMessage)
             }));
 
             const result = await apiService.addUnitType(testBuildingId, testUnitType);
@@ -106,9 +106,9 @@ describe('BuildingApiService - Unit Type Methods', () => {
             expect.assertions(3);
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 500,
-                text: () => Promise.resolve('')
+                text:   () => Promise.resolve('')
             }));
 
             const result = await apiService.addUnitType(testBuildingId, testUnitType);
@@ -123,24 +123,24 @@ describe('BuildingApiService - Unit Type Methods', () => {
         const testModelId = 'model-2br';
         const testUpdates: Partial<UnitType> = {
             modelName: 'Updated 2 Bedroom Deluxe',
-            minRent: 1900,
-            maxRent: 2300
+            minRent:   1900,
+            maxRent:   2300
         };
 
         test('should successfully update unit type', async () => {
             expect.assertions(5);
             const responseData = {
-                modelID: testModelId,
+                modelID:    testModelId,
                 buildingID: testBuildingId,
                 ...testUpdates,
-                beds: 2,
-                baths: 2
+                beds:       2,
+                baths:      2
             } as UnitType;
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200,
-                json: () => Promise.resolve(responseData)
+                json:   () => Promise.resolve(responseData)
             }));
 
             const result = await apiService.updateUnitType(testBuildingId, testModelId, testUpdates);
@@ -152,7 +152,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 `${testApiURL}/buildings/${testBuildingId}/unit-types/${testModelId}`,
                 {
-                    method: 'PUT',
+                    method:  'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -166,9 +166,9 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const errorMessage = 'Unit type not found';
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 404,
-                text: () => Promise.resolve(errorMessage)
+                text:   () => Promise.resolve(errorMessage)
             }));
 
             const result = await apiService.updateUnitType(testBuildingId, 'non-existent-id', testUpdates);
@@ -196,17 +196,17 @@ describe('BuildingApiService - Unit Type Methods', () => {
             expect.assertions(5);
             const emptyUpdates = {};
             const responseData = {
-                modelID: testModelId,
+                modelID:    testModelId,
                 buildingID: testBuildingId,
-                modelName: 'Original Name',
-                beds: 2,
-                baths: 2
+                modelName:  'Original Name',
+                beds:       2,
+                baths:      2
             } as UnitType;
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200,
-                json: () => Promise.resolve(responseData)
+                json:   () => Promise.resolve(responseData)
             }));
 
             const result = await apiService.updateUnitType(testBuildingId, testModelId, emptyUpdates);
@@ -218,7 +218,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 `${testApiURL}/buildings/${testBuildingId}/unit-types/${testModelId}`,
                 {
-                    method: 'PUT',
+                    method:  'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -235,7 +235,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
             expect.assertions(4);
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200
             }));
 
@@ -257,9 +257,9 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const errorMessage = 'Unit type not found';
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 404,
-                text: () => Promise.resolve(errorMessage)
+                text:   () => Promise.resolve(errorMessage)
             }));
 
             const result = await apiService.deleteUnitType(testBuildingId, 'non-existent-id');
@@ -287,9 +287,9 @@ describe('BuildingApiService - Unit Type Methods', () => {
             expect.assertions(3);
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 500,
-                text: () => Promise.resolve('')
+                text:   () => Promise.resolve('')
             }));
 
             const result = await apiService.deleteUnitType(testBuildingId, testModelId);
@@ -304,9 +304,9 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const errorMessage = 'Cannot delete unit type: units of this type exist';
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 409,
-                text: () => Promise.resolve(errorMessage)
+                text:   () => Promise.resolve(errorMessage)
             }));
 
             const result = await apiService.deleteUnitType(testBuildingId, testModelId);
@@ -324,7 +324,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const apiServiceWithSlash = new BuildingApiService('https://api.example.com/');
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200
             }));
 
@@ -343,7 +343,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const apiServiceNoSlash = new BuildingApiService('https://api.example.com');
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200
             }));
 
@@ -363,7 +363,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
             const specialModelId = 'model-with-special_chars';
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200
             }));
 
@@ -384,17 +384,17 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             mockFetch.mockResolvedValueOnce({
                 ...createMockResponse({
-                    ok: true,
+                    ok:     true,
                     status: 200
                 }),
                 json: () => Promise.reject(new Error('Invalid JSON'))
             });
 
             const result = await apiService.addUnitType(testBuildingId, {
-                modelID: 'test',
-                modelName: 'Test',
-                beds: 1,
-                baths: 1,
+                modelID:    'test',
+                modelName:  'Test',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuildingId
             });
 
@@ -408,17 +408,17 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             mockFetch.mockResolvedValueOnce({
                 ...createMockResponse({
-                    ok: false,
+                    ok:     false,
                     status: 400
                 }),
                 text: () => Promise.reject(new Error('Failed to read response'))
             });
 
             const result = await apiService.addUnitType(testBuildingId, {
-                modelID: 'test',
-                modelName: 'Test',
-                beds: 1,
-                baths: 1,
+                modelID:    'test',
+                modelName:  'Test',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuildingId
             });
 

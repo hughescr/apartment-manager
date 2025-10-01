@@ -5,12 +5,12 @@ import ValidationError from '../../common/ValidationError.astro';
 export interface Props {
     building: {
         buildingID: string
-        street: string
-        city: string
-        state: string
+        street:     string
+        city:       string
+        state:      string
     }
-    apiUrl: string
-    isOpen?: boolean
+    apiUrl:    string
+    isOpen?:   boolean
     dialogId?: string
 }
 

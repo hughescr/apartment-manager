@@ -9,15 +9,15 @@ const noop = () => {};
 
 export function createBuildingManagerState() {
     return {
-        loading: false,
-        dataLoaded: false,
-        error: false,
+        loading:      false,
+        dataLoaded:   false,
+        error:        false,
         errorMessage: '',
-        buildingID: '',
-        apiURL: '',
-        building: null,
-        units: [],
-        unitTypes: [],
+        buildingID:   '',
+        apiURL:       '',
+        building:     null,
+        units:        [],
+        unitTypes:    [],
 
         init() {
             this.buildingID = this.$root?.dataset.buildingId || '';
@@ -60,9 +60,9 @@ export function createBuildingManagerState() {
             if(this.dataLoaded && this.building) {
                 this.$dispatch?.('building-data-loaded', {
                     buildingID: this.buildingID,
-                    building: this.building,
-                    units: this.units,
-                    unitTypes: this.unitTypes
+                    building:   this.building,
+                    units:      this.units,
+                    unitTypes:  this.unitTypes
                 });
             }
         },
@@ -90,10 +90,10 @@ export function createBuildingManagerState() {
 
         // Alpine magic properties are provided by AlpineComponentData
         $dispatch: noop as ((name: string, detail?: unknown) => void),
-        $root: null as unknown as HTMLElement,
-        $el: null as unknown as HTMLElement,
-        $watch: noop as ((property: string, callback: (...args: unknown[]) => void) => void),
+        $root:     null as unknown as HTMLElement,
+        $el:       null as unknown as HTMLElement,
+        $watch:    noop as ((property: string, callback: (...args: unknown[]) => void) => void),
         $nextTick: noop as ((callback: () => void) => void),
-        $store: {} as Record<string, unknown>
+        $store:    {} as Record<string, unknown>
     };
 }

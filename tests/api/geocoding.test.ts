@@ -9,8 +9,8 @@ import type { APIGatewayProxyEventV2, Context, Callback } from 'aws-lambda';
 // Define the expected response structure for our Lambda functions
 interface LambdaResponse {
     statusCode: number
-    headers: Record<string, string>
-    body: string
+    headers:    Record<string, string>
+    body:       string
 }
 import { forEach, isString } from 'lodash';
 
@@ -37,33 +37,33 @@ describe('Geocoding API Handlers', () => {
         body?: string,
         queryStringParameters?: Record<string, string>
     ): APIGatewayProxyEventV2 => ({
-        version: '2.0',
-        routeKey: `${method} ${path}`,
-        rawPath: path,
+        version:        '2.0',
+        routeKey:       `${method} ${path}`,
+        rawPath:        path,
         rawQueryString: queryStringParameters ? new URLSearchParams(queryStringParameters).toString() : '',
-        headers: {
+        headers:        {
             'content-type': 'application/json'
         },
         queryStringParameters: queryStringParameters || undefined,
-        requestContext: {
-            accountId: '123456789012',
-            apiId: 'api-id',
-            domainName: 'api.example.com',
+        requestContext:        {
+            accountId:    '123456789012',
+            apiId:        'api-id',
+            domainName:   'api.example.com',
             domainPrefix: 'api',
-            http: {
-                method: method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS',
-                path: path,
-                protocol: 'HTTP/1.1',
-                sourceIp: '192.168.1.1',
+            http:         {
+                method:    method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS',
+                path:      path,
+                protocol:  'HTTP/1.1',
+                sourceIp:  '192.168.1.1',
                 userAgent: 'test-agent'
             },
             requestId: 'test-request-id',
-            routeKey: `${method} ${path}`,
-            stage: 'test',
-            time: '01/Jan/2024:00:00:00 +0000',
+            routeKey:  `${method} ${path}`,
+            stage:     'test',
+            time:      '01/Jan/2024:00:00:00 +0000',
             timeEpoch: 1704067200
         },
-        body: body || undefined,
+        body:            body || undefined,
         isBase64Encoded: false
     });
 
@@ -154,17 +154,17 @@ describe('Geocoding API Handlers', () => {
             it('should return successful geocoding result with 200 status', async () => {
                 // Mock successful Nominatim response
                 mockFetch.mockResolvedValueOnce({
-                    ok: true,
+                    ok:   true,
                     json: async () => [{
-                        lat: '34.0522',
-                        lon: '-118.2437',
+                        lat:          '34.0522',
+                        lon:          '-118.2437',
                         display_name: '123 Main St, Los Angeles, CA, USA',
-                        importance: 0.8,
-                        place_id: '123456',
-                        licence: 'test',
-                        osm_type: 'way',
-                        osm_id: '123456',
-                        boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                        importance:   0.8,
+                        place_id:     '123456',
+                        licence:      'test',
+                        osm_type:     'way',
+                        osm_id:       '123456',
+                        boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                     }]
                 });
 
@@ -173,8 +173,8 @@ describe('Geocoding API Handlers', () => {
 
                 const event = createMockEvent('POST', '/geocoding', JSON.stringify({
                     address: '123 Main St',
-                    city: 'Los Angeles',
-                    state: 'CA'
+                    city:    'Los Angeles',
+                    state:   'CA'
                 }));
 
                 const result = await callGeocode(event);
@@ -182,7 +182,7 @@ describe('Geocoding API Handlers', () => {
                 expect(result.statusCode).toBe(200);
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(true);
                 expect(body.result).toBeDefined();
                 expect(body.result.lat).toBe(34.0522);
@@ -197,7 +197,7 @@ describe('Geocoding API Handlers', () => {
             it('should handle no results found scenario', async () => {
                 // Mock empty response from Nominatim
                 mockFetch.mockResolvedValueOnce({
-                    ok: true,
+                    ok:   true,
                     json: async () => []
                 });
 
@@ -210,7 +210,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(200);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(true);
                 expect(body.result).toBeUndefined();
                 expect(body.error).toBe('No results found for the provided address');
@@ -224,17 +224,17 @@ describe('Geocoding API Handlers', () => {
 
                 // First call - mock API response
                 mockFetch.mockResolvedValueOnce({
-                    ok: true,
+                    ok:   true,
                     json: async () => [{
-                        lat: '34.0522',
-                        lon: '-118.2437',
+                        lat:          '34.0522',
+                        lon:          '-118.2437',
                         display_name: '123 Main St, Los Angeles, CA, USA',
-                        importance: 0.8,
-                        place_id: '123456',
-                        licence: 'test',
-                        osm_type: 'way',
-                        osm_id: '123456',
-                        boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                        importance:   0.8,
+                        place_id:     '123456',
+                        licence:      'test',
+                        osm_type:     'way',
+                        osm_id:       '123456',
+                        boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                     }]
                 });
 
@@ -242,20 +242,20 @@ describe('Geocoding API Handlers', () => {
 
                 const event = createMockEvent('POST', '/geocoding', JSON.stringify({
                     address: 'Fresh Test Address',  // Use unique address to avoid cache conflicts
-                    city: 'Test City',
-                    state: 'TC'
+                    city:    'Test City',
+                    state:   'TC'
                 }));
 
                 // First call should hit the API
                 const result1 = await geocode(event, {} as Context, {} as Callback) as LambdaResponse;
                 expect(result1.statusCode).toBe(200);
-                const body1 = JSON.parse(result1.body!);
+                const body1 = JSON.parse(result1.body);
                 expect(body1.result.source).toBe('nominatim');
 
                 // Second call should use cache (no additional fetch call)
                 const result2 = await geocode(event, {} as Context, {} as Callback) as LambdaResponse;
                 expect(result2.statusCode).toBe(200);
-                const body2 = JSON.parse(result2.body!);
+                const body2 = JSON.parse(result2.body);
                 expect(body2.result.source).toBe('cache');
 
                 // Verify fetch was only called once
@@ -272,7 +272,7 @@ describe('Geocoding API Handlers', () => {
                 expect(result.statusCode).toBe(405);
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use POST.');
 
@@ -285,7 +285,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(405);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use POST.');
             });
@@ -296,7 +296,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(405);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use POST.');
             });
@@ -311,7 +311,7 @@ describe('Geocoding API Handlers', () => {
                 expect(result.statusCode).toBe(400);
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Request body is required');
 
@@ -324,7 +324,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(400);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Request body is required');
             });
@@ -335,7 +335,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(400);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Invalid JSON in request body');
 
@@ -348,7 +348,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(400);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Invalid JSON in request body');
             });
@@ -357,14 +357,14 @@ describe('Geocoding API Handlers', () => {
         describe('Address field validation', () => {
             it('should reject requests without address field', async () => {
                 const event = createMockEvent('POST', '/geocoding', JSON.stringify({
-                    city: 'Los Angeles',
+                    city:  'Los Angeles',
                     state: 'CA'
                 }));
 
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(400);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Address is required');
 
@@ -374,14 +374,14 @@ describe('Geocoding API Handlers', () => {
             it('should reject requests with empty address', async () => {
                 const event = createMockEvent('POST', '/geocoding', JSON.stringify({
                     address: '',
-                    city: 'Los Angeles',
-                    state: 'CA'
+                    city:    'Los Angeles',
+                    state:   'CA'
                 }));
 
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(400);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Address is required');
             });
@@ -389,14 +389,14 @@ describe('Geocoding API Handlers', () => {
             it('should reject requests with whitespace-only address', async () => {
                 const event = createMockEvent('POST', '/geocoding', JSON.stringify({
                     address: '   ',
-                    city: 'Los Angeles',
-                    state: 'CA'
+                    city:    'Los Angeles',
+                    state:   'CA'
                 }));
 
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(400);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Address is required');
             });
@@ -404,13 +404,13 @@ describe('Geocoding API Handlers', () => {
             it('should reject requests with null address', async () => {
                 const event = createMockEvent('POST', '/geocoding', JSON.stringify({
                     address: null,
-                    city: 'Los Angeles'
+                    city:    'Los Angeles'
                 }));
 
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(400);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Address is required');
             });
@@ -428,7 +428,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(200);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(true);
                 expect(body.result).toBeUndefined();
                 expect(body.error).toBe('No results found for the provided address');
@@ -436,8 +436,8 @@ describe('Geocoding API Handlers', () => {
 
             it('should handle service API errors gracefully', async () => {
                 mockFetch.mockResolvedValueOnce({
-                    ok: false,
-                    status: 500,
+                    ok:         false,
+                    status:     500,
                     statusText: 'Internal Server Error'
                 });
                 timeNow += 2000;
@@ -449,7 +449,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callGeocode(event);
 
                 expect(result.statusCode).toBe(200);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(true);
                 expect(body.result).toBeUndefined();
                 expect(body.error).toBe('No results found for the provided address');
@@ -459,17 +459,17 @@ describe('Geocoding API Handlers', () => {
         describe('Response format validation', () => {
             it('should return consistent response structure for successful geocoding', async () => {
                 mockFetch.mockResolvedValueOnce({
-                    ok: true,
+                    ok:   true,
                     json: async () => [{
-                        lat: '34.0522',
-                        lon: '-118.2437',
+                        lat:          '34.0522',
+                        lon:          '-118.2437',
                         display_name: '123 Main St',
-                        importance: 0.8,
-                        place_id: '123456',
-                        licence: 'test',
-                        osm_type: 'way',
-                        osm_id: '123456',
-                        boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                        importance:   0.8,
+                        place_id:     '123456',
+                        licence:      'test',
+                        osm_type:     'way',
+                        osm_id:       '123456',
+                        boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                     }]
                 });
                 timeNow += 2000;
@@ -487,7 +487,7 @@ describe('Geocoding API Handlers', () => {
                 expect(typeof result.body).toBe('string');
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body).toHaveProperty('success');
                 expect(body).toHaveProperty('cacheStats');
                 expect(typeof body.success).toBe('boolean');
@@ -505,7 +505,7 @@ describe('Geocoding API Handlers', () => {
                 expect(result.statusCode).toBe(200);
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(true);
                 expect(body.service).toBe('OpenStreetMap Nominatim');
                 expect(body.status).toBe('operational');
@@ -514,7 +514,7 @@ describe('Geocoding API Handlers', () => {
                 expect(body.cache).toHaveProperty('ttlDays');
                 expect(body.rateLimit).toEqual({
                     requestsPerSecond: 1,
-                    policy: 'Nominatim usage policy compliant'
+                    policy:            'Nominatim usage policy compliant'
                 });
             });
 
@@ -526,8 +526,8 @@ describe('Geocoding API Handlers', () => {
 
                 expect(result1.statusCode).toBe(result2.statusCode);
 
-                const body1 = JSON.parse(result1.body!);
-                const body2 = JSON.parse(result2.body!);
+                const body1 = JSON.parse(result1.body);
+                const body2 = JSON.parse(result2.body);
 
                 expect(body1.service).toBe(body2.service);
                 expect(body1.status).toBe(body2.status);
@@ -544,7 +544,7 @@ describe('Geocoding API Handlers', () => {
                 expect(result.statusCode).toBe(405);
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use GET.');
             });
@@ -555,7 +555,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callStatus(event);
 
                 expect(result.statusCode).toBe(405);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use GET.');
             });
@@ -566,7 +566,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callStatus(event);
 
                 expect(result.statusCode).toBe(405);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use GET.');
             });
@@ -590,7 +590,7 @@ describe('Geocoding API Handlers', () => {
                 const event = createMockEvent('GET', '/geocoding/status');
 
                 const result = await callStatus(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 const expectedFields = ['success', 'service', 'status', 'cache', 'rateLimit'];
                 forEach(expectedFields, (field) => {
@@ -615,7 +615,7 @@ describe('Geocoding API Handlers', () => {
                 expect(result.statusCode).toBe(200);
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(true);
                 expect(body.message).toBe('Cache cleared successfully');
                 expect(typeof body.cleared).toBe('number');
@@ -631,7 +631,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callClearCache(event);
 
                 expect(result.statusCode).toBe(200);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(true);
                 expect(body.cleared).toBeGreaterThanOrEqual(0);
                 expect(body.remaining).toBe(0);
@@ -647,7 +647,7 @@ describe('Geocoding API Handlers', () => {
                 expect(result.statusCode).toBe(405);
                 expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
 
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use DELETE.');
             });
@@ -658,7 +658,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callClearCache(event);
 
                 expect(result.statusCode).toBe(405);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use DELETE.');
             });
@@ -669,7 +669,7 @@ describe('Geocoding API Handlers', () => {
                 const result = await callClearCache(event);
 
                 expect(result.statusCode).toBe(405);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
                 expect(body.success).toBe(false);
                 expect(body.error).toBe('Method not allowed. Use DELETE.');
             });
@@ -693,7 +693,7 @@ describe('Geocoding API Handlers', () => {
                 const event = createMockEvent('DELETE', '/geocoding/cache');
 
                 const result = await callClearCache(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 const expectedFields = ['success', 'message', 'cleared', 'remaining'];
                 forEach(expectedFields, (field) => {
@@ -712,17 +712,17 @@ describe('Geocoding API Handlers', () => {
         describe('Headers consistency', () => {
             it('should return consistent Content-Type headers across all endpoints', async () => {
                 mockFetch.mockResolvedValueOnce({
-                    ok: true,
+                    ok:   true,
                     json: async () => [{
-                        lat: '34.0522',
-                        lon: '-118.2437',
+                        lat:          '34.0522',
+                        lon:          '-118.2437',
                         display_name: '123 Main St',
-                        importance: 0.8,
-                        place_id: '123456',
-                        licence: 'test',
-                        osm_type: 'way',
-                        osm_id: '123456',
-                        boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                        importance:   0.8,
+                        place_id:     '123456',
+                        licence:      'test',
+                        osm_type:     'way',
+                        osm_id:       '123456',
+                        boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                     }]
                 });
                 timeNow += 2000;
@@ -758,17 +758,17 @@ describe('Geocoding API Handlers', () => {
         describe('JSON response validation', () => {
             it('should return valid JSON for all successful responses', async () => {
                 mockFetch.mockResolvedValueOnce({
-                    ok: true,
+                    ok:   true,
                     json: async () => [{
-                        lat: '34.0522',
-                        lon: '-118.2437',
+                        lat:          '34.0522',
+                        lon:          '-118.2437',
                         display_name: '123 Main St',
-                        importance: 0.8,
-                        place_id: '123456',
-                        licence: 'test',
-                        osm_type: 'way',
-                        osm_id: '123456',
-                        boundingbox: ['34.0', '34.1', '-118.3', '-118.2']
+                        importance:   0.8,
+                        place_id:     '123456',
+                        licence:      'test',
+                        osm_type:     'way',
+                        osm_id:       '123456',
+                        boundingbox:  ['34.0', '34.1', '-118.3', '-118.2']
                     }]
                 });
                 timeNow += 2000;
@@ -784,8 +784,8 @@ describe('Geocoding API Handlers', () => {
                 ]);
 
                 forEach(results, (result) => {
-                    expect(() => JSON.parse(result.body!)).not.toThrow();
-                    const body = JSON.parse(result.body!);
+                    expect(() => JSON.parse(result.body)).not.toThrow();
+                    const body = JSON.parse(result.body);
                     expect(typeof body).toBe('object');
                     expect(body).not.toBeNull();
                 });
@@ -803,8 +803,8 @@ describe('Geocoding API Handlers', () => {
                 ]);
 
                 forEach(results, (result) => {
-                    expect(() => JSON.parse(result.body!)).not.toThrow();
-                    const body = JSON.parse(result.body!);
+                    expect(() => JSON.parse(result.body)).not.toThrow();
+                    const body = JSON.parse(result.body);
                     expect(body.success).toBe(false);
                     expect(body.error).toBeDefined();
                 });
@@ -825,7 +825,7 @@ describe('Geocoding API Handlers', () => {
 
                 forEach(results, (result) => {
                     expect(result.statusCode).toBe(405);
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
                     expect(body).toHaveProperty('success', false);
                     expect(body).toHaveProperty('error');
                     expect(typeof body.error).toBe('string');

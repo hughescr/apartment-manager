@@ -60,7 +60,7 @@ export interface BuildingResetEvent {
  */
 export interface BuildingValidateEvent {
     isValid: boolean
-    errors: Record<string, string>
+    errors:  Record<string, string>
 }
 
 /**
@@ -78,7 +78,7 @@ export interface BuildingDeletedEvent {
  * Dispatched when a unit is successfully saved
  */
 export interface UnitSavedEvent {
-    unit: UnitData
+    unit:       UnitData
     fieldName?: string
 }
 
@@ -87,7 +87,7 @@ export interface UnitSavedEvent {
  * Dispatched when a unit is deleted
  */
 export interface UnitDeletedEvent {
-    unitID: string
+    unitID:     string
     buildingID: string
 }
 
@@ -106,7 +106,7 @@ export interface UnitValidationErrorEvent {
  */
 export interface UnitsFilterEvent {
     filter: string
-    query: string
+    query:  string
 }
 
 /**
@@ -115,7 +115,7 @@ export interface UnitsFilterEvent {
  */
 export interface UnitsUpdatedEvent {
     filter: string
-    query: string
+    query:  string
 }
 
 /**
@@ -132,7 +132,7 @@ export interface UnitsSelectionChangedEvent {
  */
 export interface UnitsBulkUpdateEvent {
     operationType: 'status' | 'rent'
-    unitIDs: string[]
+    unitIDs:       string[]
 }
 
 // ===== TAB AND NAVIGATION EVENTS =====
@@ -142,7 +142,7 @@ export interface UnitsBulkUpdateEvent {
  * Dispatched when active tab changes
  */
 export interface TabChangeEvent {
-    activeTab: string
+    activeTab:    string
     previousTab?: string
 }
 
@@ -151,7 +151,7 @@ export interface TabChangeEvent {
  * Dispatched when expandable sections change state
  */
 export interface SectionToggleEvent {
-    section: string
+    section:  string
     expanded: boolean
 }
 
@@ -162,8 +162,8 @@ export interface SectionToggleEvent {
  * Dispatched to show toast notifications
  */
 export interface ToastShowEvent {
-    message: string
-    type: ToastType
+    message:   string
+    type:      ToastType
     duration?: number
 }
 
@@ -172,7 +172,7 @@ export interface ToastShowEvent {
  * Used by some components with 'toastType' instead of 'type'
  */
 export interface LegacyToastShowEvent {
-    message: string
+    message:   string
     toastType: ToastType
     duration?: number
 }
@@ -183,7 +183,7 @@ export interface LegacyToastShowEvent {
  */
 export interface ShowToastEvent {
     message: string
-    type: ToastType
+    type:    ToastType
 }
 
 // ===== PHOTO AND MEDIA EVENTS =====
@@ -193,9 +193,9 @@ export interface ShowToastEvent {
  * Dispatched when photo collections change
  */
 export interface PhotosUpdatedEvent {
-    photos: string[]
+    photos:      string[]
     entityType?: 'building' | 'unit' | 'unitType'
-    entityID?: string
+    entityID?:   string
 }
 
 /**
@@ -203,10 +203,10 @@ export interface PhotosUpdatedEvent {
  * Dispatched during photo upload process
  */
 export interface PhotoUploadEvent {
-    status: 'started' | 'progress' | 'completed' | 'error'
+    status:    'started' | 'progress' | 'completed' | 'error'
     progress?: number
     photoUrl?: string
-    error?: string
+    error?:    string
 }
 
 /**
@@ -214,9 +214,9 @@ export interface PhotoUploadEvent {
  * Dispatched when photos are deleted
  */
 export interface PhotoDeleteEvent {
-    photoUrl: string
+    photoUrl:   string
     entityType: 'building' | 'unit' | 'unitType'
-    entityID: string
+    entityID:   string
 }
 
 // ===== TOUR AND MARKETING EVENTS =====
@@ -227,8 +227,8 @@ export interface PhotoDeleteEvent {
  */
 export interface ToursUpdatedEvent {
     selfGuidedTours?: boolean
-    virtualTours?: boolean
-    inPersonTours?: boolean
+    virtualTours?:    boolean
+    inPersonTours?:   boolean
 }
 
 /**
@@ -237,7 +237,7 @@ export interface ToursUpdatedEvent {
  */
 export interface MarketingUpdatedEvent {
     buildingID: string
-    updates: Partial<BuildingData>
+    updates:    Partial<BuildingData>
 }
 
 // ===== LOCATION AND GEOCODING EVENTS =====
@@ -255,9 +255,9 @@ export interface LocationGeocodingEvent {
  * Dispatched when location coordinates change
  */
 export interface LocationUpdatedEvent {
-    latitude: number
+    latitude:  number
     longitude: number
-    address?: string
+    address?:  string
 }
 
 // ===== AMENITY EVENTS =====
@@ -268,8 +268,8 @@ export interface LocationUpdatedEvent {
  */
 export interface AmenitiesUpdatedEvent {
     amenities: Amenity[]
-    level: 'building' | 'unit' | 'unitType'
-    entityID: string
+    level:     'building' | 'unit' | 'unitType'
+    entityID:  string
 }
 
 /**
@@ -277,7 +277,7 @@ export interface AmenitiesUpdatedEvent {
  * Dispatched when amenities are reset to inherited values
  */
 export interface AmenityInheritanceResetEvent {
-    unitID: string
+    unitID:            string
     inheritanceSource: 'floorplan' | 'building' | 'none'
 }
 
@@ -289,8 +289,8 @@ export interface AmenityInheritanceResetEvent {
  */
 export interface FormValidationEvent {
     formName: string
-    isValid: boolean
-    errors: Record<string, string>
+    isValid:  boolean
+    errors:   Record<string, string>
 }
 
 /**
@@ -299,8 +299,8 @@ export interface FormValidationEvent {
  */
 export interface FormSubmittedEvent {
     formName: string
-    data: Record<string, unknown>
-    success: boolean
+    data:     Record<string, unknown>
+    success:  boolean
 }
 
 /**
@@ -308,8 +308,8 @@ export interface FormSubmittedEvent {
  * Dispatched when individual form fields change
  */
 export interface FieldChangedEvent {
-    fieldName: string
-    value: unknown
+    fieldName:     string
+    value:         unknown
     previousValue: unknown
 }
 
@@ -321,7 +321,7 @@ export interface FieldChangedEvent {
  */
 export interface DialogOpenEvent {
     dialogId: string
-    data?: Record<string, unknown>
+    data?:    Record<string, unknown>
 }
 
 /**
@@ -330,8 +330,8 @@ export interface DialogOpenEvent {
  */
 export interface DialogCloseEvent {
     dialogId: string
-    reason?: 'cancel' | 'submit' | 'escape'
-    data?: Record<string, unknown>
+    reason?:  'cancel' | 'submit' | 'escape'
+    data?:    Record<string, unknown>
 }
 
 // ===== SEARCH AND FILTER EVENTS =====
@@ -350,9 +350,9 @@ export interface SearchQueryEvent {
  * Dispatched when filter criteria change
  */
 export interface FilterChangedEvent {
-    filterType: string
+    filterType:  string
     filterValue: unknown
-    scope: string
+    scope:       string
 }
 
 // ===== COMPREHENSIVE EVENT REGISTRY =====
@@ -363,24 +363,24 @@ export interface FilterChangedEvent {
  */
 export interface AlpineEventRegistry {
     // Building events
-    'building:updated': BuildingUpdatedEvent
-    'building:save': BuildingSaveEvent
-    'building:saving': BuildingSavingEvent
-    'building:reset': BuildingResetEvent
+    'building:updated':  BuildingUpdatedEvent
+    'building:save':     BuildingSaveEvent
+    'building:saving':   BuildingSavingEvent
+    'building:reset':    BuildingResetEvent
     'building:validate': BuildingValidateEvent
-    'building:deleted': BuildingDeletedEvent
+    'building:deleted':  BuildingDeletedEvent
 
     // Unit events
-    'unit:saved': UnitSavedEvent
-    'unit:deleted': UnitDeletedEvent
-    'unit:validation-error': UnitValidationErrorEvent
-    'units:filter': UnitsFilterEvent
-    'units:updated': UnitsUpdatedEvent
+    'unit:saved':              UnitSavedEvent
+    'unit:deleted':            UnitDeletedEvent
+    'unit:validation-error':   UnitValidationErrorEvent
+    'units:filter':            UnitsFilterEvent
+    'units:updated':           UnitsUpdatedEvent
     'units:selection-changed': UnitsSelectionChangedEvent
-    'units:bulk-update': UnitsBulkUpdateEvent
+    'units:bulk-update':       UnitsBulkUpdateEvent
 
     // Navigation events
-    'tab:change': TabChangeEvent
+    'tab:change':     TabChangeEvent
     'section:toggle': SectionToggleEvent
 
     // Toast events
@@ -389,32 +389,32 @@ export interface AlpineEventRegistry {
 
     // Photo events
     'photos:updated': PhotosUpdatedEvent
-    'photo:upload': PhotoUploadEvent
-    'photo:delete': PhotoDeleteEvent
+    'photo:upload':   PhotoUploadEvent
+    'photo:delete':   PhotoDeleteEvent
 
     // Tour events
-    'tours:updated': ToursUpdatedEvent
+    'tours:updated':     ToursUpdatedEvent
     'marketing:updated': MarketingUpdatedEvent
 
     // Location events
     'location:geocoding': LocationGeocodingEvent
-    'location:updated': LocationUpdatedEvent
+    'location:updated':   LocationUpdatedEvent
 
     // Amenity events
-    'amenities:updated': AmenitiesUpdatedEvent
+    'amenities:updated':         AmenitiesUpdatedEvent
     'amenity:inheritance-reset': AmenityInheritanceResetEvent
 
     // Form events
     'form:validation': FormValidationEvent
-    'form:submitted': FormSubmittedEvent
-    'field:changed': FieldChangedEvent
+    'form:submitted':  FormSubmittedEvent
+    'field:changed':   FieldChangedEvent
 
     // Dialog events
-    'dialog:open': DialogOpenEvent
+    'dialog:open':  DialogOpenEvent
     'dialog:close': DialogCloseEvent
 
     // Search and filter events
-    'search:query': SearchQueryEvent
+    'search:query':   SearchQueryEvent
     'filter:changed': FilterChangedEvent
 }
 
@@ -453,7 +453,7 @@ export type TypedEventListener<T extends AlpineEventName> = (
  */
 export type AlpineEvent = {
     [K in AlpineEventName]: {
-        type: K
+        type:   K
         detail: AlpineEventPayload<K>
     };
 }[AlpineEventName];

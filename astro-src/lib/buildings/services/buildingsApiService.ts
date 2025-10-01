@@ -2,8 +2,8 @@ import type { BuildingData } from '../../../types';
 
 export interface ApiResponse<T> {
     success: boolean
-    data?: T
-    error?: string
+    data?:   T
+    error?:  string
 }
 
 export class BuildingsApiService {
@@ -25,10 +25,10 @@ export class BuildingsApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to load buildings' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -46,10 +46,10 @@ export class BuildingsApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to load building' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -57,7 +57,7 @@ export class BuildingsApiService {
     async createBuilding(building: Partial<BuildingData>): Promise<ApiResponse<BuildingData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings`, {
-                method: 'POST',
+                method:  'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -71,10 +71,10 @@ export class BuildingsApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to create building' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -82,7 +82,7 @@ export class BuildingsApiService {
     async updateBuilding(buildingID: string, building: Partial<BuildingData>): Promise<ApiResponse<BuildingData>> {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}`, {
-                method: 'PUT',
+                method:  'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -96,10 +96,10 @@ export class BuildingsApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to update building' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }
@@ -116,10 +116,10 @@ export class BuildingsApiService {
                 const error = await response.text();
                 return { success: false, error: error || 'Failed to delete building' };
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error occurred'
+                error:   error instanceof Error ? error.message : 'Network error occurred'
             };
         }
     }

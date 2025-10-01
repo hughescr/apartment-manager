@@ -13,7 +13,7 @@ export class AmenityInheritanceManager {
             return unit.unitAmenities;
         }
 
-        if(unitType && unitType.modelAmenities && unitType.modelAmenities.length > 0) {
+        if(unitType?.modelAmenities && unitType.modelAmenities.length > 0) {
             return unitType.modelAmenities;
         }
 
@@ -33,7 +33,7 @@ export class AmenityInheritanceManager {
             return 'unit';
         }
 
-        if(unitType && unitType.modelAmenities && unitType.modelAmenities.length > 0) {
+        if(unitType?.modelAmenities && unitType.modelAmenities.length > 0) {
             return 'floorplan';
         }
 
@@ -50,27 +50,27 @@ export class AmenityInheritanceManager {
     }
 
     hasUnitSpecificAmenities(unit: UnitData): boolean {
-        return unit.unitAmenities !== undefined &&
-          unit.unitAmenities !== null &&
-          unit.unitAmenities.length > 0;
+        return unit.unitAmenities !== undefined
+          && unit.unitAmenities !== null
+          && unit.unitAmenities.length > 0;
     }
 
     getInheritanceLabel(source: AmenityInheritanceSource): string {
         const labels: Record<AmenityInheritanceSource, string> = {
-            unit: 'Unit-specific amenities',
+            unit:      'Unit-specific amenities',
             floorplan: 'Inherited from floorplan',
-            building: 'Inherited from building',
-            none: 'No amenities'
+            building:  'Inherited from building',
+            none:      'No amenities'
         };
         return labels[source];
     }
 
     getInheritanceBadgeClass(source: AmenityInheritanceSource): string {
         const classes: Record<AmenityInheritanceSource, string> = {
-            unit: 'badge-primary',
+            unit:      'badge-primary',
             floorplan: 'badge-info',
-            building: 'badge-secondary',
-            none: 'badge-ghost'
+            building:  'badge-secondary',
+            none:      'badge-ghost'
         };
         return classes[source];
     }
@@ -89,8 +89,8 @@ export class AmenityInheritanceManager {
         );
 
         for(let i = 0; i < sortedAmenities1.length; i++) {
-            if(sortedAmenities1[i].category !== sortedAmenities2[i].category ||
-              sortedAmenities1[i].name !== sortedAmenities2[i].name) {
+            if(sortedAmenities1[i].category !== sortedAmenities2[i].category
+              || sortedAmenities1[i].name !== sortedAmenities2[i].name) {
                 return false;
             }
         }

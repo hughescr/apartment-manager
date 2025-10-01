@@ -278,7 +278,7 @@ describe('TransformerRegistry', () => {
         it('should handle object transformers', () => {
             interface Person {
                 firstName: string
-                lastName: string
+                lastName:  string
             }
 
             const fullName: TransformerFunction = (value) => {
@@ -789,7 +789,7 @@ describe('Edge Cases - Transformer Side Effects', () => {
         const registry = createTransformerRegistry();
 
         interface MutableObject {
-            value: string
+            value:      string
             processed?: boolean
         }
 

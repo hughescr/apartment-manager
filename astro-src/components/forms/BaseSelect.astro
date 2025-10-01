@@ -3,30 +3,30 @@ import _ from 'lodash';
 import crypto from 'node:crypto';
 
 export interface SelectOption {
-    value: string | number
-    label: string
+    value:     string | number
+    label:     string
     disabled?: boolean
 }
 
 export interface Props {
-    id?: string
-    name: string
-    label?: string
-    placeholder?: string
-    required?: boolean
-    disabled?: boolean
-    xModel: string
-    options: SelectOption[] | string[]
-    value?: string | number
-    'class'?: string
-    selectClass?: string
-    error?: string
-    helpText?: string
-    showLabel?: boolean
+    id?:            string
+    name:           string
+    label?:         string
+    placeholder?:   string
+    required?:      boolean
+    disabled?:      boolean
+    xModel:         string
+    options:        SelectOption[] | string[]
+    value?:         string | number
+    'class'?:       string
+    selectClass?:   string
+    error?:         string
+    helpText?:      string
+    showLabel?:     boolean
     floatingLabel?: boolean
-    onchange?: string
-    multiple?: boolean
-    size?: number
+    onchange?:      string
+    multiple?:      boolean
+    size?:          number
 }
 
 const {

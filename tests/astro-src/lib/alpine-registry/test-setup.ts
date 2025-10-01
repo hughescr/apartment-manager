@@ -22,8 +22,8 @@ const loggerDebugSpy = spyOn(logger, 'debug');
 
 // Mock logger implementation (for backward compatibility)
 const mockLogger = {
-    info: loggerInfoSpy,
-    warn: loggerWarnSpy,
+    info:  loggerInfoSpy,
+    warn:  loggerWarnSpy,
     error: loggerErrorSpy,
     debug: loggerDebugSpy
 };
@@ -35,63 +35,63 @@ const cryptoSpy = spyOn(crypto, 'randomUUID').mockImplementation(mockRandomUUID)
 // Mock Alpine.js for registry testing
 interface MockAlpine {
     // Core properties that exist in the original MockAlpine
-    data: jest.Mock
+    data:  jest.Mock
     start: jest.Mock
 
     // Required Alpine.js interface properties with mock implementations
-    readonly reactive: <T>(obj: T) => T
-    readonly release: (effect: unknown) => void
-    readonly effect: <T>(fn: () => T) => (() => T) & { id: number, active: boolean, raw: () => T }
-    readonly raw: <T>(obj: T) => T
-    version: string
+    readonly reactive:              <T>(obj: T) => T
+    readonly release:               (effect: unknown) => void
+    readonly effect:                <T>(fn: () => T) => (() => T) & { id: number, active: boolean, raw: () => T }
+    readonly raw:                   <T>(obj: T) => T
+    version:                        string
     flushAndStopDeferringMutations: jest.Mock
-    dontAutoEvaluateFunctions: jest.Mock
-    disableEffectScheduling: jest.Mock
-    startObservingMutations: jest.Mock
-    stopObservingMutations: jest.Mock
-    setReactivityEngine: jest.Mock
-    onAttributeRemoved: jest.Mock
-    onAttributesAdded: jest.Mock
-    closestDataStack: jest.Mock
-    skipDuringClone: jest.Mock
-    onlyDuringClone: jest.Mock
-    addRootSelector: jest.Mock
-    addInitSelector: jest.Mock
-    interceptClone: jest.Mock
-    addScopeToNode: jest.Mock
-    deferMutations: jest.Mock
-    mapAttributes: jest.Mock
-    evaluateLater: jest.Mock
-    interceptInit: jest.Mock
-    setEvaluator: jest.Mock
-    mergeProxies: jest.Mock
-    extractProp: jest.Mock
-    findClosest: jest.Mock
-    onElRemoved: jest.Mock
-    closestRoot: jest.Mock
-    destroyTree: jest.Mock
-    interceptor: jest.Mock
-    transition: jest.Mock
-    setStyles: jest.Mock
-    mutateDom: jest.Mock
-    directive: jest.Mock
-    entangle: jest.Mock
-    throttle: jest.Mock
-    debounce: jest.Mock
-    evaluate: jest.Mock
-    initTree: jest.Mock
-    nextTick: jest.Mock
-    prefixed: jest.Mock
-    prefix: jest.Mock
-    plugin: jest.Mock
-    magic: jest.Mock
-    store: jest.Mock
-    clone: jest.Mock
-    cloneNode: jest.Mock
-    bound: jest.Mock
-    $data: jest.Mock
-    walk: jest.Mock
-    bind: jest.Mock
+    dontAutoEvaluateFunctions:      jest.Mock
+    disableEffectScheduling:        jest.Mock
+    startObservingMutations:        jest.Mock
+    stopObservingMutations:         jest.Mock
+    setReactivityEngine:            jest.Mock
+    onAttributeRemoved:             jest.Mock
+    onAttributesAdded:              jest.Mock
+    closestDataStack:               jest.Mock
+    skipDuringClone:                jest.Mock
+    onlyDuringClone:                jest.Mock
+    addRootSelector:                jest.Mock
+    addInitSelector:                jest.Mock
+    interceptClone:                 jest.Mock
+    addScopeToNode:                 jest.Mock
+    deferMutations:                 jest.Mock
+    mapAttributes:                  jest.Mock
+    evaluateLater:                  jest.Mock
+    interceptInit:                  jest.Mock
+    setEvaluator:                   jest.Mock
+    mergeProxies:                   jest.Mock
+    extractProp:                    jest.Mock
+    findClosest:                    jest.Mock
+    onElRemoved:                    jest.Mock
+    closestRoot:                    jest.Mock
+    destroyTree:                    jest.Mock
+    interceptor:                    jest.Mock
+    transition:                     jest.Mock
+    setStyles:                      jest.Mock
+    mutateDom:                      jest.Mock
+    directive:                      jest.Mock
+    entangle:                       jest.Mock
+    throttle:                       jest.Mock
+    debounce:                       jest.Mock
+    evaluate:                       jest.Mock
+    initTree:                       jest.Mock
+    nextTick:                       jest.Mock
+    prefixed:                       jest.Mock
+    prefix:                         jest.Mock
+    plugin:                         jest.Mock
+    magic:                          jest.Mock
+    store:                          jest.Mock
+    clone:                          jest.Mock
+    cloneNode:                      jest.Mock
+    bound:                          jest.Mock
+    $data:                          jest.Mock
+    walk:                           jest.Mock
+    bind:                           jest.Mock
 
     // Allow any additional properties for extensibility
     [key: string]: unknown
@@ -103,13 +103,13 @@ const mockAlpineStart = jest.fn();
 // Create comprehensive mock implementations
 const createAlpineMock = (): MockAlpine => ({
     // Core Alpine methods
-    data: mockAlpineData,
+    data:  mockAlpineData,
     start: mockAlpineStart,
 
     // Reactivity system
     reactive: jest.fn().mockImplementation(<T>(obj: T) => obj),
-    release: jest.fn(),
-    effect: jest.fn().mockImplementation(() => {
+    release:  jest.fn(),
+    effect:   jest.fn().mockImplementation(() => {
         const effectFn = jest.fn() as jest.Mock & { id: number, active: boolean, raw: () => unknown };
         effectFn.id = 1;
         effectFn.active = true;
@@ -123,57 +123,57 @@ const createAlpineMock = (): MockAlpine => ({
 
     // Mutation handling
     flushAndStopDeferringMutations: jest.fn(),
-    dontAutoEvaluateFunctions: jest.fn(),
-    disableEffectScheduling: jest.fn(),
-    startObservingMutations: jest.fn(),
-    stopObservingMutations: jest.fn(),
-    deferMutations: jest.fn(),
+    dontAutoEvaluateFunctions:      jest.fn(),
+    disableEffectScheduling:        jest.fn(),
+    startObservingMutations:        jest.fn(),
+    stopObservingMutations:         jest.fn(),
+    deferMutations:                 jest.fn(),
 
     // Reactivity engine
     setReactivityEngine: jest.fn(),
 
     // Attribute handling
     onAttributeRemoved: jest.fn(),
-    onAttributesAdded: jest.fn(),
-    mapAttributes: jest.fn(),
+    onAttributesAdded:  jest.fn(),
+    mapAttributes:      jest.fn(),
 
     // Element utilities
     closestDataStack: jest.fn().mockReturnValue([]),
-    skipDuringClone: jest.fn().mockImplementation((callback: () => void) => callback),
-    onlyDuringClone: jest.fn().mockImplementation((callback: () => void) => callback),
-    addRootSelector: jest.fn(),
-    addInitSelector: jest.fn(),
-    interceptClone: jest.fn(),
-    addScopeToNode: jest.fn().mockReturnValue(jest.fn()),
+    skipDuringClone:  jest.fn().mockImplementation((callback: () => void) => callback),
+    onlyDuringClone:  jest.fn().mockImplementation((callback: () => void) => callback),
+    addRootSelector:  jest.fn(),
+    addInitSelector:  jest.fn(),
+    interceptClone:   jest.fn(),
+    addScopeToNode:   jest.fn().mockReturnValue(jest.fn()),
 
     // Expression evaluation
     evaluateLater: jest.fn().mockReturnValue(jest.fn()),
     interceptInit: jest.fn(),
-    setEvaluator: jest.fn(),
-    evaluate: jest.fn(),
+    setEvaluator:  jest.fn(),
+    evaluate:      jest.fn(),
 
     // Utility functions
     mergeProxies: jest.fn().mockReturnValue({}),
-    extractProp: jest.fn(),
-    findClosest: jest.fn(),
-    onElRemoved: jest.fn(),
-    closestRoot: jest.fn(),
-    destroyTree: jest.fn(),
-    interceptor: jest.fn(),
+    extractProp:  jest.fn(),
+    findClosest:  jest.fn(),
+    onElRemoved:  jest.fn(),
+    closestRoot:  jest.fn(),
+    destroyTree:  jest.fn(),
+    interceptor:  jest.fn(),
 
     // Transitions and styling
     transition: jest.fn(),
-    setStyles: jest.fn().mockReturnValue(jest.fn()),
-    mutateDom: jest.fn().mockImplementation((callback: () => unknown) => callback()),
+    setStyles:  jest.fn().mockReturnValue(jest.fn()),
+    mutateDom:  jest.fn().mockImplementation((callback: () => unknown) => callback()),
 
     // Directives and plugins
     directive: jest.fn().mockReturnValue({ before: jest.fn() }),
-    plugin: jest.fn(),
-    magic: jest.fn(),
+    plugin:    jest.fn(),
+    magic:     jest.fn(),
 
     // Data binding
     entangle: jest.fn().mockReturnValue(jest.fn()),
-    bind: jest.fn().mockReturnValue(jest.fn()),
+    bind:     jest.fn().mockReturnValue(jest.fn()),
 
     // Performance utilities
     throttle: jest.fn().mockImplementation((func: (...args: unknown[]) => void) => func),
@@ -182,18 +182,18 @@ const createAlpineMock = (): MockAlpine => ({
     // Tree operations
     initTree: jest.fn(),
     nextTick: jest.fn().mockResolvedValue(undefined),
-    walk: jest.fn(),
+    walk:     jest.fn(),
 
     // Naming and storage
     prefixed: jest.fn().mockImplementation((subject?: string) => `x-${subject || ''}`),
-    prefix: jest.fn(),
-    store: jest.fn(),
+    prefix:   jest.fn(),
+    store:    jest.fn(),
 
     // Element operations
-    clone: jest.fn(),
+    clone:     jest.fn(),
     cloneNode: jest.fn(),
-    bound: jest.fn(),
-    $data: jest.fn().mockReturnValue({})
+    bound:     jest.fn(),
+    $data:     jest.fn().mockReturnValue({})
 });
 
 const mockAlpine: MockAlpine = createAlpineMock();
@@ -204,70 +204,70 @@ const originalDocument = global.document;
 
 // Create DOM environment
 const mockWindow = {
-    Alpine: mockAlpine,
-    addEventListener: jest.fn(),
+    Alpine:              mockAlpine,
+    addEventListener:    jest.fn(),
     removeEventListener: jest.fn(),
-    L: undefined, // For Leaflet mocking
-    fetch: jest.fn(),
-    devicePixelRatio: 1,
-    screen: {
-        width: 1920,
-        height: 1080,
-        deviceXDPI: 96,
+    L:                   undefined, // For Leaflet mocking
+    fetch:               jest.fn(),
+    devicePixelRatio:    1,
+    screen:              {
+        width:       1920,
+        height:      1080,
+        deviceXDPI:  96,
         logicalXDPI: 96,
-        colorDepth: 24,
-        pixelDepth: 24
+        colorDepth:  24,
+        pixelDepth:  24
     },
     navigator: {
         userAgent: 'Mozilla/5.0 (compatible; Test)',
-        platform: 'Test'
+        platform:  'Test'
     }
 };
 
 const mockDocument = {
-    addEventListener: jest.fn(),
+    addEventListener:    jest.fn(),
     removeEventListener: jest.fn(),
-    createElement: jest.fn().mockImplementation((tag: string) => ({
-        tagName: toUpper(tag),
-        rel: '',
-        href: '',
-        insertBefore: jest.fn(),
-        style: {},
-        setAttribute: jest.fn(),
-        getAttribute: jest.fn(),
+    createElement:       jest.fn().mockImplementation((tag: string) => ({
+        tagName:         toUpper(tag),
+        rel:             '',
+        href:            '',
+        insertBefore:    jest.fn(),
+        style:           {},
+        setAttribute:    jest.fn(),
+        getAttribute:    jest.fn(),
         removeAttribute: jest.fn(),
-        classList: {
-            add: jest.fn(),
-            remove: jest.fn(),
+        classList:       {
+            add:      jest.fn(),
+            remove:   jest.fn(),
             contains: jest.fn(),
-            toggle: jest.fn()
+            toggle:   jest.fn()
         },
-        addEventListener: jest.fn(),
+        addEventListener:    jest.fn(),
         removeEventListener: jest.fn(),
-        title: ''
+        title:               ''
     })),
     head: {
         appendChild: jest.fn()
     },
-    querySelector: jest.fn(),
+    querySelector:    jest.fn(),
     querySelectorAll: jest.fn(),
     // Add documentElement for Leaflet compatibility
-    documentElement: {
+    documentElement:  {
         style: {
-            setProperty: jest.fn(),
+            setProperty:      jest.fn(),
             getPropertyValue: jest.fn().mockReturnValue(''),
-            removeProperty: jest.fn()
+            removeProperty:   jest.fn()
         },
-        clientWidth: 1024,
+        clientWidth:  1024,
         clientHeight: 768,
-        scrollWidth: 1024,
+        scrollWidth:  1024,
         scrollHeight: 768
     },
     // Add body for additional DOM compatibility
     body: {
-        style: {},
-        appendChild: jest.fn(),
-        clientWidth: 1024,
+        style:        {},
+        appendChild:  jest.fn(),
+        clientWidth:  1024,
         clientHeight: 768
     }
 };
@@ -275,60 +275,60 @@ const mockDocument = {
 // Mock DOM element with dataset - improved to extend HTMLElement properly
 const createMockElement = (dataset: Record<string, string> = {}, extraProps?: Record<string, unknown>): HTMLElement & { activeSectionTab?: string } => {
     const mockElement = {
-        dataset: { ...dataset },
+        dataset:               { ...dataset },
         getBoundingClientRect: jest.fn().mockReturnValue({
-            width: 400,
+            width:  400,
             height: 350,
-            top: 0,
-            left: 0,
-            right: 400,
+            top:    0,
+            left:   0,
+            right:  400,
             bottom: 350
         }),
         style: {
-            setProperty: jest.fn(),
+            setProperty:      jest.fn(),
             getPropertyValue: jest.fn().mockReturnValue(''),
-            removeProperty: jest.fn()
+            removeProperty:   jest.fn()
         },
-        addEventListener: jest.fn(),
+        addEventListener:    jest.fn(),
         removeEventListener: jest.fn(),
-        tagName: 'DIV',
-        classList: {
-            add: jest.fn(),
-            remove: jest.fn(),
+        tagName:             'DIV',
+        classList:           {
+            add:      jest.fn(),
+            remove:   jest.fn(),
             contains: jest.fn(),
-            toggle: jest.fn()
+            toggle:   jest.fn()
         },
-        setAttribute: jest.fn(),
-        getAttribute: jest.fn(),
-        removeAttribute: jest.fn(),
-        appendChild: jest.fn(),
-        insertBefore: jest.fn(),
-        removeChild: jest.fn(),
-        querySelector: jest.fn(),
+        setAttribute:     jest.fn(),
+        getAttribute:     jest.fn(),
+        removeAttribute:  jest.fn(),
+        appendChild:      jest.fn(),
+        insertBefore:     jest.fn(),
+        removeChild:      jest.fn(),
+        querySelector:    jest.fn(),
         querySelectorAll: jest.fn(),
-        contains: jest.fn().mockReturnValue(false),
-        firstChild: null,
-        lastChild: null,
-        parentNode: null,
-        nextSibling: null,
-        previousSibling: null,
+        contains:         jest.fn().mockReturnValue(false),
+        firstChild:       null,
+        lastChild:        null,
+        parentNode:       null,
+        nextSibling:      null,
+        previousSibling:  null,
         // Add client dimensions
-        clientWidth: 400,
-        clientHeight: 350,
-        scrollWidth: 400,
-        scrollHeight: 350,
+        clientWidth:      400,
+        clientHeight:     350,
+        scrollWidth:      400,
+        scrollHeight:     350,
         // Add minimal HTMLElement properties to satisfy TypeScript
-        accessKey: '',
-        accessKeyLabel: '',
-        autocapitalize: '',
-        dir: '',
-        draggable: false,
-        hidden: false,
-        inert: false,
-        lang: '',
-        spellcheck: true,
-        title: '',
-        translate: true,
+        accessKey:        '',
+        accessKeyLabel:   '',
+        autocapitalize:   '',
+        dir:              '',
+        draggable:        false,
+        hidden:           false,
+        inert:            false,
+        lang:             '',
+        spellcheck:       true,
+        title:            '',
+        translate:        true,
         // Add any extra properties for tests
         ...extraProps
     } as unknown as HTMLElement & { activeSectionTab?: string };
@@ -338,23 +338,23 @@ const createMockElement = (dataset: Record<string, string> = {}, extraProps?: Re
 
 // Enhanced mock Alpine context with extensible properties
 interface EnhancedMockAlpineContext {
-    $el: HTMLElement & { activeSectionTab?: string }
-    $root: HTMLElement & { activeSectionTab?: string }
-    $refs: { mapElement: HTMLElement }
-    $dispatch: jest.Mock
-    $nextTick: jest.Mock
-    $watch: jest.Mock
+    $el:               HTMLElement & { activeSectionTab?: string }
+    $root:             HTMLElement & { activeSectionTab?: string }
+    $refs:             { mapElement: HTMLElement }
+    $dispatch:         jest.Mock
+    $nextTick:         jest.Mock
+    $watch:            jest.Mock
     // Test-specific properties that tests expect to exist
-    address?: string | { street: string, city: string, state: string }
-    level1?: unknown
-    building?: unknown
-    building1?: unknown
-    building2?: unknown
-    coordinates?: unknown
+    address?:          string | { street: string, city: string, state: string }
+    level1?:           unknown
+    building?:         unknown
+    building1?:        unknown
+    building2?:        unknown
+    coordinates?:      unknown
     expandedSections?: Record<string, boolean>
-    toggleSection?: jest.Mock
+    toggleSection?:    jest.Mock
     // Allow any additional properties for test flexibility
-    [key: string]: unknown
+    [key: string]:     unknown
 }
 
 const createMockAlpineContext = (dataset: Record<string, string> = {}): EnhancedMockAlpineContext => {
@@ -362,41 +362,41 @@ const createMockAlpineContext = (dataset: Record<string, string> = {}): Enhanced
     const mockDispatch = jest.fn().mockImplementation(constant(true));
 
     return {
-        $el: createMockElement(dataset),
-        $root: createMockElement(dataset),
-        $refs: { mapElement: createMockElement() },
-        $dispatch: mockDispatch,
-        $nextTick: jest.fn().mockResolvedValue(undefined),
-        $watch: jest.fn().mockReturnValue(noop), // Returns unwatch function
+        $el:              createMockElement(dataset),
+        $root:            createMockElement(dataset),
+        $refs:            { mapElement: createMockElement() },
+        $dispatch:        mockDispatch,
+        $nextTick:        jest.fn().mockResolvedValue(undefined),
+        $watch:           jest.fn().mockReturnValue(noop), // Returns unwatch function
         // Initialize common test properties
         expandedSections: {},
-        toggleSection: jest.fn(),
+        toggleSection:    jest.fn(),
         ...dataset // Allow direct access to data attributes as properties
     };
 };
 
 // Mock fetch for API calls with proper typing
 interface MockResponse {
-    ok: boolean
-    status: number
-    statusText: string
-    json: () => Promise<{ success: boolean, result: unknown }>
-    text: () => Promise<string>
-    blob: () => Promise<Blob>
+    ok:          boolean
+    status:      number
+    statusText:  string
+    json:        () => Promise<{ success: boolean, result: unknown }>
+    text:        () => Promise<string>
+    blob:        () => Promise<Blob>
     arrayBuffer: () => Promise<ArrayBuffer>
-    headers: Headers
+    headers:     Headers
 }
 
 const mockFetch = jest.fn().mockImplementation((): Promise<MockResponse> =>
     Promise.resolve({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: (): Promise<{ success: boolean, result: unknown }> => Promise.resolve({ success: true, result: {} }),
-        text: (): Promise<string> => Promise.resolve(''),
-        blob: (): Promise<Blob> => Promise.resolve(new Blob()),
+        ok:          true,
+        status:      200,
+        statusText:  'OK',
+        json:        (): Promise<{ success: boolean, result: unknown }> => Promise.resolve({ success: true, result: {} }),
+        text:        (): Promise<string> => Promise.resolve(''),
+        blob:        (): Promise<Blob> => Promise.resolve(new Blob()),
         arrayBuffer: (): Promise<ArrayBuffer> => Promise.resolve(new ArrayBuffer(0)),
-        headers: new Headers()
+        headers:     new Headers()
     })
 ) as jest.Mock & typeof fetch;
 
@@ -404,27 +404,27 @@ const mockFetch = jest.fn().mockImplementation((): Promise<MockResponse> =>
 const mockLeaflet = {
     map: jest.fn().mockImplementation(() => {
         const mockMapInstance = {
-            setView: jest.fn(),
-            invalidateSize: jest.fn(),
-            on: jest.fn(),
-            removeLayer: jest.fn(),
-            remove: jest.fn(),
+            setView:         jest.fn(),
+            invalidateSize:  jest.fn(),
+            on:              jest.fn(),
+            removeLayer:     jest.fn(),
+            remove:          jest.fn(),
             _controlCorners: {
-                'top-left': createMockElement(),
-                'top-right': createMockElement(),
-                'bottom-left': createMockElement(),
+                'top-left':     createMockElement(),
+                'top-right':    createMockElement(),
+                'bottom-left':  createMockElement(),
                 'bottom-right': createMockElement()
             }
         };
         return mockMapInstance;
     }),
     marker: jest.fn().mockImplementation(() => ({
-        addTo: jest.fn().mockReturnThis(),
-        on: jest.fn().mockReturnThis(),
-        bindPopup: jest.fn().mockReturnThis(),
+        addTo:           jest.fn().mockReturnThis(),
+        on:              jest.fn().mockReturnThis(),
+        bindPopup:       jest.fn().mockReturnThis(),
         setPopupContent: jest.fn().mockReturnThis(),
-        openPopup: jest.fn().mockReturnThis(),
-        getLatLng: jest.fn().mockReturnValue({ lat: 39.8283, lng: -98.5795 })
+        openPopup:       jest.fn().mockReturnThis(),
+        getLatLng:       jest.fn().mockReturnValue({ lat: 39.8283, lng: -98.5795 })
     })),
     tileLayer: jest.fn().mockImplementation(() => ({
         addTo: jest.fn()
@@ -462,14 +462,14 @@ const resetAllMocks = () => {
     mockFetch.mockClear();
     mockFetch.mockImplementation((): Promise<MockResponse> =>
         Promise.resolve({
-            ok: true,
-            status: 200,
-            statusText: 'OK',
-            json: (): Promise<{ success: boolean, result: unknown }> => Promise.resolve({ success: true, result: {} }),
-            text: (): Promise<string> => Promise.resolve(''),
-            blob: (): Promise<Blob> => Promise.resolve(new Blob()),
+            ok:          true,
+            status:      200,
+            statusText:  'OK',
+            json:        (): Promise<{ success: boolean, result: unknown }> => Promise.resolve({ success: true, result: {} }),
+            text:        (): Promise<string> => Promise.resolve(''),
+            blob:        (): Promise<Blob> => Promise.resolve(new Blob()),
             arrayBuffer: (): Promise<ArrayBuffer> => Promise.resolve(new ArrayBuffer(0)),
-            headers: new Headers()
+            headers:     new Headers()
         })
     );
     // Reset window and document mocks
@@ -494,8 +494,8 @@ const resetAllMocks = () => {
 
     // Mock IntersectionObserver
     global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-        observe: jest.fn(),
-        unobserve: jest.fn(),
+        observe:    jest.fn(),
+        unobserve:  jest.fn(),
         disconnect: jest.fn()
     })) as unknown as typeof IntersectionObserver;
 

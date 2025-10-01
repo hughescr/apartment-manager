@@ -4,23 +4,23 @@ import { DayOfWeek } from '../../types';
 
 export interface Props {
     /** The Alpine.js model path for the hours object (e.g., 'building.contactInfo.officeHours') */
-    xModel: string
+    xModel:            string
     /** Title displayed at the top of the editor */
-    title?: string
+    title?:            string
     /** Whether to show copy functionality (copy to next day, copy to all below, etc.) */
-    showCopyActions?: boolean
+    showCopyActions?:  boolean
     /** Whether to show bulk action buttons (Set All 9-5, Clear All) */
-    showBulkActions?: boolean
+    showBulkActions?:  boolean
     /** Default open time for bulk actions */
-    defaultOpenTime?: string
+    defaultOpenTime?:  string
     /** Default close time for bulk actions */
     defaultCloseTime?: string
     /** Compact layout with smaller inputs and spacing */
-    compact?: boolean
+    compact?:          boolean
     /** CSS classes to apply to the container */
-    'class'?: string
+    'class'?:          string
     /** Help text displayed below the editor */
-    helpText?: string
+    helpText?:         string
 }
 
 const {

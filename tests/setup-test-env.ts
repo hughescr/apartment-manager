@@ -6,7 +6,7 @@
 // Set test environment variables BEFORE any imports
 process.env.BUN_ENV = 'test';
 process.env.SST_RESOURCE_App = JSON.stringify({
-    name: 'test-app',
+    name:  'test-app',
     stage: 'test'
 });
 process.env.SST_RESOURCE_BuildingsUnits = JSON.stringify({

@@ -58,17 +58,17 @@ export {
 
 // Utility function for comprehensive MITS validation
 export function validateForMITSPublication(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }) {
     const results = {
-        building: BuildingPublishedSchema.safeParse(data.building),
+        building:  BuildingPublishedSchema.safeParse(data.building),
         unitTypes: map(data.unitTypes, ut => UnitTypePublishedSchema.safeParse(ut)),
-        units: map(data.units, u => UnitPublishedSchema.safeParse(u)),
-        isValid: true,
-        errors: [] as {
-            type: 'building' | 'unitType' | 'unit'
+        units:     map(data.units, u => UnitPublishedSchema.safeParse(u)),
+        isValid:   true,
+        errors:    [] as {
+            type:   'building' | 'unitType' | 'unit'
             index?: number
             issues: { path: string, message: string }[]
         }[]
@@ -78,9 +78,9 @@ export function validateForMITSPublication(data: {
     if(!results.building.success) {
         results.isValid = false;
         results.errors.push({
-            type: 'building',
+            type:   'building',
             issues: map(results.building.error.issues, issue => ({
-                path: issue.path.join('.'),
+                path:    issue.path.join('.'),
                 message: issue.message
             }))
         });
@@ -91,10 +91,10 @@ export function validateForMITSPublication(data: {
         if(!result.success) {
             results.isValid = false;
             results.errors.push({
-                type: 'unitType',
+                type:   'unitType',
                 index,
                 issues: map(result.error.issues, issue => ({
-                    path: issue.path.join('.'),
+                    path:    issue.path.join('.'),
                     message: issue.message
                 }))
             });
@@ -106,10 +106,10 @@ export function validateForMITSPublication(data: {
         if(!result.success) {
             results.isValid = false;
             results.errors.push({
-                type: 'unit',
+                type:   'unit',
                 index,
                 issues: map(result.error.issues, issue => ({
-                    path: issue.path.join('.'),
+                    path:    issue.path.join('.'),
                     message: issue.message
                 }))
             });
@@ -123,13 +123,13 @@ export function validateForMITSPublication(data: {
  * Type guard to check if data meets MITS publication requirements
  */
 export function isMITSCompliant(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }): data is {
-    building: BuildingPublishedInput
+    building:  BuildingPublishedInput
     unitTypes: UnitTypePublishedInput[]
-    units: UnitPublishedInput[]
+    units:     UnitPublishedInput[]
 } {
     const validation = validateForMITSPublication(data);
     return validation.isValid;
@@ -139,7 +139,7 @@ export function isMITSCompliant(data: {
  * Get all MITS error messages for reference
  */
 export const ALL_MITS_ERROR_MESSAGES = {
-    BUILDING: MITS_BUILDING_ERROR_MESSAGES,
+    BUILDING:  MITS_BUILDING_ERROR_MESSAGES,
     UNIT_TYPE: MITS_UNIT_TYPE_ERROR_MESSAGES,
-    UNIT: MITS_UNIT_ERROR_MESSAGES
+    UNIT:      MITS_UNIT_ERROR_MESSAGES
 } as const;

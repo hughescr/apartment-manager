@@ -12,15 +12,15 @@ export interface AddressSuggestion {
     /** Structured address components */
     address: {
         /** Street number and name */
-        street?: string
+        street?:     string
         /** City name */
-        city?: string
+        city?:       string
         /** State name or abbreviation */
-        state?: string
+        state?:      string
         /** Postal code */
         postalCode?: string
         /** Full formatted address */
-        formatted: string
+        formatted:   string
     }
     /** Geographic coordinates if available */
     coordinates?: {
@@ -30,9 +30,9 @@ export interface AddressSuggestion {
     /** Confidence score (0-1) if provided by the service */
     confidence?: number
     /** Source that provided the suggestion */
-    source: 'photon' | 'cache'
+    source:      'photon' | 'cache'
     /** Unique identifier for the suggestion */
-    id: string
+    id:          string
 }
 
 /**
@@ -40,9 +40,9 @@ export interface AddressSuggestion {
  */
 export interface AutocompleteError {
     /** Error code for programmatic handling */
-    code: 'NETWORK_ERROR' | 'INVALID_QUERY' | 'NO_RESULTS' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE'
+    code:           'NETWORK_ERROR' | 'INVALID_QUERY' | 'NO_RESULTS' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE'
     /** Human-readable error message */
-    message: string
+    message:        string
     /** Original error if applicable */
     originalError?: Error
 }
@@ -51,38 +51,38 @@ export interface AutocompleteError {
  * Photon API response structure
  */
 interface PhotonFeature {
-    type: 'Feature'
+    type:     'Feature'
     geometry: {
-        type: 'Point'
+        type:        'Point'
         coordinates: [number, number] // [longitude, latitude]
     }
     properties: {
-        osm_id: number
-        osm_type: string
-        osm_key: string
-        osm_value: string
-        name?: string
+        osm_id:       number
+        osm_type:     string
+        osm_key:      string
+        osm_value:    string
+        name?:        string
         housenumber?: string
-        street?: string
-        city?: string
-        state?: string
-        postcode?: string
-        country?: string
+        street?:      string
+        city?:        string
+        state?:       string
+        postcode?:    string
+        country?:     string
         countrycode?: string
-        extent?: [number, number, number, number]
+        extent?:      [number, number, number, number]
     }
 }
 
 interface PhotonResponse {
-    type: 'FeatureCollection'
+    type:     'FeatureCollection'
     features: PhotonFeature[]
 }
 /**
  * Cache entry for autocomplete results with access tracking for LRU
  */
 interface CacheEntry {
-    suggestions: AddressSuggestion[]
-    timestamp: number
+    suggestions:  AddressSuggestion[]
+    timestamp:    number
     lastAccessed: number
 }
 
@@ -160,8 +160,8 @@ class AutocompleteCache {
         const key = this.createKey(query);
         const now = Date.now();
         this.cache.set(key, {
-            suggestions: map(suggestions, s => ({ ...s, source: 'photon' as const })),
-            timestamp: now,
+            suggestions:  map(suggestions, s => ({ ...s, source: 'photon' as const })),
+            timestamp:    now,
             lastAccessed: now
         });
 
@@ -187,8 +187,8 @@ class AutocompleteCache {
      */
     getStats(): { size: number, maxSize: number, ttlMinutes: number } {
         return {
-            size: this.cache.size,
-            maxSize: this.maxSize,
+            size:       this.cache.size,
+            maxSize:    this.maxSize,
             ttlMinutes: 5
         };
     }
@@ -258,7 +258,7 @@ class Debouncer {
 
                     const result = await fn();
                     resolve(result);
-                } catch(error) {
+                } catch (error) {
                     reject(error);
                 }
             }, this.debounceMs);
@@ -401,9 +401,9 @@ export class PhotonAutocompleteService {
             logger.debug('Processed query', { original: trimmedQuery, processed: processedQuery });
 
             // Create cache key that includes coordinates for location-specific caching
-            const cacheKey = userCoordinates ?
-                `${trimmedQuery}|${userCoordinates.lat.toFixed(3)},${userCoordinates.lon.toFixed(3)}` :
-                trimmedQuery;
+            const cacheKey = userCoordinates
+                ? `${trimmedQuery}|${userCoordinates.lat.toFixed(3)},${userCoordinates.lon.toFixed(3)}`
+                : trimmedQuery;
 
             // Check cache first
             const cachedSuggestions = cache.get(cacheKey);
@@ -413,13 +413,13 @@ export class PhotonAutocompleteService {
 
             logger.info(`Getting address suggestions: ${trimmedQuery} (processed: ${processedQuery})`, {
                 hasUserLocation: !!userCoordinates,
-                userLocation: userCoordinates
+                userLocation:    userCoordinates
             });
 
             // Use debouncer to prevent excessive API calls (include coordinates in debounce key)
-            const debounceKey = userCoordinates ?
-                `${trimmedQuery}|${userCoordinates.lat.toFixed(3)},${userCoordinates.lon.toFixed(3)}` :
-                trimmedQuery;
+            const debounceKey = userCoordinates
+                ? `${trimmedQuery}|${userCoordinates.lat.toFixed(3)},${userCoordinates.lon.toFixed(3)}`
+                : trimmedQuery;
 
             const suggestions = await debouncer.debounce(debounceKey, async () => {
                 // Apply rate limiting
@@ -456,7 +456,7 @@ export class PhotonAutocompleteService {
 
                 if(!response.ok) {
                     const error: AutocompleteError = {
-                        code: response.status === 429 ? 'RATE_LIMITED' : 'SERVICE_UNAVAILABLE',
+                        code:    response.status === 429 ? 'RATE_LIMITED' : 'SERVICE_UNAVAILABLE',
                         message: `Photon API error: ${response.status} ${response.statusText}`
                     };
                     logger.error('Autocomplete API error', error);
@@ -465,7 +465,7 @@ export class PhotonAutocompleteService {
 
                 const data = await response.json() as PhotonResponse;
 
-                if(!data || !data.features || data.features.length === 0) {
+                if(!data?.features || data.features.length === 0) {
                     logger.debug(`No suggestions found for query: ${trimmedQuery}`);
                     return [];
                 }
@@ -480,15 +480,15 @@ export class PhotonAutocompleteService {
             });
 
             // Sort results by proximity if user coordinates are available
-            const sortedSuggestions = userCoordinates ?
-                this.sortByProximity(suggestions, userCoordinates) :
-                suggestions;
+            const sortedSuggestions = userCoordinates
+                ? this.sortByProximity(suggestions, userCoordinates)
+                : suggestions;
 
             return sortedSuggestions.slice(0, limit);
-        } catch(error) {
+        } catch (error) {
             const autocompleteError: AutocompleteError = {
-                code: 'NETWORK_ERROR',
-                message: 'Failed to get address suggestions',
+                code:          'NETWORK_ERROR',
+                message:       'Failed to get address suggestions',
                 originalError: error as Error
             };
             logger.error('Autocomplete failed', autocompleteError);
@@ -527,20 +527,20 @@ export class PhotonAutocompleteService {
             return {
                 displayText,
                 address: {
-                    street: addressComponents.street,
-                    city: addressComponents.city,
-                    state: addressComponents.state,
+                    street:     addressComponents.street,
+                    city:       addressComponents.city,
+                    state:      addressComponents.state,
                     postalCode: addressComponents.postalCode,
-                    formatted: addressComponents.formatted
+                    formatted:  addressComponents.formatted
                 },
                 coordinates: {
                     lat: coords[1], // Photon returns [lng, lat]
                     lng: coords[0]
                 },
                 source: 'photon',
-                id: `photon_${props.osm_type}_${props.osm_id}_${index}`
+                id:     `photon_${props.osm_type}_${props.osm_id}_${index}`
             };
-        } catch(error) {
+        } catch (error) {
             logger.warn('Failed to parse Photon feature', { feature, error });
             return null;
         }
@@ -601,9 +601,9 @@ export class PhotonAutocompleteService {
         const R = 3959; // Earth's radius in miles
         const dLat = this.toRadians(lat2 - lat1);
         const dLon = this.toRadians(lon2 - lon1);
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+          + Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2))
+          * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
     }
@@ -686,11 +686,11 @@ export async function getAddressSuggestions(query: string, limit = 5): Promise<s
  * Get statistics about all singleton instances
  */
 export function getAddressAutocompleteServiceStats(): {
-    cache: { size: number, maxSize: number, ttlMinutes: number }
+    cache:     { size: number, maxSize: number, ttlMinutes: number }
     debouncer: { pendingTimeouts: number, pendingPromises: number }
 } {
     return {
-        cache: cache.getStats(),
+        cache:     cache.getStats(),
         debouncer: debouncer.getStats()
     };
 }

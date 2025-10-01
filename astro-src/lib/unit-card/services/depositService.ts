@@ -147,7 +147,7 @@ export class DepositService {
      * Get deposit as an object (ensuring proper structure)
      */
     getDepositObject(): Deposit | null {
-        if(!this.state.unit || !this.state.unit.deposit) {
+        if(!this.state.unit?.deposit) {
             return null;
         }
 
@@ -159,7 +159,7 @@ export class DepositService {
         const partialRefund = this.getDepositPartialRefundPercentage();
         return {
             amount,
-            refundable: this.getDepositRefundable(),
+            refundable:              this.getDepositRefundable(),
             partialRefundPercentage: partialRefund ?? undefined
         };
     }

@@ -6,13 +6,13 @@ import { map } from 'lodash';
 
 export interface RentCalculationOptions {
     currentRent: number
-    updateType: 'absolute' | 'percentage'
-    value: number
+    updateType:  'absolute' | 'percentage'
+    value:       number
 }
 
 export interface RentValidationResult {
-    isValid: boolean
-    errors: string[]
+    isValid:   boolean
+    errors:    string[]
     warnings?: string[]
 }
 
@@ -36,14 +36,14 @@ export function calculateRent(options: RentCalculationOptions): number {
  */
 export function calculateRentScenarios(currentRent: number, percentageChanges: number[]): {
     percentage: number
-    newRent: number
+    newRent:    number
     difference: number
 }[] {
     return map(percentageChanges, (percentage) => {
         const newRent = calculateRent({
             currentRent,
             updateType: 'percentage',
-            value: percentage
+            value:      percentage
         });
 
         return {
@@ -101,7 +101,7 @@ export function validateRentCalculation(options: RentCalculationOptions): RentVa
     }
 
     return {
-        isValid: errors.length === 0,
+        isValid:  errors.length === 0,
         errors,
         warnings: warnings.length > 0 ? warnings : undefined
     };
@@ -129,9 +129,9 @@ export function getRentSummary(
  * Compare two rent amounts and provide analysis
  */
 export function compareRents(oldRent: number, newRent: number): {
-    difference: number
+    difference:       number
     percentageChange: number
-    analysis: string
+    analysis:         string
 } {
     const difference = newRent - oldRent;
     const percentageChange = oldRent > 0 ? (difference / oldRent) * 100 : 0;

@@ -5,8 +5,8 @@ export class BuildingFormatters {
         }
 
         return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
+            style:                 'currency',
+            currency:              'USD',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         }).format(amount);
@@ -43,12 +43,12 @@ export class BuildingFormatters {
         }
 
         const statusMap: Record<string, string> = {
-            Occupied: 'badge-error',
-            Notice: 'badge-warning',
-            Vacant: 'badge-success',
-            Model: 'badge-info',
+            Occupied:           'badge-error',
+            Notice:             'badge-warning',
+            Vacant:             'badge-success',
+            Model:              'badge-info',
             'Notice to Vacate': 'badge-warning',
-            'Model Unit': 'badge-info'
+            'Model Unit':       'badge-info'
         };
 
         return statusMap[status] || 'badge-ghost';
@@ -56,11 +56,11 @@ export class BuildingFormatters {
 
     static getTabDisplayName(tabKey: string): string {
         const tabNames: Record<string, string> = {
-            'building-info': 'Building Info',
+            'building-info':    'Building Info',
             'floorplans-units': 'Floorplans & Units',
             'pricing-policies': 'Pricing & Policies',
-            marketing: 'Marketing',
-            units: 'Units'
+            marketing:          'Marketing',
+            units:              'Units'
         };
 
         return tabNames[tabKey] || tabKey;
@@ -146,9 +146,9 @@ export class BuildingFormatters {
         }
 
         return date.toLocaleDateString('en-US', {
-            year: 'numeric',
+            year:  'numeric',
             month: 'short',
-            day: 'numeric'
+            day:   'numeric'
         });
     }
 
@@ -163,10 +163,10 @@ export class BuildingFormatters {
         }
 
         return date.toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
+            year:   'numeric',
+            month:  'short',
+            day:    'numeric',
+            hour:   'numeric',
             minute: '2-digit',
             hour12: true
         });

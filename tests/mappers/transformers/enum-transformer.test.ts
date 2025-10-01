@@ -121,7 +121,7 @@ describe('Enum Transformer', () => {
                         internal: PropertyType.APARTMENT,
                         external: {
                             apartments_com: 'Custom Apartment',
-                            zillow: 'Custom Apt'
+                            zillow:         'Custom Apt'
                         }
                     }
                 ];
@@ -136,7 +136,7 @@ describe('Enum Transformer', () => {
                         internal: PropertyType.APARTMENT,
                         external: {
                             apartments_com: 'Custom Apartment',
-                            zillow: 'Custom Apt'
+                            zillow:         'Custom Apt'
                         }
                     }
                 ];
@@ -176,7 +176,7 @@ describe('Enum Transformer', () => {
                     internal: PropertyType.APARTMENT,
                     external: {
                         apartments_com: 'Custom External',
-                        zillow: 'Custom Zillow'
+                        zillow:         'Custom Zillow'
                     }
                 }
             ];
@@ -236,7 +236,7 @@ describe('Enum Transformer', () => {
                     internal: PetType.DOG,
                     external: {
                         apartments_com: 'Canine',
-                        zillow: 'Doggo'
+                        zillow:         'Doggo'
                     }
                 }
             ];
@@ -271,7 +271,7 @@ describe('Enum Transformer', () => {
                     internal: PropertyType.APARTMENT,
                     external: {
                         apartments_com: null as any,
-                        zillow: undefined as any
+                        zillow:         undefined as any
                     }
                 }
             ];
@@ -286,7 +286,7 @@ describe('Enum Transformer', () => {
                     internal: 'SPECIAL_&_CHARS' as any,
                     external: {
                         apartments_com: 'Special & Characters',
-                        zillow: 'Special/Characters'
+                        zillow:         'Special/Characters'
                     }
                 }
             ];

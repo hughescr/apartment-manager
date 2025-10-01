@@ -32,11 +32,11 @@ describe('Data Layer Performance Tests', () => {
 
             // Create 500 buildings with large data (~2KB each = ~1MB total)
             const largeBuildings = times(500, i => ({
-                buildingID: `building-${i}`,
-                unitID: 'BUILDING',
-                street: `${i} Performance Test Street`,
+                buildingID:  `building-${i}`,
+                unitID:      'BUILDING',
+                street:      `${i} Performance Test Street`,
                 description: repeat('x', 1500), // ~1.5KB of data
-                photos: fill(Array(20), 'https://s3.example.com/photo.jpg')
+                photos:      fill(Array(20), 'https://s3.example.com/photo.jpg')
             }));
 
             // Mock paginated responses with LastEvaluatedKey
@@ -66,10 +66,10 @@ describe('Data Layer Performance Tests', () => {
 
             // Create 1000 units with large data (~1KB each = ~1MB total)
             const largeUnits = times(1000, i => ({
-                buildingID: 'test-building',
-                unitID: `UNIT#unit-${i}`,
-                unitNumber: `${i}`,
-                description: repeat('y', 800), // ~800 bytes
+                buildingID:    'test-building',
+                unitID:        `UNIT#unit-${i}`,
+                unitNumber:    `${i}`,
+                description:   repeat('y', 800), // ~800 bytes
                 unitAmenities: fill(Array(10), { name: 'Amenity', category: 'UNIT' })
             }));
 
@@ -79,7 +79,7 @@ describe('Data Layer Performance Tests', () => {
             dynamoDbMock.mockResolvedValueOnce({
                 ...mockQueryResponse(page1),
                 LastEvaluatedKey: { buildingID: 'test-building', unitID: 'UNIT#unit-499' },
-                Count: page1.length
+                Count:            page1.length
             });
 
             const units = await getUnits('test-building');
@@ -100,15 +100,15 @@ describe('Data Layer Performance Tests', () => {
 
             const allBuildings = times(totalItems, i => ({
                 buildingID: `paginated-${i}`,
-                unitID: 'BUILDING',
-                street: `${i} Paginated Street`
+                unitID:     'BUILDING',
+                street:     `${i} Paginated Street`
             }));
 
             // Mock first page
             dynamoDbMock.mockResolvedValueOnce({
                 ...mockQueryResponse(allBuildings.slice(0, pageSize)),
                 LastEvaluatedKey: { buildingID: 'paginated-99', unitID: 'BUILDING' },
-                ScannedCount: pageSize
+                ScannedCount:     pageSize
             });
 
             const firstPage = await getBuildings();
@@ -183,7 +183,7 @@ describe('Data Layer Performance Tests', () => {
 
             const buildings = times(25, i => ({
                 buildingID: `batch-${i}`,
-                street: `${i} Batch Street`
+                street:     `${i} Batch Street`
             }));
 
             // Simulate partial batch failure
@@ -225,7 +225,7 @@ describe('Data Layer Performance Tests', () => {
             // DynamoDB BatchGetItem has a limit of 100 keys
             const keys = times(150, i => ({
                 buildingID: `batch-get-${i}`,
-                unitID: 'BUILDING'
+                unitID:     'BUILDING'
             }));
 
             // Current implementation doesn't use BatchGetItem
@@ -309,10 +309,10 @@ describe('Data Layer Performance Tests', () => {
 
             // Create 1000 units, only 50 are available
             const allUnits = times(1000, i => ({
-                buildingID: 'large-building',
-                unitID: `UNIT#${i}`,
-                unitNumber: `${i}`,
-                occupied: i >= 50, // First 50 are available
+                buildingID:    'large-building',
+                unitID:        `UNIT#${i}`,
+                unitNumber:    `${i}`,
+                occupied:      i >= 50, // First 50 are available
                 availableDate: i < 50 ? '2024-01-01' : undefined
             }));
 
@@ -342,7 +342,7 @@ describe('Data Layer Performance Tests', () => {
             // Query with partition key is efficient
             const mockUnits = times(10, i => ({
                 buildingID: 'building-1',
-                unitID: `UNIT#${i}`
+                unitID:     `UNIT#${i}`
             }));
             dynamoDbMock.mockResolvedValueOnce({
                 ...mockQueryResponse(mockUnits),
@@ -366,9 +366,9 @@ describe('Data Layer Performance Tests', () => {
             // Scan reads all items across all partitions
             const allBuildings = times(100, i => ({
                 buildingID: `building-${i}`,
-                unitID: 'BUILDING',
-                state: i % 10 === 0 ? 'CA' : 'NY', // 10 in CA, 90 in NY
-                _et: 'Building'
+                unitID:     'BUILDING',
+                state:      i % 10 === 0 ? 'CA' : 'NY', // 10 in CA, 90 in NY
+                _et:        'Building'
             }));
 
             dynamoDbMock.mockResolvedValueOnce({
@@ -377,7 +377,7 @@ describe('Data Layer Performance Tests', () => {
                     _ct: new Date().toISOString(),
                     _md: new Date().toISOString()
                 })),
-                Count: 100,
+                Count:        100,
                 ScannedCount: 100 // Scan examines all items
             });
 
@@ -404,7 +404,7 @@ describe('Data Layer Performance Tests', () => {
             forEach(buildingIds, (id) => {
                 const units = times(5, j => ({
                     buildingID: id,
-                    unitID: `UNIT#${j}`
+                    unitID:     `UNIT#${j}`
                 }));
                 dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
             });
@@ -436,11 +436,11 @@ describe('Data Layer Performance Tests', () => {
                 .mockResolvedValueOnce(mockGetResponse({ buildingID: buildingId, unitID: 'BUILDING' }))
                 .mockResolvedValueOnce(mockQueryResponse(times(3, i => ({
                     buildingID: buildingId,
-                    unitID: `UNIT#${i}`
+                    unitID:     `UNIT#${i}`
                 }))))
                 .mockResolvedValueOnce(mockUpdateResponse({
-                    buildingID: buildingId,
-                    unitID: 'BUILDING',
+                    buildingID:  buildingId,
+                    unitID:      'BUILDING',
                     description: 'Updated'
                 }));
 
@@ -469,11 +469,11 @@ describe('Data Layer Performance Tests', () => {
             // Create items near DynamoDB's 400KB limit
             const largeDescription = repeat('x', 350000); // ~350KB
             const largeBuilding = {
-                buildingID: 'huge-building',
-                unitID: 'BUILDING',
-                description: largeDescription,
+                buildingID:          'huge-building',
+                unitID:              'BUILDING',
+                description:         largeDescription,
                 propertyDescription: repeat('y', 40000), // ~40KB
-                photos: fill(Array(100), 'https://example.com/photo.jpg')
+                photos:              fill(Array(100), 'https://example.com/photo.jpg')
             };
 
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(largeBuilding));
@@ -497,12 +497,12 @@ describe('Data Layer Performance Tests', () => {
             // Create 5000 small units
             const manyUnits = times(5000, i => ({
                 buildingID: 'mega-building',
-                unitID: `UNIT#${i}`,
+                unitID:     `UNIT#${i}`,
                 unitNumber: `${i}`,
-                beds: 2,
-                baths: 1,
-                sqft: 1000,
-                rent: 2000
+                beds:       2,
+                baths:      1,
+                sqft:       1000,
+                rent:       2000
             }));
 
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(manyUnits));
@@ -661,10 +661,10 @@ describe('Data Layer Performance Tests', () => {
 
             // Large item fetched repeatedly
             const largeItem = {
-                buildingID: 'large-cached',
-                unitID: 'BUILDING',
+                buildingID:  'large-cached',
+                unitID:      'BUILDING',
                 description: repeat('z', 100000), // 100KB
-                photos: fill(Array(200), 'https://example.com/photo.jpg')
+                photos:      fill(Array(200), 'https://example.com/photo.jpg')
             };
 
             // Mock 10 fetches of same large item
@@ -692,13 +692,13 @@ describe('Data Layer Performance Tests', () => {
 
             // Large building with many fields
             const largeBuilding = {
-                buildingID: 'projection-test',
-                unitID: 'BUILDING',
-                street: '123 Main St',
-                description: repeat('x', 50000), // 50KB
+                buildingID:          'projection-test',
+                unitID:              'BUILDING',
+                street:              '123 Main St',
+                description:         repeat('x', 50000), // 50KB
                 propertyDescription: repeat('y', 50000), // 50KB
-                photos: fill(Array(500), 'https://example.com/photo.jpg'),
-                propertyAmenities: fill(Array(100), { name: 'Amenity', category: 'PROPERTY' })
+                photos:              fill(Array(500), 'https://example.com/photo.jpg'),
+                propertyAmenities:   fill(Array(100), { name: 'Amenity', category: 'PROPERTY' })
             };
 
             // Current implementation fetches all attributes
@@ -724,7 +724,7 @@ describe('Data Layer Performance Tests', () => {
             // 1000 units, only 10 have special offers
             const units = times(1000, i => ({
                 buildingID: 'sparse-test',
-                unitID: `UNIT#${i}`,
+                unitID:     `UNIT#${i}`,
                 unitNumber: `${i}`,
                 ...(i < 10 ? { unitRentSpecial: { title: 'Special Offer', discount: 100 } } : {})
             }));
@@ -758,10 +758,10 @@ describe('Data Layer Performance Tests', () => {
 
             // Large building near 400KB limit
             const largeBuilding = {
-                buildingID: 'write-amp-test',
-                unitID: 'BUILDING',
-                description: repeat('a', 300000), // 300KB
-                photos: fill(Array(200), 'https://example.com/photo.jpg'),
+                buildingID:        'write-amp-test',
+                unitID:            'BUILDING',
+                description:       repeat('a', 300000), // 300KB
+                photos:            fill(Array(200), 'https://example.com/photo.jpg'),
                 propertyAmenities: fill(Array(100), { name: 'Amenity' })
             };
 
@@ -792,7 +792,7 @@ describe('Data Layer Performance Tests', () => {
                 dynamoDbMock.mockResolvedValueOnce(
                     mockUpdateResponse({
                         buildingID: buildingId,
-                        unitID: 'BUILDING',
+                        unitID:     'BUILDING',
                         totalUnits: i + 1
                     })
                 );
@@ -821,9 +821,9 @@ describe('Data Layer Performance Tests', () => {
 
             const building = {
                 buildingID: 'conditional-test',
-                unitID: 'BUILDING',
+                unitID:     'BUILDING',
                 totalUnits: 10,
-                yearBuilt: 2020
+                yearBuilt:  2020
             };
 
             // Successful conditional update
@@ -833,7 +833,7 @@ describe('Data Layer Performance Tests', () => {
 
             const updated = await updateBuilding('conditional-test', {
                 totalUnits: 12,
-                yearBuilt: 2021
+                yearBuilt:  2021
             });
 
             expect(updated).toBeDefined();
@@ -849,15 +849,15 @@ describe('Data Layer Performance Tests', () => {
     describe('Performance bottlenecks summary', () => {
         it('should document identified performance issues', () => {
             const performanceIssues = {
-                pagination: 'Not implemented - only first page returned',
-                retryLogic: 'No exponential backoff for throttling',
-                batchOperations: 'Not using BatchGetItem/BatchWriteItem',
-                gsiUsage: 'No GSIs defined - all filtering in memory',
-                caching: 'No caching layer - repeated identical requests',
-                projections: 'Fetching all attributes even when subset needed',
+                pagination:         'Not implemented - only first page returned',
+                retryLogic:         'No exponential backoff for throttling',
+                batchOperations:    'Not using BatchGetItem/BatchWriteItem',
+                gsiUsage:           'No GSIs defined - all filtering in memory',
+                caching:            'No caching layer - repeated identical requests',
+                projections:        'Fetching all attributes even when subset needed',
                 writeAmplification: 'Full item rewrites for small updates',
-                connectionPool: 'No connection pooling configuration',
-                queryOptimization: 'No sparse indexes for rare attributes'
+                connectionPool:     'No connection pooling configuration',
+                queryOptimization:  'No sparse indexes for rare attributes'
             };
 
             // Document findings

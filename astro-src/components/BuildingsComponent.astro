@@ -5,7 +5,7 @@ import BuildingsList from './BuildingsList.astro';
 import AddBuildingForm from './AddBuildingForm.astro';
 import BuildingManager from './BuildingManager.astro';
 import { Resource } from 'sst';
-import type { BuildingData, UnitData, UnitTypeData } from '../types';
+import type { BuildingData, UnitData, UnitTypeData } from '../../src/types/index.ts';
 
 // Fetch all data in a single API call for optimal performance
 const _apiURL = Resource.API.url;
@@ -14,8 +14,8 @@ if(!_apiURL) {
 } // Validate and mark as used for TypeScript
 
 interface AllDataResponse {
-    buildings: BuildingData[]
-    unitsByBuilding: Record<string, UnitData[]>
+    buildings:           BuildingData[]
+    unitsByBuilding:     Record<string, UnitData[]>
     unitTypesByBuilding: Record<string, UnitTypeData[]>
 }
 
@@ -34,7 +34,7 @@ try {
     buildings = allData.buildings || [];
     unitsByBuilding = allData.unitsByBuilding || {};
     unitTypesByBuilding = allData.unitTypesByBuilding || {};
-} catch(err) {
+} catch (err) {
     error = _.isError(err) ? err.message : 'Failed to load apartment data';
     buildings = [];
     unitsByBuilding = {};

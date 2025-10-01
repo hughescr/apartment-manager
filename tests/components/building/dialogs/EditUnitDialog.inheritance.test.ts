@@ -254,9 +254,9 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             </body>
             </html>
         `, {
-            url: 'http://localhost',
+            url:               'http://localhost',
             pretendToBeVisual: true,
-            resources: 'usable'
+            resources:         'usable'
         });
 
         document = dom.window.document;
@@ -269,50 +269,50 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
 
         mockUnitTypes = [
             {
-                buildingID: 'test-building-1',
-                modelID: 'model-1bed',
-                modelName: 'One Bedroom',
-                beds: 1,
-                baths: 1,
-                minRent: 1500,
-                maxRent: 1800,
-                minSqft: 750,
-                maxSqft: 850,
-                deposit: 1500,
+                buildingID:     'test-building-1',
+                modelID:        'model-1bed',
+                modelName:      'One Bedroom',
+                beds:           1,
+                baths:          1,
+                minRent:        1500,
+                maxRent:        1800,
+                minSqft:        750,
+                maxSqft:        850,
+                deposit:        1500,
                 countAvailable: 3
             },
             {
-                buildingID: 'test-building-1',
-                modelID: 'model-2bed',
-                modelName: 'Two Bedroom',
-                beds: 2,
-                baths: 2,
-                minRent: 2000,
-                maxRent: 2000, // Same min/max for testing
-                minSqft: 1000,
-                maxSqft: 1000, // Same min/max for testing
-                deposit: 2000,
+                buildingID:     'test-building-1',
+                modelID:        'model-2bed',
+                modelName:      'Two Bedroom',
+                beds:           2,
+                baths:          2,
+                minRent:        2000,
+                maxRent:        2000, // Same min/max for testing
+                minSqft:        1000,
+                maxSqft:        1000, // Same min/max for testing
+                deposit:        2000,
                 countAvailable: 2
             }
         ];
 
         mockUnit = {
-            buildingID: 'test-building-1',
-            unitID: 'unit-101',
-            unitNumber: '101',
-            modelID: 'model-1bed',
-            beds: undefined,        // Should inherit
-            baths: 2,          // Override
-            sqft: undefined,        // Should inherit
-            rent: 1600,        // Override
-            occupied: false,
+            buildingID:    'test-building-1',
+            unitID:        'unit-101',
+            unitNumber:    '101',
+            modelID:       'model-1bed',
+            beds:          undefined,        // Should inherit
+            baths:         2,          // Override
+            sqft:          undefined,        // Should inherit
+            rent:          1600,        // Override
+            occupied:      false,
             availableDate: '2025-02-01',
             feedInclusion: {
                 apartments_com: true,
-                zillow: true
+                zillow:         true
             },
             lastUpdated: new Date().toISOString(),
-            status: 'available',
+            status:      'available',
             currentRent: 1600,
             editingRent: false,
             savingField: null
@@ -564,13 +564,13 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
     describe('Form Submission with Null Values', () => {
         it('should prepare correct data for submission with inherited fields as undefined', () => {
             const submissionData = {
-                unitID: mockUnit.unitID,
+                unitID:     mockUnit.unitID,
                 unitNumber: mockUnit.unitNumber,
-                modelID: mockUnit.modelID,
-                beds: mockUnit.beds,     // undefined - should inherit
-                baths: mockUnit.baths,   // 2 - explicit override
-                sqft: mockUnit.sqft,     // undefined - should inherit
-                rent: mockUnit.rent      // 1600 - explicit override
+                modelID:    mockUnit.modelID,
+                beds:       mockUnit.beds,     // undefined - should inherit
+                baths:      mockUnit.baths,   // 2 - explicit override
+                sqft:       mockUnit.sqft,     // undefined - should inherit
+                rent:       mockUnit.rent      // 1600 - explicit override
             };
 
             expect(submissionData.beds).toBeUndefined();
@@ -583,12 +583,12 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             const customUnit = { ...mockUnit, modelID: '' }; // No unit type
 
             const submissionData = {
-                unitID: customUnit.unitID,
+                unitID:  customUnit.unitID,
                 modelID: customUnit.modelID, // Empty string
-                beds: customUnit.beds,       // undefined - no inheritance available
-                baths: customUnit.baths,     // 2 - explicit value
-                sqft: customUnit.sqft,       // undefined - no inheritance available
-                rent: customUnit.rent        // 1600 - explicit value
+                beds:    customUnit.beds,       // undefined - no inheritance available
+                baths:   customUnit.baths,     // 2 - explicit value
+                sqft:    customUnit.sqft,       // undefined - no inheritance available
+                rent:    customUnit.rent        // 1600 - explicit value
             };
 
             expect(submissionData.modelID).toBe('');
@@ -623,7 +623,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         it('should handle missing unit type data gracefully', () => {
             const incompleteUnitType = {
                 ...mockUnitTypes[0],
-                beds: undefined as unknown as number,
+                beds:    undefined as unknown as number,
                 minRent: undefined as unknown as number,
                 maxRent: undefined as unknown as number
             };

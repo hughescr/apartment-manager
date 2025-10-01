@@ -54,13 +54,13 @@ describe('Floorplan Save Flow - Integration Tests', () => {
         // Create realistic Alpine.js state with event dispatching
         const mockContext = createMockAlpineContext();
         mockState = {
-            unitTypes: [],
-            showAddUnitTypeDialog: false,
+            unitTypes:              [],
+            showAddUnitTypeDialog:  false,
             showEditUnitTypeDialog: false,
-            newUnitType: {},
-            selectedUnitType: null,
-            building: testBuilding,
-            apiURL: testApiURL,
+            newUnitType:            {},
+            selectedUnitType:       null,
+            building:               testBuilding,
+            apiURL:                 testApiURL,
             ...mockContext
         } as UnitTypeManagementState & AlpineMagics;
 
@@ -88,27 +88,27 @@ describe('Floorplan Save Flow - Integration Tests', () => {
 
             // Step 2: User fills in form data
             mockState.newUnitType = {
-                modelID: 'model-2br-deluxe',
-                modelName: '2 Bedroom Deluxe',
-                beds: 2,
-                baths: 2,
+                modelID:    'model-2br-deluxe',
+                modelName:  '2 Bedroom Deluxe',
+                beds:       2,
+                baths:      2,
                 buildingID: testBuilding.buildingID,
-                minRent: 1800,
-                maxRent: 2200,
-                minSqft: 950,
-                maxSqft: 1100
+                minRent:    1800,
+                maxRent:    2200,
+                minSqft:    950,
+                maxSqft:    1100
             };
 
             // Step 3: Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             // Step 4: Mock CRUD operations
             const createdUnitType: UnitTypeData = {
                 ...mockState.newUnitType,
-                unitID: `MODEL#${mockState.newUnitType.modelID}`,
+                unitID:    `MODEL#${mockState.newUnitType.modelID}`,
                 updatedAt: new Date('2024-01-01T12:00:00Z')
             } as UnitTypeData;
 
@@ -123,7 +123,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
 
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: true,
-                data: apiResponseData
+                data:    apiResponseData
             });
 
             // Step 6: User submits form
@@ -131,28 +131,28 @@ describe('Floorplan Save Flow - Integration Tests', () => {
 
             // Verify complete workflow - should validate the form data that was set
             expect(mockValidateUnitType).toHaveBeenCalledWith({
-                modelID: 'model-2br-deluxe',
-                modelName: '2 Bedroom Deluxe',
-                beds: 2,
-                baths: 2,
+                modelID:    'model-2br-deluxe',
+                modelName:  '2 Bedroom Deluxe',
+                beds:       2,
+                baths:      2,
                 buildingID: testBuilding.buildingID,
-                minRent: 1800,
-                maxRent: 2200,
-                minSqft: 950,
-                maxSqft: 1100
+                minRent:    1800,
+                maxRent:    2200,
+                minSqft:    950,
+                maxSqft:    1100
             });
             expect(mockCreateNewUnitType).toHaveBeenCalledWith(
                 testBuilding.buildingID,
                 {
-                    modelID: 'model-2br-deluxe',
-                    modelName: '2 Bedroom Deluxe',
-                    beds: 2,
-                    baths: 2,
+                    modelID:    'model-2br-deluxe',
+                    modelName:  '2 Bedroom Deluxe',
+                    beds:       2,
+                    baths:      2,
                     buildingID: testBuilding.buildingID,
-                    minRent: 1800,
-                    maxRent: 2200,
-                    minSqft: 950,
-                    maxSqft: 1100
+                    minRent:    1800,
+                    maxRent:    2200,
+                    minSqft:    950,
+                    maxSqft:    1100
                 }
             );
             expect(mockApiServiceAddUnitType).toHaveBeenCalledWith(
@@ -172,7 +172,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Verify user feedback
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type added successfully',
-                type: 'success'
+                type:    'success'
             });
 
             // Verify component communication - check that unit-types:updated was dispatched
@@ -185,18 +185,18 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // User opens dialog and fills incomplete data
             management.openAddUnitTypeDialog();
             mockState.newUnitType = {
-                modelID: '', // Missing required field
-                modelName: '   ', // Empty name
-                beds: 2,
-                baths: 2,
+                modelID:    '', // Missing required field
+                modelName:  '   ', // Empty name
+                beds:       2,
+                baths:      2,
                 buildingID: testBuilding.buildingID
             };
 
             // Mock validation failure
             mockValidateUnitType.mockReturnValue({
                 isValid: false,
-                errors: {
-                    modelID: 'Model ID is required',
+                errors:  {
+                    modelID:   'Model ID is required',
                     modelName: 'Model name cannot be empty'
                 }
             });
@@ -212,7 +212,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Verify user sees error and form stays open
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Model ID is required',
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.showAddUnitTypeDialog).toBe(true);
             expect(mockState.unitTypes).toEqual([]);
@@ -225,18 +225,18 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // User fills valid data
             management.openAddUnitTypeDialog();
             mockState.newUnitType = {
-                modelID: 'existing-model',
-                modelName: 'Existing Model',
-                beds: 2,
-                baths: 2,
+                modelID:    'existing-model',
+                modelName:  'Existing Model',
+                beds:       2,
+                baths:      2,
                 buildingID: testBuilding.buildingID,
-                minRent: 1800
+                minRent:    1800
             };
 
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             const createdUnitType = { ...mockState.newUnitType, unitID: 'MODEL#existing-model' } as UnitTypeData;
@@ -245,7 +245,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Mock API conflict response
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: false,
-                error: 'Unit type with this model ID already exists'
+                error:   'Unit type with this model ID already exists'
             });
 
             // User submits
@@ -262,7 +262,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             expect(mockState.showAddUnitTypeDialog).toBe(true); // Form stays open
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type with this model ID already exists',
-                type: 'error'
+                type:    'error'
             });
             expect(mockState.$dispatch).not.toHaveBeenCalledWith('unit-types:updated', expect.any(Object));
         });
@@ -273,17 +273,17 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // User fills valid data
             management.openAddUnitTypeDialog();
             mockState.newUnitType = {
-                modelID: 'model-network-test',
-                modelName: 'Network Test Model',
-                beds: 1,
-                baths: 1,
+                modelID:    'model-network-test',
+                modelName:  'Network Test Model',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuilding.buildingID
             };
 
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             const createdUnitType = { ...mockState.newUnitType, unitID: 'MODEL#model-network-test' } as UnitTypeData;
@@ -307,7 +307,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             expect(mockState.showAddUnitTypeDialog).toBe(true);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'fetch failed',
-                type: 'error'
+                type:    'error'
             });
         });
     });
@@ -323,17 +323,17 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // User workflow
             management.openAddUnitTypeDialog();
             mockState.newUnitType = {
-                modelID: 'offline-model',
-                modelName: 'Offline Test Model',
-                beds: 1,
-                baths: 1,
+                modelID:    'offline-model',
+                modelName:  'Offline Test Model',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuilding.buildingID
             };
 
             // Mock successful validation
             mockValidateUnitType.mockReturnValue({
                 isValid: true,
-                errors: {}
+                errors:  {}
             });
 
             const createdUnitType = { ...mockState.newUnitType, unitID: 'MODEL#offline-model' } as UnitTypeData;
@@ -354,7 +354,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             expect(mockState.showAddUnitTypeDialog).toBe(false);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type added successfully',
-                type: 'success'
+                type:    'success'
             });
             expect(mockState.$dispatch).toHaveBeenCalledWith('unit-types:updated', {
                 unitTypes: [createdUnitType]
@@ -374,8 +374,8 @@ describe('Floorplan Save Flow - Integration Tests', () => {
 
             const updates = {
                 modelName: 'Updated Model Name',
-                minRent: 2000,
-                maxRent: 2500
+                minRent:   2000,
+                maxRent:   2500
             };
 
             const updatedUnitType = { ...existingUnitType, ...updates };
@@ -384,7 +384,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Mock successful API response
             mockApiServiceUpdateUnitType.mockResolvedValue({
                 success: true,
-                data: updatedUnitType
+                data:    updatedUnitType
             });
 
             // Perform update
@@ -459,7 +459,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Verify user feedback
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Unit type deleted successfully',
-                type: 'success'
+                type:    'success'
             });
             expect(mockState.$dispatch).toHaveBeenCalledWith('unit-types:updated', {
                 unitTypes: remainingUnitTypes
@@ -496,10 +496,10 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Step 1: Add floorplan
             management.openAddUnitTypeDialog();
             mockState.newUnitType = {
-                modelID: 'persistent-model',
-                modelName: 'Persistent Model',
-                beds: 2,
-                baths: 2,
+                modelID:    'persistent-model',
+                modelName:  'Persistent Model',
+                beds:       2,
+                baths:      2,
                 buildingID: testBuilding.buildingID
             };
 
@@ -511,7 +511,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Mock successful save to API
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: true,
-                data: createdUnitType
+                data:    createdUnitType
             });
 
             await management.addUnitType();
@@ -524,9 +524,9 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // In real app, data would come from server via HTML dataset
             const newMockState = {
                 ...mockState,
-                unitTypes: [createdUnitType], // Simulates server data
+                unitTypes:             [createdUnitType], // Simulates server data
                 showAddUnitTypeDialog: false,
-                newUnitType: {}
+                newUnitType:           {}
             };
 
             // Step 3: Verify data persisted
@@ -543,10 +543,10 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Setup: User has filled form
             management.openAddUnitTypeDialog();
             const formData = {
-                modelID: 'recovery-test',
-                modelName: 'Recovery Test Model',
-                beds: 2,
-                baths: 2,
+                modelID:    'recovery-test',
+                modelName:  'Recovery Test Model',
+                beds:       2,
+                baths:      2,
                 buildingID: testBuilding.buildingID
             };
             mockState.newUnitType = formData;
@@ -559,7 +559,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             // Mock API failure
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: false,
-                error: 'Internal server error'
+                error:   'Internal server error'
             });
 
             // User submits and gets error
@@ -571,13 +571,13 @@ describe('Floorplan Save Flow - Integration Tests', () => {
             expect(mockState.unitTypes).toEqual([]); // No local changes
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Internal server error',
-                type: 'error'
+                type:    'error'
             });
 
             // User can retry - mock success this time
             mockApiServiceAddUnitType.mockResolvedValue({
                 success: true,
-                data: createdUnitType
+                data:    createdUnitType
             });
 
             mockAddUnitType.mockReturnValue([createdUnitType]);

@@ -36,7 +36,7 @@ describe('InheritanceResolver - Core Functionality', () => {
             expect(resolved.sqft).toBe(925);
             expect(resolved.rent).toBe(1600);
             expect(resolved.unitDescription).toBe('Corner unit with great views');
-            expect(resolved.photos).toEqual(unitData.photos!);
+            expect(resolved.photos).toEqual(unitData.photos);
         });
 
         it('should inherit lease terms from building if not in unit or model', () => {
@@ -61,13 +61,13 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should inherit amenities from model when unit has none', () => {
             const resolved = resolver.resolveUnitValues(unitData, unitTypeData, buildingData);
 
-            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities!);
+            expect(resolved.unitAmenities).toEqual(unitTypeData.modelAmenities);
         });
 
         it('should use unit photos when available', () => {
             const resolved = resolver.resolveUnitValues(unitData, unitTypeData, buildingData);
 
-            expect(resolved.photos).toEqual(unitData.photos!);
+            expect(resolved.photos).toEqual(unitData.photos);
         });
 
         it('should use building photos when unit has none', () => {
@@ -78,7 +78,7 @@ describe('InheritanceResolver - Core Functionality', () => {
 
             const resolved = resolver.resolveUnitValues(unitWithoutPhotos, unitTypeData, buildingData);
 
-            expect(resolved.photos).toEqual(buildingData.photos!);
+            expect(resolved.photos).toEqual(buildingData.photos);
         });
 
         it('should handle missing unit type', () => {
@@ -311,12 +311,12 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should validate all required fields are present', () => {
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                unitID:     'UNIT-001',
                 unitNumber: '101',
-                beds: 2,
-                baths: 2,
-                sqft: 900,
-                rent: 1500
+                beds:       2,
+                baths:      2,
+                sqft:       900,
+                rent:       1500
             };
 
             const requiredFields: (keyof UnitData)[] = ['unitNumber', 'beds', 'baths', 'rent'];
@@ -329,10 +329,10 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should identify missing fields', () => {
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                unitID:     'UNIT-001',
                 unitNumber: '101',
-                beds: undefined,
-                baths: 2
+                beds:       undefined,
+                baths:      2
             };
 
             const requiredFields: (keyof UnitData)[] = ['unitNumber', 'beds', 'baths', 'rent'];
@@ -346,9 +346,9 @@ describe('InheritanceResolver - Core Functionality', () => {
 
         it('should treat empty strings as missing', () => {
             const unit: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                unitNumber: '',
+                buildingID:      'BLDG-001',
+                unitID:          'UNIT-001',
+                unitNumber:      '',
                 unitDescription: '   ' // Whitespace only
             };
 
@@ -363,8 +363,8 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should treat empty arrays as missing', () => {
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                photos: []
+                unitID:     'UNIT-001',
+                photos:     []
             };
 
             const requiredFields: (keyof UnitData)[] = ['photos'];
@@ -377,9 +377,9 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should handle zero values as present', () => {
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: 0,
-                rent: 0
+                unitID:     'UNIT-001',
+                beds:       0,
+                rent:       0
             };
 
             const requiredFields: (keyof UnitData)[] = ['beds', 'rent'];
@@ -392,7 +392,7 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should handle empty required fields array', () => {
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
             };
 
             const result = resolver.validateRequiredFields(unit, []);
@@ -406,13 +406,13 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should apply defaults for missing values', () => {
             const unit: Partial<UnitData> = {
                 unitID: 'UNIT-001',
-                beds: 2
+                beds:   2
             };
 
             const defaults: Partial<UnitData> = {
-                beds: 1,
-                baths: 1,
-                rent: 1000,
+                beds:    1,
+                baths:   1,
+                rent:    1000,
                 deposit: 1000
             };
 
@@ -427,15 +427,15 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should not override existing values', () => {
             const unit: Partial<UnitData> = {
                 unitID: 'UNIT-001',
-                beds: 3,
-                baths: 2,
-                rent: 1500
+                beds:   3,
+                baths:  2,
+                rent:   1500
             };
 
             const defaults: Partial<UnitData> = {
-                beds: 1,
+                beds:  1,
                 baths: 1,
-                rent: 1000
+                rent:  1000
             };
 
             const result = resolver.applyDefaults(unit, defaults);
@@ -449,9 +449,9 @@ describe('InheritanceResolver - Core Functionality', () => {
             const unit: Partial<UnitData> = {};
 
             const defaults: Partial<UnitData> = {
-                beds: 1,
+                beds:  1,
                 baths: 1,
-                rent: 1000
+                rent:  1000
             };
 
             const result = resolver.applyDefaults(unit, defaults);
@@ -462,7 +462,7 @@ describe('InheritanceResolver - Core Functionality', () => {
         it('should handle empty defaults', () => {
             const unit: Partial<UnitData> = {
                 unitID: 'UNIT-001',
-                beds: 2
+                beds:   2
             };
 
             const result = resolver.applyDefaults(unit, {});
@@ -472,12 +472,12 @@ describe('InheritanceResolver - Core Functionality', () => {
 
         it('should handle null and undefined differently', () => {
             const unit: Partial<UnitData> = {
-                beds: null as unknown as number,
+                beds:  null as unknown as number,
                 baths: undefined
             };
 
             const defaults: Partial<UnitData> = {
-                beds: 1,
+                beds:  1,
                 baths: 1
             };
 

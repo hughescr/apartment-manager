@@ -26,7 +26,7 @@ describe('Upload API - CORS Configuration', () => {
 
         // Import test wrapper instead of original upload module to avoid SST Resource issues
         const uploadModule = await import('./upload-test-wrapper');
-        handler = uploadModule.handler as APIGatewayProxyHandlerV2;
+        handler = uploadModule.handler;
 
         // Get references to mocked functions from the test wrapper
         mockGetSignedUrl = uploadModule.mockGetSignedUrl;
@@ -52,30 +52,30 @@ describe('Upload API - CORS Configuration', () => {
     });
 
     const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
-        headers: {},
+        headers:         {},
         isBase64Encoded: false,
-        rawPath: '/api/upload',
-        rawQueryString: '',
-        requestContext: {
-            accountId: 'test-account',
-            apiId: 'test-api',
-            domainName: 'test.com',
+        rawPath:         '/api/upload',
+        rawQueryString:  '',
+        requestContext:  {
+            accountId:    'test-account',
+            apiId:        'test-api',
+            domainName:   'test.com',
             domainPrefix: 'test',
-            http: {
-                method: 'POST',
-                path: '/api/upload',
-                protocol: 'HTTP/1.1',
-                sourceIp: '127.0.0.1',
+            http:         {
+                method:    'POST',
+                path:      '/api/upload',
+                protocol:  'HTTP/1.1',
+                sourceIp:  '127.0.0.1',
                 userAgent: 'test-agent',
             },
             requestId: 'test-request-id',
-            routeKey: 'POST /api/upload',
-            stage: 'test',
-            time: '01/Jan/2024:00:00:00 +0000',
+            routeKey:  'POST /api/upload',
+            stage:     'test',
+            time:      '01/Jan/2024:00:00:00 +0000',
             timeEpoch: 1704067200000,
         },
         routeKey: 'POST /api/upload',
-        version: '2.0',
+        version:  '2.0',
         ...overrides,
     });
 
@@ -107,9 +107,9 @@ describe('Upload API - CORS Configuration', () => {
 
             const event = createMockEvent({
                 body: JSON.stringify({
-                    filename: 'test.jpg',
+                    filename:   'test.jpg',
                     buildingId: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitId: 'unit-1'
+                    unitId:     'unit-1'
                 })
             });
 

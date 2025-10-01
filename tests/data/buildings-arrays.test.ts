@@ -41,12 +41,12 @@ describe('Building Data Layer - Array Operations', () => {
             // First, create a building with populated arrays
             const buildingWithArrays = {
                 ...testBuilding,
-                buildingID: 'array-deletion-test',
+                buildingID:   'array-deletion-test',
                 rentSpecials: [
                     { title: 'Summer Special', description: '$500 off first month' },
                     { title: 'Winter Special', description: '2 months free' }
                 ],
-                photos: ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'],
+                photos:      ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'],
                 oneTimeFees: [
                     { type: FeeType.APPLICATION, amount: 50, description: 'Application fee' },
                     { type: FeeType.ADMIN, amount: 100, description: 'Admin fee' }
@@ -66,10 +66,10 @@ describe('Building Data Layer - Array Operations', () => {
 
             // Now update the building to clear all arrays (simulate user deleting all items)
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
@@ -78,7 +78,7 @@ describe('Building Data Layer - Array Operations', () => {
             const expectedMergedData = {
                 ...buildingWithArrays,
                 ...updateWithEmptyArrays, // Arrays should be empty as saved
-                unitID: 'BUILDING',
+                unitID:    'BUILDING',
                 updatedAt: new Date().toISOString()
             };
 
@@ -118,12 +118,12 @@ describe('Building Data Layer - Array Operations', () => {
 
             // Create a building with non-empty arrays first
             const buildingWithArrays = {
-                buildingID: 'edge-case-test',
-                street: '123 Edge Case St',
-                rentSpecials: [{ title: 'Special', description: 'Deal' }],
-                photos: ['photo1.jpg'],
-                oneTimeFees: [{ type: FeeType.APPLICATION, amount: 50, description: 'App fee' }],
-                monthlyFees: [{ type: FeeType.PARKING, amount: 100, description: 'Parking' }],
+                buildingID:        'edge-case-test',
+                street:            '123 Edge Case St',
+                rentSpecials:      [{ title: 'Special', description: 'Deal' }],
+                photos:            ['photo1.jpg'],
+                oneTimeFees:       [{ type: FeeType.APPLICATION, amount: 50, description: 'App fee' }],
+                monthlyFees:       [{ type: FeeType.PARKING, amount: 100, description: 'Parking' }],
                 propertyAmenities: [{ name: 'Pool', category: AmenityCategory.COMMUNITY }]
             };
 
@@ -133,25 +133,25 @@ describe('Building Data Layer - Array Operations', () => {
 
             // Update to clear all arrays
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
             // Create a scenario where the mock might not handle defaults correctly
             // Simulate the raw data without default merging (which could cause undefined)
             const rawDataWithoutDefaults = {
-                buildingID: 'edge-case-test',
-                street: '123 Edge Case St',
+                buildingID:        'edge-case-test',
+                street:            '123 Edge Case St',
                 // Note: Arrays are explicitly empty, not undefined
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: [],
-                unitID: 'BUILDING'
+                unitID:            'BUILDING'
             };
 
             dynamoDbMock
@@ -175,17 +175,17 @@ describe('Building Data Layer - Array Operations', () => {
             // Create building data that doesn't include the array fields at all
             const buildingWithoutArrayFields = {
                 buildingID: 'missing-arrays-test',
-                street: '456 Missing Arrays St',
+                street:     '456 Missing Arrays St',
                 // Deliberately omit all array fields to simulate DynamoDB returning incomplete data
-                unitID: 'BUILDING'
+                unitID:     'BUILDING'
             };
 
             // Update to clear all arrays - but existing building doesn't have them
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
@@ -210,22 +210,22 @@ describe('Building Data Layer - Array Operations', () => {
 
             // Update to clear all arrays
             const updateWithEmptyArrays = {
-                rentSpecials: [],
-                photos: [],
-                oneTimeFees: [],
-                monthlyFees: [],
+                rentSpecials:      [],
+                photos:            [],
+                oneTimeFees:       [],
+                monthlyFees:       [],
                 propertyAmenities: []
             };
 
             // Create a building without array fields to simulate incomplete database data
             const buildingWithoutArrays = {
-                buildingID: 'missing-arrays-test',
-                street: '789 Missing Arrays St',
-                city: 'Test City',
-                state: 'TS',
-                zip: '12345',
+                buildingID:  'missing-arrays-test',
+                street:      '789 Missing Arrays St',
+                city:        'Test City',
+                state:       'TS',
+                zip:         '12345',
                 description: 'Building with missing array fields',
-                unitID: 'BUILDING'
+                unitID:      'BUILDING'
                 // Note: array fields intentionally missing to test default handling
             };
 
@@ -255,13 +255,13 @@ describe('Building Data Layer - Array Operations', () => {
 
             const buildingWithPetPolicy = {
                 ...testBuilding,
-                buildingID: 'pet-policy-test',
+                buildingID:  'pet-policy-test',
                 petPolicies: {
-                    allowed: true,
-                    types: [PetType.DOG, PetType.CAT],
+                    allowed:           true,
+                    types:             [PetType.DOG, PetType.CAT],
                     breedRestrictions: ['Pit Bull', 'Rottweiler'],
-                    maxCount: 2,
-                    weightLimit: 50
+                    maxCount:          2,
+                    weightLimit:       50
                 }
             };
 
@@ -272,11 +272,11 @@ describe('Building Data Layer - Array Operations', () => {
             // Update to clear nested arrays in petPolicies
             const updateWithEmptyPetArrays = {
                 petPolicies: {
-                    allowed: true,
-                    types: [], // Clear pet types
+                    allowed:           true,
+                    types:             [], // Clear pet types
                     breedRestrictions: [], // Clear breed restrictions
-                    maxCount: 0,
-                    weightLimit: 0
+                    maxCount:          0,
+                    weightLimit:       0
                 }
             };
 
@@ -284,7 +284,7 @@ describe('Building Data Layer - Array Operations', () => {
             const expectedMergedPetData = {
                 ...buildingWithPetPolicy,
                 ...updateWithEmptyPetArrays,
-                unitID: 'BUILDING',
+                unitID:    'BUILDING',
                 updatedAt: new Date().toISOString()
             };
 
@@ -309,8 +309,8 @@ describe('Building Data Layer - Array Operations', () => {
 
             const existingBuilding = {
                 ...testBuilding,
-                buildingID: 'array-add-test',
-                photos: ['existing1.jpg'],
+                buildingID:        'array-add-test',
+                photos:            ['existing1.jpg'],
                 propertyAmenities: [{ name: 'Existing Pool', category: AmenityCategory.COMMUNITY }]
             };
 
@@ -320,7 +320,7 @@ describe('Building Data Layer - Array Operations', () => {
 
             // Update to add more items
             const updateWithMoreItems = {
-                photos: ['existing1.jpg', 'new1.jpg', 'new2.jpg'],
+                photos:            ['existing1.jpg', 'new1.jpg', 'new2.jpg'],
                 propertyAmenities: [
                     { name: 'Existing Pool', category: AmenityCategory.COMMUNITY },
                     { name: 'New Gym', category: AmenityCategory.COMMUNITY },
@@ -347,8 +347,8 @@ describe('Building Data Layer - Array Operations', () => {
 
             const buildingWithManyItems = {
                 ...testBuilding,
-                buildingID: 'array-remove-test',
-                photos: ['photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg'],
+                buildingID:   'array-remove-test',
+                photos:       ['photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg'],
                 rentSpecials: [
                     { title: 'Special 1', description: 'First' },
                     { title: 'Special 2', description: 'Second' },
@@ -362,7 +362,7 @@ describe('Building Data Layer - Array Operations', () => {
 
             // Update to remove some items
             const updateWithFewerItems = {
-                photos: ['photo1.jpg', 'photo3.jpg'], // Removed photo2 and photo4
+                photos:       ['photo1.jpg', 'photo3.jpg'], // Removed photo2 and photo4
                 rentSpecials: [
                     { title: 'Special 1', description: 'First' }
                 ] // Removed special 2 and 3
@@ -387,7 +387,7 @@ describe('Building Data Layer - Array Operations', () => {
 
             const buildingWithModifiableItems = {
                 ...testBuilding,
-                buildingID: 'array-modify-test',
+                buildingID:  'array-modify-test',
                 oneTimeFees: [
                     { type: FeeType.APPLICATION, amount: 50, description: 'Original app fee' },
                     { type: FeeType.ADMIN, amount: 100, description: 'Original admin fee' }
@@ -428,8 +428,8 @@ describe('Building Data Layer - Array Operations', () => {
 
             const buildingWithDuplicates = {
                 ...testBuilding,
-                buildingID: 'duplicates-test',
-                photos: ['same.jpg', 'same.jpg', 'different.jpg', 'same.jpg'],
+                buildingID:        'duplicates-test',
+                photos:            ['same.jpg', 'same.jpg', 'different.jpg', 'same.jpg'],
                 propertyAmenities: [
                     { name: 'Pool', category: AmenityCategory.COMMUNITY },
                     { name: 'Pool', category: AmenityCategory.COMMUNITY }, // Duplicate
@@ -449,10 +449,10 @@ describe('Building Data Layer - Array Operations', () => {
 
             const buildingWithLargeArrays = {
                 ...testBuilding,
-                buildingID: 'large-arrays-test',
-                photos: Array.from({ length: 500 }, (_, i) => `photo${i}.jpg`),
+                buildingID:   'large-arrays-test',
+                photos:       Array.from({ length: 500 }, (_, i) => `photo${i}.jpg`),
                 rentSpecials: Array.from({ length: 50 }, (_, i) => ({
-                    title: `Special ${i}`,
+                    title:       `Special ${i}`,
                     description: `Deal number ${i}`
                 }))
             };
@@ -470,9 +470,9 @@ describe('Building Data Layer - Array Operations', () => {
 
             const buildingWithNullItems = {
                 ...testBuilding,
-                buildingID: 'null-items-test',
+                buildingID:   'null-items-test',
                 // These would be filtered out by the data layer validation
-                photos: compact(['valid.jpg']), // Remove any nulls
+                photos:       compact(['valid.jpg']), // Remove any nulls
                 rentSpecials: filter([
                     { title: 'Valid Special', description: 'Good deal' }
                 ], special => special.title && special.description) as RentSpecial[] // Filter out invalid items
@@ -490,7 +490,7 @@ describe('Building Data Layer - Array Operations', () => {
 
             const buildingWithMixedTypes = {
                 ...testBuilding,
-                buildingID: 'mixed-types-test',
+                buildingID:   'mixed-types-test',
                 rentSpecials: [
                     { title: 'Basic Special', description: 'Simple text', amount: 100 },
                     { title: 'Complex Special', description: 'With extras', percentage: 10.5, conditions: ['condition1'] },

@@ -15,10 +15,10 @@
  */
 const LOG_LEVELS = {
     DEBUG: 0,
-    INFO: 1,
-    WARN: 2,
+    INFO:  1,
+    WARN:  2,
     ERROR: 3,
-    NONE: 4
+    NONE:  4
 } as const;
 
 type LogLevel = keyof typeof LOG_LEVELS;
@@ -126,8 +126,8 @@ export const clientLogger = {
         if(error instanceof Error) {
             console.error(`[ERROR] ${message}`, {
                 message: error.message,
-                name: error.name,
-                stack: error.stack
+                name:    error.name,
+                stack:   error.stack
             });
         } else {
             console.error(`[ERROR] ${message}`, error ? sanitizeForClientLogging(error) : '');

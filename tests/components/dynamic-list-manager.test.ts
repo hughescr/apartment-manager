@@ -6,7 +6,7 @@ import { filter, find, map } from 'lodash';
 
 describe('DynamicListManager Component', () => {
     const mockProps = {
-        name: 'rentSpecials',
+        name:  'rentSpecials',
         label: 'Rent Specials',
         items: [
             { id: '1', title: 'Move-in Special', description: 'First month free', startDate: '2025-01-01', endDate: '2025-02-01' },
@@ -18,10 +18,10 @@ describe('DynamicListManager Component', () => {
             { name: 'startDate', type: 'date', label: 'Start Date' },
             { name: 'endDate', type: 'date', label: 'End Date' }
         ],
-        addButtonText: 'Add Rent Special',
+        addButtonText:    'Add Rent Special',
         removeButtonText: 'Remove',
-        xModel: 'building.rentSpecials',
-        errors: {}
+        xModel:           'building.rentSpecials',
+        errors:           {}
     };
 
     it('should render list with existing items', () => {
@@ -64,7 +64,7 @@ describe('DynamicListManager Component', () => {
 
 describe('DynamicListManager Property Highlights', () => {
     const highlightsProps = {
-        name: 'propertyHighlights',
+        name:  'propertyHighlights',
         label: 'Property Highlights',
         items: [
             { id: '1', highlight: 'Prime downtown location' },
@@ -73,10 +73,10 @@ describe('DynamicListManager Property Highlights', () => {
         fields: [
             { name: 'highlight', type: 'text', label: 'Highlight', required: true, placeholder: 'Prime downtown location' }
         ],
-        addButtonText: 'Add Highlight',
+        addButtonText:    'Add Highlight',
         removeButtonText: 'Remove',
-        xModel: 'building.propertyHighlights',
-        errors: {}
+        xModel:           'building.propertyHighlights',
+        errors:           {}
     };
 
     it('should handle simple single-field items', () => {
@@ -88,16 +88,16 @@ describe('DynamicListManager Property Highlights', () => {
 
 describe('DynamicListManager Parking Options', () => {
     const parkingProps = {
-        name: 'parkingOptions',
+        name:  'parkingOptions',
         label: 'Parking Options',
         items: [
             { id: '1', type: 'garage', included: false, fee: 100, spaces: 1, description: 'Covered garage parking' }
         ],
         fields: [
             {
-                name: 'type',
-                type: 'select',
-                label: 'Type',
+                name:    'type',
+                type:    'select',
+                label:   'Type',
                 options: [
                     { value: 'garage', label: 'Garage' },
                     { value: 'covered', label: 'Covered' },
@@ -111,10 +111,10 @@ describe('DynamicListManager Parking Options', () => {
             { name: 'spaces', type: 'number', label: 'Number of Spaces', min: 1 },
             { name: 'description', type: 'textarea', label: 'Description', placeholder: 'Parking details...' }
         ],
-        addButtonText: 'Add Parking Option',
+        addButtonText:    'Add Parking Option',
         removeButtonText: 'Remove',
-        xModel: 'building.parkingOptions',
-        errors: {}
+        xModel:           'building.parkingOptions',
+        errors:           {}
     };
 
     it('should support select field type', () => {

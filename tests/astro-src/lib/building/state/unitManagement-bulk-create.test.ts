@@ -18,32 +18,32 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         // Mock state with all required properties
         mockState = {
             building: {
-                buildingID: 'test-building-1',
+                buildingID:   'test-building-1',
                 buildingName: 'Test Building'
             },
-            units: [],
-            filteredUnits: [],
-            selectedUnits: new Set(),
-            statusFilter: 'all',
-            searchQuery: '',
+            units:                [],
+            filteredUnits:        [],
+            selectedUnits:        new Set(),
+            statusFilter:         'all',
+            searchQuery:          '',
             showBulkCreateDialog: false,
-            bulkCreateData: {
-                modelID: 'model-1',
-                count: null,
-                patternType: 'numeric',
-                startingNumber: '',
-                prefix: '',
-                suffix: '',
+            bulkCreateData:       {
+                modelID:           'model-1',
+                count:             null,
+                patternType:       'numeric',
+                startingNumber:    '',
+                prefix:            '',
+                suffix:            '',
                 customUnitNumbers: '',
-                unitNumbers: ['101', '102'],
-                vacancyClass: 'Unoccupied'
+                unitNumbers:       ['101', '102'],
+                vacancyClass:      'Unoccupied'
             },
             bulkOperation: {
-                loading: false,
-                statusValue: '',
-                rentUpdateType: 'absolute' as const,
-                rentValue: 0,
-                errors: undefined,
+                loading:         false,
+                statusValue:     '',
+                rentUpdateType:  'absolute' as const,
+                rentValue:       0,
+                errors:          undefined,
                 successfulUnits: undefined
             },
             ...mockContext
@@ -63,7 +63,7 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         // Setup: Mock API to return errors for all units
         mockApiService.addUnit.mockResolvedValue({
             success: false,
-            error: 'Unit number already exists'
+            error:   'Unit number already exists'
         });
 
         // Start with dialog open
@@ -95,11 +95,11 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         // Setup: Mock API to return success for all units
         mockApiService.addUnit.mockResolvedValue({
             success: true,
-            data: {
-                unitID: '101',
+            data:    {
+                unitID:     '101',
                 unitNumber: '101',
                 buildingID: 'test-building-1',
-                modelID: 'model-1'
+                modelID:    'model-1'
             }
         });
 
@@ -124,16 +124,16 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         mockApiService.addUnit
             .mockResolvedValueOnce({
                 success: true,
-                data: {
-                    unitID: '101',
+                data:    {
+                    unitID:     '101',
                     unitNumber: '101',
                     buildingID: 'test-building-1',
-                    modelID: 'model-1'
+                    modelID:    'model-1'
                 }
             })
             .mockResolvedValueOnce({
                 success: false,
-                error: 'Unit 102 already exists'
+                error:   'Unit 102 already exists'
             });
 
         // Start with dialog open

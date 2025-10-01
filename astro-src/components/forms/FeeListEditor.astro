@@ -3,16 +3,16 @@
 import { FeeType } from '../../types';
 
 export interface Props {
-    name: string
-    label?: string
-    xModel: string
-    required?: boolean
-    disabled?: boolean
-    'class'?: string
-    error?: string
-    helpText?: string
+    name:       string
+    label?:     string
+    xModel:     string
+    required?:  boolean
+    disabled?:  boolean
+    'class'?:   string
+    error?:     string
+    helpText?:  string
     showLabel?: boolean
-    feeTypes?: FeeType[] // Allow customization of available fee types
+    feeTypes?:  FeeType[] // Allow customization of available fee types
 }
 
 const {
@@ -39,16 +39,16 @@ const containerClasses = [
 
 // Fee type labels for display
 const feeTypeLabels = {
-    [FeeType.APPLICATION]: 'Application Fee',
-    [FeeType.ADMIN]: 'Administrative Fee',
+    [FeeType.APPLICATION]:      'Application Fee',
+    [FeeType.ADMIN]:            'Administrative Fee',
     [FeeType.SECURITY_DEPOSIT]: 'Security Deposit',
-    [FeeType.PET_DEPOSIT]: 'Pet Deposit',
-    [FeeType.PET_FEE]: 'Pet Fee',
-    [FeeType.PARKING]: 'Parking Fee',
-    [FeeType.STORAGE]: 'Storage Fee',
-    [FeeType.MOVE_IN]: 'Move-in Fee',
-    [FeeType.KEY_DEPOSIT]: 'Key Deposit',
-    [FeeType.CLEANING]: 'Cleaning Fee',
+    [FeeType.PET_DEPOSIT]:      'Pet Deposit',
+    [FeeType.PET_FEE]:          'Pet Fee',
+    [FeeType.PARKING]:          'Parking Fee',
+    [FeeType.STORAGE]:          'Storage Fee',
+    [FeeType.MOVE_IN]:          'Move-in Fee',
+    [FeeType.KEY_DEPOSIT]:      'Key Deposit',
+    [FeeType.CLEANING]:         'Cleaning Fee',
 };
 
 // Create Alpine.js data string with proper xModel reference handling

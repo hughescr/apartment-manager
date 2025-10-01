@@ -25,8 +25,8 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         if(!validatedSite) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ error: 'Invalid site name. Must be "apartments_com" or "zillow"' })
+                headers:    { 'Content-Type': 'application/json' },
+                body:       JSON.stringify({ error: 'Invalid site name. Must be "apartments_com" or "zillow"' })
             };
         }
 
@@ -56,7 +56,7 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
                 // Try to get unit types
                 try {
                     unitTypes = await getUnitTypes(building.buildingID);
-                } catch(error: unknown) {
+                } catch (error: unknown) {
                     const errorMessage = isError(error) ? error.message : 'Unknown error';
                     buildingErrors[`${building.buildingID}_unitTypes`] = errorMessage;
                     unitTypes = []; // Empty array on failure
@@ -70,7 +70,7 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
                         unit.feedInclusion && unit.feedInclusion[validatedSite] === true
                     ) as UnitData[];
                     units = filteredUnits;
-                } catch(error: unknown) {
+                } catch (error: unknown) {
                     const errorMessage = isError(error) ? error.message : 'Unknown error';
                     buildingErrors[`${building.buildingID}_units`] = errorMessage;
                     units = []; // Empty array on failure
@@ -92,28 +92,28 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
             buildings: allBuildings,
             unitTypesByBuilding,
             unitsByBuilding,
-            siteName: validatedSite
+            siteName:  validatedSite
         });
 
         // Return the XML feed
         return {
             statusCode: 200,
-            headers: {
-                'Content-Type': 'application/xml',
+            headers:    {
+                'Content-Type':  'application/xml',
                 'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
-                'X-Robots-Tag': 'noindex' // Don't index feed URLs
+                'X-Robots-Tag':  'noindex' // Don't index feed URLs
             },
             body: xml
         };
-    } catch(error: unknown) {
+    } catch (error: unknown) {
         // Log error for debugging (in production, use proper logging)
         const errorMessage = isError(error) ? error.message : 'Unknown error';
 
         return {
             statusCode: 500,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                error: 'Failed to generate MITS feed',
+            headers:    { 'Content-Type': 'application/json' },
+            body:       JSON.stringify({
+                error:   'Failed to generate MITS feed',
                 details: errorMessage
             })
         };

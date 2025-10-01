@@ -12,7 +12,7 @@ export default defineConfig({
     ],
     vite: {
         plugins: [tailwind()],
-        server: {
+        server:  {
             watch: {
                 ignored: [
                     '**/.git/**',
@@ -40,9 +40,9 @@ export default defineConfig({
             }
         }
     },
-    srcDir: './astro-src',
+    srcDir:    './astro-src',
     publicDir: './astro-public',
-    outDir: './site-build',   // keep it away from SST artifacts
-    output: 'server',
-    adapter: aws({ responseMode: 'stream' }),
+    outDir:    './site-build',   // keep it away from SST artifacts
+    output:    'server',
+    adapter:   aws({ responseMode: 'stream' }),
 });

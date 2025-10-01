@@ -12,33 +12,33 @@ import { find, forOwn } from 'lodash';
  */
 export interface UnitCardState {
     // Core data
-    unit: UnitData | null
-    originalUnit: UnitData | null
-    unitTypes: UnitTypeData[]
+    unit:             UnitData | null
+    originalUnit:     UnitData | null
+    unitTypes:        UnitTypeData[]
     selectedUnitType: UnitTypeData | null
-    apiURL: string
+    apiURL:           string
 
     // UI State
-    saving: boolean
-    errors: Record<string, string>
+    saving:           boolean
+    errors:           Record<string, string>
     expandedSections: {
-        details: boolean
+        details:   boolean
         amenities: boolean
-        photos: boolean
-        websites: boolean
+        photos:    boolean
+        websites:  boolean
     }
     buildingAmenities: Amenity[]
 
     // Service instances
     fieldInheritance: FieldInheritanceManager | null
-    formatters: UnitFormatters | null
-    events: UnitEventManager | null
+    formatters:       UnitFormatters | null
+    events:           UnitEventManager | null
 
     // New focused services
     validationService: ValidationService | null
-    depositService: DepositService | null
-    amenityService: AmenityService | null
-    apiService: ApiService | null
+    depositService:    DepositService | null
+    amenityService:    AmenityService | null
+    apiService:        ApiService | null
 
     // Methods
     init(this: UnitCardState & AlpineMagics): void
@@ -83,33 +83,33 @@ export function createUnitCardState() {
 function unitCardStateObject(): UnitCardState {
     return {
         // Core data
-        unit: null as UnitData | null,
-        originalUnit: null as UnitData | null,
-        unitTypes: [] as UnitTypeData[],
+        unit:             null as UnitData | null,
+        originalUnit:     null as UnitData | null,
+        unitTypes:        [] as UnitTypeData[],
         selectedUnitType: null as UnitTypeData | null,
-        apiURL: '',
+        apiURL:           '',
 
         // UI State
-        saving: false,
-        errors: {} as Record<string, string>,
+        saving:           false,
+        errors:           {} as Record<string, string>,
         expandedSections: {
-            details: false,
+            details:   false,
             amenities: false,
-            photos: false,
-            websites: false
+            photos:    false,
+            websites:  false
         },
         buildingAmenities: [] as Amenity[],
 
         // Service instances (will be initialized in init())
         fieldInheritance: null as FieldInheritanceManager | null,
-        formatters: null as UnitFormatters | null,
-        events: null as UnitEventManager | null,
+        formatters:       null as UnitFormatters | null,
+        events:           null as UnitEventManager | null,
 
         // New focused services
         validationService: null as ValidationService | null,
-        depositService: null as DepositService | null,
-        amenityService: null as AmenityService | null,
-        apiService: null as ApiService | null,
+        depositService:    null as DepositService | null,
+        amenityService:    null as AmenityService | null,
+        apiService:        null as ApiService | null,
 
         /**
          * Initialize the unit card state from HTML dataset
@@ -207,7 +207,7 @@ function unitCardStateObject(): UnitCardState {
 
         initializeSelectedUnitType() {
             if(this.unit?.modelID && this.unitTypes) {
-                this.selectedUnitType = find(this.unitTypes, { modelID: this.unit!.modelID }) || null;
+                this.selectedUnitType = find(this.unitTypes, { modelID: this.unit.modelID }) || null;
             }
         },
 
@@ -229,7 +229,7 @@ function unitCardStateObject(): UnitCardState {
             this.$watch('expandedSections', (sections: typeof this.expandedSections) => {
                 forOwn(sections, (expanded, section) => {
                     if(this.events) {
-                        this.events.sectionToggled(section, expanded as boolean);
+                        this.events.sectionToggled(section, expanded);
                     }
                 });
             });
@@ -305,8 +305,8 @@ function unitCardStateObject(): UnitCardState {
          * Toggle expansion of a section
          */
         toggleSection(section: string) {
-            (this.expandedSections as Record<string, boolean>)[section] =
-                !((this.expandedSections as Record<string, boolean>)[section]);
+            (this.expandedSections as Record<string, boolean>)[section]
+                = !((this.expandedSections as Record<string, boolean>)[section]);
         },
 
         // Inheritance methods
@@ -339,8 +339,8 @@ function unitCardStateObject(): UnitCardState {
             const inheritedValue = this.getInheritedValue(fieldName);
             const fieldDisplayName = this.formatters.getFieldDisplayName(fieldName);
 
-            if(inheritedValue !== null &&
-              confirm(`Reset ${fieldDisplayName} to inherited value (${inheritedValue})? This will clear the unit-specific value.`)) {
+            if(inheritedValue !== null
+              && confirm(`Reset ${fieldDisplayName} to inherited value (${inheritedValue})? This will clear the unit-specific value.`)) {
                 this.fieldInheritance.resetFieldToInherited(this.unit, fieldName as InheritableField);
 
                 if(this.events) {

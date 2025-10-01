@@ -27,18 +27,18 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
     describe('BuildingPublishedSchema - MITS Requirements', () => {
         const completeValidBuilding: BuildingPublishedInput = {
-            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            buildingName: 'Test Building',
-            street: '123 Main St',
-            city: 'Dallas',
-            state: 'TX',
-            zip: '75001',
-            latitude: 32.7767,
-            longitude: -96.7970,
-            propertyType: PropertyType.APARTMENT,
+            buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+            buildingName:  'Test Building',
+            street:        '123 Main St',
+            city:          'Dallas',
+            state:         'TX',
+            zip:           '75001',
+            latitude:      32.7767,
+            longitude:     -96.7970,
+            propertyType:  PropertyType.APARTMENT,
             structureType: 'Apartment',
-            rentalType: 'Market Rate',
-            contactInfo: {
+            rentalType:    'Market Rate',
+            contactInfo:   {
                 email: 'leasing@testbuilding.com',
                 phone: '555-123-4567'
             }
@@ -142,7 +142,7 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         it('should validate coordinate ranges and reject invalid values', () => {
             const invalidCoords = {
                 ...completeValidBuilding,
-                latitude: 0, // Will fail refinement check
+                latitude:  0, // Will fail refinement check
                 longitude: 0 // Will fail refinement check
             };
             const result = BuildingPublishedSchema.safeParse(invalidCoords);
@@ -189,14 +189,14 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
     describe('UnitTypePublishedSchema - MITS Floorplan Requirements', () => {
         const completeValidUnitType: UnitTypePublishedInput = {
             buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            modelID: 'model-1br',
-            modelName: '1 Bedroom Apartment',
-            beds: 1,
-            baths: 1,
-            minSqft: 650,
-            maxSqft: 750,
-            minRent: 1200,
-            maxRent: 1400
+            modelID:    'model-1br',
+            modelName:  '1 Bedroom Apartment',
+            beds:       1,
+            baths:      1,
+            minSqft:    650,
+            maxSqft:    750,
+            minRent:    1200,
+            maxRent:    1400
         };
 
         it('should accept complete valid MITS unit type data', () => {
@@ -341,13 +341,13 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
     describe('UnitPublishedSchema - MITS ILS_Unit Requirements', () => {
         const completeValidUnit: UnitPublishedInput = {
-            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            unitID: 'unit-101',
-            unitNumber: '101',
-            beds: 1,
-            baths: 1,
-            sqft: 700,
-            rent: 1250,
+            buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
+            unitID:       'unit-101',
+            unitNumber:   '101',
+            beds:         1,
+            baths:        1,
+            sqft:         700,
+            rent:         1250,
             vacancyClass: 'Unoccupied'
         };
 
@@ -447,10 +447,10 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         it('should validate reasonable value ranges', () => {
             const extremeValues = {
                 ...completeValidUnit,
-                beds: 15, // Too many
+                beds:  15, // Too many
                 baths: 20, // Too many
-                sqft: 50000, // Too large
-                rent: 100000 // Too high
+                sqft:  50000, // Too large
+                rent:  100000 // Too high
             };
             const result = UnitPublishedSchema.safeParse(extremeValues);
             expect(result.success).toBe(false);
@@ -469,11 +469,11 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
         it('should accept optional fields when provided', () => {
             const withOptionalFields = {
                 ...completeValidUnit,
-                modelID: 'model-1br',
+                modelID:       'model-1br',
                 availableDate: '2024-01-01',
-                maxOccupants: 2,
-                deposit: 1250,
-                leaseLength: 12
+                maxOccupants:  2,
+                deposit:       1250,
+                leaseLength:   12
             };
             const result = UnitPublishedSchema.safeParse(withOptionalFields);
             expect(result.success).toBe(true);
@@ -494,18 +494,18 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
         it('should enforce strict mode to prevent additional properties', () => {
             const buildingWithExtraFields = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                buildingName: 'Test Building',
-                street: '123 Main St',
-                city: 'Dallas',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingName:  'Test Building',
+                street:        '123 Main St',
+                city:          'Dallas',
+                state:         'TX',
+                zip:           '75001',
+                latitude:      32.7767,
+                longitude:     -96.7970,
+                propertyType:  PropertyType.APARTMENT,
                 structureType: 'Apartment',
-                rentalType: 'Market Rate',
-                contactInfo: {
+                rentalType:    'Market Rate',
+                contactInfo:   {
                     email: 'test@example.com',
                     phone: '555-123-4567'
                 },
@@ -528,42 +528,42 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
 
             // Building ID validation
             const buildingData = {
-                buildingID: invalidId,
-                buildingName: 'Test Building',
-                street: '123 Main St',
-                city: 'Dallas',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                buildingID:    invalidId,
+                buildingName:  'Test Building',
+                street:        '123 Main St',
+                city:          'Dallas',
+                state:         'TX',
+                zip:           '75001',
+                latitude:      32.7767,
+                longitude:     -96.7970,
+                propertyType:  PropertyType.APARTMENT,
                 structureType: 'Apartment',
-                rentalType: 'Market Rate',
-                contactInfo: { email: 'test@example.com', phone: '555-123-4567' }
+                rentalType:    'Market Rate',
+                contactInfo:   { email: 'test@example.com', phone: '555-123-4567' }
             };
             expect(BuildingPublishedSchema.safeParse(buildingData).success).toBe(false);
 
             // UnitType ID validation
             const unitTypeData = {
                 buildingID: invalidId,
-                modelID: invalidId,
-                modelName: 'Test Model',
-                beds: 1,
-                baths: 1,
-                minSqft: 650,
-                minRent: 1200
+                modelID:    invalidId,
+                modelName:  'Test Model',
+                beds:       1,
+                baths:      1,
+                minSqft:    650,
+                minRent:    1200
             };
             expect(UnitTypePublishedSchema.safeParse(unitTypeData).success).toBe(false);
 
             // Unit ID validation
             const unitData = {
-                buildingID: invalidId,
-                unitID: invalidId,
-                unitNumber: '101',
-                beds: 1,
-                baths: 1,
-                sqft: 700,
-                rent: 1250,
+                buildingID:   invalidId,
+                unitID:       invalidId,
+                unitNumber:   '101',
+                beds:         1,
+                baths:        1,
+                sqft:         700,
+                rent:         1250,
                 vacancyClass: 'Unoccupied'
             };
             expect(UnitPublishedSchema.safeParse(unitData).success).toBe(false);
@@ -573,23 +573,23 @@ describe('Published Schema Validation - Strict MITS Compliance', () => {
             // Both unit type and unit should have consistent bed/bath requirements
             const unitTypeWithRooms = {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                modelID: 'model-1br',
-                modelName: '1 Bedroom',
-                beds: 1,
-                baths: 1.5,
-                minSqft: 650,
-                minRent: 1200
+                modelID:    'model-1br',
+                modelName:  '1 Bedroom',
+                beds:       1,
+                baths:      1.5,
+                minSqft:    650,
+                minRent:    1200
             };
             expect(UnitTypePublishedSchema.safeParse(unitTypeWithRooms).success).toBe(true);
 
             const unitWithRooms = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'unit-101',
-                unitNumber: '101',
-                beds: 1,
-                baths: 1.5,
-                sqft: 700,
-                rent: 1250,
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
+                unitID:       'unit-101',
+                unitNumber:   '101',
+                beds:         1,
+                baths:        1.5,
+                sqft:         700,
+                rent:         1250,
                 vacancyClass: 'Unoccupied'
             };
             expect(UnitPublishedSchema.safeParse(unitWithRooms).success).toBe(true);

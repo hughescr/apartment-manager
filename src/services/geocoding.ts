@@ -8,15 +8,15 @@ const logger = baseLogger;
  */
 export interface GeocodingResult {
     /** Latitude coordinate */
-    lat: number
+    lat:          number
     /** Longitude coordinate */
-    lng: number
+    lng:          number
     /** Display name of the geocoded location */
     displayName?: string
     /** Confidence score (0-1) if provided by the service */
-    confidence?: number
+    confidence?:  number
     /** Source that provided the geocoding result */
-    source: 'nominatim' | 'cache'
+    source:       'nominatim' | 'cache'
 }
 
 /**
@@ -24,9 +24,9 @@ export interface GeocodingResult {
  */
 export interface GeocodingError {
     /** Error code for programmatic handling */
-    code: 'NETWORK_ERROR' | 'INVALID_ADDRESS' | 'NO_RESULTS' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE'
+    code:           'NETWORK_ERROR' | 'INVALID_ADDRESS' | 'NO_RESULTS' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE'
     /** Human-readable error message */
-    message: string
+    message:        string
     /** Original error if applicable */
     originalError?: Error
 }
@@ -35,22 +35,22 @@ export interface GeocodingError {
  * Nominatim API response structure
  */
 interface NominatimResult {
-    lat: string
-    lon: string
+    lat:          string
+    lon:          string
     display_name: string
-    importance?: number
-    place_id: string
-    licence: string
-    osm_type: string
-    osm_id: string
-    boundingbox: string[]
+    importance?:  number
+    place_id:     string
+    licence:      string
+    osm_type:     string
+    osm_id:       string
+    boundingbox:  string[]
 }
 
 /**
  * Cache entry for geocoding results
  */
 interface CacheEntry {
-    result: GeocodingResult
+    result:    GeocodingResult
     timestamp: number
 }
 
@@ -94,7 +94,7 @@ class GeocodingCache {
     set(address: string, result: GeocodingResult, city?: string, state?: string): void {
         const key = this.createKey(address, city, state);
         this.cache.set(key, {
-            result: { ...result, source: 'nominatim' },
+            result:    { ...result, source: 'nominatim' },
             timestamp: Date.now()
         });
         logger.debug(`Cached result for address: ${key}`);
@@ -187,7 +187,7 @@ export class GeocodingService {
 
             if(!response.ok) {
                 const error: GeocodingError = {
-                    code: response.status === 429 ? 'RATE_LIMITED' : 'SERVICE_UNAVAILABLE',
+                    code:    response.status === 429 ? 'RATE_LIMITED' : 'SERVICE_UNAVAILABLE',
                     message: `Nominatim API error: ${response.status} ${response.statusText}`
                 };
                 logger.error('Geocoding API error', error);
@@ -208,10 +208,10 @@ export class GeocodingService {
 
             logger.info(`Successfully geocoded address: ${query} -> ${result.lat}, ${result.lng}`);
             return result;
-        } catch(error) {
+        } catch (error) {
             const geocodingError: GeocodingError = {
-                code: 'NETWORK_ERROR',
-                message: 'Failed to geocode address',
+                code:          'NETWORK_ERROR',
+                message:       'Failed to geocode address',
                 originalError: error as Error
             };
             logger.error('Geocoding failed', geocodingError);
@@ -255,8 +255,8 @@ export class GeocodingService {
             lat,
             lng,
             displayName: nominatimResult.display_name,
-            confidence: nominatimResult.importance, // Nominatim uses 'importance' as confidence
-            source: 'nominatim'
+            confidence:  nominatimResult.importance, // Nominatim uses 'importance' as confidence
+            source:      'nominatim'
         };
     }
 
@@ -272,7 +272,7 @@ export class GeocodingService {
      */
     getCacheStats(): { size: number, ttlDays: number } {
         return {
-            size: cache.size(),
+            size:    cache.size(),
             ttlDays: 7
         };
     }

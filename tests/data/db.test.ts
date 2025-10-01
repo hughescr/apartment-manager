@@ -10,6 +10,7 @@ describe('data/db', () => {
     describe('exports', () => {
         it('should export db as a DynamoDB client', () => {
             expect(db).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/unbound-method -- checking method existence
             expect(db.send).toBeDefined();
             expect(typeof db.send).toBe('function');
         });

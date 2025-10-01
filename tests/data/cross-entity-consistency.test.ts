@@ -23,33 +23,33 @@ describe('Cross-Entity Consistency Tests', () => {
     });
 
     const testBuilding = {
-        buildingID: 'test-building-1',
-        street: '123 Test St',
-        city: 'Testville',
-        state: 'TS',
-        zip: '12345',
+        buildingID:  'test-building-1',
+        street:      '123 Test St',
+        city:        'Testville',
+        state:       'TS',
+        zip:         '12345',
         description: 'Test building for consistency tests',
     };
 
     const testUnitType = {
         buildingID: 'test-building-1',
-        modelID: 'model-1',
-        modelName: '1BR Standard',
-        beds: 1,
-        baths: 1,
-        minRent: 1000,
-        maxRent: 1200,
+        modelID:    'model-1',
+        modelName:  '1BR Standard',
+        beds:       1,
+        baths:      1,
+        minRent:    1000,
+        maxRent:    1200,
     };
 
     const testUnit = {
         buildingID: 'test-building-1',
-        unitID: 'unit-101',
+        unitID:     'unit-101',
         unitNumber: '101',
-        modelID: 'model-1',
-        beds: 1,
-        baths: 1,
-        rent: 1100,
-        sqft: 650,
+        modelID:    'model-1',
+        beds:       1,
+        baths:      1,
+        rent:       1100,
+        sqft:       650,
     };
 
     // ===== CASCADE DELETE SCENARIOS =====
@@ -136,9 +136,9 @@ describe('Cross-Entity Consistency Tests', () => {
         it('should allow creation of unit with non-existent buildingID (no FK constraint)', async () => {
             const orphanUnit = {
                 buildingID: 'non-existent-building',
-                unitID: 'orphan-unit',
-                beds: 1,
-                baths: 1,
+                unitID:     'orphan-unit',
+                beds:       1,
+                baths:      1,
             };
 
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...orphanUnit, unitID: `UNIT#${orphanUnit.unitID}` }));
@@ -333,7 +333,7 @@ describe('Cross-Entity Consistency Tests', () => {
 
             // Model doesn't exist
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse(undefined));
-            const model = await getUnitType(testUnit.buildingID, testUnit.modelID!);
+            const model = await getUnitType(testUnit.buildingID, testUnit.modelID);
             expect(model).toBeUndefined();
 
             // But unit still references it
@@ -344,7 +344,7 @@ describe('Cross-Entity Consistency Tests', () => {
 
             // getUnitsByModelID would return this orphaned unit
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([{ ...testUnit, unitID: `UNIT#${testUnit.unitID}` }]));
-            const unitsByModel = await getUnitsByModelID(testUnit.buildingID, testUnit.modelID!);
+            const unitsByModel = await getUnitsByModelID(testUnit.buildingID, testUnit.modelID);
             expect(unitsByModel).toHaveLength(1);
         });
 
@@ -398,7 +398,7 @@ describe('Cross-Entity Consistency Tests', () => {
 
             // System allows inconsistent data
             expect(created.rent).toBe(1500);
-            expect(created.rent).toBeGreaterThan(testUnitType.maxRent!);
+            expect(created.rent).toBeGreaterThan(testUnitType.maxRent);
         });
 
         it('should identify bed/bath mismatches between unit and model', async () => {
@@ -409,7 +409,7 @@ describe('Cross-Entity Consistency Tests', () => {
             // Create unit with different bed/bath count than model
             const mismatchedUnit = {
                 ...testUnit,
-                beds: 2, // Model specifies 1 bed
+                beds:  2, // Model specifies 1 bed
                 baths: 2, // Model specifies 1 bath
             };
 
@@ -535,7 +535,7 @@ describe('Cross-Entity Consistency Tests', () => {
                 { ...unit2, unitID: `UNIT#${unit2.unitID}` }
             ]));
 
-            const unitsByModel = await getUnitsByModelID(testBuilding.buildingID, testUnit.modelID!);
+            const unitsByModel = await getUnitsByModelID(testBuilding.buildingID, testUnit.modelID);
             expect(unitsByModel).toHaveLength(2);
             expect(every(unitsByModel, ['modelID', testUnit.modelID])).toBe(true);
         });
@@ -575,7 +575,7 @@ describe('Cross-Entity Consistency Tests', () => {
             const largeBuilding = {
                 ...testBuilding,
                 propertyDescription: repeat('x', 350000), // Near 400KB limit
-                photos: times(1000, i => `https://s3.example.com/photo-${i}.jpg`)
+                photos:              times(1000, i => `https://s3.example.com/photo-${i}.jpg`)
             };
 
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...largeBuilding, unitID: 'BUILDING' }));

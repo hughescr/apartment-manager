@@ -23,35 +23,35 @@ describe('Unit Data Layer', () => {
 
     const testBuildingID = 'test-building-1';
     const testUnit = {
-        buildingID: testBuildingID,
-        unitID: 'test-unit-1',
-        unitNumber: '101',
-        modelID: 'model-2br',
-        description: 'Spacious 2BR unit',
-        beds: 2,
-        baths: 2,
-        sqft: 1050,
-        rent: 1600,
-        occupied: false,
-        availableDate: '2024-04-01',
-        maxOccupants: 4,
-        perPersonRent: 400,
-        deposit: 1600,
-        minLeaseTerm: 6,
-        maxLeaseTerm: 12,
+        buildingID:      testBuildingID,
+        unitID:          'test-unit-1',
+        unitNumber:      '101',
+        modelID:         'model-2br',
+        description:     'Spacious 2BR unit',
+        beds:            2,
+        baths:           2,
+        sqft:            1050,
+        rent:            1600,
+        occupied:        false,
+        availableDate:   '2024-04-01',
+        maxOccupants:    4,
+        perPersonRent:   400,
+        deposit:         1600,
+        minLeaseTerm:    6,
+        maxLeaseTerm:    12,
         unitDescription: 'Corner unit with great views',
         unitRentSpecial: { title: '1 Month Free', description: '1 month free', endDate: '2024-05-01' },
-        unitAmenities: [
+        unitAmenities:   [
             { name: 'Balcony', category: AmenityCategory.UNIT },
             { name: 'In-unit Washer/Dryer', category: AmenityCategory.UNIT }
         ],
-        photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
+        photos:        ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
         feedInclusion: {
-            zillow: true,
+            zillow:     true,
             apartments: false
         },
         manualReferences: {
-            zillow: 'ZIL123',
+            zillow:     'ZIL123',
             apartments: 'APT456'
         }
     };
@@ -101,13 +101,13 @@ describe('Unit Data Layer', () => {
         expect.assertions(3);
         const minimalUnit = {
             unitNumber: '103',
-            beds: 1,
-            baths: 1
+            beds:       1,
+            baths:      1
         };
         const expectedUnit = {
             ...minimalUnit,
             buildingID: testBuildingID,
-            unitID: 'UNIT#test-uuid'
+            unitID:     'UNIT#test-uuid'
         };
         dynamoDbMock.mockResolvedValueOnce(mockPutResponse(expectedUnit));
 
@@ -122,15 +122,15 @@ describe('Unit Data Layer', () => {
         expect.assertions(2);
         const unitData = {
             unitNumber: '103B',
-            beds: 2,
-            baths: 1,
+            beds:       2,
+            baths:      1,
             buildingID: testBuildingID,
-            unitID: 'test-uuid'
+            unitID:     'test-uuid'
         };
         // Mock a response where Attributes is explicitly undefined (edge case)
         dynamoDbMock.mockResolvedValueOnce({
             Attributes: undefined,
-            $metadata: { httpStatusCode: 200 }
+            $metadata:  { httpStatusCode: 200 }
         });
 
         const result = await createUnit(unitData);
@@ -142,40 +142,40 @@ describe('Unit Data Layer', () => {
     it('should create a unit with full data', async () => {
         expect.assertions(4);
         const fullUnit = {
-            unitNumber: '104',
-            modelID: 'model-3br',
-            description: 'Luxury 3BR unit',
-            beds: 3,
-            baths: 2.5,
-            sqft: 1500,
-            rent: 2500,
-            occupied: false,
-            availableDate: '2024-05-01',
-            maxOccupants: 6,
-            perPersonRent: 420,
-            deposit: 2500,
-            minLeaseTerm: 12,
-            maxLeaseTerm: 24,
+            unitNumber:      '104',
+            modelID:         'model-3br',
+            description:     'Luxury 3BR unit',
+            beds:            3,
+            baths:           2.5,
+            sqft:            1500,
+            rent:            2500,
+            occupied:        false,
+            availableDate:   '2024-05-01',
+            maxOccupants:    6,
+            perPersonRent:   420,
+            deposit:         2500,
+            minLeaseTerm:    12,
+            maxLeaseTerm:    24,
             unitDescription: 'Premium unit with all amenities',
             unitRentSpecial: { title: '2 Months Free', description: '2 months free', endDate: '2024-06-01' },
-            unitAmenities: [
+            unitAmenities:   [
                 { name: 'Walk-in Closet', category: AmenityCategory.UNIT },
                 { name: 'Granite Countertops', category: AmenityCategory.UNIT }
             ],
-            photos: ['https://example.com/unit104-1.jpg', 'https://example.com/unit104-2.jpg'],
+            photos:        ['https://example.com/unit104-1.jpg', 'https://example.com/unit104-2.jpg'],
             feedInclusion: {
-                zillow: true,
+                zillow:     true,
                 apartments: true
             },
             manualReferences: {
-                zillow: 'ZIL789',
+                zillow:     'ZIL789',
                 apartments: 'APT012'
             }
         };
         const expectedUnit = {
             ...fullUnit,
             buildingID: testBuildingID,
-            unitID: 'UNIT#test-uuid'
+            unitID:     'UNIT#test-uuid'
         };
         dynamoDbMock.mockResolvedValueOnce(mockPutResponse(expectedUnit));
 
@@ -190,8 +190,8 @@ describe('Unit Data Layer', () => {
     it('should update a unit', async () => {
         expect.assertions(2);
         const updates = {
-            rent: 1700,
-            occupied: true,
+            rent:          1700,
+            occupied:      true,
             availableDate: '2024-06-01'
         };
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testUnit, unitID: 'UNIT#test-unit-1', ...updates }));
@@ -204,13 +204,13 @@ describe('Unit Data Layer', () => {
     it('should handle update with undefined values', async () => {
         expect.assertions(2);
         const updates = {
-            rent: 1700,
+            rent:        1700,
             description: undefined, // Should be removed by DynamoDB
-            occupied: false
+            occupied:    false
         };
         const expectedResult = {
             ...testUnit,
-            rent: 1700,
+            rent:     1700,
             occupied: false
         };
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: 'UNIT#test-unit-1' }));
@@ -246,11 +246,11 @@ describe('Unit Data Layer', () => {
         expect.assertions(3);
         const updates = {
             feedInclusion: {
-                zillow: true,
+                zillow:     true,
                 apartments: false
             },
             manualReferences: {
-                zillow: 'ZIL999',
+                zillow:     'ZIL999',
                 apartments: 'APT999'
             }
         };
@@ -271,7 +271,7 @@ describe('Unit Data Layer', () => {
         ];
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
             ...testUnit,
-            unitID: 'UNIT#test-unit-1',
+            unitID:        'UNIT#test-unit-1',
             unitAmenities: updatedAmenities
         }));
 
@@ -288,10 +288,10 @@ describe('Unit Data Layer', () => {
         expect.assertions(3);
         const unitWithEmptyCollections = {
             ...testUnit,
-            unitID: 'UNIT#test-unit-1',
-            unitAmenities: [],
-            photos: [],
-            feedInclusion: {},
+            unitID:           'UNIT#test-unit-1',
+            unitAmenities:    [],
+            photos:           [],
+            feedInclusion:    {},
             manualReferences: {}
         };
         dynamoDbMock.mockResolvedValueOnce(mockQueryResponse([unitWithEmptyCollections]));
@@ -404,9 +404,9 @@ describe('Unit Data Layer', () => {
             const existingUnit = {
                 ...testUnit,
                 feedInclusion: {
-                    zillow: true,
+                    zillow:     true,
                     apartments: false,
-                    realtor: true
+                    realtor:    true
                 }
             };
             const updates = {
@@ -433,14 +433,14 @@ describe('Unit Data Layer', () => {
             expect.assertions(3);
             const updates = {
                 feedInclusion: {
-                    zillow: true,
+                    zillow:         true,
                     apartments_com: false,
-                    customSite: true
+                    customSite:     true
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnit,
-                unitID: 'UNIT#test-unit-1',
+                unitID:        'UNIT#test-unit-1',
                 feedInclusion: updates.feedInclusion
             }));
 
@@ -454,13 +454,13 @@ describe('Unit Data Layer', () => {
             expect.assertions(3);
             const updates = {
                 feedInclusion: {
-                    zillow: false,
+                    zillow:     false,
                     apartments: undefined // undefined should be filtered out
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnit,
-                unitID: 'UNIT#test-unit-1',
+                unitID:        'UNIT#test-unit-1',
                 feedInclusion: { zillow: false } // apartments filtered out
             }));
 
@@ -474,13 +474,13 @@ describe('Unit Data Layer', () => {
             expect.assertions(2);
             const updates = {
                 feedInclusion: {
-                    zillow: true,
+                    zillow:         true,
                     apartments_com: false
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnit,
-                unitID: 'UNIT#test-unit-1',
+                unitID:        'UNIT#test-unit-1',
                 feedInclusion: updates.feedInclusion
             }));
 
@@ -511,7 +511,7 @@ describe('Unit Data Layer', () => {
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
                 ...testUnit,
                 buildingID: invalidBuilding,
-                unitID: 'UNIT#test-unit-1'
+                unitID:     'UNIT#test-unit-1'
             }));
 
             const result = await createUnit({ ...testUnit, buildingID: invalidBuilding });
@@ -549,7 +549,7 @@ describe('Unit Data Layer', () => {
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testUnit, unitID: 'UNIT#duplicate-id' }));
             // Second call fails with condition check (unit already exists)
             dynamoDbMock.mockRejectedValueOnce({
-                name: 'ConditionalCheckFailedException',
+                name:    'ConditionalCheckFailedException',
                 message: 'The conditional request failed'
             });
 
@@ -596,7 +596,7 @@ describe('Unit Data Layer', () => {
             ];
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
                 ...testUnit,
-                unitID: 'UNIT#test-unit-1',
+                unitID:        'UNIT#test-unit-1',
                 unitAmenities: invalidAmenities
             }));
 
@@ -652,8 +652,8 @@ describe('Unit Data Layer', () => {
         it('should handle very large numbers', async () => {
             expect.assertions(3);
             const largeNumbers = {
-                rent: 999999999,
-                sqft: 50000,
+                rent:         999999999,
+                sqft:         50000,
                 maxOccupants: 100
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
@@ -671,10 +671,10 @@ describe('Unit Data Layer', () => {
         it('should handle zero values for numeric fields', async () => {
             expect.assertions(4);
             const zeroValues = {
-                rent: 0,
-                beds: 0,
+                rent:  0,
+                beds:  0,
                 baths: 0,
-                sqft: 0
+                sqft:  0
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({
                 ...testUnit,
@@ -724,7 +724,7 @@ describe('Unit Data Layer', () => {
         it('should handle DynamoDB service unavailable error', async () => {
             expect.assertions(2);
             dynamoDbMock.mockRejectedValueOnce({
-                name: 'ServiceUnavailable',
+                name:    'ServiceUnavailable',
                 message: 'DynamoDB is currently unavailable'
             });
 
@@ -761,9 +761,9 @@ describe('Unit Data Layer', () => {
             expect.assertions(3);
             const rentSpecialUpdate = {
                 unitRentSpecial: {
-                    title: 'Summer Special',
+                    title:       'Summer Special',
                     description: 'Get 2 months free!',
-                    endDate: '2024-08-31'
+                    endDate:     '2024-08-31'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
@@ -788,7 +788,7 @@ describe('Unit Data Layer', () => {
             };
             dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
                 ...testUnit,
-                unitID: 'UNIT#test-unit-1',
+                unitID:          'UNIT#test-unit-1',
                 unitRentSpecial: partialSpecialUpdate.unitRentSpecial
             }));
 

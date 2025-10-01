@@ -3,8 +3,8 @@ import { JSDOM } from 'jsdom';
 import { invokeMap } from 'lodash';
 
 interface AlpineJS {
-    initTree: (element: Element) => void
-    nextTick: () => Promise<void>
+    initTree:      (element: Element) => void
+    nextTick:      () => Promise<void>
     [key: string]: unknown // Allow additional properties
 }
 
@@ -34,7 +34,7 @@ const createMarkup = (path = '/') => `
 `;
 
 const render = async (path = '/') => {
-    const dom = new JSDOM(`<!doctype html><html><body></body></html>`, { pretendToBeVisual: true });
+    const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true });
     (global as unknown as { window: Window }).window = dom.window as unknown as Window & typeof globalThis;
     (global as unknown as { document: Document }).document = dom.window.document;
     (global as unknown as { MutationObserver: typeof MutationObserver }).MutationObserver = dom.window.MutationObserver;
@@ -45,8 +45,8 @@ const render = async (path = '/') => {
     document.body.innerHTML = createMarkup(path);
     Alpine.initTree(document.body);
     await Alpine.nextTick();
-    const button = document.querySelector('[data-testid="mobile-menu-button"]') as HTMLElement;
-    const menu = document.querySelector('[data-testid="mobile-menu"]') as HTMLElement;
+    const button = document.querySelector('[data-testid="mobile-menu-button"]')!;
+    const menu = document.querySelector('[data-testid="mobile-menu"]')!;
     return { dom, button, menu };
 };
 

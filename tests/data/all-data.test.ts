@@ -32,27 +32,27 @@ describe('All Data Layer', () => {
             { ...testUnitType, unitID: 'MODEL#studio', buildingID: testBuilding.buildingID }, // Unit type
             // Another building
             {
-                buildingID: 'building-2',
-                unitID: 'BUILDING',
+                buildingID:   'building-2',
+                unitID:       'BUILDING',
                 buildingName: 'Second Building',
-                street: '456 Second St'
+                street:       '456 Second St'
             },
             // Unit for second building
             {
                 buildingID: 'building-2',
-                unitID: 'UNIT#201',
+                unitID:     'UNIT#201',
                 unitNumber: '201',
-                beds: 2,
-                baths: 1
+                beds:       2,
+                baths:      1
             },
             // Unit type for second building
             {
                 buildingID: 'building-2',
-                unitID: 'MODEL#onebr',
-                modelID: 'onebr',
-                modelName: 'One Bedroom',
-                beds: 1,
-                baths: 1
+                unitID:     'MODEL#onebr',
+                modelID:    'onebr',
+                modelName:  'One Bedroom',
+                beds:       1,
+                baths:      1
             }
         ];
 
@@ -140,8 +140,8 @@ describe('All Data Layer', () => {
         const feedTimestamp = new Date().toISOString();
         const unitWithFeedData = {
             ...testUnit,
-            unitID: 'UNIT#101',
-            buildingID: testBuilding.buildingID,
+            unitID:         'UNIT#101',
+            buildingID:     testBuilding.buildingID,
             feedLastPulled: {
                 'apartments.com': {
                     timestamp: feedTimestamp,
@@ -160,7 +160,7 @@ describe('All Data Layer', () => {
 
         const result = await getAllData();
 
-        const unit = result.unitsByBuilding[testBuilding.buildingID]![0];
+        const unit = result.unitsByBuilding[testBuilding.buildingID][0];
         expect(unit.feedLastPulled!['apartments.com']!.timestamp).toBeInstanceOf(Date);
         expect(unit.feedLastModified).toBeInstanceOf(Date);
         expect(unit.feedLastPulled!['apartments.com']!.ipAddress).toBe('192.168.1.1');
@@ -180,8 +180,8 @@ describe('All Data Layer', () => {
 
         const minimalBuilding = {
             buildingID: 'minimal-building',
-            unitID: 'BUILDING',
-            street: '123 Minimal St'
+            unitID:     'BUILDING',
+            street:     '123 Minimal St'
             // Missing many optional fields
         };
 
@@ -208,20 +208,20 @@ describe('All Data Layer', () => {
         for(let b = 1; b <= numBuildings; b++) {
             // Add building
             largeDataset.push({
-                buildingID: `building-${b}`,
-                unitID: 'BUILDING',
+                buildingID:   `building-${b}`,
+                unitID:       'BUILDING',
                 buildingName: `Building ${b}`,
-                street: `${100 + b} Test St`
+                street:       `${100 + b} Test St`
             });
 
             // Add units
             for(let u = 1; u <= unitsPerBuilding; u++) {
                 largeDataset.push({
                     buildingID: `building-${b}`,
-                    unitID: `UNIT#${b}${padStart(u.toString(), 2, '0')}`,
+                    unitID:     `UNIT#${b}${padStart(u.toString(), 2, '0')}`,
                     unitNumber: `${b}${padStart(u.toString(), 2, '0')}`,
-                    beds: Math.floor(Math.random() * 3) + 1,
-                    baths: 1
+                    beds:       Math.floor(Math.random() * 3) + 1,
+                    baths:      1
                 });
             }
 
@@ -229,11 +229,11 @@ describe('All Data Layer', () => {
             for(let t = 1; t <= unitTypesPerBuilding; t++) {
                 largeDataset.push({
                     buildingID: `building-${b}`,
-                    unitID: `MODEL#type-${t}`,
-                    modelID: `type-${t}`,
-                    modelName: `Type ${t}`,
-                    beds: t,
-                    baths: 1
+                    unitID:     `MODEL#type-${t}`,
+                    modelID:    `type-${t}`,
+                    modelName:  `Type ${t}`,
+                    beds:       t,
+                    baths:      1
                 });
             }
         }

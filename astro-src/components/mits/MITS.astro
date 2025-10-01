@@ -15,12 +15,12 @@ import FloorplanSection from './FloorplanSection.astro';
 import UnitSection from './UnitSection.astro';
 
 export interface Props {
-    building: BuildingData
-    unitTypes: UnitTypeData[]
-    units: UnitData[] // These should already be resolved with inheritance
-    coords: { latitude: number, longitude: number }
+    building:   BuildingData
+    unitTypes:  UnitTypeData[]
+    units:      UnitData[] // These should already be resolved with inheritance
+    coords:     { latitude: number, longitude: number }
     rentalType: string
-    siteName: 'apartments_com' | 'zillow'
+    siteName:   'apartments_com' | 'zillow'
     lastUpdate: Date | string | undefined
 }
 

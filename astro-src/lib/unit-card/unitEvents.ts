@@ -15,7 +15,7 @@ export class UnitEventManager {
         this.element.dispatchEvent(
             new CustomEvent(eventName, {
                 detail,
-                bubbles: true,
+                bubbles:    true,
                 cancelable: true
             })
         );
@@ -131,21 +131,21 @@ export class UnitEventManager {
  * Event type definitions for better TypeScript support
  */
 export interface UnitCardEvents {
-    'unit:updated': { unit: unknown }
-    'unit:saving': { unit: unknown, fieldName?: string }
-    'unit:saved': { unit: unknown }
-    'unit:save-error': { unit: unknown, error: string }
-    'unit:deleting': { unitId: string }
-    'unit:deleted': { unitId: string }
-    'unit:delete-error': { unitId: string, error: string }
-    'unit:model-changed': { unit: unknown, modelId: string | null }
-    'unit:field-reset': { unit: unknown, fieldName: string }
-    'unit:amenities-reset': { unit: unknown }
-    'unit:validation-error': { errors: Record<string, string> }
+    'unit:updated':            { unit: unknown }
+    'unit:saving':             { unit: unknown, fieldName?: string }
+    'unit:saved':              { unit: unknown }
+    'unit:save-error':         { unit: unknown, error: string }
+    'unit:deleting':           { unitId: string }
+    'unit:deleted':            { unitId: string }
+    'unit:delete-error':       { unitId: string, error: string }
+    'unit:model-changed':      { unit: unknown, modelId: string | null }
+    'unit:field-reset':        { unit: unknown, fieldName: string }
+    'unit:amenities-reset':    { unit: unknown }
+    'unit:validation-error':   { errors: Record<string, string> }
     'unit:validation-cleared': Record<string, never>
-    'unit:section-toggled': { section: string, expanded: boolean }
-    'toast:show': { message: string, type: 'success' | 'error' | 'warning' | 'info' }
-    'confirm:request': { message: string, onConfirm: () => void, onCancel?: () => void }
+    'unit:section-toggled':    { section: string, expanded: boolean }
+    'toast:show':              { message: string, type: 'success' | 'error' | 'warning' | 'info' }
+    'confirm:request':         { message: string, onConfirm: () => void, onCancel?: () => void }
 }
 
 /**

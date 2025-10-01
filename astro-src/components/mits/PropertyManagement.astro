@@ -14,12 +14,12 @@ const { building } = Astro.props;
 // Enhanced building data types for future-proofing
 interface EnhancedBuildingData extends BuildingData {
     contactInfo?: {
-        propertyWebsite?: string
+        propertyWebsite?:   string
         managementWebsite?: string
-        website?: string
-        name?: string
-        phone?: string
-        email?: string
+        website?:           string
+        name?:              string
+        phone?:             string
+        email?:             string
     }
 }
 

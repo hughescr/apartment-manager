@@ -106,10 +106,10 @@ describe('Building Data Layer - Resilience', () => {
             expect.assertions(3);
             const longStringBuilding = {
                 ...testBuilding,
-                description: repeat('A', 10000),
+                description:         repeat('A', 10000),
                 propertyDescription: repeat('B', 50000),
-                street: '123 ' + repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
-                contactInfo: {
+                street:              '123 ' + repeat('Very ', 100) + 'Long Street Name That Goes On Forever',
+                contactInfo:         {
                     ...testBuilding.contactInfo,
                     website: 'https://' + repeat('subdomain.', 50) + 'example.com/path/to/very/deep/page'
                 }
@@ -228,10 +228,10 @@ describe('Building Data Layer - Resilience', () => {
             expect.assertions(5);
             const boundaryValuesBuilding = {
                 ...testBuilding,
-                yearBuilt: 0,
-                numberStories: -1,
-                totalUnits: 0,
-                leaseLength: -12,
+                yearBuilt:      0,
+                numberStories:  -1,
+                totalUnits:     0,
+                leaseLength:    -12,
                 applicationFee: -50
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...boundaryValuesBuilding, unitID: 'BUILDING' }));
@@ -248,9 +248,9 @@ describe('Building Data Layer - Resilience', () => {
             expect.assertions(4);
             const maxValuesBuilding = {
                 ...testBuilding,
-                yearBuilt: 9999,
-                numberStories: Number.MAX_SAFE_INTEGER,
-                totalUnits: 1000000,
+                yearBuilt:      9999,
+                numberStories:  Number.MAX_SAFE_INTEGER,
+                totalUnits:     1000000,
                 applicationFee: 999999.99
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...maxValuesBuilding, unitID: 'BUILDING' }));
@@ -266,9 +266,9 @@ describe('Building Data Layer - Resilience', () => {
             expect.assertions(3);
             const floatValuesBuilding = {
                 ...testBuilding,
-                yearBuilt: 2020.5,
+                yearBuilt:     2020.5,
                 numberStories: 3.14159,
-                totalUnits: 10.99
+                totalUnits:    10.99
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...floatValuesBuilding, unitID: 'BUILDING' }));
 

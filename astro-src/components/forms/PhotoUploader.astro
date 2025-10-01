@@ -6,29 +6,29 @@ import { Resource } from 'sst';
 // Using 'any' types to avoid ESLint no-undef errors for browser APIs
 
 export interface Photo {
-    url: string
-    key?: string
-    name?: string
-    size?: number
-    type?: string
+    url:         string
+    key?:        string
+    name?:       string
+    size?:       number
+    type?:       string
     uploadedAt?: string
 }
 
 export interface Props {
-    name: string
-    label?: string
-    xModel: string // Should bind to an array of photo URLs
-    multiple?: boolean
-    maxFiles?: number
-    maxFileSize?: number // in MB
-    accept?: string
-    required?: boolean
-    disabled?: boolean
-    'class'?: string
-    error?: string
-    helpText?: string
-    buildingId: string // Required for S3 key generation
-    unitId: string // Required for S3 key generation
+    name:            string
+    label?:          string
+    xModel:          string // Should bind to an array of photo URLs
+    multiple?:       boolean
+    maxFiles?:       number
+    maxFileSize?:    number // in MB
+    accept?:         string
+    required?:       boolean
+    disabled?:       boolean
+    'class'?:        string
+    error?:          string
+    helpText?:       string
+    buildingId:      string // Required for S3 key generation
+    unitId:          string // Required for S3 key generation
     existingPhotos?: Photo[] | string[] // Support both Photo objects and URL strings
 }
 
@@ -67,11 +67,11 @@ const uploaderId = `photo-uploader-${Math.random().toString(36).substring(2, 9)}
 
 // Create the Alpine.js data string with proper escaping
 const xData = JSON.stringify({
-    photos: normalizedPhotos,
-    uploading: false,
+    photos:         normalizedPhotos,
+    uploading:      false,
     uploadProgress: {},
-    errors: [],
-    dragOver: false,
+    errors:         [],
+    dragOver:       false,
     xModel,
     disabled,
     maxFiles,
@@ -155,9 +155,9 @@ const xData = JSON.stringify({
             const key = `buildings/${this.buildingId}/units/${this.unitId}/${Date.now()}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`;
 
             const presignedResponse = await fetch(`${this.uploadEndpoint}/presigned-url`, {
-                method: 'POST',
+                method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ key, contentType: file.type })
+                body:    JSON.stringify({ key, contentType: file.type })
             });
 
             if(!presignedResponse.ok) {
@@ -169,12 +169,12 @@ const xData = JSON.stringify({
             // Upload to S3
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- XMLHttpRequest is a browser global
             const xhr = new (globalThis as any).XMLHttpRequest() as {
-                upload: { addEventListener: (event: string, callback: (e: unknown) => void) => void }
+                upload:           { addEventListener: (event: string, callback: (e: unknown) => void) => void }
                 addEventListener: (event: string, callback: () => void) => void
-                open: (method: string, url: string) => void
+                open:             (method: string, url: string) => void
                 setRequestHeader: (name: string, value: string) => void
-                send: (data: unknown) => void
-                status: number
+                send:             (data: unknown) => void
+                status:           number
             };
             xhr.upload.addEventListener('progress', (e: unknown) => {
                 const progressEvent = e as { lengthComputable: boolean, loaded: number, total: number };
@@ -187,11 +187,11 @@ const xData = JSON.stringify({
                 if(xhr.status === 200) {
                     // Add to photos array
                     this.photos.push({
-                        url: photoUrl,
-                        key: key,
-                        name: file.name,
-                        size: file.size,
-                        type: file.type,
+                        url:        photoUrl,
+                        key:        key,
+                        name:       file.name,
+                        size:       file.size,
+                        type:       file.type,
                         uploadedAt: new Date().toISOString()
                     });
 
@@ -211,7 +211,7 @@ const xData = JSON.stringify({
             xhr.open('PUT', uploadUrl);
             xhr.setRequestHeader('Content-Type', file.type);
             xhr.send(file);
-        } catch(error) {
+        } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             this.errors.push(`Failed to upload ${file.name}: ${errorMessage}`);
             delete this.uploadProgress[tempId];

@@ -34,13 +34,13 @@ describe('BuildingCore', () => {
 
         // Create mock state with Alpine properties
         mockState = {
-            building: null,
-            original: null,
-            apiURL: '/api/buildings/test',
-            saving: false,
-            showSave: false,
-            lastSaveSuccess: false,
-            errors: {},
+            building:             null,
+            original:             null,
+            apiURL:               '/api/buildings/test',
+            saving:               false,
+            showSave:             false,
+            lastSaveSuccess:      false,
+            errors:               {},
             expandedRentSpecials: {},
             ...createMockAlpineContext()
         };
@@ -60,14 +60,14 @@ describe('BuildingCore', () => {
         test('should initialize building data from HTML element', () => {
             const element = createMockHtmlElement({
                 buildingData: JSON.stringify(testBuilding),
-                apiUrl: '/api/buildings/test'
+                apiUrl:       '/api/buildings/test'
             });
 
             buildingCore.initializeBuildingData(element);
 
             expect(mockState.building).toBeDefined();
             expect(mockState.building!.buildingID).toBe(testBuilding.buildingID);
-            expect(mockState.building!.buildingName).toBe(testBuilding.buildingName!);
+            expect(mockState.building!.buildingName).toBe(testBuilding.buildingName);
             // JSON parsing converts Date to string in parsed building data
             expect(mockState.building!.updatedAt as unknown as string).toBe(testBuilding.updatedAt!.toISOString());
             expect(mockState.apiURL).toBe('/api/buildings/test');
@@ -82,7 +82,7 @@ describe('BuildingCore', () => {
         test('should handle missing building data gracefully', () => {
             const element = createMockHtmlElement({
                 buildingData: '',
-                apiUrl: '/api/buildings/test'
+                apiUrl:       '/api/buildings/test'
             });
 
             buildingCore.initializeBuildingData(element);
@@ -95,7 +95,7 @@ describe('BuildingCore', () => {
         test('should handle malformed JSON data gracefully', () => {
             const element = createMockHtmlElement({
                 buildingData: '{invalid json}',
-                apiUrl: '/api/buildings/test'
+                apiUrl:       '/api/buildings/test'
             });
 
             buildingCore.initializeBuildingData(element);
@@ -107,7 +107,7 @@ describe('BuildingCore', () => {
         test('should only set original state when building data exists', () => {
             const element = createMockHtmlElement({
                 buildingData: '',
-                apiUrl: '/api/buildings/test'
+                apiUrl:       '/api/buildings/test'
             });
 
             buildingCore.initializeBuildingData(element);
@@ -182,21 +182,21 @@ describe('BuildingCore', () => {
             expect(typeof result).toBe('boolean');
             expect(mockState.$dispatch).toHaveBeenCalledWith('building:validate', {
                 isValid: expect.any(Boolean),
-                errors: expect.any(Object)
+                errors:  expect.any(Object)
             });
         });
 
         test('should save building data successfully', async () => {
             const mockApiResponse = {
                 success: true,
-                data: testBuilding
+                data:    testBuilding
             };
 
             mockFetch.mockResolvedValueOnce(
                 createMockResponse({
-                    ok: true,
+                    ok:     true,
                     status: 200,
-                    json: () => Promise.resolve(mockApiResponse)
+                    json:   () => Promise.resolve(mockApiResponse)
                 })
             );
 
@@ -210,21 +210,21 @@ describe('BuildingCore', () => {
             expect(mockState.lastSaveSuccess).toBe(false);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Building saved successfully',
-                type: 'success'
+                type:    'success'
             });
         });
 
         test('should handle save errors gracefully', async () => {
             const mockApiResponse = {
                 success: false,
-                error: 'Test error'
+                error:   'Test error'
             };
 
             mockFetch.mockResolvedValueOnce(
                 createMockResponse({
-                    ok: false,
+                    ok:     false,
                     status: 500,
-                    json: () => Promise.resolve(mockApiResponse)
+                    json:   () => Promise.resolve(mockApiResponse)
                 })
             );
 
@@ -233,14 +233,14 @@ describe('BuildingCore', () => {
             expect(mockState.saving).toBe(false);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: expect.stringContaining('Failed to save building'),
-                type: 'error'
+                type:    'error'
             });
         });
 
         test('should handle save with validation warnings', async () => {
             const mockApiResponse = {
                 success: true,
-                data: {
+                data:    {
                     ...testBuilding,
                     _validationWarnings: {
                         field1: 'Warning 1',
@@ -251,9 +251,9 @@ describe('BuildingCore', () => {
 
             mockFetch.mockResolvedValueOnce(
                 createMockResponse({
-                    ok: true,
+                    ok:     true,
                     status: 200,
-                    json: () => Promise.resolve(mockApiResponse)
+                    json:   () => Promise.resolve(mockApiResponse)
                 })
             );
 
@@ -282,7 +282,7 @@ describe('BuildingCore', () => {
             // Create new instance without API service
             const stateWithoutApi = {
                 ...mockState,
-                apiURL: '',
+                apiURL:   '',
                 building: testBuilding
             };
             const coreWithoutApi = new BuildingCore(stateWithoutApi);
@@ -308,9 +308,9 @@ describe('BuildingCore', () => {
             mockWindow.confirm.mockReturnValue(true);
             mockFetch.mockResolvedValueOnce(
                 createMockResponse({
-                    ok: true,
+                    ok:     true,
                     status: 200,
-                    json: () => Promise.resolve({ success: true })
+                    json:   () => Promise.resolve({ success: true })
                 })
             );
 
@@ -318,7 +318,7 @@ describe('BuildingCore', () => {
 
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: 'Building deleted successfully',
-                type: 'success'
+                type:    'success'
             });
             expect(mockWindow.location.href).toBe('/');
         });
@@ -345,9 +345,9 @@ describe('BuildingCore', () => {
             mockWindow.confirm.mockReturnValue(true);
             mockFetch.mockResolvedValueOnce(
                 createMockResponse({
-                    ok: false,
+                    ok:     false,
                     status: 500,
-                    json: () => Promise.resolve({ success: false, error: 'Delete failed' })
+                    json:   () => Promise.resolve({ success: false, error: 'Delete failed' })
                 })
             );
 
@@ -355,7 +355,7 @@ describe('BuildingCore', () => {
 
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
                 message: expect.stringContaining('Failed to delete building'),
-                type: 'error'
+                type:    'error'
             });
         });
     });
@@ -372,10 +372,10 @@ describe('BuildingCore', () => {
             buildingCore.undoBuildingChanges();
 
             expect(mockState.building).toBeDefined();
-            expect(mockState.building!.buildingID).toBe(originalBuilding.buildingID);
-            expect(mockState.building!.buildingName).toBe(originalBuilding.buildingName!);
+            expect(mockState.building.buildingID).toBe(originalBuilding.buildingID);
+            expect(mockState.building.buildingName).toBe(originalBuilding.buildingName);
             // After undo, the building should match the original
-            expect(mockState.building!.updatedAt as unknown as string).toBe(originalBuilding.updatedAt!.toISOString());
+            expect(mockState.building.updatedAt as unknown as string).toBe(originalBuilding.updatedAt!.toISOString());
             expect(mockState.showSave).toBe(false);
             // dispatch should be called with JSON-serialized building data
             const expectedDispatchBuilding = {
@@ -394,7 +394,7 @@ describe('BuildingCore', () => {
 
             expect(mockState.original).toBeDefined();
             expect(mockState.original!.buildingID).toBe(newBuilding.buildingID);
-            expect(mockState.original!.buildingName).toBe(newBuilding.buildingName!);
+            expect(mockState.original!.buildingName).toBe(newBuilding.buildingName);
             // Original state stores a deep copy with same structure
             expect(mockState.original!.updatedAt as unknown as string).toBe(newBuilding.updatedAt!.toISOString());
             expect(mockState.showSave).toBe(false);
@@ -452,11 +452,11 @@ describe('BuildingCore', () => {
 
             const newSpecial = mockState.building?.rentSpecials?.[initialLength];
             expect(newSpecial).toMatchObject({
-                id: expect.any(Number),
-                title: '',
+                id:          expect.any(Number),
+                title:       '',
                 description: '',
-                startDate: '',
-                endDate: ''
+                startDate:   '',
+                endDate:     ''
             });
         });
 
@@ -542,9 +542,9 @@ describe('BuildingCore', () => {
         test('should handle concurrent save operations', async () => {
             mockFetch.mockResolvedValue(
                 createMockResponse({
-                    ok: true,
+                    ok:     true,
                     status: 200,
-                    json: () => Promise.resolve({ success: true, data: testBuilding })
+                    json:   () => Promise.resolve({ success: true, data: testBuilding })
                 })
             );
 
@@ -568,9 +568,9 @@ describe('BuildingCore', () => {
             // Mock a save operation to test watcher suspension
             mockFetch.mockResolvedValueOnce(
                 createMockResponse({
-                    ok: true,
+                    ok:     true,
                     status: 200,
-                    json: () => Promise.resolve({ success: true, data: testBuilding })
+                    json:   () => Promise.resolve({ success: true, data: testBuilding })
                 })
             );
 

@@ -39,7 +39,7 @@ describe('Unit Types API - List and Get', () => {
             expect(result.statusCode).toBe(200);
 
             // The data layer should return the unit types (empty array if mocking isn't working correctly)
-            const responseData = JSON.parse(result.body as string);
+            const responseData = JSON.parse(result.body!);
             expect(isArray(responseData)).toBe(true);
 
             // Since DynamoDB Toolbox mocking is complex, just verify basic API behavior
@@ -58,7 +58,7 @@ describe('Unit Types API - List and Get', () => {
             const result = await list(event);
 
             expect(result.statusCode).toBe(200);
-            expect(JSON.parse(result.body as string)).toEqual([]);
+            expect(JSON.parse(result.body!)).toEqual([]);
         });
 
         it('should handle data layer errors', async () => {
@@ -74,8 +74,8 @@ describe('Unit Types API - List and Get', () => {
                 const result = await list(event);
                 // If it succeeds instead of throwing, it means fallback mock is being used
                 expect(result.statusCode).toBe(200);
-                expect(isArray(JSON.parse(result.body as string))).toBe(true);
-            } catch(error) {
+                expect(isArray(JSON.parse(result.body!))).toBe(true);
+            } catch (error) {
                 // If it throws as expected, verify the error
                 expect(error).toBeInstanceOf(Error);
                 expect((error as Error).message).toContain('Database error');
@@ -96,7 +96,7 @@ describe('Unit Types API - List and Get', () => {
             const result = await get(event);
 
             expect(result.statusCode).toBe(200);
-            expect(JSON.parse(result.body as string)).toEqual(testUnitType);
+            expect(JSON.parse(result.body!)).toEqual(testUnitType);
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });
 

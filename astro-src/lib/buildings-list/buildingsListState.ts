@@ -2,11 +2,11 @@
 // Extracted from BuildingsList.astro to centralized registration system
 
 interface Building {
-    buildingID: string
+    buildingID:    string
     buildingName?: string
-    street?: string
-    city?: string
-    state?: string
+    street?:       string
+    city?:         string
+    state?:        string
     propertyType?: string
     [key: string]: unknown
 }
@@ -16,7 +16,7 @@ interface Building {
 export function createBuildingsListState() {
     return {
         activeBuildingTab: 0,
-        buildings: [] as Building[],
+        buildings:         [] as Building[],
 
         getPropertyTypeIcon(propertyType?: string): string {
             switch(propertyType) {
@@ -89,10 +89,10 @@ export function createBuildingsListState() {
 
                     // Dispatch initial selection
                     this.$dispatch?.('building-tab-changed', {
-                        tabIndex: this.activeBuildingTab,
+                        tabIndex:   this.activeBuildingTab,
                         buildingID: this.activeBuildingTab < this.buildings.length ? this.buildings[this.activeBuildingTab].buildingID : null
                     });
-                } catch(error) {
+                } catch (error) {
                     // eslint-disable-next-line no-console -- Error logging for debugging
                     console.error('[BuildingsList] Error in init():', error);
                     this.buildings = [];
@@ -118,17 +118,17 @@ export function createBuildingsListState() {
             this.activeBuildingTab = tabIndex;
 
             this.$dispatch?.('building-tab-changed', {
-                tabIndex: tabIndex,
+                tabIndex:   tabIndex,
                 buildingID: buildingID
             });
         },
 
         // Alpine magic properties are provided by AlpineComponentData
         $dispatch: (() => undefined) as ((name: string, detail?: unknown) => void),
-        $root: null as unknown as HTMLElement,
-        $el: null as unknown as HTMLElement,
-        $watch: (() => undefined) as ((property: string, callback: (...args: unknown[]) => void) => void),
+        $root:     null as unknown as HTMLElement,
+        $el:       null as unknown as HTMLElement,
+        $watch:    (() => undefined) as ((property: string, callback: (...args: unknown[]) => void) => void),
         $nextTick: (() => undefined) as ((callback: () => void) => void),
-        $store: {} as Record<string, unknown>
+        $store:    {} as Record<string, unknown>
     };
 }

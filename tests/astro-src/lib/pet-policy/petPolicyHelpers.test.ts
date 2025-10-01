@@ -117,16 +117,16 @@ describe('Pet Policy Helpers - Structure Validation', () => {
 
         it('should preserve existing arrays in complete policy', () => {
             const completePolicy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG, PetType.CAT],
+                allowed:           true,
+                types:             [PetType.DOG, PetType.CAT],
                 breedRestrictions: ['Pit Bull'],
-                petTypes: [createDefaultPetTypePolicy(PetType.DOG)],
-                maxCount: 2,
-                weightLimit: 50,
-                deposit: 300,
-                monthlyFee: 25,
-                oneTimeFee: 100,
-                notes: 'Test policy'
+                petTypes:          [createDefaultPetTypePolicy(PetType.DOG)],
+                maxCount:          2,
+                weightLimit:       50,
+                deposit:           300,
+                monthlyFee:        25,
+                oneTimeFee:        100,
+                notes:             'Test policy'
             };
 
             const result = ensurePetPolicyStructure(completePolicy);
@@ -143,7 +143,7 @@ describe('Pet Policy Helpers - Financial Calculations', () => {
     describe('calculatePetCosts', () => {
         it('should calculate costs with all fees defined', () => {
             const policy = {
-                deposit: 500,
+                deposit:    500,
                 oneTimeFee: 200,
                 monthlyFee: 50
             } as ExtendedPetPolicy;
@@ -157,7 +157,7 @@ describe('Pet Policy Helpers - Financial Calculations', () => {
 
         it('should handle zero costs', () => {
             const policy = {
-                deposit: 0,
+                deposit:    0,
                 oneTimeFee: 0,
                 monthlyFee: 0
             } as ExtendedPetPolicy;
@@ -181,7 +181,7 @@ describe('Pet Policy Helpers - Financial Calculations', () => {
 
         it('should handle partial fee definitions', () => {
             const policy = {
-                deposit: 300,
+                deposit:    300,
                 monthlyFee: 25
                 // oneTimeFee undefined
             } as ExtendedPetPolicy;
@@ -195,7 +195,7 @@ describe('Pet Policy Helpers - Financial Calculations', () => {
 
         it('should handle large amounts correctly', () => {
             const policy = {
-                deposit: 10000,
+                deposit:    10000,
                 oneTimeFee: 5000,
                 monthlyFee: 1000
             } as ExtendedPetPolicy;
@@ -209,7 +209,7 @@ describe('Pet Policy Helpers - Financial Calculations', () => {
 
         it('should handle decimal amounts correctly', () => {
             const policy = {
-                deposit: 250.50,
+                deposit:    250.50,
                 oneTimeFee: 49.99,
                 monthlyFee: 24.95
             } as ExtendedPetPolicy;
@@ -467,7 +467,7 @@ describe('Pet Policy Helpers - Advanced Pet Types', () => {
         });
 
         it('should not add duplicate breed restrictions', () => {
-            policy.petTypes![0]!.breedRestrictions = ['Pit Bull'];
+            policy.petTypes![0].breedRestrictions = ['Pit Bull'];
             const result = addBreedRestrictionToPetType(policy, 0, 'Pit Bull');
             expect(result).toBe(false);
         });
@@ -486,7 +486,7 @@ describe('Pet Policy Helpers - Advanced Pet Types', () => {
 
     describe('removeBreedRestrictionFromPetType', () => {
         beforeEach(() => {
-            policy.petTypes![0]!.breedRestrictions = ['Pit Bull', 'Rottweiler', 'German Shepherd'];
+            policy.petTypes![0].breedRestrictions = ['Pit Bull', 'Rottweiler', 'German Shepherd'];
         });
 
         it('should remove breed restriction by index', () => {
@@ -562,16 +562,16 @@ describe('Pet Policy Helpers - Utility Functions', () => {
 
     beforeEach(() => {
         policy = {
-            allowed: true,
-            types: [PetType.DOG, PetType.CAT],
-            maxCount: 2,
-            weightLimit: 50,
+            allowed:           true,
+            types:             [PetType.DOG, PetType.CAT],
+            maxCount:          2,
+            weightLimit:       50,
             breedRestrictions: ['Pit Bull'],
-            deposit: 500,
-            monthlyFee: 25,
-            oneTimeFee: 100,
-            notes: 'Test policy',
-            petTypes: [createDefaultPetTypePolicy(PetType.DOG)]
+            deposit:           500,
+            monthlyFee:        25,
+            oneTimeFee:        100,
+            notes:             'Test policy',
+            petTypes:          [createDefaultPetTypePolicy(PetType.DOG)]
         };
     });
 
@@ -608,13 +608,13 @@ describe('Pet Policy Helpers - Validation', () => {
     describe('validatePetPolicyData', () => {
         it('should return no errors for valid allowed policy', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: 2,
+                allowed:     true,
+                types:       [PetType.DOG],
+                maxCount:    2,
                 weightLimit: 50,
-                deposit: 300,
-                monthlyFee: 25,
-                oneTimeFee: 100
+                deposit:     300,
+                monthlyFee:  25,
+                oneTimeFee:  100
             };
 
             const errors = validatePetPolicyData(policy);
@@ -633,7 +633,7 @@ describe('Pet Policy Helpers - Validation', () => {
         it('should validate pet types are selected when allowed', () => {
             const policy: ExtendedPetPolicy = {
                 allowed: true,
-                types: []
+                types:   []
             };
 
             const errors = validatePetPolicyData(policy);
@@ -642,13 +642,13 @@ describe('Pet Policy Helpers - Validation', () => {
 
         it('should validate numeric limits', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: -1,
+                allowed:     true,
+                types:       [PetType.DOG],
+                maxCount:    -1,
                 weightLimit: 0,
-                deposit: -100,
-                monthlyFee: -25,
-                oneTimeFee: -50
+                deposit:     -100,
+                monthlyFee:  -25,
+                oneTimeFee:  -50
             };
 
             const errors = validatePetPolicyData(policy);
@@ -661,9 +661,9 @@ describe('Pet Policy Helpers - Validation', () => {
 
         it('should allow zero fees', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                deposit: 0,
+                allowed:    true,
+                types:      [PetType.DOG],
+                deposit:    0,
                 monthlyFee: 0,
                 oneTimeFee: 0
             };
@@ -677,7 +677,7 @@ describe('Pet Policy Helpers - Validation', () => {
         it('should allow undefined optional fields', () => {
             const policy: ExtendedPetPolicy = {
                 allowed: true,
-                types: [PetType.DOG]
+                types:   [PetType.DOG]
             };
 
             const errors = validatePetPolicyData(policy);

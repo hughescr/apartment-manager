@@ -21,10 +21,10 @@ const originalSetTimeout = global.setTimeout;
  */
 
 interface MockUnit {
-    unitID: string
-    unitNumber: string
+    unitID:       string
+    unitNumber:   string
     vacancyClass: string
-    rent: number
+    rent:         number
 }
 
 interface MockComponent {
@@ -32,7 +32,7 @@ interface MockComponent {
     filteredUnits: MockUnit[]
     bulkOperation: {
         loading: boolean
-        error: string | null
+        error:   string | null
     }
     selectAllVisible(): void
     selectNone(): void
@@ -61,7 +61,7 @@ describe('Quick Actions Toolbar', () => {
             ],
             bulkOperation: {
                 loading: false,
-                error: null
+                error:   null
             },
 
             // Selection methods
@@ -103,7 +103,7 @@ describe('Quick Actions Toolbar', () => {
                     });
 
                     this.selectedUnits = new Set();
-                } catch(error) {
+                } catch (error) {
                     this.bulkOperation.error = (error as Error).message;
                 } finally {
                     this.bulkOperation.loading = false;
@@ -135,7 +135,7 @@ describe('Quick Actions Toolbar', () => {
                     });
 
                     this.selectedUnits = new Set();
-                } catch(error) {
+                } catch (error) {
                     this.bulkOperation.error = (error as Error).message;
                 } finally {
                     this.bulkOperation.loading = false;
@@ -428,6 +428,7 @@ describe('Quick Actions Toolbar', () => {
             expect(initialSelectionCount).toBe(2);
 
             // Force an error by clearing selected units just before the operation
+            // eslint-disable-next-line @typescript-eslint/unbound-method -- This is OK because we are explicitly handling "this"
             const originalMethod = mockComponent.performBulkStatusUpdate;
             mockComponent.performBulkStatusUpdate = async function(status: string) {
                 this.selectedUnits = new Set(); // Clear selection to cause error
@@ -515,10 +516,10 @@ describe('Quick Actions Toolbar', () => {
         it('should handle large numbers of units efficiently', () => {
             // Create a large dataset
             const largeUnitSet = Array.from({ length: 1000 }, (_, i) => ({
-                unitID: `unit-${i}`,
-                unitNumber: `${i}`,
+                unitID:       `unit-${i}`,
+                unitNumber:   `${i}`,
                 vacancyClass: 'Unoccupied',
-                rent: 1200 + (i % 500)
+                rent:         1200 + (i % 500)
             }));
 
             mockComponent.filteredUnits = largeUnitSet;

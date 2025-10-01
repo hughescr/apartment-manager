@@ -16,7 +16,7 @@ const createItemResponse = (item: Record<string, unknown>, unitID: string) => {
     const buildingID = (item as Record<string, unknown> & { buildingID?: string }).buildingID || 'test-building';
     return {
         Attributes: { ...item, buildingID, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() },
-        Item: { ...item, buildingID, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() }
+        Item:       { ...item, buildingID, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() }
     };
 };
 

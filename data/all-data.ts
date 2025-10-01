@@ -11,8 +11,8 @@ import _ from 'lodash';
  * while providing all data in a single response
  */
 export interface AllDataResponse {
-    buildings: BuildingData[]
-    unitsByBuilding: Record<string, UnitData[]>
+    buildings:           BuildingData[]
+    unitsByBuilding:     Record<string, UnitData[]>
     unitTypesByBuilding: Record<string, UnitTypeData[]>
 }
 
@@ -21,24 +21,24 @@ export interface AllDataResponse {
  */
 type RawDynamoDBItem = Record<string, unknown> & {
     buildingID: string
-    unitID: string
+    unitID:     string
     updatedAt?: string
-    created?: unknown
-    modified?: unknown
-    _et?: unknown
-    _ct?: unknown
-    _md?: unknown
+    created?:   unknown
+    modified?:  unknown
+    _et?:       unknown
+    _ct?:       unknown
+    _md?:       unknown
 };
 
 /**
  * Helper function to convert feed data from DynamoDB format to UnitData format
  */
 function convertFeedDataFromDB(rawItem: RawDynamoDBItem): {
-    feedLastPulled?: Partial<Record<string, { timestamp: Date, ipAddress?: string }>>
+    feedLastPulled?:   Partial<Record<string, { timestamp: Date, ipAddress?: string }>>
     feedLastModified?: Date
 } {
     const result: {
-        feedLastPulled?: Partial<Record<string, { timestamp: Date, ipAddress?: string }>>
+        feedLastPulled?:   Partial<Record<string, { timestamp: Date, ipAddress?: string }>>
         feedLastModified?: Date
     } = {};
 
@@ -99,32 +99,32 @@ function convertRawItemToBuildingData(rawItem: RawDynamoDBItem): BuildingData {
  */
 function convertRawItemToUnitData(rawItem: RawDynamoDBItem): UnitData {
     const result: Partial<UnitData> = {
-        buildingID: rawItem.buildingID,
-        unitID: replace(rawItem.unitID, /^UNIT#/, ''), // Remove UNIT# prefix
-        description: rawItem.description as string | undefined,
-        beds: rawItem.beds as number | undefined,
-        baths: rawItem.baths as number | undefined,
-        sqft: rawItem.sqft as number | undefined,
-        rent: rawItem.rent as number | undefined,
-        occupied: rawItem.occupied as boolean | undefined,
-        availableDate: rawItem.availableDate as string | undefined,
-        modelID: rawItem.modelID as string | undefined,
-        unitNumber: rawItem.unitNumber as string | undefined,
-        maxOccupants: rawItem.maxOccupants as number | undefined,
-        perPersonRent: rawItem.perPersonRent as number | undefined,
-        deposit: rawItem.deposit as number | undefined,
-        minLeaseTerm: rawItem.minLeaseTerm as number | undefined,
-        maxLeaseTerm: rawItem.maxLeaseTerm as number | undefined,
-        unitDescription: rawItem.unitDescription as string | undefined,
-        unitRentSpecial: rawItem.unitRentSpecial as UnitData['unitRentSpecial'],
-        unitAmenities: rawItem.unitAmenities as UnitData['unitAmenities'],
-        photos: rawItem.photos as string[] | undefined,
-        features: rawItem.features as string[] | undefined,
-        notes: rawItem.notes as string | undefined,
-        vacancyClass: rawItem.vacancyClass as UnitData['vacancyClass'],
-        vacateDate: rawItem.vacateDate as string | undefined,
-        madeReadyDate: rawItem.madeReadyDate as string | undefined,
-        feedInclusion: rawItem.feedInclusion as Partial<Record<string, boolean>> | undefined,
+        buildingID:       rawItem.buildingID,
+        unitID:           replace(rawItem.unitID, /^UNIT#/, ''), // Remove UNIT# prefix
+        description:      rawItem.description as string | undefined,
+        beds:             rawItem.beds as number | undefined,
+        baths:            rawItem.baths as number | undefined,
+        sqft:             rawItem.sqft as number | undefined,
+        rent:             rawItem.rent as number | undefined,
+        occupied:         rawItem.occupied as boolean | undefined,
+        availableDate:    rawItem.availableDate as string | undefined,
+        modelID:          rawItem.modelID as string | undefined,
+        unitNumber:       rawItem.unitNumber as string | undefined,
+        maxOccupants:     rawItem.maxOccupants as number | undefined,
+        perPersonRent:    rawItem.perPersonRent as number | undefined,
+        deposit:          rawItem.deposit as number | undefined,
+        minLeaseTerm:     rawItem.minLeaseTerm as number | undefined,
+        maxLeaseTerm:     rawItem.maxLeaseTerm as number | undefined,
+        unitDescription:  rawItem.unitDescription as string | undefined,
+        unitRentSpecial:  rawItem.unitRentSpecial as UnitData['unitRentSpecial'],
+        unitAmenities:    rawItem.unitAmenities as UnitData['unitAmenities'],
+        photos:           rawItem.photos as string[] | undefined,
+        features:         rawItem.features as string[] | undefined,
+        notes:            rawItem.notes as string | undefined,
+        vacancyClass:     rawItem.vacancyClass as UnitData['vacancyClass'],
+        vacateDate:       rawItem.vacateDate as string | undefined,
+        madeReadyDate:    rawItem.madeReadyDate as string | undefined,
+        feedInclusion:    rawItem.feedInclusion as Partial<Record<string, boolean>> | undefined,
         manualReferences: rawItem.manualReferences as Partial<Record<string, string>> | undefined
     };
 
@@ -183,15 +183,15 @@ export async function getAllData(): Promise<AllDataResponse> {
     if(!scanResult.Items || scanResult.Items.length === 0) {
         logger.warn('No items found in DynamoDB scan');
         return {
-            buildings: [],
-            unitsByBuilding: {},
+            buildings:           [],
+            unitsByBuilding:     {},
             unitTypesByBuilding: {}
         };
     }
 
     logger.debug('DynamoDB scan completed', {
-        itemCount: scanResult.Items.length,
-        scannedCount: scanResult.ScannedCount,
+        itemCount:        scanResult.Items.length,
+        scannedCount:     scanResult.ScannedCount,
         consumedCapacity: scanResult.ConsumedCapacity
     });
 
@@ -204,7 +204,7 @@ export async function getAllData(): Promise<AllDataResponse> {
 
     logger.debug('Items grouped by type', {
         buildingCount: buildingItems.length,
-        unitCount: unitItems.length,
+        unitCount:     unitItems.length,
         unitTypeCount: unitTypeItems.length
     });
 
@@ -222,7 +222,7 @@ export async function getAllData(): Promise<AllDataResponse> {
     // Ensure all buildings have arrays (even if empty) for consistent data structure
     const result: AllDataResponse = {
         buildings,
-        unitsByBuilding: {},
+        unitsByBuilding:     {},
         unitTypesByBuilding: {}
     };
 
@@ -233,8 +233,8 @@ export async function getAllData(): Promise<AllDataResponse> {
     });
 
     logger.debug('Unified data processing completed', {
-        buildingCount: result.buildings.length,
-        buildingsWithUnits: _(result.unitsByBuilding).pickBy(units => units.length > 0).keys().value().length,
+        buildingCount:          result.buildings.length,
+        buildingsWithUnits:     _(result.unitsByBuilding).pickBy(units => units.length > 0).keys().value().length,
         buildingsWithUnitTypes: _(result.unitTypesByBuilding).pickBy(types => types.length > 0).keys().value().length
     });
 

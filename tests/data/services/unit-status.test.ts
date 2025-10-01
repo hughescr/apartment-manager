@@ -204,10 +204,10 @@ describe('Unit Status Service', () => {
     describe('getVacancyClassDescription', () => {
         it('should return correct descriptions for all vacancy classes', () => {
             const expectedDescriptions = {
-                Occupied: 'Unit is currently occupied by a tenant',
+                Occupied:   'Unit is currently occupied by a tenant',
                 Unoccupied: 'Unit is vacant and available for rent',
-                Notice: 'Current tenant has given notice to vacate',
-                Down: 'Unit is unavailable due to maintenance or other issues'
+                Notice:     'Current tenant has given notice to vacate',
+                Down:       'Unit is unavailable due to maintenance or other issues'
             };
 
             forEach(Object.entries(expectedDescriptions), ([status, expectedDescription]) => {
@@ -226,10 +226,10 @@ describe('Unit Status Service', () => {
     describe('getStatusPriority', () => {
         it('should return correct priorities', () => {
             const expectedPriorities = {
-                Down: 1,      // Highest priority
-                Notice: 2,    // High priority
+                Down:       1,      // Highest priority
+                Notice:     2,    // High priority
                 Unoccupied: 3, // Medium priority
-                Occupied: 4   // Lowest priority
+                Occupied:   4   // Lowest priority
             };
 
             forEach(Object.entries(expectedPriorities), ([status, expectedPriority]) => {
@@ -321,11 +321,11 @@ describe('Unit Status Service', () => {
             const result = getStatusStatistics(units);
 
             expect(result).toEqual({
-                Occupied: 2,
+                Occupied:   2,
                 Unoccupied: 1,
-                Notice: 1,
-                Down: 1,
-                total: 5
+                Notice:     1,
+                Down:       1,
+                total:      5
             });
         });
 
@@ -333,11 +333,11 @@ describe('Unit Status Service', () => {
             const result = getStatusStatistics([]);
 
             expect(result).toEqual({
-                Occupied: 0,
+                Occupied:   0,
                 Unoccupied: 0,
-                Notice: 0,
-                Down: 0,
-                total: 0
+                Notice:     0,
+                Down:       0,
+                total:      0
             });
         });
 
@@ -352,11 +352,11 @@ describe('Unit Status Service', () => {
             const result = getStatusStatistics(units);
 
             expect(result).toEqual({
-                Occupied: 1,
+                Occupied:   1,
                 Unoccupied: 1,
-                Notice: 0,
-                Down: 0,
-                total: 2
+                Notice:     0,
+                Down:       0,
+                total:      2
             });
         });
 
@@ -370,11 +370,11 @@ describe('Unit Status Service', () => {
             const result = getStatusStatistics(units);
 
             expect(result).toEqual({
-                Occupied: 1,
+                Occupied:   1,
                 Unoccupied: 0,
-                Notice: 0,
-                Down: 0,
-                total: 1
+                Notice:     0,
+                Down:       0,
+                total:      1
             });
         });
 
@@ -388,11 +388,11 @@ describe('Unit Status Service', () => {
             const result = getStatusStatistics(units);
 
             expect(result).toEqual({
-                Occupied: 3,
+                Occupied:   3,
                 Unoccupied: 0,
-                Notice: 0,
-                Down: 0,
-                total: 3
+                Notice:     0,
+                Down:       0,
+                total:      3
             });
         });
 
@@ -409,11 +409,11 @@ describe('Unit Status Service', () => {
             const result = getStatusStatistics(units);
 
             expect(result).toEqual({
-                Occupied: 1,
+                Occupied:   1,
                 Unoccupied: 0,
-                Notice: 1,
-                Down: 1,
-                total: 3
+                Notice:     1,
+                Down:       1,
+                total:      3
             });
         });
     });

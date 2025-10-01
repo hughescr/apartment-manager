@@ -31,7 +31,7 @@ describe('MITS Multi-Building Generator', () => {
     describe('Multi-Building Feed Generation', () => {
         it('should generate feed for multiple buildings', async () => {
             const xml = await generateMultiBuildingMITSFeed({
-                buildings: [mockBuilding, building2],
+                buildings:           [mockBuilding, building2],
                 unitTypesByBuilding: {
                     'test-building-1': mockUnitTypes,
                     'test-building-2': unitTypes2
@@ -61,10 +61,10 @@ describe('MITS Multi-Building Generator', () => {
 
         it('should handle empty buildings array', async () => {
             const xml = await generateMultiBuildingMITSFeed({
-                buildings: [],
+                buildings:           [],
                 unitTypesByBuilding: {},
-                unitsByBuilding: {},
-                siteName: 'zillow'
+                unitsByBuilding:     {},
+                siteName:            'zillow'
             });
 
             expect(xml).toContain('<PhysicalProperties');
@@ -74,7 +74,7 @@ describe('MITS Multi-Building Generator', () => {
 
         it('should filter units by site correctly in multi-building feed', async () => {
             const xml = await generateMultiBuildingMITSFeed({
-                buildings: [mockBuilding],
+                buildings:           [mockBuilding],
                 unitTypesByBuilding: {
                     'test-building-1': mockUnitTypes
                 },

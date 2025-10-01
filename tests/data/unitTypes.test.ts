@@ -38,22 +38,22 @@ describe('UnitType Data Layer', () => {
 
     const testBuildingID = 'test-building-1';
     const testUnitType = {
-        buildingID: testBuildingID,
-        modelID: 'model-2br',
-        modelName: '2 Bedroom Deluxe',
+        buildingID:     testBuildingID,
+        modelID:        'model-2br',
+        modelName:      '2 Bedroom Deluxe',
         countAvailable: 5,
-        dateAvailable: '2024-04-01',
-        beds: 2,
-        baths: 2,
-        maxOccupants: 4,
-        minRent: 1500,
-        maxRent: 1800,
-        perPersonRent: 450,
-        minSqft: 950,
-        maxSqft: 1100,
-        deposit: 1500,
-        minLeaseTerm: 6,
-        maxLeaseTerm: 12,
+        dateAvailable:  '2024-04-01',
+        beds:           2,
+        baths:          2,
+        maxOccupants:   4,
+        minRent:        1500,
+        maxRent:        1800,
+        perPersonRent:  450,
+        minSqft:        950,
+        maxSqft:        1100,
+        deposit:        1500,
+        minLeaseTerm:   6,
+        maxLeaseTerm:   12,
         modelAmenities: [
             { name: 'Balcony', category: AmenityCategory.UNIT },
             { name: 'In-unit Washer/Dryer', category: AmenityCategory.UNIT }
@@ -104,10 +104,10 @@ describe('UnitType Data Layer', () => {
         expect.assertions(2);
         const minimalUnitType = {
             buildingID: testBuildingID,
-            modelID: 'test-uuid',
-            modelName: 'Studio',
-            beds: 0,
-            baths: 1
+            modelID:    'test-uuid',
+            modelName:  'Studio',
+            beds:       0,
+            baths:      1
         };
         // Mock returns the item with unitID, but createUnitType will omit it
         dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...minimalUnitType, unitID: 'MODEL#test-uuid' }));
@@ -120,22 +120,22 @@ describe('UnitType Data Layer', () => {
     it('should create a unit type with full data', async () => {
         expect.assertions(3);
         const fullUnitType = {
-            buildingID: testBuildingID,
-            modelID: 'test-uuid',
-            modelName: '3 Bedroom Premium',
+            buildingID:     testBuildingID,
+            modelID:        'test-uuid',
+            modelName:      '3 Bedroom Premium',
             countAvailable: 3,
-            dateAvailable: '2024-05-01',
-            beds: 3,
-            baths: 2.5,
-            maxOccupants: 6,
-            minRent: 2000,
-            maxRent: 2500,
-            perPersonRent: 500,
-            minSqft: 1200,
-            maxSqft: 1400,
-            deposit: 2000,
-            minLeaseTerm: 12,
-            maxLeaseTerm: 24,
+            dateAvailable:  '2024-05-01',
+            beds:           3,
+            baths:          2.5,
+            maxOccupants:   6,
+            minRent:        2000,
+            maxRent:        2500,
+            perPersonRent:  500,
+            minSqft:        1200,
+            maxSqft:        1400,
+            deposit:        2000,
+            minLeaseTerm:   12,
+            maxLeaseTerm:   24,
             modelAmenities: [
                 { name: 'Walk-in Closet', category: AmenityCategory.UNIT },
                 { name: 'Granite Countertops', category: AmenityCategory.UNIT }
@@ -154,8 +154,8 @@ describe('UnitType Data Layer', () => {
         expect.assertions(2);
         const updates = {
             countAvailable: 3,
-            minRent: 1600,
-            maxRent: 1900
+            minRent:        1600,
+            maxRent:        1900
         };
         // Mock returns the item with unitID, but updateUnitType will omit it
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...testUnitType, unitID: `MODEL#${testUnitType.modelID}`, ...updates }));
@@ -169,13 +169,13 @@ describe('UnitType Data Layer', () => {
         expect.assertions(2);
         const updates = {
             countAvailable: 2,
-            dateAvailable: undefined, // Should be removed by DynamoDB
-            minRent: 1400
+            dateAvailable:  undefined, // Should be removed by DynamoDB
+            minRent:        1400
         };
         const expectedResult = {
             ...testUnitType,
             countAvailable: 2,
-            minRent: 1400
+            minRent:        1400
         };
         // Mock returns the item with unitID, but updateUnitType will omit it
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({ ...expectedResult, unitID: `MODEL#${testUnitType.modelID}` }));
@@ -213,30 +213,30 @@ describe('UnitType Data Layer', () => {
         const units = [
             {
                 buildingID: testBuildingID,
-                unitID: 'UNIT#unit-1',  // DynamoDB stores with UNIT# prefix
+                unitID:     'UNIT#unit-1',  // DynamoDB stores with UNIT# prefix
                 unitNumber: '101',
-                modelID: 'model-2br',
-                beds: 2,
-                baths: 2,
-                rent: 1650
+                modelID:    'model-2br',
+                beds:       2,
+                baths:      2,
+                rent:       1650
             },
             {
                 buildingID: testBuildingID,
-                unitID: 'UNIT#unit-2',  // DynamoDB stores with UNIT# prefix
+                unitID:     'UNIT#unit-2',  // DynamoDB stores with UNIT# prefix
                 unitNumber: '201',
-                modelID: 'model-2br',
-                beds: 2,
-                baths: 2,
-                rent: 1700
+                modelID:    'model-2br',
+                beds:       2,
+                baths:      2,
+                rent:       1700
             },
             {
                 buildingID: testBuildingID,
-                unitID: 'UNIT#unit-3',  // This one has different modelID
+                unitID:     'UNIT#unit-3',  // This one has different modelID
                 unitNumber: '301',
-                modelID: 'model-1br',
-                beds: 1,
-                baths: 1,
-                rent: 1200
+                modelID:    'model-1br',
+                beds:       1,
+                baths:      1,
+                rent:       1200
             }
         ];
         dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
@@ -268,7 +268,7 @@ describe('UnitType Data Layer', () => {
         ];
         dynamoDbMock.mockResolvedValueOnce(mockUpdateResponse({
             ...testUnitType,
-            unitID: `MODEL#${testUnitType.modelID}`,
+            unitID:         `MODEL#${testUnitType.modelID}`,
             modelAmenities: updatedAmenities
         }));
 
@@ -327,7 +327,7 @@ describe('UnitType Data Layer', () => {
             dynamoDbMock.mockResolvedValueOnce(mockGetResponse({
                 ...testUnitType,
                 modelID: 'MODEL#test-model',
-                unitID: 'MODEL#MODEL#test-model'
+                unitID:  'MODEL#MODEL#test-model'
             }));
 
             const created = await createUnitType(normalModel);
@@ -430,12 +430,12 @@ describe('UnitType Data Layer', () => {
             // Create a large dataset that would typically require pagination
             const largeUnitSet = Array.from({ length: 1000 }, (_, i) => ({
                 buildingID: testBuildingID,
-                unitID: `UNIT#unit-${i}`,
+                unitID:     `UNIT#unit-${i}`,
                 unitNumber: `${i + 100}`,
-                modelID: i % 3 === 0 ? 'model-2br' : 'model-1br',
-                beds: i % 3 === 0 ? 2 : 1,
-                baths: i % 3 === 0 ? 2 : 1,
-                rent: 1500 + (i * 10)
+                modelID:    i % 3 === 0 ? 'model-2br' : 'model-1br',
+                beds:       i % 3 === 0 ? 2 : 1,
+                baths:      i % 3 === 0 ? 2 : 1,
+                rent:       1500 + (i * 10)
             }));
 
             // Mock paginated response
@@ -457,12 +457,12 @@ describe('UnitType Data Layer', () => {
             const units = [
                 {
                     buildingID: testBuildingID,
-                    unitID: 'UNIT#unit-1',
+                    unitID:     'UNIT#unit-1',
                     unitNumber: '101',
-                    modelID: 'model-2br',
-                    beds: 2,
-                    baths: 2,
-                    rent: 1650
+                    modelID:    'model-2br',
+                    beds:       2,
+                    baths:      2,
+                    rent:       1650
                 }
             ];
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
@@ -480,12 +480,12 @@ describe('UnitType Data Layer', () => {
             expect.assertions(2);
             const units = [{
                 buildingID: testBuildingID,
-                unitID: 'UNIT#unit-1',
+                unitID:     'UNIT#unit-1',
                 unitNumber: '101',
-                modelID: 'model-2br',
-                beds: 2,
-                baths: 2,
-                rent: 1650
+                modelID:    'model-2br',
+                beds:       2,
+                baths:      2,
+                rent:       1650
             }];
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(units));
 
@@ -513,25 +513,25 @@ describe('UnitType Data Layer', () => {
             const unitsWithEmptyID = [
                 {
                     buildingID: testBuildingID,
-                    unitID: '', // Empty string unitID
+                    unitID:     '', // Empty string unitID
                     unitNumber: '101',
-                    modelID: 'model-2br',
-                    beds: 2,
-                    baths: 2,
-                    rent: 1650,
-                    _et: 'Unit',
-                    _ct: 'Unit'
+                    modelID:    'model-2br',
+                    beds:       2,
+                    baths:      2,
+                    rent:       1650,
+                    _et:        'Unit',
+                    _ct:        'Unit'
                 },
                 {
                     buildingID: testBuildingID,
-                    unitID: 'UNIT#unit-2',
+                    unitID:     'UNIT#unit-2',
                     unitNumber: '201',
-                    modelID: 'model-2br',
-                    beds: 2,
-                    baths: 2,
-                    rent: 1700,
-                    _et: 'Unit',
-                    _ct: 'Unit'
+                    modelID:    'model-2br',
+                    beds:       2,
+                    baths:      2,
+                    rent:       1700,
+                    _et:        'Unit',
+                    _ct:        'Unit'
                 }
             ];
             dynamoDbMock.mockResolvedValueOnce(mockQueryResponse(unitsWithEmptyID));
@@ -600,9 +600,9 @@ describe('UnitType Data Layer', () => {
             expect.assertions(4);
             const invalidNumericData = {
                 ...testUnitType,
-                beds: 'two' as unknown as number, // Invalid type
-                baths: '2.5' as unknown as number, // String instead of number
-                minRent: null as unknown as number, // Null instead of number
+                beds:         'two' as unknown as number, // Invalid type
+                baths:        '2.5' as unknown as number, // String instead of number
+                minRent:      null as unknown as number, // Null instead of number
                 maxOccupants: undefined // Undefined is ok
             };
 
@@ -638,7 +638,7 @@ describe('UnitType Data Layer', () => {
             const largeArrayUnit = {
                 ...testUnitType,
                 modelAmenities: Array.from({ length: 1000 }, (_, i) => ({
-                    name: `Amenity ${i}`,
+                    name:     `Amenity ${i}`,
                     category: AmenityCategory.UNIT
                 }))
             };
@@ -659,10 +659,10 @@ describe('UnitType Data Layer', () => {
             // Simulate race condition where two processes try to create same unit type
             const raceUnitType = {
                 buildingID: testBuildingID,
-                modelID: 'race-model',
-                modelName: 'Race Test Model',
-                beds: 2,
-                baths: 2
+                modelID:    'race-model',
+                modelName:  'Race Test Model',
+                beds:       2,
+                baths:      2
             };
 
             // First attempt succeeds

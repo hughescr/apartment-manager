@@ -10,7 +10,7 @@ export class MITSValidationError extends Error {
 
 // Simple XML parser for validation (without external dependencies)
 class SimpleXMLParser {
-    private xml: string;
+    private xml:      string;
     private pos = 0;
     private depth = 0;
     private maxDepth: number;
@@ -150,7 +150,7 @@ function findElement(root: Record<string, unknown>, path: string[]): Record<stri
 
     for(const child of (root._children as Record<string, unknown>[]) || []) {
         if(child._name === first) {
-            return findElement(child as Record<string, unknown>, rest);
+            return findElement(child, rest);
         }
     }
 
@@ -282,7 +282,7 @@ export function validateMITSXML(xml: string, options: ValidationOptions = {}): b
         validateUnits(doc);
 
         return true;
-    } catch(error) {
+    } catch (error) {
         if(error instanceof MITSValidationError) {
             throw error;
         }

@@ -18,9 +18,9 @@ import { MissingMITSField, ValidationError, SiteRequirements } from './types';
  * @returns Array of missing field information grouped by entity type
  */
 export function getMissingMITSFields(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }): MissingMITSField[] {
     const missingFields: MissingMITSField[] = [];
     const validation = validateForMITSPublication(data);
@@ -28,13 +28,13 @@ export function getMissingMITSFields(data: {
     if(!validation.isValid) {
         const fields = flatMap(validation.errors, error =>
             map(error.issues, issue => ({
-                field: issue.path,
+                field:       issue.path,
                 displayName: formatFieldDisplayName(issue.path),
                 description: issue.message,
-                entityType: error.type,
-                required: true,
+                entityType:  error.type,
+                required:    true,
                 mitsElement: getMITSElementForField(error.type, issue.path),
-                index: error.index
+                index:       error.index
             }))
         );
 
@@ -54,14 +54,14 @@ export function getMissingMITSFields(data: {
  * Clean data for MITS validation by removing non-MITS fields
  */
 function cleanDataForMITSValidation(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }): {
-        building: unknown
-        unitTypes: unknown[]
-        units: unknown[]
-    } {
+    building:  unknown
+    unitTypes: unknown[]
+    units:     unknown[]
+} {
     // Remove non-MITS fields that might be present in the data
     // Building: Remove database-specific and non-MITS fields
     const cleanBuilding = omit(data.building as Record<string, unknown>, [
@@ -90,9 +90,9 @@ function cleanDataForMITSValidation(data: {
     });
 
     return {
-        building: cleanBuilding,
+        building:  cleanBuilding,
         unitTypes: cleanUnitTypes,
-        units: cleanUnits
+        units:     cleanUnits
     };
 }
 
@@ -108,9 +108,9 @@ function cleanDataForMITSValidation(data: {
 export function canPublishToSite(
     site: 'apartments_com' | 'zillow',
     data: {
-        building: unknown
+        building:  unknown
         unitTypes: unknown[]
-        units: unknown[]
+        units:     unknown[]
     }
 ): SiteRequirements {
     // Clean data for MITS validation (remove non-MITS fields)
@@ -139,12 +139,12 @@ export function canPublishToSite(
 
     return {
         site,
-        canPublish: canPublishToSiteResult,
+        canPublish:    canPublishToSiteResult,
         missingFields: [...missingFields, ...siteSpecificMissing],
-        errors: [
+        errors:        [
             ...flatMap(mitsValidation.errors, error =>
                 map(error.issues, issue => ({
-                    field: issue.path,
+                    field:   issue.path,
                     message: issue.message,
                     context: 'MITS 4.1 compliance requirement'
                 }))
@@ -159,23 +159,23 @@ export function canPublishToSite(
  */
 function formatFieldDisplayName(fieldPath: string): string {
     const fieldMappings: Record<string, string> = {
-        buildingID: 'Building ID',
-        buildingName: 'Building Name',
-        street: 'Street Address',
-        city: 'City',
-        state: 'State',
-        zip: 'ZIP Code',
-        latitude: 'Latitude',
-        longitude: 'Longitude',
+        buildingID:          'Building ID',
+        buildingName:        'Building Name',
+        street:              'Street Address',
+        city:                'City',
+        state:               'State',
+        zip:                 'ZIP Code',
+        latitude:            'Latitude',
+        longitude:           'Longitude',
         'contactInfo.email': 'Contact Email',
         'contactInfo.phone': 'Contact Phone',
-        propertyType: 'Property Type',
-        modelID: 'Model ID',
-        modelName: 'Model Name',
-        beds: 'Bedrooms',
-        baths: 'Bathrooms',
-        unitID: 'Unit ID',
-        unitNumber: 'Unit Number'
+        propertyType:        'Property Type',
+        modelID:             'Model ID',
+        modelName:           'Model Name',
+        beds:                'Bedrooms',
+        baths:               'Bathrooms',
+        unitID:              'Unit ID',
+        unitNumber:          'Unit Number'
     };
 
     return fieldMappings[fieldPath] || startCase(last(split(fieldPath, '.')) || fieldPath);
@@ -187,28 +187,28 @@ function formatFieldDisplayName(fieldPath: string): string {
 function getMITSElementForField(entityType: string, fieldPath: string): string | undefined {
     const mitsElementMappings: Record<string, Record<string, string>> = {
         building: {
-            buildingID: 'Property_ID.Identification.PropertyID',
-            buildingName: 'Property_ID.Identification.PropertyName',
-            street: 'Property_ID.Address.Address1',
-            city: 'Property_ID.Address.City',
-            state: 'Property_ID.Address.State',
-            zip: 'Property_ID.Address.PostalCode',
-            latitude: 'Property_ID.Location.Latitude',
-            longitude: 'Property_ID.Location.Longitude',
+            buildingID:          'Property_ID.Identification.PropertyID',
+            buildingName:        'Property_ID.Identification.PropertyName',
+            street:              'Property_ID.Address.Address1',
+            city:                'Property_ID.Address.City',
+            state:               'Property_ID.Address.State',
+            zip:                 'Property_ID.Address.PostalCode',
+            latitude:            'Property_ID.Location.Latitude',
+            longitude:           'Property_ID.Location.Longitude',
             'contactInfo.email': 'Property_ID.Phone.PhoneNumber',
             'contactInfo.phone': 'Property_ID.Email.EmailAddress'
         },
         unitType: {
-            modelID: 'FloorPlan.FloorplanID',
+            modelID:   'FloorPlan.FloorplanID',
             modelName: 'FloorPlan.FloorplanName',
-            beds: 'FloorPlan.Room.Room',
-            baths: 'FloorPlan.Room.Room'
+            beds:      'FloorPlan.Room.Room',
+            baths:     'FloorPlan.Room.Room'
         },
         unit: {
-            unitID: 'ILS_Unit.Unit',
+            unitID:     'ILS_Unit.Unit',
             unitNumber: 'ILS_Unit.UnitID',
-            beds: 'ILS_Unit.Room.Room',
-            baths: 'ILS_Unit.Room.Room'
+            beds:       'ILS_Unit.Room.Room',
+            baths:      'ILS_Unit.Room.Room'
         }
     };
 
@@ -219,9 +219,9 @@ function getMITSElementForField(entityType: string, fieldPath: string): string |
  * Validate Apartments.com specific requirements
  */
 function validateApartmentsComRequirements(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }): ValidationError[] {
     const errors: ValidationError[] = [];
 
@@ -229,7 +229,7 @@ function validateApartmentsComRequirements(data: {
     const building = data.building as { photos?: unknown[] };
     if(!building?.photos || !isArray(building.photos) || building.photos.length === 0) {
         errors.push({
-            field: 'building.photos',
+            field:   'building.photos',
             message: 'At least one building photo is required for Apartments.com',
             context: 'Apartments.com site requirement'
         });
@@ -242,20 +242,20 @@ function validateApartmentsComRequirements(data: {
  * Get Apartments.com specific missing fields
  */
 function getApartmentsComMissingFields(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }): MissingMITSField[] {
     const missing: MissingMITSField[] = [];
 
     const building = data.building as { photos?: unknown[] };
     if(!building?.photos || !isArray(building.photos) || building.photos.length === 0) {
         missing.push({
-            field: 'building.photos',
+            field:       'building.photos',
             displayName: 'Building Photos',
             description: 'At least one photo of the building exterior or common areas',
-            entityType: 'building',
-            required: true
+            entityType:  'building',
+            required:    true
         });
     }
 
@@ -266,9 +266,9 @@ function getApartmentsComMissingFields(data: {
  * Validate Zillow specific requirements
  */
 function validateZillowRequirements(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }): ValidationError[] {
     const errors: ValidationError[] = [];
 
@@ -277,8 +277,8 @@ function validateZillowRequirements(data: {
         const typedUnit = unit as { rent?: number };
         if(!typedUnit?.rent || typedUnit.rent <= 0) {
             errors.push({
-                field: `units.${index}.rent`,
-                message: `Rent amount is required for all units on Zillow`,
+                field:   `units.${index}.rent`,
+                message: 'Rent amount is required for all units on Zillow',
                 context: 'Zillow site requirement'
             });
         }
@@ -291,9 +291,9 @@ function validateZillowRequirements(data: {
  * Get Zillow specific missing fields
  */
 function getZillowMissingFields(data: {
-    building: unknown
+    building:  unknown
     unitTypes: unknown[]
-    units: unknown[]
+    units:     unknown[]
 }): MissingMITSField[] {
     const missing: MissingMITSField[] = [];
 
@@ -301,11 +301,11 @@ function getZillowMissingFields(data: {
         const typedUnit = unit as { rent?: number };
         if(!typedUnit?.rent || typedUnit.rent <= 0) {
             missing.push({
-                field: `units.${index}.rent`,
+                field:       `units.${index}.rent`,
                 displayName: `Unit #${index + 1} Rent`,
                 description: 'Monthly rent amount in dollars',
-                entityType: 'unit',
-                required: true
+                entityType:  'unit',
+                required:    true
             });
         }
     });

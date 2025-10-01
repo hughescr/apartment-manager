@@ -28,34 +28,34 @@ export interface BaseAlpineState {
  */
 export interface BuildingAlpineState extends BaseAlpineState {
     // Core data
-    building: BuildingData | null
-    original: BuildingData | null
-    units: ExtendedUnitData[]
+    building:  BuildingData | null
+    original:  BuildingData | null
+    units:     ExtendedUnitData[]
     unitTypes: UnitTypeData[]
-    apiURL: string
+    apiURL:    string
 
     // UI state
     activeSectionTab: TabKey
-    showSave: boolean
-    geocoding: boolean
+    showSave:         boolean
+    geocoding:        boolean
 
     // Units management state
     filteredUnits: ExtendedUnitData[]
     selectedUnits: Set<string>
-    statusFilter: VacancyStatus
-    searchQuery: string
+    statusFilter:  VacancyStatus
+    searchQuery:   string
 
     // Dialog states
-    showAddUnitDialog: boolean
-    showAddUnitTypeDialog: boolean
+    showAddUnitDialog:      boolean
+    showAddUnitTypeDialog:  boolean
     showEditUnitTypeDialog: boolean
-    showBulkStatusDialog: boolean
-    showBulkRentDialog: boolean
+    showBulkStatusDialog:   boolean
+    showBulkRentDialog:     boolean
 
     // Form states
-    newUnit: NewUnitForm
+    newUnit:          NewUnitForm
     selectedUnitType: UnitTypeData | null
-    bulkOperation: BulkOperationState
+    bulkOperation:    BulkOperationState
 
     // Methods
     parseBuildingData(): void
@@ -95,7 +95,7 @@ export interface BuildingAlpineState extends BaseAlpineState {
  */
 export interface ExtendedUnitData extends UnitData {
     lastUpdated?: string
-    status?: string
+    status?:      string
     currentRent?: number
     editingRent?: boolean
     savingField?: string | null
@@ -106,7 +106,7 @@ export interface ExtendedUnitData extends UnitData {
  * New unit form state
  */
 export interface NewUnitForm {
-    unitID: string
+    unitID:  string
     modelID: string
 }
 
@@ -114,10 +114,10 @@ export interface NewUnitForm {
  * Bulk operation state
  */
 export interface BulkOperationState {
-    loading: boolean
-    statusValue: string
+    loading:        boolean
+    statusValue:    string
     rentUpdateType: 'absolute' | 'percentage'
-    rentValue: number
+    rentValue:      number
 }
 
 // ===== UNIT CARD STATE =====
@@ -128,11 +128,11 @@ export interface BulkOperationState {
  */
 export interface UnitCardAlpineState extends BaseAlpineState {
     // Core data
-    unit: UnitData | null
-    originalUnit: UnitData | null
-    unitTypes: UnitTypeData[] | null
-    selectedUnitType: UnitTypeData | null
-    apiURL: string | null
+    unit:              UnitData | null
+    originalUnit:      UnitData | null
+    unitTypes:         UnitTypeData[] | null
+    selectedUnitType:  UnitTypeData | null
+    apiURL:            string | null
     buildingAmenities: Amenity[] | null
 
     // UI state
@@ -178,25 +178,25 @@ export interface UnitCardAlpineState extends BaseAlpineState {
  * Expanded sections state for unit cards
  */
 export interface ExpandedSectionsState {
-    details: boolean
+    details:   boolean
     amenities: boolean
-    photos: boolean
-    websites: boolean
+    photos:    boolean
+    websites:  boolean
 }
 
 /**
  * Inheritable fields between unit, model, and building levels
  */
-export type InheritableField =
-  | 'beds'
-  | 'baths'
-  | 'sqft'
-  | 'rent'
-  | 'maxOccupants'
-  | 'perPersonRent'
-  | 'deposit'
-  | 'minLeaseTerm'
-  | 'maxLeaseTerm';
+export type InheritableField
+    = | 'beds'
+      | 'baths'
+      | 'sqft'
+      | 'rent'
+      | 'maxOccupants'
+      | 'perPersonRent'
+      | 'deposit'
+      | 'minLeaseTerm'
+      | 'maxLeaseTerm';
 
 /**
  * Amenity inheritance source levels
@@ -213,24 +213,24 @@ export interface BuildingsComponentAlpineState extends BaseAlpineState {
     activeBuildingTab: number
 
     // Toast state
-    showToast: boolean
+    showToast:    boolean
     toastMessage: string
-    toastType: ToastType
+    toastType:    ToastType
 
     // Building data
     buildingsData: BuildingWithData[]
 
     // Add building form state
-    buildingID: string
-    street: string
-    city: string
-    state: string
-    zip: string
-    description: string
-    specialtyType: SpecialtyType
-    propertyWebsite: string
+    buildingID:        string
+    street:            string
+    city:              string
+    state:             string
+    zip:               string
+    description:       string
+    specialtyType:     SpecialtyType
+    propertyWebsite:   string
     managementWebsite: string
-    apiURL: string
+    apiURL:            string
 
     // Methods
     init(): void
@@ -244,8 +244,8 @@ export interface BuildingsComponentAlpineState extends BaseAlpineState {
  * Building data with associated units and unit types
  */
 export interface BuildingWithData {
-    building: BuildingData
-    units: UnitData[]
+    building:  BuildingData
+    units:     UnitData[]
     unitTypes: UnitTypeData[]
 }
 
@@ -256,11 +256,11 @@ export interface BuildingWithData {
  */
 export interface BaseFormState extends BaseAlpineState {
     /** Form validation errors */
-    errors: Record<string, string>
+    errors:     Record<string, string>
     /** Whether form is being submitted */
     submitting: boolean
     /** Whether form has been touched */
-    touched: boolean
+    touched:    boolean
 }
 
 /**
@@ -268,7 +268,7 @@ export interface BaseFormState extends BaseAlpineState {
  */
 export interface ScreeningCriteriaFormState extends BaseFormState {
     showAdvanced: boolean
-    xModelRef: string
+    xModelRef:    string
     getModelValue(): unknown
     setModelValue(value: unknown): void
     validateField(field: string, value: unknown): boolean
@@ -279,8 +279,8 @@ export interface ScreeningCriteriaFormState extends BaseFormState {
  */
 export interface OfficeHoursEditorState extends BaseFormState {
     selectedDay: string | null
-    tempHours: Record<string, { open: string, close: string, closed: boolean }>
-    editingDay: string | null
+    tempHours:   Record<string, { open: string, close: string, closed: boolean }>
+    editingDay:  string | null
 }
 
 // ===== DIALOG STATE INTERFACES =====
@@ -301,13 +301,13 @@ export interface BaseDialogState extends BaseAlpineState {
 export interface AddUnitDialogState extends BaseDialogState {
     building: {
         buildingID: string
-        street: string
-        city: string
-        state: string
+        street:     string
+        city:       string
+        state:      string
     }
     unitTypes: UnitTypeData[]
-    newUnit: NewUnitForm
-    apiUrl: string
+    newUnit:   NewUnitForm
+    apiUrl:    string
 
     validateForm(): boolean
     submitForm(): Promise<void>
@@ -319,8 +319,8 @@ export interface AddUnitDialogState extends BaseDialogState {
  */
 export interface BulkStatusDialogState extends BaseDialogState {
     selectedUnits: Set<string>
-    statusValue: string
-    apiUrl: string
+    statusValue:   string
+    apiUrl:        string
 
     performUpdate(): Promise<void>
 }
@@ -329,10 +329,10 @@ export interface BulkStatusDialogState extends BaseDialogState {
  * Bulk rent dialog state
  */
 export interface BulkRentDialogState extends BaseDialogState {
-    selectedUnits: Set<string>
+    selectedUnits:  Set<string>
     rentUpdateType: 'absolute' | 'percentage'
-    rentValue: number
-    apiUrl: string
+    rentValue:      number
+    apiUrl:         string
 
     performUpdate(): Promise<void>
     calculatePreview(): { unitID: string, currentRent: number, newRent: number }[]
@@ -343,12 +343,12 @@ export interface BulkRentDialogState extends BaseDialogState {
 /**
  * Available tab keys for building management
  */
-export type TabKey =
-  | 'building-info'
-  | 'floorplans-units'
-  | 'pricing-policies'
-  | 'marketing'
-  | 'units';
+export type TabKey
+    = | 'building-info'
+      | 'floorplans-units'
+      | 'pricing-policies'
+      | 'marketing'
+      | 'units';
 
 /**
  * Toast message types

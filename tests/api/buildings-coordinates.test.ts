@@ -21,16 +21,16 @@ describe('Building Coordinates API', () => {
         const buildingID = 'eEUxh8XdGF1RsxfmwHPpYD'; // Short-uuid format
         const updateData = {
             buildingID,
-            buildingName: 'Test Building',
-            street: '123 Main St',
-            city: 'San Francisco',
-            state: 'CA',
-            zip: '94102',
-            latitude: 37.7749,
-            longitude: -122.4194,
-            coordinatesVerified: true,
-            propertyType: 'apartment',
-            photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
+            buildingName:              'Test Building',
+            street:                    '123 Main St',
+            city:                      'San Francisco',
+            state:                     'CA',
+            zip:                       '94102',
+            latitude:                  37.7749,
+            longitude:                 -122.4194,
+            coordinatesVerified:       true,
+            propertyType:              'apartment',
+            photos:                    ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
             acceptsOnlineApplications: true
         };
 
@@ -43,7 +43,7 @@ describe('Building Coordinates API', () => {
 
         const event: Partial<APIGatewayProxyEventV2> = {
             pathParameters: { buildingID },
-            body: JSON.stringify(updateData)
+            body:           JSON.stringify(updateData)
         };
 
         const result = await update(event as APIGatewayProxyEventV2);
@@ -65,10 +65,10 @@ describe('Building Coordinates API', () => {
         const updateData = {
             buildingID,
             buildingName: 'Test Building 2',
-            street: '456 Oak St',
-            city: 'Los Angeles',
-            state: 'CA',
-            zip: '90001'
+            street:       '456 Oak St',
+            city:         'Los Angeles',
+            state:        'CA',
+            zip:          '90001'
             // No latitude, longitude, or coordinatesVerified
         };
 
@@ -81,7 +81,7 @@ describe('Building Coordinates API', () => {
 
         const event: Partial<APIGatewayProxyEventV2> = {
             pathParameters: { buildingID },
-            body: JSON.stringify(updateData)
+            body:           JSON.stringify(updateData)
         };
 
         const result = await update(event as APIGatewayProxyEventV2);
@@ -106,22 +106,22 @@ describe('Building Coordinates API', () => {
         const buildingID = 'bfDFDKH11u7AhktrYKYewM'; // Short-uuid format
         const updateData = {
             buildingID,
-            buildingName: 'Existing Building',
-            description: 'A nice building',
-            yearBuilt: 2020,
-            numberStories: 5,
-            totalUnits: 50,
-            latitude: 40.7128,
-            longitude: -74.0060,
+            buildingName:        'Existing Building',
+            description:         'A nice building',
+            yearBuilt:           2020,
+            numberStories:       5,
+            totalUnits:          50,
+            latitude:            40.7128,
+            longitude:           -74.0060,
             coordinatesVerified: false,
-            petPolicies: {
-                allowed: true,
+            petPolicies:         {
+                allowed:  true,
                 maxCount: 2
             },
             parkingOptions: [{
-                type: 'garage',
+                type:     'garage',
                 included: true,
-                spaces: 1
+                spaces:   1
             }]
         };
 
@@ -134,7 +134,7 @@ describe('Building Coordinates API', () => {
 
         const event: Partial<APIGatewayProxyEventV2> = {
             pathParameters: { buildingID },
-            body: JSON.stringify(updateData)
+            body:           JSON.stringify(updateData)
         };
 
         const result = await update(event as APIGatewayProxyEventV2);
@@ -154,13 +154,13 @@ describe('Building Coordinates API', () => {
         expect(responseData.longitude).toBe(-74.006); // Note: response has -74.006 not -74.0060
         expect(responseData.coordinatesVerified).toBe(false);
         expect(responseData.petPolicies).toEqual({
-            allowed: true,
+            allowed:  true,
             maxCount: 2
         });
         expect(responseData.parkingOptions).toEqual([{
-            type: 'garage',
+            type:     'garage',
             included: true,
-            spaces: 1
+            spaces:   1
         }]);
     });
 });

@@ -2,7 +2,6 @@ import { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { getAllData } from '../data/all-data';
 import { createSuccessResponse, createServerErrorResponse } from './shared/request-handlers';
 import { logger } from '@hughescr/logger';
-import { UnitData, UnitTypeData } from '../src/types';
 import _ from 'lodash';
 
 /**
@@ -21,13 +20,13 @@ export const get = async (): Promise<APIGatewayProxyStructuredResultV2> => {
         const allData = await getAllData();
 
         logger.debug('Unified all-data endpoint response', {
-            buildingCount: allData.buildings.length,
-            totalUnits: _(allData.unitsByBuilding).values().reduce((sum, units) => sum + (units as UnitData[]).length, 0),
-            totalUnitTypes: _(allData.unitTypesByBuilding).values().reduce((sum, types) => sum + (types as UnitTypeData[]).length, 0)
+            buildingCount:  allData.buildings.length,
+            totalUnits:     _(allData.unitsByBuilding).values().reduce((sum, units) => sum + (units).length, 0),
+            totalUnitTypes: _(allData.unitTypesByBuilding).values().reduce((sum, types) => sum + (types).length, 0)
         });
 
         return createSuccessResponse(allData);
-    } catch(error) {
+    } catch (error) {
         logger.error('Failed to fetch all data', { error });
         return createServerErrorResponse(error, 'getAllData');
     }

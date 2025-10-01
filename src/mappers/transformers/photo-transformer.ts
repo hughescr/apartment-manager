@@ -93,8 +93,8 @@ export function sortPhotosByType(photos: string[]): string[] {
         const lower = toLower(photo);
         if(lower.includes('exterior') || lower.includes('building') || lower.includes('outside')) {
             exterior.push(photo);
-        } else if(lower.includes('interior') || lower.includes('room') || lower.includes('kitchen') ||
-          lower.includes('bathroom') || lower.includes('bedroom') || lower.includes('living')) {
+        } else if(lower.includes('interior') || lower.includes('room') || lower.includes('kitchen')
+          || lower.includes('bathroom') || lower.includes('bedroom') || lower.includes('living')) {
             interior.push(photo);
         } else {
             other.push(photo);
@@ -164,9 +164,9 @@ export function limitPhotos(photos: string[], limit: number): string[] {
 export function createPhotoTransformer(
     siteId: string,
     options: {
-        limit?: number
+        limit?:    number
         validate?: boolean
-        sort?: boolean
+        sort?:     boolean
     } = {}
 ): TransformerFunction<string[] | undefined, string[]> {
     return (photos: string[] | undefined): string[] => {

@@ -7,9 +7,9 @@ describe('AddUnitDialog Component', () => {
     const mockProps = {
         building: {
             buildingID: 'test-building-1',
-            street: '123 Main St',
-            city: 'San Francisco',
-            state: 'CA'
+            street:     '123 Main St',
+            city:       'San Francisco',
+            state:      'CA'
         },
         unitTypes: [
             { modelID: 'studio', modelName: 'Studio', beds: 0, baths: 1, sqft: 500 },
@@ -44,12 +44,12 @@ describe('AddUnitDialog Component', () => {
 
     it('should handle unit creation with inheritance', () => {
         const newUnit = {
-            unitNumber: '101',
-            modelID: '1br',
-            beds: 1,
-            baths: 1,
-            sqft: 750,
-            rent: 2500,
+            unitNumber:   '101',
+            modelID:      '1br',
+            beds:         1,
+            baths:        1,
+            sqft:         750,
+            rent:         2500,
             vacancyClass: 'Unoccupied'
         };
 
@@ -67,10 +67,10 @@ describe('AddUnitDialog Component', () => {
 describe('BulkStatusDialog Component', () => {
     const mockProps = {
         selectedUnits: new Set(['unit-1', 'unit-2', 'unit-3']),
-        isOpen: false,
-        loading: false,
-        apiUrl: '/api/',
-        buildingID: 'test-building-1'
+        isOpen:        false,
+        loading:       false,
+        apiUrl:        '/api/',
+        buildingID:    'test-building-1'
     };
 
     it('should show selected unit count', () => {
@@ -98,7 +98,7 @@ describe('BulkStatusDialog Component', () => {
     it('should prepare bulk update payload', () => {
         const payload = {
             unitIDs: Array.from(mockProps.selectedUnits),
-            status: 'Unoccupied'
+            status:  'Unoccupied'
         };
 
         expect(payload.unitIDs).toEqual(['unit-1', 'unit-2', 'unit-3']);
@@ -108,19 +108,19 @@ describe('BulkStatusDialog Component', () => {
 
 describe('BulkRentDialog Component', () => {
     const mockProps = {
-        selectedUnits: new Set(['unit-1', 'unit-2']),
-        isOpen: false,
-        loading: false,
-        apiUrl: '/api/',
-        buildingID: 'test-building-1',
+        selectedUnits:  new Set(['unit-1', 'unit-2']),
+        isOpen:         false,
+        loading:        false,
+        apiUrl:         '/api/',
+        buildingID:     'test-building-1',
         rentUpdateType: 'absolute',
-        rentValue: 0
+        rentValue:      0
     };
 
     it('should support absolute rent updates', () => {
         const absoluteUpdate = {
             updateType: 'absolute',
-            value: 2500
+            value:      2500
         };
 
         expect(absoluteUpdate.updateType).toBe('absolute');
@@ -130,7 +130,7 @@ describe('BulkRentDialog Component', () => {
     it('should support percentage rent updates', () => {
         const percentageUpdate = {
             updateType: 'percentage',
-            value: 10 // 10% increase
+            value:      10 // 10% increase
         };
 
         expect(percentageUpdate.updateType).toBe('percentage');
@@ -157,9 +157,9 @@ describe('BulkRentDialog Component', () => {
 
     it('should prepare bulk rent payload', () => {
         const payload = {
-            unitIDs: Array.from(mockProps.selectedUnits),
+            unitIDs:    Array.from(mockProps.selectedUnits),
             updateType: 'percentage',
-            value: 5.5
+            value:      5.5
         };
 
         expect(payload.unitIDs).toEqual(['unit-1', 'unit-2']);
@@ -172,7 +172,7 @@ describe('Dialog Common Functionality', () => {
     it('should handle modal open/close states', () => {
         const modalStates = {
             closed: false,
-            open: true
+            open:   true
         };
 
         expect(modalStates.closed).toBe(false);
@@ -181,7 +181,7 @@ describe('Dialog Common Functionality', () => {
 
     it('should handle loading states', () => {
         const loadingStates = {
-            idle: false,
+            idle:       false,
             processing: true
         };
 

@@ -5,18 +5,18 @@ import { isValidBuildingId } from '../../src/utils/building-id.js';
 const DepositSchema = z.union([
     z.number().min(0, 'Deposit amount cannot be negative'),
     z.object({
-        amount: z.number().min(0, 'Deposit amount is required and cannot be negative'),
-        refundable: z.boolean().optional(),
+        amount:                  z.number().min(0, 'Deposit amount is required and cannot be negative'),
+        refundable:              z.boolean().optional(),
         partialRefundPercentage: z.number().min(0).max(100, 'Partial refund percentage must be between 0 and 100').optional(),
-        notes: z.string().optional()
+        notes:                   z.string().optional()
     })
 ]).optional();
 
 // Helper schema for amenity validation
 const AmenitySchema = z.object({
-    type: z.string().min(1, 'Amenity type is required'),
+    type:        z.string().min(1, 'Amenity type is required'),
     description: z.string().optional(),
-    category: z.string().optional()
+    category:    z.string().optional()
 });
 
 // Date validation helper
@@ -44,19 +44,19 @@ const UnitTypeSchemaBase = z.looseObject({
     modelName: z.string().min(1, 'Model name cannot be empty').optional(),
 
     // Required room configuration (optional for draft state)
-    beds: z.number().int().min(0).max(10, 'Number of beds must be between 0 and 10').optional(),
+    beds:  z.number().int().min(0).max(10, 'Number of beds must be between 0 and 10').optional(),
     baths: z.number().min(0).max(10, 'Number of baths must be between 0 and 10').optional(),
 
     // Availability information
     countAvailable: z.number().int().min(0, 'Count available cannot be negative').optional(),
-    dateAvailable: dateString(),
+    dateAvailable:  dateString(),
 
     // Occupancy limits
     maxOccupants: z.number().int().min(1).max(20, 'Max occupants must be between 1 and 20').optional(),
 
     // Rent ranges
-    minRent: z.number().min(0, 'Min rent cannot be negative').optional(),
-    maxRent: z.number().min(0, 'Max rent cannot be negative').optional(),
+    minRent:       z.number().min(0, 'Min rent cannot be negative').optional(),
+    maxRent:       z.number().min(0, 'Max rent cannot be negative').optional(),
     perPersonRent: z.number().min(0, 'Per person rent cannot be negative').optional(),
 
     // Size ranges
@@ -64,7 +64,7 @@ const UnitTypeSchemaBase = z.looseObject({
     maxSqft: z.number().int().min(0).max(10000, 'Max square footage must be between 0 and 10000').optional(),
 
     // Financial terms
-    deposit: DepositSchema,
+    deposit:      DepositSchema,
     minLeaseTerm: z.number().int().min(1).max(36, 'Min lease term must be between 1 and 36 months').optional(),
     maxLeaseTerm: z.number().int().min(1).max(36, 'Max lease term must be between 1 and 36 months').optional(),
 
@@ -85,7 +85,7 @@ export const UnitTypeSchema = UnitTypeSchemaBase
     return true;
 }, {
     message: 'Min rent cannot be greater than max rent',
-    path: ['maxRent'],
+    path:    ['maxRent'],
 })
 .refine((data) => {
     // Cross-field validation: min sqft cannot be greater than max sqft
@@ -95,7 +95,7 @@ export const UnitTypeSchema = UnitTypeSchemaBase
     return true;
 }, {
     message: 'Min square footage cannot be greater than max square footage',
-    path: ['maxSqft'],
+    path:    ['maxSqft'],
 })
 .refine((data) => {
     // Cross-field validation: min lease term cannot be greater than max lease term
@@ -105,7 +105,7 @@ export const UnitTypeSchema = UnitTypeSchemaBase
     return true;
 }, {
     message: 'Min lease term cannot be greater than max lease term',
-    path: ['maxLeaseTerm'],
+    path:    ['maxLeaseTerm'],
 });
 
 export type UnitTypeInput = z.infer<typeof UnitTypeSchema>;
@@ -115,8 +115,8 @@ export type UnitTypeInput = z.infer<typeof UnitTypeSchema>;
 const mitsExtensions = {
     // For MITS compliance, these fields become required
     modelName: z.string().min(1, 'Model name is required for MITS compliance'),
-    beds: z.number().int().min(0).max(10),
-    baths: z.number().min(0).max(10),
+    beds:      z.number().int().min(0).max(10),
+    baths:     z.number().min(0).max(10),
 };
 
 export const UnitTypeMITSSchema = z.looseObject({
@@ -131,7 +131,7 @@ export const UnitTypeMITSSchema = z.looseObject({
     return true;
 }, {
     message: 'Min rent cannot be greater than max rent',
-    path: ['maxRent'],
+    path:    ['maxRent'],
 })
 .refine((data) => {
     // Cross-field validation: min sqft cannot be greater than max sqft
@@ -141,7 +141,7 @@ export const UnitTypeMITSSchema = z.looseObject({
     return true;
 }, {
     message: 'Min square footage cannot be greater than max square footage',
-    path: ['maxSqft'],
+    path:    ['maxSqft'],
 })
 .refine((data) => {
     // Cross-field validation: min lease term cannot be greater than max lease term
@@ -151,14 +151,14 @@ export const UnitTypeMITSSchema = z.looseObject({
     return true;
 }, {
     message: 'Min lease term cannot be greater than max lease term',
-    path: ['maxLeaseTerm'],
+    path:    ['maxLeaseTerm'],
 })
 .refine((data: { minSqft?: number, maxSqft?: number }) => {
     // MITS requires at least some size information
     return data.minSqft !== undefined || data.maxSqft !== undefined;
 }, {
     message: 'At least one square footage value (min or max) is required for MITS compliance',
-    path: ['minSqft'],
+    path:    ['minSqft'],
 });
 
 export type UnitTypeMITSInput = z.infer<typeof UnitTypeMITSSchema>;

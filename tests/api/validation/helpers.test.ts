@@ -25,7 +25,7 @@ describe('Validation Helper Functions', () => {
     describe('validateForSave - Draft Mode Validation', () => {
         it('should accept minimal building data for save', () => {
             const minimalBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building'
             };
 
@@ -38,8 +38,8 @@ describe('Validation Helper Functions', () => {
         it('should accept minimal unit type data for save', () => {
             const minimalUnitType = {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                modelID: 'model-1br',
-                modelName: '1 Bedroom'
+                modelID:    'model-1br',
+                modelName:  '1 Bedroom'
             };
 
             const result = validateForSave('unitType', minimalUnitType);
@@ -51,7 +51,7 @@ describe('Validation Helper Functions', () => {
         it('should accept minimal unit data for save', () => {
             const minimalUnit = {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'unit-101',
+                unitID:     'unit-101',
                 unitNumber: '101'
             };
 
@@ -63,7 +63,7 @@ describe('Validation Helper Functions', () => {
 
         it('should provide user-friendly errors for invalid data in draft mode', () => {
             const invalidBuilding = {
-                buildingID: 'invalid id!', // Invalid format
+                buildingID:   'invalid id!', // Invalid format
                 buildingName: 'Test Building'
             };
 
@@ -96,9 +96,9 @@ describe('Validation Helper Functions', () => {
 
         it('should allow partial data that would fail MITS validation', () => {
             const partialBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building',
-                street: '123 Main St'
+                street:       '123 Main St'
                 // Missing required MITS fields: city, state, zip, coordinates, contact, etc.
             };
 
@@ -110,18 +110,18 @@ describe('Validation Helper Functions', () => {
 
     describe('validateForPublish - MITS Compliance Validation', () => {
         const completeBuilding = {
-            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            buildingName: 'Test Building',
-            street: '123 Main St',
-            city: 'Dallas',
-            state: 'TX',
-            zip: '75001',
-            latitude: 32.7767,
-            longitude: -96.7970,
-            propertyType: PropertyType.APARTMENT,
+            buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+            buildingName:  'Test Building',
+            street:        '123 Main St',
+            city:          'Dallas',
+            state:         'TX',
+            zip:           '75001',
+            latitude:      32.7767,
+            longitude:     -96.7970,
+            propertyType:  PropertyType.APARTMENT,
             structureType: 'Apartment',
-            rentalType: 'Market Rate',
-            contactInfo: {
+            rentalType:    'Market Rate',
+            contactInfo:   {
                 email: 'test@example.com',
                 phone: '555-123-4567'
             }
@@ -129,23 +129,23 @@ describe('Validation Helper Functions', () => {
 
         const completeUnitType = {
             buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            modelID: 'model-1br',
-            modelName: '1 Bedroom',
-            beds: 1,
-            baths: 1,
-            minSqft: 650,
-            minRent: 1200
+            modelID:    'model-1br',
+            modelName:  '1 Bedroom',
+            beds:       1,
+            baths:      1,
+            minSqft:    650,
+            minRent:    1200
         };
 
         const completeUnit = {
-            buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-            unitID: 'unit-101',
-            unitNumber: '101',
-            beds: 1,
-            baths: 1,
-            sqft: 700,
-            rent: 1250,
-            vacancyClass: 'Unoccupied',
+            buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+            unitID:        'unit-101',
+            unitNumber:    '101',
+            beds:          1,
+            baths:         1,
+            sqft:          700,
+            rent:          1250,
+            vacancyClass:  'Unoccupied',
             availableDate: '2024-01-01'
         };
 
@@ -172,7 +172,7 @@ describe('Validation Helper Functions', () => {
 
         it('should reject incomplete building data with MITS-specific errors', () => {
             const incompleteBuilding = {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                 buildingName: 'Test Building'
                 // Missing all MITS required fields
             };
@@ -191,8 +191,8 @@ describe('Validation Helper Functions', () => {
         it('should reject incomplete unit type data with MITS-specific errors', () => {
             const incompleteUnitType = {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                modelID: 'model-1br',
-                modelName: '1 Bedroom'
+                modelID:    'model-1br',
+                modelName:  '1 Bedroom'
                 // Missing beds, baths, sqft, rent
             };
 
@@ -209,7 +209,7 @@ describe('Validation Helper Functions', () => {
         it('should reject incomplete unit data with MITS-specific errors', () => {
             const incompleteUnit = {
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'unit-101',
+                unitID:     'unit-101',
                 unitNumber: '101'
                 // Missing beds, baths, sqft, rent, vacancyClass
             };
@@ -238,40 +238,40 @@ describe('Validation Helper Functions', () => {
         it('should return empty array for complete valid data', () => {
             const completeData = {
                 building: {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Dallas',
-                    state: 'TX',
-                    zip: '75001',
-                    latitude: 32.7767,
-                    longitude: -96.7970,
-                    propertyType: PropertyType.APARTMENT,
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    buildingName:  'Test Building',
+                    street:        '123 Main St',
+                    city:          'Dallas',
+                    state:         'TX',
+                    zip:           '75001',
+                    latitude:      32.7767,
+                    longitude:     -96.7970,
+                    propertyType:  PropertyType.APARTMENT,
                     structureType: 'Apartment',
-                    rentalType: 'Market Rate',
-                    contactInfo: {
+                    rentalType:    'Market Rate',
+                    contactInfo:   {
                         email: 'test@example.com',
                         phone: '555-123-4567'
                     }
                 },
                 unitTypes: [{
                     buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    modelID: 'model-1br',
-                    modelName: '1 Bedroom',
-                    beds: 1,
-                    baths: 1,
-                    minSqft: 650,
-                    minRent: 1200
+                    modelID:    'model-1br',
+                    modelName:  '1 Bedroom',
+                    beds:       1,
+                    baths:      1,
+                    minSqft:    650,
+                    minRent:    1200
                 }],
                 units: [{
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'unit-101',
-                    unitNumber: '101',
-                    beds: 1,
-                    baths: 1,
-                    sqft: 700,
-                    rent: 1250,
-                    vacancyClass: 'Unoccupied',
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    unitID:        'unit-101',
+                    unitNumber:    '101',
+                    beds:          1,
+                    baths:         1,
+                    sqft:          700,
+                    rent:          1250,
+                    vacancyClass:  'Unoccupied',
                     availableDate: '2024-01-01'
                 }]
             };
@@ -283,12 +283,12 @@ describe('Validation Helper Functions', () => {
         it('should identify missing building fields with proper display names', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                    buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                     buildingName: 'Test Building'
                     // Missing required fields
                 },
                 unitTypes: [],
-                units: []
+                units:     []
             };
 
             const missingFields = getMissingMITSFields(incompleteData);
@@ -308,26 +308,26 @@ describe('Validation Helper Functions', () => {
         it('should identify missing unit type fields with index information', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Dallas',
-                    state: 'TX',
-                    zip: '75001',
-                    latitude: 32.7767,
-                    longitude: -96.7970,
-                    propertyType: PropertyType.APARTMENT,
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    buildingName:  'Test Building',
+                    street:        '123 Main St',
+                    city:          'Dallas',
+                    state:         'TX',
+                    zip:           '75001',
+                    latitude:      32.7767,
+                    longitude:     -96.7970,
+                    propertyType:  PropertyType.APARTMENT,
                     structureType: 'Apartment',
-                    rentalType: 'Market Rate',
-                    contactInfo: {
+                    rentalType:    'Market Rate',
+                    contactInfo:   {
                         email: 'test@example.com',
                         phone: '555-123-4567'
                     }
                 },
                 unitTypes: [{
                     buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    modelID: 'model-1br',
-                    modelName: '1 Bedroom'
+                    modelID:    'model-1br',
+                    modelName:  '1 Bedroom'
                     // Missing beds, baths, sqft, rent
                 }],
                 units: []
@@ -347,34 +347,34 @@ describe('Validation Helper Functions', () => {
         it('should identify missing unit fields with index information', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Dallas',
-                    state: 'TX',
-                    zip: '75001',
-                    latitude: 32.7767,
-                    longitude: -96.7970,
-                    propertyType: PropertyType.APARTMENT,
+                    buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                    buildingName:  'Test Building',
+                    street:        '123 Main St',
+                    city:          'Dallas',
+                    state:         'TX',
+                    zip:           '75001',
+                    latitude:      32.7767,
+                    longitude:     -96.7970,
+                    propertyType:  PropertyType.APARTMENT,
                     structureType: 'Apartment',
-                    rentalType: 'Market Rate',
-                    contactInfo: {
+                    rentalType:    'Market Rate',
+                    contactInfo:   {
                         email: 'test@example.com',
                         phone: '555-123-4567'
                     }
                 },
                 unitTypes: [{
                     buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    modelID: 'model-1br',
-                    modelName: '1 Bedroom',
-                    beds: 1,
-                    baths: 1,
-                    minSqft: 650,
-                    minRent: 1200
+                    modelID:    'model-1br',
+                    modelName:  '1 Bedroom',
+                    beds:       1,
+                    baths:      1,
+                    minSqft:    650,
+                    minRent:    1200
                 }],
                 units: [{
                     buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                    unitID: 'unit-101',
+                    unitID:     'unit-101',
                     unitNumber: '101'
                     // Missing beds, baths, sqft, rent, vacancyClass
                 }]
@@ -395,18 +395,18 @@ describe('Validation Helper Functions', () => {
     describe('canPublishToSite', () => {
         const completeData = {
             building: {
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                buildingName: 'Test Building',
-                street: '123 Main St',
-                city: 'Dallas',
-                state: 'TX',
-                zip: '75001',
-                latitude: 32.7767,
-                longitude: -96.7970,
-                propertyType: PropertyType.APARTMENT,
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                buildingName:  'Test Building',
+                street:        '123 Main St',
+                city:          'Dallas',
+                state:         'TX',
+                zip:           '75001',
+                latitude:      32.7767,
+                longitude:     -96.7970,
+                propertyType:  PropertyType.APARTMENT,
                 structureType: 'Apartment',
-                rentalType: 'Market Rate',
-                contactInfo: {
+                rentalType:    'Market Rate',
+                contactInfo:   {
                     email: 'test@example.com',
                     phone: '555-123-4567'
                 }
@@ -414,24 +414,24 @@ describe('Validation Helper Functions', () => {
             },
             unitTypes: [{
                 buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                modelID: 'model-1br',
-                modelName: '1 Bedroom',
-                beds: 1,
-                baths: 1,
-                minSqft: 650,
-                maxSqft: 750,
-                minRent: 1200,
-                maxRent: 1400
+                modelID:    'model-1br',
+                modelName:  '1 Bedroom',
+                beds:       1,
+                baths:      1,
+                minSqft:    650,
+                maxSqft:    750,
+                minRent:    1200,
+                maxRent:    1400
             }],
             units: [{
-                buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                unitID: 'unit-101',  // Use simple format without special characters
-                unitNumber: '101',
-                beds: 1,
-                baths: 1,
-                sqft: 700,
-                rent: 1250,
-                vacancyClass: 'Unoccupied',
+                buildingID:    'gSPgoPTdFcPqdeCYMBZMzy',
+                unitID:        'unit-101',  // Use simple format without special characters
+                unitNumber:    '101',
+                beds:          1,
+                baths:         1,
+                sqft:          700,
+                rent:          1250,
+                vacancyClass:  'Unoccupied',
                 availableDate: '2024-01-01'
             }]
         };
@@ -520,12 +520,12 @@ describe('Validation Helper Functions', () => {
         it('should prevent publishing when MITS validation fails', () => {
             const incompleteData = {
                 building: {
-                    buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
+                    buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
                     buildingName: 'Test Building'
                     // Missing required MITS fields
                 },
                 unitTypes: [],
-                units: []
+                units:     []
             };
 
             const result = canPublishToSite('apartments_com', incompleteData);
@@ -545,13 +545,13 @@ describe('Validation Helper Functions', () => {
                 units: [
                     completeData.units[0], // Has rent
                     {
-                        buildingID: 'gSPgoPTdFcPqdeCYMBZMzy',
-                        unitID: 'unit-102',
-                        unitNumber: '102',
-                        beds: 1,
-                        baths: 1,
-                        sqft: 700,
-                        rent: 0, // Missing rent
+                        buildingID:   'gSPgoPTdFcPqdeCYMBZMzy',
+                        unitID:       'unit-102',
+                        unitNumber:   '102',
+                        beds:         1,
+                        baths:        1,
+                        sqft:         700,
+                        rent:         0, // Missing rent
                         vacancyClass: 'Unoccupied'
                     }
                 ]
@@ -582,9 +582,9 @@ describe('Validation Helper Functions', () => {
 
         it('should handle empty data structures', () => {
             const emptyData = {
-                building: {},
+                building:  {},
                 unitTypes: [],
-                units: []
+                units:     []
             };
 
             const missingFields = getMissingMITSFields(emptyData);
@@ -599,7 +599,7 @@ describe('Validation Helper Functions', () => {
 
         it('should provide consistent error message formatting', () => {
             const invalidData = {
-                buildingID: 'invalid id!',
+                buildingID:   'invalid id!',
                 buildingName: ''
             };
 

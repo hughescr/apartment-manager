@@ -3,35 +3,35 @@ import _ from 'lodash';
 import ValidationError from './ValidationError.astro';
 
 export interface FieldDefinition {
-    name: string
-    type: 'text' | 'textarea' | 'date' | 'select' | 'toggle' | 'number'
-    label: string
-    required?: boolean
+    name:         string
+    type:         'text' | 'textarea' | 'date' | 'select' | 'toggle' | 'number'
+    label:        string
+    required?:    boolean
     placeholder?: string
-    helpText?: string
-    min?: number
-    max?: number
-    step?: number
-    rows?: number // for textarea
-    options?: { value: string, label: string }[] // for select
-    disabled?: string // Alpine.js expression for conditional disable
+    helpText?:    string
+    min?:         number
+    max?:         number
+    step?:        number
+    rows?:        number // for textarea
+    options?:     { value: string, label: string }[] // for select
+    disabled?:    string // Alpine.js expression for conditional disable
 }
 
 export interface Props {
-    name: string
-    label: string
-    fields: FieldDefinition[]
-    xModel: string // Alpine.js model path
-    addButtonText?: string
-    removeButtonText?: string
-    addButtonClass?: string
+    name:               string
+    label:              string
+    fields:             FieldDefinition[]
+    xModel:             string // Alpine.js model path
+    addButtonText?:     string
+    removeButtonText?:  string
+    addButtonClass?:    string
     removeButtonClass?: string
-    itemClass?: string
-    errors?: Record<string, string>
-    helpText?: string
-    required?: boolean
-    emptyStateText?: string
-    showAddButton?: boolean
+    itemClass?:         string
+    errors?:            Record<string, string>
+    helpText?:          string
+    required?:          boolean
+    emptyStateText?:    string
+    showAddButton?:     boolean
 }
 
 const {
@@ -58,9 +58,9 @@ const removeMethodName = `remove${_.toUpper(alpineDataKey.charAt(0)) + alpineDat
 
 // Helper functions for field rendering
 const createCommonAttrs = (field: FieldDefinition, fieldId: string, xModelPath: string, testId: string) => ({
-    ':name': `'${fieldId}-' + index`,
-    'x-model': xModelPath,
-    'class': field.type === 'textarea' ? 'textarea w-full' : 'input w-full',
+    ':name':        `'${fieldId}-' + index`,
+    'x-model':      xModelPath,
+    'class':        field.type === 'textarea' ? 'textarea w-full' : 'input w-full',
     ':data-testid': `'${testId}-' + index`,
     ...(field.disabled && { ':disabled': field.disabled }),
     ...(field.placeholder && { placeholder: field.placeholder })

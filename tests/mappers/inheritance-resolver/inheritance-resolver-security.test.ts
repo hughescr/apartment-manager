@@ -39,8 +39,8 @@ describe('InheritanceResolver - Security Tests', () => {
 
         it('should handle constructor pollution attempts', () => {
             const maliciousData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:  'BLDG-001',
+                unitID:      'UNIT-001',
                 constructor: {
                     prototype: {
                         polluted: true
@@ -62,7 +62,7 @@ describe('InheritanceResolver - Security Tests', () => {
 
             resolver.resolveUnitValues({
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
             }, maliciousUnitType as typeof unitTypeData, buildingData);
 
             // Check that pollution didn't occur
@@ -72,8 +72,8 @@ describe('InheritanceResolver - Security Tests', () => {
         it('should safely handle attempts to modify Object.prototype through amenities', () => {
             const maliciousAmenities: Amenity[] = [
                 {
-                    name: 'constructor',
-                    category: AmenityCategory.UNIT,
+                    name:          'constructor',
+                    category:      AmenityCategory.UNIT,
                     ['__proto__']: { polluted: true }
                 } as Amenity
             ];
@@ -90,8 +90,8 @@ describe('InheritanceResolver - Security Tests', () => {
             const circularAmenity = createCircularAmenity();
 
             const unit: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
                 unitAmenities: [circularAmenity]
             };
 
@@ -104,8 +104,8 @@ describe('InheritanceResolver - Security Tests', () => {
         it('should handle deeply nested circular references', () => {
             const deepCircular: Record<string, unknown> = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                level1: {}
+                unitID:     'UNIT-001',
+                level1:     {}
             };
 
             deepCircular.level1 = { level2: { level3: deepCircular } };
@@ -121,8 +121,8 @@ describe('InheritanceResolver - Security Tests', () => {
 
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                photos: selfRefArray as string[]
+                unitID:     'UNIT-001',
+                photos:     selfRefArray as string[]
             };
 
             expect(() => {
@@ -133,7 +133,7 @@ describe('InheritanceResolver - Security Tests', () => {
         it('should handle circular references in validation', () => {
             const unit: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001'
+                unitID:     'UNIT-001'
             } as UnitData & { self?: UnitData };
 
             (unit as UnitData & { self?: UnitData }).self = unit;
@@ -149,11 +149,11 @@ describe('InheritanceResolver - Security Tests', () => {
     describe('Input Sanitization and Validation', () => {
         it('should handle malformed input objects gracefully', () => {
             const malformedUnit = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:                        'BLDG-001',
+                unitID:                            'UNIT-001',
                 // Malicious properties
                 ['<script>alert("xss")</script>']: 'malicious',
-                [Symbol.for('evil')]: 'symbol attack'
+                [Symbol.for('evil')]:              'symbol attack'
             };
 
             const resolved = resolver.resolveUnitValues(malformedUnit as UnitData, unitTypeData, buildingData);
@@ -165,8 +165,8 @@ describe('InheritanceResolver - Security Tests', () => {
         it('should handle extremely long property names', () => {
             const longPropertyName = toLower(createVeryLongString(10000));
             const unitWithLongProperty = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:         'BLDG-001',
+                unitID:             'UNIT-001',
                 [longPropertyName]: 'long property value'
             };
 
@@ -177,10 +177,10 @@ describe('InheritanceResolver - Security Tests', () => {
 
         it('should handle unicode and special characters in property names', () => {
             const unicodeUnit = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                ['🏠🔥💀']: 'emoji property',
-                ['null\x00byte']: 'null byte property',
+                buildingID:             'BLDG-001',
+                unitID:                 'UNIT-001',
+                ['🏠🔥💀']:                'emoji property',
+                ['null\x00byte']:       'null byte property',
                 ['\u0000\u0001\u0002']: 'control chars'
             };
 
@@ -191,11 +191,11 @@ describe('InheritanceResolver - Security Tests', () => {
 
         it('should handle attempts to override built-in methods', () => {
             const maliciousOverride = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                toString: constant('malicious override'),
-                valueOf: constant('malicious value'),
-                hasOwnProperty: constant(true),
+                buildingID:           'BLDG-001',
+                unitID:               'UNIT-001',
+                toString:             constant('malicious override'),
+                valueOf:              constant('malicious value'),
+                hasOwnProperty:       constant(true),
                 propertyIsEnumerable: constant(true)
             };
 
@@ -209,14 +209,14 @@ describe('InheritanceResolver - Security Tests', () => {
     describe('Memory and Resource Safety', () => {
         it('should handle extremely large objects without memory issues', () => {
             const largeAmenityList = Array.from({ length: 10000 }, (_, i) => ({
-                name: `LargeAmenity${i}`,
-                category: AmenityCategory.UNIT,
+                name:        `LargeAmenity${i}`,
+                category:    AmenityCategory.UNIT,
                 description: createVeryLongString(1000) // 1KB per amenity description
             }));
 
             const unitWithLargeData: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:    'BLDG-001',
+                unitID:        'UNIT-001',
                 unitAmenities: largeAmenityList
             };
 
@@ -235,7 +235,7 @@ describe('InheritanceResolver - Security Tests', () => {
 
             const unitWithDeepNesting: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                unitID:     'UNIT-001',
                 ...deepNested
             };
 
@@ -251,8 +251,8 @@ describe('InheritanceResolver - Security Tests', () => {
 
             const unitWithSparseArray: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                photos: extremeSparseArray
+                unitID:     'UNIT-001',
+                photos:     extremeSparseArray
             };
 
             expect(() => {
@@ -265,9 +265,9 @@ describe('InheritanceResolver - Security Tests', () => {
         it('should handle type confusion between objects and primitives', () => {
             const confusingUnit = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                beds: { valueOf: constant(2), toString: constant('2') }, // Object pretending to be number
-                rent: new String('1500') // String object instead of primitive
+                unitID:     'UNIT-001',
+                beds:       { valueOf: constant(2), toString: constant('2') }, // Object pretending to be number
+                rent:       new String('1500') // String object instead of primitive
             };
 
             const resolved = resolver.resolveUnitValues(confusingUnit as unknown as UnitData, unitTypeData, buildingData);
@@ -282,8 +282,8 @@ describe('InheritanceResolver - Security Tests', () => {
             functionAsProperty.baths = 1;
 
             const unitWithFunction: UnitData = {
-                buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                buildingID:      'BLDG-001',
+                unitID:          'UNIT-001',
                 unitDescription: functionAsProperty as unknown as string
             };
 
@@ -294,16 +294,16 @@ describe('InheritanceResolver - Security Tests', () => {
 
         it('should handle array-like objects that aren\'t arrays', () => {
             const fakeArray = {
-                '0': 'photo1.jpg',
-                '1': 'photo2.jpg',
+                '0':    'photo1.jpg',
+                '1':    'photo2.jpg',
                 length: 2,
-                push: Array.prototype.push
+                push:   Array.prototype.push
             };
 
             const unitWithFakeArray: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
-                photos: fakeArray as unknown as string[]
+                unitID:     'UNIT-001',
+                photos:     fakeArray as unknown as string[]
             };
 
             const resolved = resolver.resolveUnitValues(unitWithFakeArray, unitTypeData, buildingData);
@@ -325,10 +325,10 @@ describe('InheritanceResolver - Security Tests', () => {
 
             forEach(maliciousStrings, (maliciousString) => {
                 const unit: UnitData = {
-                    buildingID: 'BLDG-001',
-                    unitID: 'UNIT-001',
+                    buildingID:      'BLDG-001',
+                    unitID:          'UNIT-001',
                     unitDescription: maliciousString,
-                    unitNumber: maliciousString
+                    unitNumber:      maliciousString
                 };
 
                 expect(() => {
@@ -347,9 +347,9 @@ describe('InheritanceResolver - Security Tests', () => {
 
             forEach(sqlInjectionPatterns, (pattern) => {
                 const unit: UnitData = {
-                    buildingID: 'BLDG-001',
-                    unitID: pattern,
-                    unitNumber: pattern,
+                    buildingID:      'BLDG-001',
+                    unitID:          pattern,
+                    unitNumber:      pattern,
                     unitDescription: pattern
                 };
 

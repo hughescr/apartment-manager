@@ -20,33 +20,33 @@ import {
  * Request interface for validation endpoint
  */
 interface ValidationRequest {
-    entityType: 'building' | 'unitType' | 'unit' | 'complete'
-    entityData?: unknown
-    entities?: unknown[]
-    buildingID?: string
+    entityType:             'building' | 'unitType' | 'unit' | 'complete'
+    entityData?:            unknown
+    entities?:              unknown[]
+    buildingID?:            string
     includeSiteValidation?: boolean
-    sites?: ('apartments_com' | 'zillow')[]
+    sites?:                 ('apartments_com' | 'zillow')[]
 }
 
 /**
  * Response interface for validation results
  */
 interface ValidationResponse {
-    success: boolean
-    entityType: string
+    success:           boolean
+    entityType:        string
     validationResults: {
-        basic: ValidationResult
-        mits?: ValidationResult
+        basic:             ValidationResult
+        mits?:             ValidationResult
         siteRequirements?: SiteRequirements[]
     }
     missingMITSFields?: MissingMITSField[]
     summary: {
-        canSave: boolean
-        canPublish: boolean
-        canPublishToSites: Record<string, boolean>
+        canSave:                boolean
+        canPublish:             boolean
+        canPublishToSites:      Record<string, boolean>
         totalEntitiesValidated: number
-        entitiesWithErrors: number
-        totalErrors: number
+        entitiesWithErrors:     number
+        totalErrors:            number
     }
 }
 
@@ -54,23 +54,23 @@ interface ValidationResponse {
  * Response interface for batch validation results
  */
 interface BatchValidationResponse {
-    success: boolean
-    buildingID: string
-    totalEntities: number
+    success:           boolean
+    buildingID:        string
+    totalEntities:     number
     validationResults: {
-        building: ValidationResult
+        building:  ValidationResult
         unitTypes: ValidationResult[]
-        units: ValidationResult[]
-        complete: ValidationResult
+        units:     ValidationResult[]
+        complete:  ValidationResult
     }
     missingMITSFields: MissingMITSField[]
-    siteRequirements: SiteRequirements[]
+    siteRequirements:  SiteRequirements[]
     summary: {
-        canSave: boolean
-        canPublish: boolean
-        canPublishToSites: Record<string, boolean>
+        canSave:            boolean
+        canPublish:         boolean
+        canPublishToSites:  Record<string, boolean>
         entitiesWithErrors: number
-        totalErrors: number
+        totalErrors:        number
     }
 }
 
@@ -103,18 +103,18 @@ export const validate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayP
         } else {
             return {
                 statusCode: 400,
-                body: JSON.stringify({
-                    error: 'Invalid request',
+                body:       JSON.stringify({
+                    error:   'Invalid request',
                     message: 'Must provide either entityData for single validation, entities array for batch validation, or buildingID for complete validation'
                 })
             };
         }
-    } catch(error) {
+    } catch (error) {
         logger.error('Validation endpoint error:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({
-                error: 'Internal server error during validation',
+            body:       JSON.stringify({
+                error:   'Internal server error during validation',
                 details: isError(error) ? error.message : 'Unknown error'
             })
         };
@@ -133,8 +133,8 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
         if(!data.entityType || !['building', 'unitType', 'unit', 'complete'].includes(data.entityType)) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({
-                    error: 'Validation failed',
+                body:       JSON.stringify({
+                    error:  'Validation failed',
                     errors: { entityType: 'entityType must be one of: building, unitType, unit, complete' }
                 })
             };
@@ -146,8 +146,8 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
             if(!validationResult.valid) {
                 return {
                     statusCode: 400,
-                    body: JSON.stringify({
-                        error: 'Validation failed',
+                    body:       JSON.stringify({
+                        error:  'Validation failed',
                         errors: { buildingID: 'Invalid buildingID format' }
                     })
                 };
@@ -155,15 +155,15 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
         }
 
         return data;
-    } catch(parseError) {
+    } catch (parseError) {
         logger.warn('Failed to parse validation request body', {
-            error: parseError,
+            error:   parseError,
             context: 'parseValidationRequest'
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({
-                error: 'Invalid request body',
+            body:       JSON.stringify({
+                error:   'Invalid request body',
                 details: isError(parseError) ? parseError.message : 'Invalid JSON format'
             })
         };
@@ -176,18 +176,18 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
 async function validateSingleEntity(request: ValidationRequest): Promise<APIGatewayProxyStructuredResultV2> {
     const basicValidation = validateForPublish(request.entityType as 'building' | 'unitType' | 'unit', request.entityData);
     const response: ValidationResponse = {
-        success: basicValidation.success,
-        entityType: request.entityType,
+        success:           basicValidation.success,
+        entityType:        request.entityType,
         validationResults: {
             basic: basicValidation
         },
         summary: {
-            canSave: true, // Single entities can always be saved in draft mode
-            canPublish: basicValidation.success,
-            canPublishToSites: {},
+            canSave:                true, // Single entities can always be saved in draft mode
+            canPublish:             basicValidation.success,
+            canPublishToSites:      {},
             totalEntitiesValidated: 1,
-            entitiesWithErrors: basicValidation.success ? 0 : 1,
-            totalErrors: basicValidation.errors.length
+            entitiesWithErrors:     basicValidation.success ? 0 : 1,
+            totalErrors:            basicValidation.errors.length
         }
     };
 
@@ -199,10 +199,10 @@ async function validateSingleEntity(request: ValidationRequest): Promise<APIGate
             // as sites require complete building data
             response.validationResults.siteRequirements.push({
                 site,
-                canPublish: false,
+                canPublish:    false,
                 missingFields: [],
-                errors: [{
-                    field: 'validation',
+                errors:        [{
+                    field:   'validation',
                     message: 'Site validation requires complete building data with all unit types and units',
                     context: 'Use complete validation mode for site-specific validation'
                 }]
@@ -213,7 +213,7 @@ async function validateSingleEntity(request: ValidationRequest): Promise<APIGate
 
     return {
         statusCode: 200,
-        body: JSON.stringify(response)
+        body:       JSON.stringify(response)
     };
 }
 
@@ -239,14 +239,14 @@ async function validateBatchEntities(request: ValidationRequest): Promise<APIGat
     const allSuccess = every(validationResults, 'success');
 
     const response = {
-        success: allSuccess,
+        success:    allSuccess,
         entityType: request.entityType,
-        entities: entities.length,
+        entities:   entities.length,
         validationResults,
-        summary: {
-            canSave: true, // Batch entities can always be saved in draft mode
-            canPublish: allSuccess,
-            canPublishToSites: {} as Record<string, boolean>,
+        summary:    {
+            canSave:                true, // Batch entities can always be saved in draft mode
+            canPublish:             allSuccess,
+            canPublishToSites:      {} as Record<string, boolean>,
             totalEntitiesValidated: entities.length,
             entitiesWithErrors,
             totalErrors
@@ -262,7 +262,7 @@ async function validateBatchEntities(request: ValidationRequest): Promise<APIGat
 
     return {
         statusCode: 200,
-        body: JSON.stringify(response)
+        body:       JSON.stringify(response)
     };
 }
 
@@ -301,7 +301,7 @@ function cleanEntityForValidation(entityType: 'building' | 'unitType' | 'unit', 
         ]);
         // Clean unitID of special characters
         if(cleanedUnit.unitID && isString(cleanedUnit.unitID)) {
-            cleanedUnit.unitID = replace(cleanedUnit.unitID as string, /[^\w-]/g, '-');
+            cleanedUnit.unitID = replace(cleanedUnit.unitID, /[^\w-]/g, '-');
         }
         return cleanedUnit;
     }
@@ -325,7 +325,7 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
     if(!building) {
         return {
             statusCode: 404,
-            body: JSON.stringify({ error: 'Building not found' })
+            body:       JSON.stringify({ error: 'Building not found' })
         };
     }
 
@@ -341,9 +341,9 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
 
     // Get missing MITS fields for complete validation using cleaned data
     const missingMITSFields = getMissingMITSFields({
-        building: cleanBuilding,
+        building:  cleanBuilding,
         unitTypes: cleanUnitTypes,
-        units: cleanUnits
+        units:     cleanUnits
     });
 
     // Perform site validations if requested
@@ -353,9 +353,9 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
     if(request.includeSiteValidation && request.sites) {
         for(const site of request.sites) {
             const siteReq = canPublishToSite(site, {
-                building: building as BuildingData,
-                unitTypes: unitTypes as UnitTypeData[],
-                units: units as UnitData[]
+                building:  building,
+                unitTypes: unitTypes,
+                units:     units
             });
             siteRequirements.push(siteReq);
             canPublishToSites[site] = siteReq.canPublish;
@@ -369,22 +369,22 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
     const canPublish = every(allValidations, 'success');
 
     const response: BatchValidationResponse = {
-        success: canPublish,
+        success:           canPublish,
         buildingID,
-        totalEntities: 1 + unitTypes.length + units.length,
+        totalEntities:     1 + unitTypes.length + units.length,
         validationResults: {
-            building: buildingValidation,
+            building:  buildingValidation,
             unitTypes: unitTypeValidations,
-            units: unitValidations,
-            complete: {
+            units:     unitValidations,
+            complete:  {
                 success: canPublish,
-                errors: missingMITSFields.length > 0 ?
-                    map(missingMITSFields, field => ({
-                        field: field.field,
+                errors:  missingMITSFields.length > 0
+                    ? map(missingMITSFields, field => ({
+                        field:   field.field,
                         message: field.description,
                         context: `MITS requirement for ${field.entityType}`
-                    })) :
-                    []
+                    }))
+                    : []
             }
         },
         missingMITSFields,
@@ -400,6 +400,6 @@ async function validateCompleteBuilding(request: ValidationRequest): Promise<API
 
     return {
         statusCode: 200,
-        body: JSON.stringify(response)
+        body:       JSON.stringify(response)
     };
 }

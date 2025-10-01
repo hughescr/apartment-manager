@@ -21,8 +21,8 @@ const loggerDebugSpy = spyOn(logger, 'debug');
 
 // Mock logger implementation (for backward compatibility)
 const mockLogger = {
-    info: loggerInfoSpy,
-    warn: loggerWarnSpy,
+    info:  loggerInfoSpy,
+    warn:  loggerWarnSpy,
     error: loggerErrorSpy,
     debug: loggerDebugSpy
 };

@@ -20,22 +20,22 @@ describe('Pet Policy Validation - Core Validation', () => {
     describe('validatePetPolicy', () => {
         it('should validate complete valid policy', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG, PetType.CAT],
-                maxCount: 2,
-                weightLimit: 50,
+                allowed:           true,
+                types:             [PetType.DOG, PetType.CAT],
+                maxCount:          2,
+                weightLimit:       50,
                 breedRestrictions: ['Pit Bull', 'Rottweiler'],
-                deposit: 500,
-                monthlyFee: 25,
-                oneTimeFee: 100,
-                notes: 'Valid policy',
-                petTypes: [
+                deposit:           500,
+                monthlyFee:        25,
+                oneTimeFee:        100,
+                notes:             'Valid policy',
+                petTypes:          [
                     {
-                        type: PetType.DOG,
-                        weightLimit: 80,
-                        countLimit: 1,
-                        fee: 30,
-                        deposit: 250,
+                        type:              PetType.DOG,
+                        weightLimit:       80,
+                        countLimit:        1,
+                        fee:               30,
+                        deposit:           250,
                         breedRestrictions: ['German Shepherd']
                     }
                 ]
@@ -72,7 +72,7 @@ describe('Pet Policy Validation - Core Validation', () => {
         it('should validate basic pet fields when pets allowed', () => {
             const policy: ExtendedPetPolicy = {
                 allowed: true,
-                types: []
+                types:   []
             };
 
             const result = validatePetPolicy(policy);
@@ -86,8 +86,8 @@ describe('Pet Policy Validation - Core Validation', () => {
 
             forEach(invalidCounts, (count) => {
                 const policy: ExtendedPetPolicy = {
-                    allowed: true,
-                    types: [PetType.DOG],
+                    allowed:  true,
+                    types:    [PetType.DOG],
                     maxCount: count
                 };
 
@@ -107,8 +107,8 @@ describe('Pet Policy Validation - Core Validation', () => {
 
             forEach(invalidWeights, (weight) => {
                 const policy: ExtendedPetPolicy = {
-                    allowed: true,
-                    types: [PetType.DOG],
+                    allowed:     true,
+                    types:       [PetType.DOG],
                     weightLimit: weight
                 };
 
@@ -132,7 +132,7 @@ describe('Pet Policy Validation - Core Validation', () => {
             forEach(testCases, ({ deposit, expected }) => {
                 const policy: ExtendedPetPolicy = {
                     allowed: true,
-                    types: [PetType.DOG],
+                    types:   [PetType.DOG],
                     deposit
                 };
 
@@ -152,7 +152,7 @@ describe('Pet Policy Validation - Core Validation', () => {
             forEach(testCases, ({ monthlyFee, expected }) => {
                 const policy: ExtendedPetPolicy = {
                     allowed: true,
-                    types: [PetType.DOG],
+                    types:   [PetType.DOG],
                     monthlyFee
                 };
 
@@ -172,7 +172,7 @@ describe('Pet Policy Validation - Core Validation', () => {
             forEach(testCases, ({ oneTimeFee, expected }) => {
                 const policy: ExtendedPetPolicy = {
                     allowed: true,
-                    types: [PetType.DOG],
+                    types:   [PetType.DOG],
                     oneTimeFee
                 };
 
@@ -185,13 +185,13 @@ describe('Pet Policy Validation - Core Validation', () => {
 
         it('should allow valid ranges for all numeric fields', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: 5,
+                allowed:     true,
+                types:       [PetType.DOG],
+                maxCount:    5,
                 weightLimit: 100,
-                deposit: 1000,
-                monthlyFee: 50,
-                oneTimeFee: 200
+                deposit:     1000,
+                monthlyFee:  50,
+                oneTimeFee:  200
             };
 
             const result = validatePetPolicy(policy);
@@ -202,8 +202,8 @@ describe('Pet Policy Validation - Core Validation', () => {
 
         it('should validate breed restrictions for duplicates', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:           true,
+                types:             [PetType.DOG],
                 breedRestrictions: ['Pit Bull', 'Rottweiler', 'Pit Bull']
             };
 
@@ -215,8 +215,8 @@ describe('Pet Policy Validation - Core Validation', () => {
 
         it('should validate breed restrictions for empty values', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:           true,
+                types:             [PetType.DOG],
                 breedRestrictions: ['Pit Bull', '', '   ', 'Rottweiler']
             };
 
@@ -230,8 +230,8 @@ describe('Pet Policy Validation - Core Validation', () => {
             const longNotes = repeat('x', 1001);
             const policy: ExtendedPetPolicy = {
                 allowed: true,
-                types: [PetType.DOG],
-                notes: longNotes
+                types:   [PetType.DOG],
+                notes:   longNotes
             };
 
             const result = validatePetPolicy(policy);
@@ -244,8 +244,8 @@ describe('Pet Policy Validation - Core Validation', () => {
             const validNotes = repeat('x', 1000);
             const policy: ExtendedPetPolicy = {
                 allowed: true,
-                types: [PetType.DOG],
-                notes: validNotes
+                types:   [PetType.DOG],
+                notes:   validNotes
             };
 
             const result = validatePetPolicy(policy);
@@ -256,8 +256,8 @@ describe('Pet Policy Validation - Core Validation', () => {
 
         it('should validate advanced pet types - duplicate types', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:  true,
+                types:    [PetType.DOG],
                 petTypes: [
                     createDefaultPetTypePolicy(PetType.DOG),
                     createDefaultPetTypePolicy(PetType.CAT),
@@ -273,15 +273,15 @@ describe('Pet Policy Validation - Core Validation', () => {
 
         it('should validate advanced pet types - invalid individual policies', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:  true,
+                types:    [PetType.DOG],
                 petTypes: [
                     {
-                        type: PetType.DOG,
-                        weightLimit: -1,
-                        countLimit: 15,
-                        fee: -50,
-                        deposit: 15000,
+                        type:              PetType.DOG,
+                        weightLimit:       -1,
+                        countLimit:        15,
+                        fee:               -50,
+                        deposit:           15000,
                         breedRestrictions: ['Valid', '', 'Also Valid']
                     }
                 ]
@@ -300,13 +300,13 @@ describe('Pet Policy Validation - Core Validation', () => {
 
         it('should accumulate multiple validation errors', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [], // Missing types
-                maxCount: -1, // Invalid count
-                weightLimit: 600, // Exceeds limit
-                deposit: -100, // Negative
+                allowed:           true,
+                types:             [], // Missing types
+                maxCount:          -1, // Invalid count
+                weightLimit:       600, // Exceeds limit
+                deposit:           -100, // Negative
                 breedRestrictions: ['Pit Bull', 'Pit Bull'], // Duplicates
-                notes: repeat('x', 1001) // Too long
+                notes:             repeat('x', 1001) // Too long
             };
 
             const result = validatePetPolicy(policy);
@@ -483,8 +483,8 @@ describe('Pet Policy Validation - Form Validation', () => {
         it('should validate form data against policy rules', () => {
             const formData = new FormData();
             const policy = {
-                allowed: true,
-                types: [], // Invalid - no types selected
+                allowed:  true,
+                types:    [], // Invalid - no types selected
                 maxCount: -1 // Invalid - negative count
             };
 
@@ -581,25 +581,25 @@ describe('Pet Policy Validation - Business Rules & Edge Cases', () => {
     describe('Complex validation scenarios', () => {
         it('should validate policy with mixed valid and invalid advanced pet types', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG, PetType.CAT],
+                allowed:  true,
+                types:    [PetType.DOG, PetType.CAT],
                 petTypes: [
                     // Valid pet type
                     {
-                        type: PetType.DOG,
-                        weightLimit: 50,
-                        countLimit: 2,
-                        fee: 25,
-                        deposit: 200,
+                        type:              PetType.DOG,
+                        weightLimit:       50,
+                        countLimit:        2,
+                        fee:               25,
+                        deposit:           200,
                         breedRestrictions: ['Pit Bull']
                     },
                     // Invalid pet type
                     {
-                        type: PetType.CAT,
-                        weightLimit: -1, // Invalid
-                        countLimit: 15, // Invalid
-                        fee: -10, // Invalid
-                        deposit: 15000, // Invalid
+                        type:              PetType.CAT,
+                        weightLimit:       -1, // Invalid
+                        countLimit:        15, // Invalid
+                        fee:               -10, // Invalid
+                        deposit:           15000, // Invalid
                         breedRestrictions: ['Valid Breed', ''] // One invalid
                     }
                 ]
@@ -618,8 +618,8 @@ describe('Pet Policy Validation - Business Rules & Edge Cases', () => {
 
         it('should handle policy with no pet type but advanced pet types defined', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [],
+                allowed:  true,
+                types:    [],
                 petTypes: [createDefaultPetTypePolicy(PetType.DOG)]
             };
 
@@ -640,8 +640,8 @@ describe('Pet Policy Validation - Business Rules & Edge Cases', () => {
 
         it('should handle multiple duplicate breeds in restrictions', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:           true,
+                types:             [PetType.DOG],
                 breedRestrictions: ['Pit Bull', 'Rottweiler', 'Pit Bull', 'German Shepherd', 'Rottweiler']
             };
 
@@ -653,13 +653,13 @@ describe('Pet Policy Validation - Business Rules & Edge Cases', () => {
 
         it('should validate boundary values for all numeric limits', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
-                maxCount: 10, // Max allowed
+                allowed:     true,
+                types:       [PetType.DOG],
+                maxCount:    10, // Max allowed
                 weightLimit: 500, // Max allowed
-                deposit: 10000, // Max allowed
-                monthlyFee: 1000, // Max allowed
-                oneTimeFee: 10000 // Max allowed
+                deposit:     10000, // Max allowed
+                monthlyFee:  1000, // Max allowed
+                oneTimeFee:  10000 // Max allowed
             };
 
             const result = validatePetPolicy(policy);
@@ -670,15 +670,15 @@ describe('Pet Policy Validation - Business Rules & Edge Cases', () => {
 
         it('should handle pet type with no breed restrictions', () => {
             const policy: ExtendedPetPolicy = {
-                allowed: true,
-                types: [PetType.DOG],
+                allowed:  true,
+                types:    [PetType.DOG],
                 petTypes: [
                     {
-                        type: PetType.DOG,
+                        type:        PetType.DOG,
                         weightLimit: 50,
-                        countLimit: 2,
-                        fee: 25,
-                        deposit: 200
+                        countLimit:  2,
+                        fee:         25,
+                        deposit:     200
                         // No breedRestrictions defined
                     }
                 ]

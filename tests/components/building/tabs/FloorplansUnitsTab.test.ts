@@ -87,9 +87,9 @@ describe('FloorplansUnitsTab Component Logic', () => {
     describe('Component Props Interface', () => {
         it('should accept required props', () => {
             const props = {
-                building: mockBuildingData,
-                units: mockUnitsData,
-                unitTypes: mockUnitTypesData,
+                building:          mockBuildingData,
+                units:             mockUnitsData,
+                unitTypes:         mockUnitTypesData,
                 buildingAmenities: mockBuildingAmenities
             };
 
@@ -101,9 +101,9 @@ describe('FloorplansUnitsTab Component Logic', () => {
 
         it('should handle empty arrays gracefully', () => {
             const propsWithEmptyArrays = {
-                building: mockBuildingData,
-                units: [],
-                unitTypes: [],
+                building:          mockBuildingData,
+                units:             [],
+                unitTypes:         [],
                 buildingAmenities: []
             };
 
@@ -217,9 +217,9 @@ describe('FloorplansUnitsTab Component Logic', () => {
     describe('Error Handling', () => {
         it('should handle missing data gracefully', () => {
             const emptyProps = {
-                building: null,
-                units: null,
-                unitTypes: null,
+                building:          null,
+                units:             null,
+                unitTypes:         null,
                 buildingAmenities: null
             };
 
@@ -232,7 +232,7 @@ describe('FloorplansUnitsTab Component Logic', () => {
 
         it('should handle malformed data', () => {
             const malformedUnit = {
-                unitID: 'eEUxh8XdGF1RsxfmwHPpYX',
+                unitID:       'eEUxh8XdGF1RsxfmwHPpYX',
                 // Missing required fields
                 vacancyClass: 'InvalidStatus'
             };
@@ -246,7 +246,7 @@ describe('FloorplansUnitsTab Component Logic', () => {
         it('should handle large datasets efficiently', () => {
             const largeUnitsArray = times(1000, i =>
                 createTestUnitData({
-                    unitID: `eEUxh8XdGF1RsxfmwHPp${padStart(i.toString(), 2, '0')}`,
+                    unitID:     `eEUxh8XdGF1RsxfmwHPp${padStart(i.toString(), 2, '0')}`,
                     unitNumber: `${i + 1000}`
                 })
             );

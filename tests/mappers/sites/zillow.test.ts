@@ -25,7 +25,7 @@ describe('ZillowMapper', () => {
         mapper = new ZillowMapper();
         mockFieldMappings = {};
         mockTransformers = {
-            get: () => undefined,
+            get:      () => undefined,
             register: noop
         };
     });
@@ -33,9 +33,9 @@ describe('ZillowMapper', () => {
     const _createContext = (unit: UnitData, unitType?: UnitTypeData, building?: BuildingData): UnitMappingContext => ({
         unit,
         unitType,
-        building: building || basicBuilding,
+        building:      building || basicBuilding,
         fieldMappings: mockFieldMappings,
-        transformers: mockTransformers
+        transformers:  mockTransformers
     });
 
     describe('Basic Properties', () => {
@@ -53,9 +53,9 @@ describe('ZillowMapper', () => {
             expect(result.name).toBe(basicBuilding.buildingID);
             expect(result.address).toEqual({
                 street: '',
-                city: '',
-                state: '',
-                zip: ''
+                city:   '',
+                state:  '',
+                zip:    ''
             });
         });
 
@@ -125,11 +125,11 @@ describe('ZillowMapper', () => {
             const buildingWithPets: BuildingData = {
                 ...basicBuilding,
                 petPolicies: {
-                    allowed: true,
-                    types: [PetType.DOG, PetType.CAT],
-                    maxCount: 2,
+                    allowed:     true,
+                    types:       [PetType.DOG, PetType.CAT],
+                    maxCount:    2,
                     weightLimit: 25,
-                    deposit: 500
+                    deposit:     500
                 }
             };
 
@@ -216,7 +216,7 @@ describe('ZillowMapper', () => {
         it('should inherit and flatten all values', () => {
             const unitMinimal: UnitData = {
                 buildingID: 'BLDG-001',
-                unitID: 'UNIT-001',
+                unitID:     'UNIT-001',
                 unitNumber: '101'
             };
 
@@ -225,8 +225,8 @@ describe('ZillowMapper', () => {
             const result = mapper.mapUnit(context);
 
             // Should have inherited values from model and building
-            expect(result.beds).toBe(completeUnitType.beds!);
-            expect(result.baths).toBe(completeUnitType.baths!);
+            expect(result.beds).toBe(completeUnitType.beds);
+            expect(result.baths).toBe(completeUnitType.baths);
             expect(result.rent).toBe(completeUnitType.minRent!);
         });
 
@@ -314,10 +314,10 @@ describe('ZillowMapper', () => {
             it('should require all address fields', () => {
                 const invalidBuilding: BuildingData = {
                     buildingID: 'BLDG-001',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: undefined as unknown as string,
-                    zip: undefined as unknown as string
+                    street:     '123 Main St',
+                    city:       'Test City',
+                    state:      undefined as unknown as string,
+                    zip:        undefined as unknown as string
                 };
 
                 const result = mapper.validateBuilding(invalidBuilding);
@@ -353,7 +353,7 @@ describe('ZillowMapper', () => {
             it('should require more fields for Zillow units', () => {
                 const minimalUnit: UnitData = {
                     buildingID: 'BLDG-001',
-                    unitID: 'UNIT-001'
+                    unitID:     'UNIT-001'
                 };
 
                 const result = mapper.validateUnit(minimalUnit);
@@ -364,12 +364,12 @@ describe('ZillowMapper', () => {
 
             it('should validate that unit has sufficient data when flattened', () => {
                 const unitForZillow: UnitData = {
-                    buildingID: 'BLDG-001',
-                    unitID: 'UNIT-001',
-                    unitNumber: '101',
-                    beds: 2,
-                    baths: 2,
-                    rent: 1500,
+                    buildingID:    'BLDG-001',
+                    unitID:        'UNIT-001',
+                    unitNumber:    '101',
+                    beds:          2,
+                    baths:         2,
+                    rent:          1500,
                     availableDate: '2024-01-01'
                 };
 
@@ -487,10 +487,10 @@ describe('ZillowMapper', () => {
         it('should treat whitespace-only fields as valid (trimming happens elsewhere)', () => {
             const buildingWhitespace: BuildingData = {
                 buildingID: 'BLDG-001',
-                street: '   ',
-                city: '\t\t',
-                state: '\n\n',
-                zip: '    '
+                street:     '   ',
+                city:       '\t\t',
+                state:      '\n\n',
+                zip:        '    '
             };
 
             const result = mapper.validateBuilding(buildingWhitespace);
@@ -516,10 +516,10 @@ describe('ZillowMapper', () => {
         it('should handle NaN/Infinity in numeric fields with fallback to 0', () => {
             const unitWithNaN: UnitData = {
                 ...basicUnit,
-                beds: NaN,
+                beds:  NaN,
                 baths: Infinity,
-                rent: -Infinity,
-                sqft: 0
+                rent:  -Infinity,
+                sqft:  0
             };
 
             const context = _createContext(unitWithNaN, basicUnitType, basicBuilding);
@@ -584,7 +584,7 @@ describe('ZillowMapper', () => {
             const buildingWithEdgeFees: BuildingData = {
                 ...basicBuilding,
                 applicationFee: 0.00,
-                oneTimeFees: [
+                oneTimeFees:    [
                     { type: FeeType.APPLICATION, amount: 0.01, description: 'Penny Fee' },
                     { type: FeeType.ADMIN, amount: 99999.99, description: 'Max Fee' },
                     { type: FeeType.MOVE_IN, amount: -50, description: 'Negative Fee' }
@@ -609,7 +609,7 @@ describe('ZillowMapper', () => {
         // Extremely large arrays
         it('should handle extremely large amenity arrays', () => {
             const manyAmenities = times(150, i => ({
-                name: `Amenity ${i}`,
+                name:     `Amenity ${i}`,
                 category: AmenityCategory.PROPERTY
             }));
 
@@ -680,15 +680,15 @@ describe('ZillowMapper', () => {
         it('should handle missing fields at model level with unit fallback', () => {
             const incompleteUnitType: UnitTypeData = {
                 buildingID: 'BLDG-001',
-                modelID: 'MODEL-001',
-                modelName: 'Incomplete Model',
-                beds: undefined as unknown as number,
-                baths: undefined as unknown as number
+                modelID:    'MODEL-001',
+                modelName:  'Incomplete Model',
+                beds:       undefined as unknown as number,
+                baths:      undefined as unknown as number
             };
 
             const completeUnitData: UnitData = {
                 ...basicUnit,
-                beds: 3,
+                beds:  3,
                 baths: 2
             };
 
@@ -704,14 +704,14 @@ describe('ZillowMapper', () => {
         it('should prioritize unit data over model data', () => {
             const conflictingUnit: UnitData = {
                 ...basicUnit,
-                beds: 3,
-                rent: 2000,
+                beds:            3,
+                rent:            2000,
                 unitDescription: 'Unit description'
             };
 
             const conflictingModel: UnitTypeData = {
                 ...basicUnitType,
-                beds: 2,
+                beds:    2,
                 minRent: 1500,
                 maxRent: 1800
             };
@@ -765,8 +765,8 @@ describe('ZillowMapper', () => {
             const emptyStringBuilding: BuildingData = {
                 ...basicBuilding,
                 propertyDescription: '',
-                description: undefined,
-                contactInfo: {
+                description:         undefined,
+                contactInfo:         {
                     phone: '',
                     email: null as unknown as string
                 }
@@ -787,7 +787,7 @@ describe('ZillowMapper', () => {
                 ...basicBuilding,
                 parkingOptions: [
                     {
-                        type: 'INVALID_PARKING' as ParkingType,
+                        type:     'INVALID_PARKING' as ParkingType,
                         included: true
                     }
                 ]
@@ -801,8 +801,8 @@ describe('ZillowMapper', () => {
             const unicodeBuilding: BuildingData = {
                 ...basicBuilding,
                 propertyDescription: '🏠 Élégant château with café ☕',
-                street: '123 Główna ulica',
-                propertyAmenities: [
+                street:              '123 Główna ulica',
+                propertyAmenities:   [
                     { name: '游泳池 (Swimming Pool)', category: AmenityCategory.PROPERTY },
                     { name: 'Sauna & Spa™', category: AmenityCategory.PROPERTY }
                 ]
@@ -823,7 +823,7 @@ describe('ZillowMapper', () => {
             const customMappings: Partial<FieldMappingConfig> = {
                 propertyType: {
                     apartment: 'Apartment Home',
-                    condo: 'Condominium Unit'
+                    condo:     'Condominium Unit'
                 }
             };
 

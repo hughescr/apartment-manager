@@ -40,8 +40,8 @@ describe('Building Data Layer - Complex Data', () => {
         it('should handle building with complex nested structures', async () => {
             expect.assertions(4);
             const complexBuilding = {
-                buildingID: 'complex-building-1',
-                street: '999 Complex St',
+                buildingID:   'complex-building-1',
+                street:       '999 Complex St',
                 rentSpecials: [
                     { title: 'Special 1', description: 'First special' },
                     { title: 'Special 2', description: 'Second special', startDate: '2024-12-01' }
@@ -66,16 +66,16 @@ describe('Building Data Layer - Complex Data', () => {
             const deeplyNestedBuilding = {
                 ...testBuilding,
                 incomeRestrictions: {
-                    amiLimit: 80,
+                    amiLimit:                 80,
                     maxIncomeByHouseholdSize: {
-                        '1': 50000,
-                        '2': 60000,
-                        '3': 70000,
-                        '4': 80000,
-                        '5': 90000,
-                        '6': 100000,
-                        '7': 110000,
-                        '8': 120000,
+                        '1':  50000,
+                        '2':  60000,
+                        '3':  70000,
+                        '4':  80000,
+                        '5':  90000,
+                        '6':  100000,
+                        '7':  110000,
+                        '8':  120000,
                         '9+': 130000 // string key
                     } as Record<number, number>
                 }
@@ -87,7 +87,7 @@ describe('Building Data Layer - Complex Data', () => {
             expect(result.incomeRestrictions!.maxIncomeByHouseholdSize['1']).toBe(50000);
             expect(result.incomeRestrictions!.maxIncomeByHouseholdSize['5']).toBe(90000);
             expect(result.incomeRestrictions!.maxIncomeByHouseholdSize['8']).toBe(120000);
-            const householdSizes = result.incomeRestrictions!.maxIncomeByHouseholdSize as Record<string, number>;
+            const householdSizes = result.incomeRestrictions!.maxIncomeByHouseholdSize;
             expect(householdSizes['9+']).toBe(130000);
         });
 
@@ -152,10 +152,10 @@ describe('Building Data Layer - Complex Data', () => {
             expect.assertions(4);
             const emojiBuilding = {
                 ...testBuilding,
-                description: '🏠 Beautiful building with 🌟 amenities! ✨',
+                description:         '🏠 Beautiful building with 🌟 amenities! ✨',
                 propertyDescription: 'Features: 🏊‍♂️ Pool, 💪 Gym, 🅿️ Parking',
-                contactInfo: {
-                    name: '🏢 Premium Properties Inc.',
+                contactInfo:         {
+                    name:  '🏢 Premium Properties Inc.',
                     email: 'info@premium🏠.com'
                 }
             };
@@ -172,10 +172,10 @@ describe('Building Data Layer - Complex Data', () => {
             expect.assertions(3);
             const mixedCharBuilding = {
                 ...testBuilding,
-                street: '123 Москва Street 北京 Avenue',
+                street:      '123 Москва Street 北京 Avenue',
                 description: 'Mix: English, العربية, 中文, русский',
                 contactInfo: {
-                    name: 'Global Properties - العقارات العالمية - 全球地产',
+                    name:  'Global Properties - العقارات العالمية - 全球地产',
                     phone: '+1-555-МОСКВА'
                 }
             };
@@ -195,17 +195,17 @@ describe('Building Data Layer - Complex Data', () => {
             const buildingWithOldWebsite = {
                 ...testBuilding,
                 contactInfo: {
-                    name: 'Test Contact',
-                    phone: '555-1234',
-                    email: 'test@example.com',
+                    name:            'Test Contact',
+                    phone:           '555-1234',
+                    email:           'test@example.com',
                     propertyWebsite: 'https://property-website.com'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithOldWebsite, unitID: 'BUILDING' }));
 
             const result = await createBuilding(buildingWithOldWebsite);
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-website.com');
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.managementWebsite).toBeUndefined();
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).propertyWebsite).toBe('https://property-website.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).managementWebsite).toBeUndefined();
         });
 
         it('should handle both propertyWebsite and managementWebsite fields', async () => {
@@ -213,18 +213,18 @@ describe('Building Data Layer - Complex Data', () => {
             const buildingWithBothWebsites = {
                 ...testBuilding,
                 contactInfo: {
-                    name: 'Test Contact',
-                    phone: '555-1234',
-                    email: 'test@example.com',
-                    propertyWebsite: 'https://property-specific.com',
+                    name:              'Test Contact',
+                    phone:             '555-1234',
+                    email:             'test@example.com',
+                    propertyWebsite:   'https://property-specific.com',
                     managementWebsite: 'https://management-company.com'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithBothWebsites, unitID: 'BUILDING' }));
 
             const result = await createBuilding(buildingWithBothWebsites);
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-specific.com');
-            expect((result.contactInfo as ContactInfo & { managementWebsite?: string })!.managementWebsite).toBe('https://management-company.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).propertyWebsite).toBe('https://property-specific.com');
+            expect((result.contactInfo as ContactInfo & { managementWebsite?: string }).managementWebsite).toBe('https://management-company.com');
             expect(result.contactInfo!.email).toBe('test@example.com');
             expect(result.contactInfo!.name).toBe('Test Contact');
         });
@@ -234,17 +234,17 @@ describe('Building Data Layer - Complex Data', () => {
             const buildingWithPropertyWebsiteOnly = {
                 ...testBuilding,
                 contactInfo: {
-                    name: 'Test Contact',
-                    phone: '555-1234',
-                    email: 'test@example.com',
+                    name:            'Test Contact',
+                    phone:           '555-1234',
+                    email:           'test@example.com',
                     propertyWebsite: 'https://property-only.com'
                 }
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...buildingWithPropertyWebsiteOnly, unitID: 'BUILDING' }));
 
             const result = await createBuilding(buildingWithPropertyWebsiteOnly);
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.propertyWebsite).toBe('https://property-only.com');
-            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string })!.managementWebsite).toBeUndefined();
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).propertyWebsite).toBe('https://property-only.com');
+            expect((result.contactInfo as ContactInfo & { propertyWebsite?: string, managementWebsite?: string }).managementWebsite).toBeUndefined();
             expect(result.contactInfo!.email).toBe('test@example.com');
         });
     });
@@ -255,10 +255,10 @@ describe('Building Data Layer - Complex Data', () => {
             const baseBuilding = {
                 ...testBuilding,
                 screeningCriteria: {
-                    incomeRatio: 3,
-                    minCreditScore: 650,
+                    incomeRatio:             3,
+                    minCreditScore:          650,
                     backgroundCheckRequired: true,
-                    employmentVerification: true
+                    employmentVerification:  true
                 }
             };
 
@@ -292,21 +292,21 @@ describe('Building Data Layer - Complex Data', () => {
                 ...testBuilding,
                 rentSpecials: [
                     {
-                        title: 'Basic Special',
+                        title:       'Basic Special',
                         description: 'Simple discount',
-                        startDate: '2024-01-01',
-                        endDate: '2024-03-31'
+                        startDate:   '2024-01-01',
+                        endDate:     '2024-03-31'
                     },
                     {
-                        title: 'Long-term Special',
+                        title:       'Long-term Special',
                         description: 'Extended lease discount',
-                        startDate: '2024-04-01',
-                        endDate: '2024-12-31'
+                        startDate:   '2024-04-01',
+                        endDate:     '2024-12-31'
                     },
                     {
-                        title: 'Summer Special',
+                        title:       'Summer Special',
                         description: 'Hot weather deal',
-                        startDate: '2024-06-01'
+                        startDate:   '2024-06-01'
                         // endDate is optional
                     }
                 ]
@@ -328,9 +328,9 @@ describe('Building Data Layer - Complex Data', () => {
             const stringNumberBuilding = {
                 ...testBuilding,
                 // These would normally be coerced by the data layer
-                yearBuilt: 2020,
+                yearBuilt:      2020,
                 applicationFee: 75.50,
-                totalUnits: 50
+                totalUnits:     50
             };
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...stringNumberBuilding, unitID: 'BUILDING' }));
 
@@ -344,10 +344,10 @@ describe('Building Data Layer - Complex Data', () => {
             expect.assertions(4);
             const booleanTestBuilding = {
                 ...testBuilding,
-                roomsForRent: false,
-                shortTermLeaseAllowed: true,
+                roomsForRent:              false,
+                shortTermLeaseAllowed:     true,
                 acceptsOnlineApplications: false,
-                petPolicies: {
+                petPolicies:               {
                     allowed: true
                 }
             };

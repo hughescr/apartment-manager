@@ -7,11 +7,11 @@
  */
 export interface RadarAutocompleteOptions {
     /** Search query string */
-    query: string
+    query:        string
     /** Optional coordinates for proximity bias */
     coordinates?: { lat: number, lon: number }
     /** Maximum number of results to return (default: 5) */
-    limit?: number
+    limit?:       number
 }
 
 /**
@@ -19,13 +19,13 @@ export interface RadarAutocompleteOptions {
  */
 export interface RadarAddressComponents {
     /** Street number and name */
-    street?: string
+    street?:     string
     /** City name */
-    city?: string
+    city?:       string
     /** State name or abbreviation */
-    state?: string
+    state?:      string
     /** Country name */
-    country?: string
+    country?:    string
     /** Postal/ZIP code */
     postalCode?: string
 }
@@ -35,19 +35,19 @@ export interface RadarAddressComponents {
  */
 export interface RadarAutocompleteResult {
     /** Display text for the suggestion */
-    displayText: string
+    displayText:  string
     /** Optional description for additional context */
     description?: string
     /** Geographic coordinates if available */
     coordinates?: { lat: number, lon: number }
     /** Structured address components */
-    components: RadarAddressComponents
+    components:   RadarAddressComponents
     /** Confidence score from Radar (if provided) */
-    confidence?: number
+    confidence?:  number
     /** Source that provided the suggestion */
-    source: 'radar' | 'cache'
+    source:       'radar' | 'cache'
     /** Unique identifier for the suggestion */
-    id: string
+    id:           string
 }
 
 /**
@@ -55,13 +55,13 @@ export interface RadarAutocompleteResult {
  */
 export interface GeolocationResult {
     /** Latitude coordinate */
-    lat: number
+    lat:         number
     /** Longitude coordinate */
-    lon: number
+    lon:         number
     /** Confidence level if available */
     confidence?: string
     /** Source of the location data */
-    source: 'browser' | 'ip' | 'fallback'
+    source:      'browser' | 'ip' | 'fallback'
 }
 
 /**
@@ -69,9 +69,9 @@ export interface GeolocationResult {
  */
 export interface RadarServiceError {
     /** Error code for programmatic handling */
-    code: 'NETWORK_ERROR' | 'INVALID_QUERY' | 'NO_RESULTS' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE' | 'UNAUTHORIZED'
+    code:           'NETWORK_ERROR' | 'INVALID_QUERY' | 'NO_RESULTS' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE' | 'UNAUTHORIZED'
     /** Human-readable error message */
-    message: string
+    message:        string
     /** Original error if applicable */
     originalError?: Error
 }
@@ -82,18 +82,18 @@ export interface RadarServiceError {
 export interface RadarAutocompleteResponse {
     addresses: {
         formattedAddress: string
-        placeLabel?: string
-        confidence?: 'exact' | 'high' | 'medium' | 'low'
+        placeLabel?:      string
+        confidence?:      'exact' | 'high' | 'medium' | 'low'
         geometry: {
-            type: 'Point'
+            type:        'Point'
             coordinates: [number, number] // [longitude, latitude]
         }
         addressLabel?: string
-        city?: string
-        state?: string
-        postalCode?: string
-        country?: string
-        layer: 'address' | 'place'
+        city?:         string
+        state?:        string
+        postalCode?:   string
+        country?:      string
+        layer:         'address' | 'place'
     }[]
 }
 
@@ -103,13 +103,13 @@ export interface RadarAutocompleteResponse {
 export interface RadarIPGeocodeResponse {
     address: {
         formattedAddress?: string
-        city?: string
-        state?: string
-        country?: string
-        postalCode?: string
-        confidence?: 'exact' | 'high' | 'medium' | 'low'
+        city?:             string
+        state?:            string
+        country?:          string
+        postalCode?:       string
+        confidence?:       'exact' | 'high' | 'medium' | 'low'
         geometry: {
-            type: 'Point'
+            type:        'Point'
             coordinates: [number, number] // [longitude, latitude]
         }
     }
@@ -121,15 +121,15 @@ export interface RadarIPGeocodeResponse {
 export interface RadarForwardGeocodeResponse {
     addresses: {
         formattedAddress: string
-        confidence?: 'exact' | 'high' | 'medium' | 'low'
+        confidence?:      'exact' | 'high' | 'medium' | 'low'
         geometry: {
-            type: 'Point'
+            type:        'Point'
             coordinates: [number, number] // [longitude, latitude]
         }
-        city?: string
-        state?: string
+        city?:       string
+        state?:      string
         postalCode?: string
-        country?: string
+        country?:    string
     }[]
 }
 
@@ -137,8 +137,8 @@ export interface RadarForwardGeocodeResponse {
  * Cache entry for autocomplete results with access tracking for LRU
  */
 export interface AutocompleteCacheEntry {
-    results: RadarAutocompleteResult[]
-    timestamp: number
+    results:      RadarAutocompleteResult[]
+    timestamp:    number
     lastAccessed: number
 }
 
@@ -146,7 +146,7 @@ export interface AutocompleteCacheEntry {
  * Cache entry for IP geocoding results with access tracking for LRU
  */
 export interface IPCacheEntry {
-    result: GeolocationResult
-    timestamp: number
+    result:       GeolocationResult
+    timestamp:    number
     lastAccessed: number
 }

@@ -12,7 +12,7 @@ import { logger } from '@hughescr/logger';
  * Result type for ID validation operations
  */
 export interface IdValidationResult {
-    valid: boolean
+    valid:     boolean
     response?: APIGatewayProxyStructuredResultV2
 }
 
@@ -20,8 +20,8 @@ export interface IdValidationResult {
  * Result type for request body parsing operations
  */
 export interface ParseRequestResult<T = unknown> {
-    success: boolean
-    data?: T
+    success:   boolean
+    data?:     T
     response?: APIGatewayProxyStructuredResultV2
 }
 
@@ -29,8 +29,8 @@ export interface ParseRequestResult<T = unknown> {
  * Result type for entity validation operations
  */
 export interface EntityValidationResult<T = unknown> {
-    success: boolean
-    data?: T
+    success:   boolean
+    data?:     T
     response?: APIGatewayProxyStructuredResultV2
 }
 
@@ -42,7 +42,7 @@ export function validateSingleId(id: string, fieldName: string): IdValidationRes
     const idError = validateId(id, fieldName);
     if(idError) {
         return {
-            valid: false,
+            valid:    false,
             response: { statusCode: 404, body: 'Not Found' }
         };
     }
@@ -58,7 +58,7 @@ export function validateMultipleIds(ids: { value: string, fieldName: string }[])
         const idError = validateId(value, fieldName);
         if(idError) {
             return {
-                valid: false,
+                valid:    false,
                 response: { statusCode: 404, body: 'Not Found' }
             };
         }
@@ -79,20 +79,20 @@ export function parseRequestBody<T = unknown>(
     let rawData: T;
     try {
         rawData = JSON.parse(body || '{}') as T;
-    } catch(parseError) {
+    } catch (parseError) {
         logger.warn(`Failed to parse ${context} request body`, {
             error: parseError,
             context,
             ...additionalLogContext
         });
         return {
-            success: false,
+            success:  false,
             response: {
                 statusCode: 400,
-                body: JSON.stringify(simpleErrorFormat ?
-                    { error: 'Invalid request body' } :
-                    {
-                        error: 'Invalid request body',
+                body:       JSON.stringify(simpleErrorFormat
+                    ? { error: 'Invalid request body' }
+                    : {
+                        error:   'Invalid request body',
                         details: isError(parseError) ? parseError.message : 'Invalid JSON format'
                     }
                 ),
@@ -102,7 +102,7 @@ export function parseRequestBody<T = unknown>(
 
     return {
         success: true,
-        data: sanitizeObject(rawData as Record<string, unknown>) as T
+        data:    sanitizeObject(rawData as Record<string, unknown>) as T
     };
 }
 
@@ -121,17 +121,17 @@ export function validateEntity<T = unknown>(
             errors[err.field] = err.message;
         });
         return {
-            success: false,
+            success:  false,
             response: {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'Validation failed', errors }),
+                body:       JSON.stringify({ error: 'Validation failed', errors }),
             }
         };
     }
 
     return {
         success: true,
-        data: validation.data as T
+        data:    validation.data as T
     };
 }
 
@@ -150,7 +150,7 @@ export function parseAndValidateRequest<T = unknown>(
     const parseResult = parseRequestBody(body, context, additionalLogContext, simpleErrorFormat);
     if(!parseResult.success) {
         return {
-            success: false,
+            success:  false,
             response: parseResult.response
         };
     }
@@ -176,8 +176,8 @@ export function createServerErrorResponse(
 
     return {
         statusCode: 500,
-        body: JSON.stringify({
-            error: `Internal server error during ${toLower(context)}`,
+        body:       JSON.stringify({
+            error:   `Internal server error during ${toLower(context)}`,
             details: isError(error) ? error.message : 'Unknown error'
         })
     };
@@ -199,7 +199,7 @@ export function createSuccessResponse(data: unknown, statusCode = 200): APIGatew
 export function createNotFoundResponse(): APIGatewayProxyStructuredResultV2 {
     return {
         statusCode: 404,
-        body: 'Not Found'
+        body:       'Not Found'
     };
 }
 
@@ -209,7 +209,7 @@ export function createNotFoundResponse(): APIGatewayProxyStructuredResultV2 {
 export function createNoContentResponse(): APIGatewayProxyStructuredResultV2 {
     return {
         statusCode: 204,
-        body: ''
+        body:       ''
     };
 }
 
@@ -235,7 +235,7 @@ export function extractAndValidatePathIds(
     const validationResult = validateMultipleIds(idsToValidate);
     if(!validationResult.valid) {
         return {
-            success: false,
+            success:  false,
             response: validationResult.response!
         };
     }

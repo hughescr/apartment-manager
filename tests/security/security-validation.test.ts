@@ -85,10 +85,10 @@ describe('Security Validation Tests', () => {
             for(const payload of maliciousPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
                     buildingID: payload,
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    street:     '123 Main St',
+                    city:       'Test City',
+                    state:      'CA',
+                    zip:        '12345'
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -124,13 +124,13 @@ describe('Security Validation Tests', () => {
 
             for(const payload of xssPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:   'test-building',
                     buildingName: payload,
-                    description: payload,
-                    street: payload,
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    description:  payload,
+                    street:       payload,
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345'
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -156,12 +156,12 @@ describe('Security Validation Tests', () => {
 
             for(const payload of xssPayloads) {
                 const event = createMockEvent('POST', '/api/buildings/test-building/units', {
-                    unitID: 'test-unit',
-                    buildingID: 'test-building',
-                    unitNumber: '101',
+                    unitID:      'test-unit',
+                    buildingID:  'test-building',
+                    unitNumber:  '101',
                     description: payload,
-                    features: [payload],
-                    amenities: [payload]
+                    features:    [payload],
+                    amenities:   [payload]
                 }, {
                     buildingID: 'test-building'
                 });
@@ -215,9 +215,9 @@ describe('Security Validation Tests', () => {
 
             for(const path of invalidPaths) {
                 const event = createMockEvent('POST', '/api/upload', {
-                    filename: 'test.jpg',
-                    buildingId: path.buildingId,
-                    unitId: path.unitId,
+                    filename:    'test.jpg',
+                    buildingId:  path.buildingId,
+                    unitId:      path.unitId,
                     contentType: 'image/jpeg'
                 });
 
@@ -251,13 +251,13 @@ describe('Security Validation Tests', () => {
 
             for(const payload of commandInjectionPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:   'test-building',
                     buildingName: payload,
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345',
-                    contactInfo: {
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345',
+                    contactInfo:  {
                         phone: payload,
                         email: `test${payload}@example.com`
                     }
@@ -288,12 +288,12 @@ describe('Security Validation Tests', () => {
 
             for(const payload of ldapInjectionPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: payload,
+                    buildingID:   payload,
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345'
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -315,12 +315,12 @@ describe('Security Validation Tests', () => {
 
             for(const payload of xmlInjectionPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:  'test-building',
                     description: payload,
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    street:      '123 Main St',
+                    city:        'Test City',
+                    state:       'CA',
+                    zip:         '12345'
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -357,19 +357,19 @@ describe('Security Validation Tests', () => {
             const prototypePollutionPayloads = [
                 {
                     buildingID: 'test-building',
-                    __proto__: { isAdmin: true },
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    __proto__:  { isAdmin: true },
+                    street:     '123 Main St',
+                    city:       'Test City',
+                    state:      'CA',
+                    zip:        '12345'
                 } as unknown,
                 {
-                    buildingID: 'test-building',
+                    buildingID:  'test-building',
                     constructor: { prototype: { isAdmin: true } },
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    street:      '123 Main St',
+                    city:        'Test City',
+                    state:       'CA',
+                    zip:         '12345'
                 } as unknown
             ];
 
@@ -395,12 +395,12 @@ describe('Security Validation Tests', () => {
 
             for(const payload of headerInjectionPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: payload,
+                    buildingID:   payload,
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345'
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -425,12 +425,12 @@ describe('Security Validation Tests', () => {
 
             for(const payload of homographPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: payload.actual,
+                    buildingID:   payload.actual,
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345'
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -455,12 +455,12 @@ describe('Security Validation Tests', () => {
 
             for(const payload of unicodePayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:   'test-building',
                     buildingName: payload,
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345'
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -485,9 +485,9 @@ describe('Security Validation Tests', () => {
 
             for(const payload of nullBytePayloads) {
                 const event = createMockEvent('POST', '/api/upload', {
-                    filename: payload,
-                    buildingId: 'test-building',
-                    unitId: 'test-unit',
+                    filename:    payload,
+                    buildingId:  'test-building',
+                    unitId:      'test-unit',
                     contentType: 'image/jpeg'
                 });
 
@@ -515,14 +515,14 @@ describe('Security Validation Tests', () => {
 
             for(const payload of overflowPayloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
-                    buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345',
-                    yearBuilt: payload,
-                    totalUnits: payload,
+                    buildingID:     'test-building',
+                    buildingName:   'Test Building',
+                    street:         '123 Main St',
+                    city:           'Test City',
+                    state:          'CA',
+                    zip:            '12345',
+                    yearBuilt:      payload,
+                    totalUnits:     payload,
                     applicationFee: payload
                 });
 
@@ -539,13 +539,13 @@ describe('Security Validation Tests', () => {
 
         it('should handle negative numbers where not allowed', async () => {
             const event = createMockEvent('POST', '/api/buildings/mhvXdrZT4jP5T8vBxuvm75/units', {
-                unitID: 'test-unit',
+                unitID:     'test-unit',
                 buildingID: 'mhvXdrZT4jP5T8vBxuvm75',
-                beds: -1,
-                baths: -5,
-                sqft: -1000,
-                rent: -500,
-                deposit: -1000
+                beds:       -1,
+                baths:      -5,
+                sqft:       -1000,
+                rent:       -500,
+                deposit:    -1000
             }, {
                 buildingID: 'mhvXdrZT4jP5T8vBxuvm75'
             });
@@ -578,14 +578,14 @@ describe('Security Validation Tests', () => {
 
             for(const payload of payloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:   'test-building',
                     buildingName: payload.buildingName || 'Test',
-                    description: payload.description,
-                    notes: payload.notes,
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345'
+                    description:  payload.description,
+                    notes:        payload.notes,
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345'
                 });
 
                 // Lambda has a 6MB payload limit, so very large payloads should fail
@@ -605,11 +605,11 @@ describe('Security Validation Tests', () => {
             const manyAmenities = fill(new Array(5000), 'Test Amenity');
 
             const event = createMockEvent('POST', '/api/buildings/mhvXdrZT4jP5T8vBxuvm75/units', {
-                unitID: 'test-unit',
+                unitID:     'test-unit',
                 buildingID: 'mhvXdrZT4jP5T8vBxuvm75',
-                photos: manyPhotos,
-                amenities: manyAmenities,
-                features: manyAmenities
+                photos:     manyPhotos,
+                amenities:  manyAmenities,
+                features:   manyAmenities
             }, {
                 buildingID: 'mhvXdrZT4jP5T8vBxuvm75'
             });
@@ -642,13 +642,13 @@ describe('Security Validation Tests', () => {
 
             for(const email of maliciousEmails) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:   'test-building',
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345',
-                    contactInfo: {
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345',
+                    contactInfo:  {
                         email: email
                     }
                 });
@@ -691,13 +691,13 @@ describe('Security Validation Tests', () => {
 
             for(const url of maliciousUrls) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'wgey4dDPEd8qEMGtGoMef7', // Valid short-uuid format
+                    buildingID:   'wgey4dDPEd8qEMGtGoMef7', // Valid short-uuid format
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345',
-                    contactInfo: {
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345',
+                    contactInfo:  {
                         propertyWebsite: url
                     }
                 });
@@ -706,7 +706,7 @@ describe('Security Validation Tests', () => {
 
                 // Should either reject with 400 or accept but sanitize the URL
                 if(response.statusCode === 400 && response.body) {
-                    const error = JSON.parse(response.body!);
+                    const error = JSON.parse(response.body);
                     // Check for any URL validation error (property name might vary)
                     expect(error.errors).toSatisfy((errors: Record<string, unknown>) => {
                         return chain(errors).keys().some(key =>
@@ -715,7 +715,7 @@ describe('Security Validation Tests', () => {
                     });
                 } else if(response.statusCode === 201 && response.body) {
                     // If accepted, the URL should be sanitized or the malicious parts removed
-                    const created = JSON.parse(response.body!);
+                    const created = JSON.parse(response.body);
                     expect(created.contactInfo.propertyWebsite).toBeDefined();
                 }
             }
@@ -735,13 +735,13 @@ describe('Security Validation Tests', () => {
 
             for(const phone of maliciousPhones) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:   'test-building',
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345',
-                    contactInfo: {
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345',
+                    contactInfo:  {
                         phone: phone
                     }
                 });
@@ -775,8 +775,8 @@ describe('Security Validation Tests', () => {
 
             for(const date of maliciousDates) {
                 const event = createMockEvent('POST', '/api/buildings/test-building/units', {
-                    unitID: 'test-unit',
-                    buildingID: 'test-building',
+                    unitID:        'test-unit',
+                    buildingID:    'test-building',
                     availableDate: date
                 }, {
                     buildingID: 'test-building'
@@ -808,9 +808,9 @@ describe('Security Validation Tests', () => {
 
             for(const modelId of maliciousModelIds) {
                 const event = createMockEvent('POST', '/api/buildings/test-building/units', {
-                    unitID: 'test-unit',
+                    unitID:     'test-unit',
                     buildingID: 'test-building',
-                    modelID: modelId
+                    modelID:    modelId
                 }, {
                     buildingID: 'test-building'
                 });
@@ -829,26 +829,26 @@ describe('Security Validation Tests', () => {
         it('should prevent access to resources from other buildings', async () => {
             // Create two buildings
             await buildingsHandler.create(createMockEvent('POST', '/api/buildings', {
-                buildingID: 'building-a',
+                buildingID:   'building-a',
                 buildingName: 'Building A',
-                street: '123 Main St',
-                city: 'Test City',
-                state: 'CA',
-                zip: '12345'
+                street:       '123 Main St',
+                city:         'Test City',
+                state:        'CA',
+                zip:          '12345'
             }));
 
             await buildingsHandler.create(createMockEvent('POST', '/api/buildings', {
-                buildingID: 'building-b',
+                buildingID:   'building-b',
                 buildingName: 'Building B',
-                street: '456 Oak St',
-                city: 'Test City',
-                state: 'CA',
-                zip: '12345'
+                street:       '456 Oak St',
+                city:         'Test City',
+                state:        'CA',
+                zip:          '12345'
             }));
 
             // Create unit in building A
             await unitsHandler.create(createMockEvent('POST', '/api/buildings/building-a/units', {
-                unitID: 'unit-101',
+                unitID:     'unit-101',
                 buildingID: 'building-a',
                 unitNumber: '101'
             }, {
@@ -858,7 +858,7 @@ describe('Security Validation Tests', () => {
             // Try to access unit from building A using building B's context
             const response = await unitsHandler.get(createMockEvent('GET', '/api/buildings/building-b/units/unit-101', null, {
                 buildingID: 'building-b',
-                unitID: 'unit-101'
+                unitID:     'unit-101'
             }));
 
             // Should not find the unit
@@ -867,7 +867,7 @@ describe('Security Validation Tests', () => {
 
         it('should validate buildingID consistency in unit creation', async () => {
             const event = createMockEvent('POST', '/api/buildings/building-a/units', {
-                unitID: 'test-unit',
+                unitID:     'test-unit',
                 buildingID: 'building-b', // Mismatch with URL
                 unitNumber: '101'
             }, {
@@ -898,12 +898,12 @@ describe('Security Validation Tests', () => {
 
             for(const zip of maliciousZips) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building',
+                    buildingID:   'test-building',
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: zip
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          zip
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -921,12 +921,12 @@ describe('Security Validation Tests', () => {
 
             for(const zip of validZips) {
                 const event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: generateBuildingId(), // Valid short-uuid format
+                    buildingID:   generateBuildingId(), // Valid short-uuid format
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: zip
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          zip
                 });
 
                 const response = await buildingsHandler.create(event);
@@ -952,12 +952,12 @@ describe('Security Validation Tests', () => {
             for(const test of boundaryTests) {
                 // Test minimum - 1
                 let event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building-min',
+                    buildingID:   'test-building-min',
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345',
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345',
                     [test.field]: test.min - 1
                 });
 
@@ -968,12 +968,12 @@ describe('Security Validation Tests', () => {
 
                 // Test maximum + 1
                 event = createMockEvent('POST', '/api/buildings', {
-                    buildingID: 'test-building-max',
+                    buildingID:   'test-building-max',
                     buildingName: 'Test Building',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: 'CA',
-                    zip: '12345',
+                    street:       '123 Main St',
+                    city:         'Test City',
+                    state:        'CA',
+                    zip:          '12345',
                     [test.field]: test.max + 1
                 });
 
@@ -995,29 +995,29 @@ function createMockEvent(
     stringify = true
 ): APIGatewayProxyEventV2 {
     return {
-        version: '2.0',
-        routeKey: `${method} ${path}`,
-        rawPath: path,
+        version:        '2.0',
+        routeKey:       `${method} ${path}`,
+        rawPath:        path,
         rawQueryString: '',
-        headers: {
+        headers:        {
             'content-type': 'application/json',
         },
         requestContext: {
-            accountId: '123456789012',
-            apiId: 'api-id',
-            domainName: 'api.example.com',
+            accountId:    '123456789012',
+            apiId:        'api-id',
+            domainName:   'api.example.com',
             domainPrefix: 'api',
-            http: {
+            http:         {
                 method,
                 path,
-                protocol: 'HTTP/1.1',
-                sourceIp: '127.0.0.1',
+                protocol:  'HTTP/1.1',
+                sourceIp:  '127.0.0.1',
                 userAgent: 'test-agent'
             },
             requestId: 'request-id',
-            routeKey: `${method} ${path}`,
-            stage: 'test',
-            time: new Date().toISOString(),
+            routeKey:  `${method} ${path}`,
+            stage:     'test',
+            time:      new Date().toISOString(),
             timeEpoch: Date.now()
         },
         body: (() => {

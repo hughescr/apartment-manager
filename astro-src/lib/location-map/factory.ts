@@ -11,26 +11,26 @@ declare global {
 // Address models configuration
 interface AddressModels {
     addressModel?: string
-    cityModel?: string
-    stateModel?: string
+    cityModel?:    string
+    stateModel?:   string
 }
 
 // Alpine.js context with magic properties
 interface AlpineContext {
-    $el: HTMLElement
-    $refs: { mapElement: HTMLElement }
-    $dispatch: (event: string, data?: unknown) => void
-    $nextTick: () => Promise<void>
-    $watch: (property: string, callback: (newValue: unknown) => void) => () => void
-    $root?: { activeSectionTab?: string }
+    $el:           HTMLElement
+    $refs:         { mapElement: HTMLElement }
+    $dispatch:     (event: string, data?: unknown) => void
+    $nextTick:     () => Promise<void>
+    $watch:        (property: string, callback: (newValue: unknown) => void) => () => void
+    $root?:        { activeSectionTab?: string }
     [key: string]: unknown // Allow dynamic property access for x-model bindings
 }
 
 // LocationMapPicker Alpine.js context interface
 interface LocationMapContext extends AlpineContext {
-    map: import('leaflet').Map | null
-    marker: import('leaflet').Marker | null
-    geocoding: boolean
+    map:            import('leaflet').Map | null
+    marker:         import('leaflet').Marker | null
+    geocoding:      boolean
     mapInitialized: boolean
     getNestedProperty(path: string): unknown
     setNestedProperty(path: string, value: unknown): void
@@ -51,12 +51,12 @@ function extractConfig(element: HTMLElement | undefined) {
     const dataset = element?.dataset || {};
 
     return {
-        latModel: dataset.latModel || '',
-        lngModel: dataset.lngModel || '',
+        latModel:      dataset.latModel || '',
+        lngModel:      dataset.lngModel || '',
         verifiedModel: dataset.verifiedModel || null,
-        defaultLat: parseFloat(dataset.defaultLat || '39.8283'),
-        defaultLng: parseFloat(dataset.defaultLng || '-98.5795'),
-        apiUrl: dataset.apiUrl || '',
+        defaultLat:    parseFloat(dataset.defaultLat || '39.8283'),
+        defaultLng:    parseFloat(dataset.defaultLng || '-98.5795'),
+        apiUrl:        dataset.apiUrl || '',
         addressModels: (() => {
             try {
                 return JSON.parse(dataset.addressModels || '{}') as AddressModels;
@@ -113,8 +113,8 @@ function createPropertyHelpers(alpineContext: AlpineContext) {
             if(index === parts.length - 1) {
                 return {
                     container: current as Record<string, unknown>,
-                    key: part,
-                    value: (current as Record<string, unknown>)[part]
+                    key:       part,
+                    value:     (current as Record<string, unknown>)[part]
                 };
             }
 
@@ -211,7 +211,7 @@ function createMapMethods(
     return {
         async initMapWhenReady() {
             // Check if we're in a tab system
-            const isInTab = context.$root && context.$root.activeSectionTab !== undefined;
+            const isInTab = context.$root?.activeSectionTab !== undefined;
 
             if(isInTab && context.$root!.activeSectionTab !== 'building-info') {
                 // Map is in a hidden tab, waiting for tab to be visible
@@ -272,15 +272,15 @@ function createMapMethods(
                 }
 
                 context.map = LeafletModule.map(mapElement, {
-                    center: [_lat, _lng],
-                    zoom: context.getNestedProperty(latModel) && context.getNestedProperty(lngModel) ? 16 : 4,
+                    center:      [_lat, _lng],
+                    zoom:        context.getNestedProperty(latModel) && context.getNestedProperty(lngModel) ? 16 : 4,
                     zoomControl: true,
                 });
 
                 // Add OpenStreetMap tiles
                 LeafletModule.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    maxZoom: 19,
+                    maxZoom:     19,
                 }).addTo(context.map);
 
                 // Add marker if coordinates exist
@@ -457,25 +457,25 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
     const { latModel, lngModel, verifiedModel, apiUrl, addressModels } = config;
 
     const context: LocationMapContext = {
-        map: null as import('leaflet').Map | null,
-        marker: null as import('leaflet').Marker | null,
-        geocoding: false,
+        map:            null as import('leaflet').Map | null,
+        marker:         null as import('leaflet').Marker | null,
+        geocoding:      false,
         mapInitialized: false,
-        $el: this.$el || null as unknown as HTMLElement,
-        $refs: this.$refs || { mapElement: null as unknown as HTMLElement },
-        $dispatch: this.$dispatch || (null as unknown as (event: string, data?: unknown) => void),
-        $nextTick: this.$nextTick || (null as unknown as () => Promise<void>),
-        $watch: this.$watch || (null as unknown as (property: string, callback: (newValue: unknown) => void) => () => void),
-        $root: this.$root || undefined as { activeSectionTab?: string } | undefined,
+        $el:            this.$el || null as unknown as HTMLElement,
+        $refs:          this.$refs || { mapElement: null as unknown as HTMLElement },
+        $dispatch:      this.$dispatch || (null as unknown as (event: string, data?: unknown) => void),
+        $nextTick:      this.$nextTick || (null as unknown as () => Promise<void>),
+        $watch:         this.$watch || (null as unknown as (property: string, callback: (newValue: unknown) => void) => () => void),
+        $root:          this.$root || undefined as { activeSectionTab?: string } | undefined,
 
         // Placeholder properties that will be set after context is complete
         getNestedProperty: null as unknown as (path: string) => unknown,
         setNestedProperty: null as unknown as (path: string, value: unknown) => void,
-        initMapWhenReady: null as unknown as () => Promise<void>,
-        initMap: null as unknown as () => Promise<void>,
-        addMarker: null as unknown as () => void,
-        setMarker: null as unknown as () => void,
-        centerOnMarker: null as unknown as () => void,
+        initMapWhenReady:  null as unknown as () => Promise<void>,
+        initMap:           null as unknown as () => Promise<void>,
+        addMarker:         null as unknown as () => void,
+        setMarker:         null as unknown as () => void,
+        centerOnMarker:    null as unknown as () => void,
 
         async geocodeAddress() {
             if(!addressModels.addressModel) {
@@ -485,14 +485,14 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
             context.geocoding = true;
 
             try {
-                const address = context.getNestedProperty(addressModels.addressModel!);
+                const address = context.getNestedProperty(addressModels.addressModel);
                 const city = addressModels.cityModel ? context.getNestedProperty(addressModels.cityModel) : undefined;
                 const state = addressModels.stateModel ? context.getNestedProperty(addressModels.stateModel) : undefined;
 
-                if(!address || !address.toString().trim()) {
+                if(!address?.toString().trim()) {
                     context.$dispatch('show-toast', {
                         message: 'Please enter an address first',
-                        type: 'error'
+                        type:    'error'
                     });
                     return;
                 }
@@ -504,7 +504,7 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
                 };
 
                 const response = await fetch(`${apiUrl}geocoding`, {
-                    method: 'POST',
+                    method:  'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -522,23 +522,23 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
 
                     // Mark as geocoded (not manually verified)
                     if(verifiedModel) {
-                        context.setNestedProperty(verifiedModel!, false);
+                        context.setNestedProperty(verifiedModel, false);
                     }
 
                     context.$dispatch('show-toast', {
                         message: `Address geocoded: ${data.result.displayName || 'Location found'}`,
-                        type: 'success'
+                        type:    'success'
                     });
                 } else {
                     context.$dispatch('show-toast', {
                         message: data.error || 'Could not find coordinates for this address',
-                        type: 'error'
+                        type:    'error'
                     });
                 }
             } catch{
                 context.$dispatch('show-toast', {
                     message: 'Failed to geocode address. Please try again.',
-                    type: 'error'
+                    type:    'error'
                 });
             } finally {
                 context.geocoding = false;

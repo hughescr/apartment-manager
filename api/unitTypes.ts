@@ -40,16 +40,16 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
-    } catch(parseError) {
+    } catch (parseError) {
         logger.warn('Failed to parse unit type creation request body', {
-            error: parseError,
-            context: 'unit type creation request parsing',
+            error:      parseError,
+            context:    'unit type creation request parsing',
             httpMethod: evt.requestContext.http.method,
             buildingID
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
+            body:       JSON.stringify({ error: 'Invalid request body' }),
         };
     }
 
@@ -70,7 +70,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
+            body:       JSON.stringify({ error: 'Validation failed', errors }),
         };
     }
 
@@ -103,17 +103,17 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let rawData;
     try {
         rawData = JSON.parse(evt.body || '{}');
-    } catch(parseError) {
+    } catch (parseError) {
         logger.warn('Failed to parse unit type update request body', {
-            error: parseError,
-            context: 'unit type update request parsing',
+            error:      parseError,
+            context:    'unit type update request parsing',
             httpMethod: evt.requestContext.http.method,
             buildingID,
             modelID
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid request body' }),
+            body:       JSON.stringify({ error: 'Invalid request body' }),
         };
     }
 
@@ -134,7 +134,7 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
+            body:       JSON.stringify({ error: 'Validation failed', errors }),
         };
     }
 

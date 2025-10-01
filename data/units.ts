@@ -39,32 +39,32 @@ function prepareFeedDataForDB(feedLastPulled?: Partial<Record<string, { timestam
 // Helper function to convert raw database item to UnitData
 function convertRawItemToUnitData(rawItem: Record<string, unknown>): UnitData {
     const result: Partial<UnitData> = {
-        buildingID: rawItem.buildingID as string,
-        unitID: rawItem.unitID as string,
-        description: rawItem.description as string | undefined,
-        beds: rawItem.beds as number | undefined,
-        baths: rawItem.baths as number | undefined,
-        sqft: rawItem.sqft as number | undefined,
-        rent: rawItem.rent as number | undefined,
-        occupied: rawItem.occupied as boolean | undefined,
-        availableDate: rawItem.availableDate as string | undefined,
-        modelID: rawItem.modelID as string | undefined,
-        unitNumber: rawItem.unitNumber as string | undefined,
-        maxOccupants: rawItem.maxOccupants as number | undefined,
-        perPersonRent: rawItem.perPersonRent as number | undefined,
-        deposit: rawItem.deposit as number | undefined,
-        minLeaseTerm: rawItem.minLeaseTerm as number | undefined,
-        maxLeaseTerm: rawItem.maxLeaseTerm as number | undefined,
-        unitDescription: rawItem.unitDescription as string | undefined,
-        unitRentSpecial: rawItem.unitRentSpecial as RentSpecial | undefined,
-        unitAmenities: rawItem.unitAmenities as Amenity[] | undefined,
-        photos: rawItem.photos as string[] | undefined,
-        features: rawItem.features as string[] | undefined,
-        notes: rawItem.notes as string | undefined,
-        vacancyClass: rawItem.vacancyClass as VacancyClass | undefined,
-        vacateDate: rawItem.vacateDate as string | undefined,
-        madeReadyDate: rawItem.madeReadyDate as string | undefined,
-        feedInclusion: rawItem.feedInclusion as Partial<Record<string, boolean>> | undefined,
+        buildingID:       rawItem.buildingID as string,
+        unitID:           rawItem.unitID as string,
+        description:      rawItem.description as string | undefined,
+        beds:             rawItem.beds as number | undefined,
+        baths:            rawItem.baths as number | undefined,
+        sqft:             rawItem.sqft as number | undefined,
+        rent:             rawItem.rent as number | undefined,
+        occupied:         rawItem.occupied as boolean | undefined,
+        availableDate:    rawItem.availableDate as string | undefined,
+        modelID:          rawItem.modelID as string | undefined,
+        unitNumber:       rawItem.unitNumber as string | undefined,
+        maxOccupants:     rawItem.maxOccupants as number | undefined,
+        perPersonRent:    rawItem.perPersonRent as number | undefined,
+        deposit:          rawItem.deposit as number | undefined,
+        minLeaseTerm:     rawItem.minLeaseTerm as number | undefined,
+        maxLeaseTerm:     rawItem.maxLeaseTerm as number | undefined,
+        unitDescription:  rawItem.unitDescription as string | undefined,
+        unitRentSpecial:  rawItem.unitRentSpecial as RentSpecial | undefined,
+        unitAmenities:    rawItem.unitAmenities as Amenity[] | undefined,
+        photos:           rawItem.photos as string[] | undefined,
+        features:         rawItem.features as string[] | undefined,
+        notes:            rawItem.notes as string | undefined,
+        vacancyClass:     rawItem.vacancyClass as VacancyClass | undefined,
+        vacateDate:       rawItem.vacateDate as string | undefined,
+        madeReadyDate:    rawItem.madeReadyDate as string | undefined,
+        feedInclusion:    rawItem.feedInclusion as Partial<Record<string, boolean>> | undefined,
         manualReferences: rawItem.manualReferences as Partial<Record<string, string>> | undefined
     };
 
@@ -107,7 +107,7 @@ export async function getUnits(buildingID: string) {
         const cleanedItem = convertRawItemToUnitData(rawItem);
 
         return cleanedItem;
-    }) as UnitData[];
+    });
 }
 
 export async function getUnit(buildingID: string, unitID: string) {
@@ -134,7 +134,7 @@ export async function createUnit(unit: UnitData) {
     const now = new Date();
     const unitForDB: Record<string, unknown> = {
         ...restUnit,
-        unitID: `UNIT#${unit.unitID}`,
+        unitID:    `UNIT#${unit.unitID}`,
         updatedAt: now.toISOString()
     };
 
@@ -190,7 +190,7 @@ function prepareUnitDataForDB(updates: Partial<UnitData>, buildingID: string, un
     const updatesForDB: Record<string, unknown> = {
         ...restUpdates,
         buildingID,
-        unitID: `UNIT#${unitID}`,
+        unitID:    `UNIT#${unitID}`,
         updatedAt: now.toISOString()
     };
 
@@ -222,7 +222,7 @@ async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Prom
 
     logger.info('tryUpdateItemCommand: Starting DynamoDB update', {
         updatesForDB: JSON.stringify(updatesForDB, null, 2),
-        context: 'tryUpdateItemCommand_start'
+        context:      'tryUpdateItemCommand_start'
     });
 
     const { Attributes } = await UnitEntity.build(UpdateItemCommand)
@@ -233,15 +233,15 @@ async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Prom
 
     logger.info('tryUpdateItemCommand: DynamoDB update completed', {
         hasAttributes: !!Attributes,
-        attributes: Attributes ? JSON.stringify(Attributes, null, 2) : 'null',
-        context: 'tryUpdateItemCommand_completed'
+        attributes:    Attributes ? JSON.stringify(Attributes, null, 2) : 'null',
+        context:       'tryUpdateItemCommand_completed'
     });
 
     if(!Attributes) {
         logger.warn('tryUpdateItemCommand: No attributes returned - item may not exist', {
             buildingID: updatesForDB.buildingID,
-            unitID: updatesForDB.unitID,
-            context: 'tryUpdateItemCommand_no_attributes'
+            unitID:     updatesForDB.unitID,
+            context:    'tryUpdateItemCommand_no_attributes'
         });
         return undefined;
     }
@@ -256,7 +256,7 @@ async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Prom
 
     logger.info('tryUpdateItemCommand: Successfully converted result', {
         convertedResult: JSON.stringify(convertedResult, null, 2),
-        context: 'tryUpdateItemCommand_success'
+        context:         'tryUpdateItemCommand_success'
     });
 
     return convertedResult;
@@ -283,7 +283,7 @@ async function fallbackToPutItemCommand(
         ...existingUnit,
         ...restUpdates,
         buildingID,
-        unitID: `UNIT#${unitID}`,
+        unitID:    `UNIT#${unitID}`,
         updatedAt: now.toISOString()
     };
 
@@ -315,7 +315,7 @@ async function fallbackToPutItemCommand(
     // Return the merged data since PutItemCommand doesn't return the item
     const rawItem: Record<string, unknown> = {
         ...omit(mergedData, ['created', 'modified', '_et', '_ct', '_md']),
-        unitID: replace(mergedData.unitID as string || '', /^UNIT#/, '') || mergedData.unitID as string
+        unitID: replace(mergedData.unitID || '', /^UNIT#/, '') || mergedData.unitID
     };
 
     return convertRawItemToUnitData(rawItem);
@@ -336,7 +336,7 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
         buildingID,
         unitID,
         updatesForDB: JSON.stringify(updatesForDB, null, 2),
-        context: 'updateUnit_prepared_data'
+        context:      'updateUnit_prepared_data'
     });
 
     try {
@@ -348,7 +348,7 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
             logger.info('UpdateItemCommand successful', {
                 buildingID,
                 unitID,
-                result: JSON.stringify(updateResult, null, 2),
+                result:  JSON.stringify(updateResult, null, 2),
                 context: 'updateUnit_update_success'
             });
             return updateResult;
@@ -361,7 +361,7 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
             // Return undefined when UpdateItemCommand returns undefined (indicates item doesn't exist or no changes)
             return undefined;
         }
-    } catch(error) {
+    } catch (error) {
         // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
         logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic', {
             error,
@@ -377,11 +377,11 @@ export async function updateUnit(buildingID: string, unitID: string, updates: Pa
             logger.info('PutItemCommand fallback successful', {
                 buildingID,
                 unitID,
-                result: JSON.stringify(putResult, null, 2),
+                result:  JSON.stringify(putResult, null, 2),
                 context: 'updateUnit_put_success'
             });
             return putResult;
-        } catch(fallbackError) {
+        } catch (fallbackError) {
             logger.error('Both UpdateItemCommand and PutItemCommand fallback failed', {
                 fallbackError,
                 buildingID,
@@ -400,7 +400,7 @@ export async function deleteUnit(buildingID: string, unitID: string): Promise<bo
             .key({ buildingID, unitID: `UNIT#${unitID}` })
             .send();
         return true;
-    } catch(error) {
+    } catch (error) {
         logger.error('Error deleting unit:', error);
         return false;
     }

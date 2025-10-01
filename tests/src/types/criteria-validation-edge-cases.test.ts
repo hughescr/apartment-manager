@@ -24,13 +24,13 @@ describe('Criteria Validation Edge Cases', () => {
     describe('Percentage and Ratio Limits', () => {
         it('should accept AMI limits outside 0-100 range', () => {
             const restriction: IncomeRestriction = {
-                amiLimit: -50, // Negative percentage
+                amiLimit:                 -50, // Negative percentage
                 maxIncomeByHouseholdSize: { '1': 40000 }
             };
             expect(restriction.amiLimit).toBe(-50);
 
             const restriction2: IncomeRestriction = {
-                amiLimit: 250, // Over 100%
+                amiLimit:                 250, // Over 100%
                 maxIncomeByHouseholdSize: { '1': 100000 }
             };
             expect(restriction2.amiLimit).toBe(250);
@@ -38,19 +38,19 @@ describe('Criteria Validation Edge Cases', () => {
 
         it('should accept invalid income ratios', () => {
             const screening: ScreeningCriteria = {
-                incomeRatio: 0, // No income required?
+                incomeRatio:    0, // No income required?
                 minCreditScore: 700
             };
             expect(screening.incomeRatio).toBe(0);
 
             const screening2: ScreeningCriteria = {
-                incomeRatio: -2.5, // Negative ratio
+                incomeRatio:    -2.5, // Negative ratio
                 minCreditScore: 600
             };
             expect(screening2.incomeRatio).toBe(-2.5);
 
             const screening3: ScreeningCriteria = {
-                incomeRatio: 100, // 100x rent required
+                incomeRatio:    100, // 100x rent required
                 minCreditScore: 850
             };
             expect(screening3.incomeRatio).toBe(100);
@@ -59,14 +59,14 @@ describe('Criteria Validation Edge Cases', () => {
         it('should accept invalid credit score ranges', () => {
             const screening: ScreeningCriteria = {
                 minCreditScore: 1000, // Above max possible score (850)
-                incomeRatio: 3
+                incomeRatio:    3
             };
             expect(screening.minCreditScore).toBe(1000);
             // Note: ScreeningCriteria only has minCreditScore, not maxCreditScore
 
             const screening2: ScreeningCriteria = {
                 minCreditScore: -300, // Negative credit score
-                incomeRatio: 2.5
+                incomeRatio:    2.5
             };
             expect(screening2.minCreditScore).toBe(-300);
         });
@@ -74,7 +74,7 @@ describe('Criteria Validation Edge Cases', () => {
         it('should accept negative credit scores', () => {
             const screening: ScreeningCriteria = {
                 minCreditScore: -300,
-                incomeRatio: 1
+                incomeRatio:    1
             };
             expect(screening.minCreditScore).toBe(-300);
         });
@@ -82,19 +82,19 @@ describe('Criteria Validation Edge Cases', () => {
         it('should accept extreme occupancy ratios', () => {
             const screening: ScreeningCriteria = {
                 maxOccupantsPerBedroom: 0, // No occupants allowed?
-                incomeRatio: 3
+                incomeRatio:            3
             };
             expect(screening.maxOccupantsPerBedroom).toBe(0);
 
             const screening2: ScreeningCriteria = {
                 maxOccupantsPerBedroom: 100, // 100 people per bedroom
-                incomeRatio: 2
+                incomeRatio:            2
             };
             expect(screening2.maxOccupantsPerBedroom).toBe(100);
 
             const screening3: ScreeningCriteria = {
                 maxOccupantsPerBedroom: -5, // Negative occupants
-                incomeRatio: 2.5
+                incomeRatio:            2.5
             };
             expect(screening3.maxOccupantsPerBedroom).toBe(-5);
         });
@@ -103,37 +103,37 @@ describe('Criteria Validation Edge Cases', () => {
     describe('Compound Validation Scenarios', () => {
         it('should accept multiple conflicting business rules simultaneously', () => {
             const building: BuildingData = {
-                buildingID: 'bldg-123',
-                yearBuilt: 2025, // Future year
-                totalUnits: 10,
+                buildingID:   'bldg-123',
+                yearBuilt:    2025, // Future year
+                totalUnits:   10,
                 propertyType: PropertyType.APARTMENT,
-                leaseLength: 0, // No lease?
-                petPolicies: {
-                    allowed: false,
-                    types: [PetType.DOG, PetType.CAT],
-                    deposit: 1000, // Deposit for pets that aren't allowed
+                leaseLength:  0, // No lease?
+                petPolicies:  {
+                    allowed:     false,
+                    types:       [PetType.DOG, PetType.CAT],
+                    deposit:     1000, // Deposit for pets that aren't allowed
                     weightLimit: -10 // Negative weight
                 },
                 screeningCriteria: {
-                    incomeRatio: 0.5, // Less than 1x rent
-                    minCreditScore: 1000, // Above max possible score
+                    incomeRatio:            0.5, // Less than 1x rent
+                    minCreditScore:         1000, // Above max possible score
                     maxOccupantsPerBedroom: 0 // No occupants allowed?
                 },
                 applicationFee: -50 // They pay you to apply?
             };
 
             const unitType: UnitTypeData = {
-                buildingID: 'bldg-123',
-                modelID: 'model-chaos',
-                modelName: 'Chaos Model',
-                beds: 2,
-                baths: 3, // More baths than beds
+                buildingID:   'bldg-123',
+                modelID:      'model-chaos',
+                modelName:    'Chaos Model',
+                beds:         2,
+                baths:        3, // More baths than beds
                 maxOccupants: 1, // Less than beds
-                minRent: 5000,
-                maxRent: 1000, // Max less than min
-                minSqft: 2000,
-                maxSqft: 500, // Max less than min
-                deposit: -1000, // Negative deposit
+                minRent:      5000,
+                maxRent:      1000, // Max less than min
+                minSqft:      2000,
+                maxSqft:      500, // Max less than min
+                deposit:      -1000, // Negative deposit
                 minLeaseTerm: 36,
                 maxLeaseTerm: 1 // Max less than min
             };
@@ -148,13 +148,13 @@ describe('Criteria Validation Edge Cases', () => {
 
         it('should accept contradictory income and credit requirements', () => {
             const screening: ScreeningCriteria = {
-                incomeRatio: 0, // No income required
-                minCreditScore: 850, // Perfect credit required
+                incomeRatio:            0, // No income required
+                minCreditScore:         850, // Perfect credit required
                 maxOccupantsPerBedroom: -1 // Negative occupants
             };
 
             const restriction: IncomeRestriction = {
-                amiLimit: 200, // 200% AMI (impossible)
+                amiLimit:                 200, // 200% AMI (impossible)
                 maxIncomeByHouseholdSize: {
                     '1': 0, // No income allowed for 1 person
                     '2': 1000000, // $1M for 2 people
@@ -170,27 +170,27 @@ describe('Criteria Validation Edge Cases', () => {
 
         it('should accept building with impossible physical characteristics', () => {
             const building: BuildingData = {
-                buildingID: 'bldg-impossible',
-                yearBuilt: -1000, // BC construction
+                buildingID:    'bldg-impossible',
+                yearBuilt:     -1000, // BC construction
                 numberStories: 0, // No stories
-                totalUnits: 1000, // Many units for single family
-                description: 'A building that defies physics and logic',
+                totalUnits:    1000, // Many units for single family
+                description:   'A building that defies physics and logic',
 
                 // Contradictory amenities and policies
                 propertyType: PropertyType.SINGLE_FAMILY, // Single family but many units
 
                 petPolicies: {
-                    allowed: false,
-                    types: [PetType.DOG, PetType.CAT, PetType.NO_PETS],
-                    maxCount: 10, // 10 pets not allowed
+                    allowed:     false,
+                    types:       [PetType.DOG, PetType.CAT, PetType.NO_PETS],
+                    maxCount:    10, // 10 pets not allowed
                     weightLimit: 0, // No weight
-                    deposit: 5000, // $5000 deposit for no pets
-                    monthlyFee: -100 // They pay you monthly
+                    deposit:     5000, // $5000 deposit for no pets
+                    monthlyFee:  -100 // They pay you monthly
                 },
 
                 screeningCriteria: {
-                    incomeRatio: -5, // They pay you rent?
-                    minCreditScore: 2000, // Impossible credit score
+                    incomeRatio:            -5, // They pay you rent?
+                    minCreditScore:         2000, // Impossible credit score
                     maxOccupantsPerBedroom: 0.5 // Half person per bedroom
                 }
             };
@@ -204,12 +204,12 @@ describe('Criteria Validation Edge Cases', () => {
         it('should accept unit type with mathematical impossibilities', () => {
             const unitType: UnitTypeData = {
                 buildingID: 'bldg-math-error',
-                modelID: 'impossible-math',
-                modelName: 'Mathematics-Defying Unit',
+                modelID:    'impossible-math',
+                modelName:  'Mathematics-Defying Unit',
 
                 // Physical impossibilities
-                beds: 0.5, // Half bed
-                baths: -2, // Negative bathrooms
+                beds:    0.5, // Half bed
+                baths:   -2, // Negative bathrooms
                 minSqft: Number.MAX_SAFE_INTEGER,
                 maxSqft: 0, // Max smaller than min
 

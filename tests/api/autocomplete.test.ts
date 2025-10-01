@@ -10,8 +10,8 @@ import { isString, repeat, chain, times, map } from 'lodash';
 // Define the expected response structure for our Lambda functions
 interface LambdaResponse {
     statusCode: number
-    headers: Record<string, string>
-    body: string
+    headers:    Record<string, string>
+    body:       string
 }
 
 // Mock fetch for testing external API calls
@@ -27,34 +27,34 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
         queryStringParameters?: Record<string, string>,
         headers?: Record<string, string>
     ): APIGatewayProxyEventV2 => ({
-        version: '2.0',
-        routeKey: `${method} ${path}`,
-        rawPath: path,
+        version:        '2.0',
+        routeKey:       `${method} ${path}`,
+        rawPath:        path,
         rawQueryString: queryStringParameters ? new URLSearchParams(queryStringParameters).toString() : '',
-        headers: {
+        headers:        {
             'content-type': 'application/json',
             ...headers
         },
         queryStringParameters: queryStringParameters || undefined,
-        requestContext: {
-            accountId: '123456789012',
-            apiId: 'api-id',
-            domainName: 'api.example.com',
+        requestContext:        {
+            accountId:    '123456789012',
+            apiId:        'api-id',
+            domainName:   'api.example.com',
             domainPrefix: 'api',
-            http: {
-                method: method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS',
-                path: path,
-                protocol: 'HTTP/1.1',
-                sourceIp: '192.168.1.1',
+            http:         {
+                method:    method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS',
+                path:      path,
+                protocol:  'HTTP/1.1',
+                sourceIp:  '192.168.1.1',
                 userAgent: 'test-agent'
             },
             requestId: 'test-request-id',
-            routeKey: `${method} ${path}`,
-            stage: 'test',
-            time: '01/Jan/2024:00:00:00 +0000',
+            routeKey:  `${method} ${path}`,
+            stage:     'test',
+            time:      '01/Jan/2024:00:00:00 +0000',
             timeEpoch: 1704067200
         },
-        body: undefined,
+        body:            undefined,
         isBase64Encoded: false
     });
 
@@ -98,10 +98,10 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
             autocompleteAddress: jest.fn().mockResolvedValue([
                 {
                     displayText: '123 Test St, Test City, CA, USA',
-                    components: {
-                        street: '123 Test St',
-                        city: 'Test City',
-                        state: 'CA',
+                    components:  {
+                        street:     '123 Test St',
+                        city:       'Test City',
+                        state:      'CA',
                         postalCode: '90210'
                     },
                     coordinates: {
@@ -109,13 +109,13 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                         lon: -118.2437
                     },
                     confidence: 0.8,
-                    source: 'radar',
-                    id: 'test-id'
+                    source:     'radar',
+                    id:         'test-id'
                 }
             ]),
             getLocationFromIP: jest.fn().mockResolvedValue({
-                lat: 37.7749,
-                lon: -122.4194,
+                lat:    37.7749,
+                lon:    -122.4194,
                 source: 'ip'
             })
         };
@@ -133,13 +133,13 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
         // Mock successful Radar API response by default
         mockFetch.mockResolvedValue({
-            ok: true,
+            ok:   true,
             json: async () => ([{
                 displayText: '123 Test St, Test City, CA, USA',
-                components: {
-                    street: '123 Test St',
-                    city: 'Test City',
-                    state: 'CA',
+                components:  {
+                    street:     '123 Test St',
+                    city:       'Test City',
+                    state:      'CA',
                     postalCode: '90210'
                 },
                 coordinates: {
@@ -147,8 +147,8 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     lon: -118.2437
                 },
                 confidence: 0.8,
-                source: 'radar',
-                id: 'test-id'
+                source:     'radar',
+                id:         'test-id'
             }])
         });
 
@@ -190,7 +190,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should process as regular search query, not execute SQL
                     expect(result.statusCode).toBe(200);
@@ -213,7 +213,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should process as regular search query
                     expect(result.statusCode).toBe(200);
@@ -238,7 +238,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should process as regular search query, not execute scripts
                     expect(result.statusCode).toBe(200);
@@ -260,7 +260,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should process as regular search query
                     expect(result.statusCode).toBe(200);
@@ -284,7 +284,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should process as regular search query
                     expect(result.statusCode).toBe(200);
@@ -301,7 +301,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Query parameter "q" is required');
@@ -314,7 +314,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Query parameter "q" is required');
@@ -330,7 +330,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     expect(result.statusCode).toBe(400);
                     expect(body.error).toBe('Query must be at least 3 characters long');
@@ -345,7 +345,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Query must be 100 characters or less');
@@ -359,7 +359,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(200);
                 expect(body.success).toBe(true);
@@ -382,7 +382,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     expect(result.statusCode).toBe(200);
                     expect(body.success).toBe(true);
@@ -394,12 +394,12 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
             it('should reject negative limit values', async () => {
                 expect.assertions(2);
                 const event = createMockEvent('GET', '/autocomplete/address', {
-                    q: '123 Main St',
+                    q:     '123 Main St',
                     limit: '-1'
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Limit must be a number between 1 and 20');
@@ -416,7 +416,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     expect(result.statusCode).toBe(400);
                     expect(body.error).toBe('Limit must be a number between 1 and 20');
@@ -434,7 +434,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     });
 
                     const result = await callAddressAutocomplete(event);
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     expect(result.statusCode).toBe(400);
                     expect(body.error).toBe('Limit must be a number between 1 and 20');
@@ -459,7 +459,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     if(limit === '{"$where": "1"}') {
                         // This one should fail as parseFloat returns NaN
@@ -486,14 +486,14 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                 for(const lat of invalidLatitudes) {
                     const event = createMockEvent('GET', '/autocomplete/address', {
-                        q: '123 Main St',
+                        q:   '123 Main St',
                         lat,
                         lon: '0'
                     });
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should succeed but ignore invalid coordinates
                     expect(result.statusCode).toBe(200);
@@ -512,14 +512,14 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                 for(const lon of invalidLongitudes) {
                     const event = createMockEvent('GET', '/autocomplete/address', {
-                        q: '123 Main St',
+                        q:   '123 Main St',
                         lat: '0',
                         lon
                     });
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should succeed but ignore invalid coordinates
                     expect(result.statusCode).toBe(200);
@@ -540,14 +540,14 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                 for(const coordinate of injectionAttempts) {
                     const event = createMockEvent('GET', '/autocomplete/address', {
-                        q: '123 Main St',
+                        q:   '123 Main St',
                         lat: coordinate,
                         lon: '0'
                     });
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should succeed but ignore invalid coordinates
                     expect(result.statusCode).toBe(200);
@@ -562,7 +562,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('GET', '/autocomplete/address');
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Query parameter "q" is required');
@@ -577,7 +577,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 // Should process normally despite malicious header
                 expect(result.statusCode).toBe(200);
@@ -603,7 +603,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
 
                     const result = await callAddressAutocomplete(event);
 
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     // Should process normally despite malicious IP header
                     expect(result.statusCode).toBe(200);
@@ -618,7 +618,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('POST', '/autocomplete/address');
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use GET.');
@@ -629,7 +629,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('PUT', '/autocomplete/address');
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use GET.');
@@ -640,7 +640,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('DELETE', '/autocomplete/address');
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use GET.');
@@ -658,7 +658,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 // Should return generic error message, not expose internal details
                 if(result.statusCode === 500) {
@@ -676,31 +676,31 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     .fill(0)
                     .map((_, i) => ({
                         displayText: `${i} Large Address ${repeat('x', 1000)}`,
-                        components: {
-                            street: `${i} Large St`,
-                            city: 'Large City',
-                            state: 'CA',
+                        components:  {
+                            street:     `${i} Large St`,
+                            city:       'Large City',
+                            state:      'CA',
                             postalCode: '12345'
                         },
                         coordinates: { lat: 34.0522, lon: -118.2437 },
-                        confidence: 0.8,
-                        source: 'radar',
-                        id: `large-id-${i}`
+                        confidence:  0.8,
+                        source:      'radar',
+                        id:          `large-id-${i}`
                     }))
                     .value();
 
                 mockFetch.mockResolvedValueOnce({
-                    ok: true,
+                    ok:   true,
                     json: async () => largeResults
                 });
 
                 const event = createMockEvent('GET', '/autocomplete/address', {
-                    q: '123 Main St',
+                    q:     '123 Main St',
                     limit: '20'
                 });
 
                 const result = await callAddressAutocomplete(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 // Should handle large responses gracefully
                 expect(result.statusCode).toBe(200);
@@ -716,7 +716,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('POST', '/autocomplete/status');
 
                 const result = await callStatus(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use GET.');
@@ -727,7 +727,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('PUT', '/autocomplete/status');
 
                 const result = await callStatus(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use GET.');
@@ -738,7 +738,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('DELETE', '/autocomplete/status');
 
                 const result = await callStatus(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use GET.');
@@ -751,7 +751,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('GET', '/autocomplete/status');
 
                 const result = await callStatus(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(200);
                 expect(body.success).toBe(true);
@@ -768,7 +768,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('GET', '/autocomplete/status');
 
                 const result = await callStatus(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(200);
                 expect(body.cache).toBeDefined();
@@ -784,7 +784,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('GET', '/autocomplete/cache');
 
                 const result = await callClearCache(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use DELETE.');
@@ -795,7 +795,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('POST', '/autocomplete/cache');
 
                 const result = await callClearCache(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use DELETE.');
@@ -806,7 +806,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('PUT', '/autocomplete/cache');
 
                 const result = await callClearCache(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed. Use DELETE.');
@@ -822,7 +822,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 const event = createMockEvent('DELETE', '/autocomplete/cache');
 
                 const result = await callClearCache(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body);
 
                 // Currently allows unauthenticated access
                 expect(result.statusCode).toBe(200);
@@ -838,7 +838,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 );
 
                 for(const result of results) {
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
                     expect(result.statusCode).toBe(200);
                     expect(body.success).toBe(true);
                 }
@@ -863,7 +863,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 ]);
 
                 for(const result of results) {
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
 
                     expect(result.statusCode).toBe(405);
                     expect(body.success).toBe(false);
@@ -888,7 +888,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 for(const result of results) {
                     expect(result.headers).toHaveProperty('Content-Type', 'application/json');
                     expect(result.statusCode).toBe(200);
-                    expect(() => JSON.parse(result.body!)).not.toThrow();
+                    expect(() => JSON.parse(result.body)).not.toThrow();
                 }
             });
         });
@@ -908,7 +908,7 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                 );
 
                 for(const result of results) {
-                    const body = JSON.parse(result.body!);
+                    const body = JSON.parse(result.body);
                     expect(result.statusCode).toBe(200);
                     expect(body.success).toBe(true);
                 }
@@ -932,10 +932,10 @@ describe('Autocomplete API - Comprehensive Security Tests', () => {
                     expect([200, 400].includes(result.statusCode)).toBe(true);
 
                     if(result.statusCode === 200) {
-                        const body = JSON.parse(result.body!);
+                        const body = JSON.parse(result.body);
                         expect(body.success).toBe(true);
                     } else {
-                        const body = JSON.parse(result.body!);
+                        const body = JSON.parse(result.body);
                         expect(body.success).toBe(false);
                     }
                 }

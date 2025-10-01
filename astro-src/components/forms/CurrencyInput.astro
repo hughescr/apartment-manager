@@ -2,21 +2,21 @@
 import _ from 'lodash';
 
 export interface Props {
-    name: string
-    label?: string
+    name:         string
+    label?:       string
     placeholder?: string
-    required?: boolean
-    disabled?: boolean
-    readonly?: boolean
-    xModel: string
-    value?: string | number
-    min?: string | number
-    max?: string | number
-    step?: string | number
-    'class'?: string
-    error?: string
-    helpText?: string
-    showLabel?: boolean
+    required?:    boolean
+    disabled?:    boolean
+    readonly?:    boolean
+    xModel:       string
+    value?:       string | number
+    min?:         string | number
+    max?:         string | number
+    step?:        string | number
+    'class'?:     string
+    error?:       string
+    helpText?:    string
+    showLabel?:   boolean
 }
 
 const {

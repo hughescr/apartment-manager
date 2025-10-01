@@ -4,7 +4,7 @@ const buildingsUnitsTable = new sst.aws.Dynamo('BuildingsUnits', {
     fields: {
         buildingID: 'string',
         // Will be the unit number for a specific unit, or 'BUILDING' for building-level data
-        unitID: 'string',
+        unitID:     'string',
 
         // The fields below are not specified because they aren't indexed, and are optional.
         // Building details:
@@ -26,25 +26,25 @@ const buildingsUnitsTable = new sst.aws.Dynamo('BuildingsUnits', {
         // occupied: 'boolean',
         // availableDate: 'string',
     },
-    primaryIndex: { hashKey: 'buildingID', rangeKey: 'unitID' },
+    primaryIndex:  { hashKey: 'buildingID', rangeKey: 'unitID' },
     globalIndexes: {
         // GSI for efficiently querying all buildings (where unitID = 'BUILDING')
         unitTypeIndex: {
-            hashKey: 'unitID',
+            hashKey:  'unitID',
             rangeKey: 'buildingID'
         }
     },
     transform: {
         table: {
-            billingMode: 'PROVISIONED',
-            readCapacity: 1,
-            writeCapacity: 1,
+            billingMode:            'PROVISIONED',
+            readCapacity:           1,
+            writeCapacity:          1,
             globalSecondaryIndexes: [{
-                name: 'unitTypeIndex',
-                hashKey: 'unitID',
-                rangeKey: 'buildingID',
-                readCapacity: 1,
-                writeCapacity: 1,
+                name:           'unitTypeIndex',
+                hashKey:        'unitID',
+                rangeKey:       'buildingID',
+                readCapacity:   1,
+                writeCapacity:  1,
                 projectionType: 'ALL'
             }]
         }

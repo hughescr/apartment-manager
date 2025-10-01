@@ -10,8 +10,8 @@ export class UnitFormatters {
             return '';
         }
         return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
+            style:                 'currency',
+            currency:              'USD',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         }).format(value);
@@ -27,9 +27,9 @@ export class UnitFormatters {
         try {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', {
-                year: 'numeric',
+                year:  'numeric',
                 month: 'short',
-                day: 'numeric'
+                day:   'numeric'
             });
         } catch{
             return dateString;
@@ -103,10 +103,10 @@ export class UnitFormatters {
      */
     getVacancyClassDisplay(vacancyClass: string | null | undefined): string {
         const displays: Record<string, string> = {
-            Occupied: 'Currently rented to a tenant',
+            Occupied:   'Currently rented to a tenant',
             Unoccupied: 'Vacant and available for rent',
-            Notice: 'Tenant gave notice but hasn\'t vacated yet',
-            Down: 'Unavailable due to maintenance/renovation'
+            Notice:     'Tenant gave notice but hasn\'t vacated yet',
+            Down:       'Unavailable due to maintenance/renovation'
         };
         return displays[vacancyClass || ''] || 'Status not set';
     }
@@ -116,10 +116,10 @@ export class UnitFormatters {
      */
     getVacancyBadgeClass(vacancyClass: string | null | undefined): string {
         const classes: Record<string, string> = {
-            Occupied: 'badge-info',
+            Occupied:   'badge-info',
             Unoccupied: 'badge-success',
-            Notice: 'badge-warning',
-            Down: 'badge-error'
+            Notice:     'badge-warning',
+            Down:       'badge-error'
         };
         return classes[vacancyClass || ''] || 'badge-ghost';
     }
@@ -129,17 +129,17 @@ export class UnitFormatters {
      */
     getFieldDisplayName(fieldName: string): string {
         const names: Record<string, string> = {
-            beds: 'Beds',
-            baths: 'Baths',
-            sqft: 'Square Footage',
-            rent: 'Rent',
-            maxOccupants: 'Max Occupants',
+            beds:          'Beds',
+            baths:         'Baths',
+            sqft:          'Square Footage',
+            rent:          'Rent',
+            maxOccupants:  'Max Occupants',
             perPersonRent: 'Per Person Rent',
-            deposit: 'Deposit',
-            minLeaseTerm: 'Min Lease Term',
-            maxLeaseTerm: 'Max Lease Term',
+            deposit:       'Deposit',
+            minLeaseTerm:  'Min Lease Term',
+            maxLeaseTerm:  'Max Lease Term',
             availableDate: 'Available Date',
-            vacateDate: 'Vacate Date',
+            vacateDate:    'Vacate Date',
             madeReadyDate: 'Made Ready Date'
         };
         return names[fieldName] || fieldName;

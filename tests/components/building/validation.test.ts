@@ -42,9 +42,9 @@ describe('Building Form Validation', () => {
             const invalidBuilding = {
                 ...validBuilding,
                 street: '',
-                city: '',
-                state: '',
-                zip: ''
+                city:   '',
+                state:  '',
+                zip:    ''
             };
 
             const result = validateBuildingForm(invalidBuilding);
@@ -136,7 +136,7 @@ describe('Building Form Validation', () => {
                 const building = {
                     ...validBuilding,
                     incomeRestrictions: {
-                        amiLimit: testCase.amiLimit,
+                        amiLimit:                 testCase.amiLimit,
                         maxIncomeByHouseholdSize: { '1': 50000, '2': 60000, '3': 70000, '4': 80000 }
                     }
                 };
@@ -156,8 +156,8 @@ describe('Building Form Validation', () => {
                 ...validBuilding,
                 screeningCriteria: {
                     ...validBuilding.screeningCriteria!,
-                    minCreditScore: 200, // Too low
-                    incomeRatio: 15, // Too high
+                    minCreditScore:         200, // Too low
+                    incomeRatio:            15, // Too high
                     maxOccupantsPerBedroom: 10 // Too high
                 }
             };
@@ -203,7 +203,7 @@ describe('Building Form Validation', () => {
                 const building = {
                     ...validBuilding,
                     incomeRestrictions: {
-                        amiLimit: testCase.amiLimit as number | undefined,
+                        amiLimit:                 testCase.amiLimit as number | undefined,
                         maxIncomeByHouseholdSize: { '1': 50000, '2': 60000, '3': 70000, '4': 80000 }
                     }
                 };
@@ -378,8 +378,8 @@ describe('Building Form Validation', () => {
         it('should handle special characters in text fields', () => {
             const building = {
                 ...validBuilding,
-                street: '123 Main St. Apt #5-B (Rear)',
-                city: 'São Paulo',
+                street:      '123 Main St. Apt #5-B (Rear)',
+                city:        'São Paulo',
                 description: 'Building with émojis 🏢 and spëcial characters!'
             };
 
@@ -395,22 +395,22 @@ describe('Building Form Validation', () => {
                 ...validBuilding,
                 rentSpecials: [
                     {
-                        title: '   ', // Only whitespace
+                        title:       '   ', // Only whitespace
                         description: 'Valid description',
-                        startDate: '2025-01-01',
-                        endDate: '2025-02-01'
+                        startDate:   '2025-01-01',
+                        endDate:     '2025-02-01'
                     },
                     {
-                        title: 'Valid Special',
+                        title:       'Valid Special',
                         description: '',
-                        startDate: '2025-01-15',
-                        endDate: '2025-01-10' // End before start
+                        startDate:   '2025-01-15',
+                        endDate:     '2025-01-10' // End before start
                     },
                     {
-                        title: 'Another Valid Special',
+                        title:       'Another Valid Special',
                         description: 'Good description',
-                        startDate: '2025-03-01',
-                        endDate: '2025-03-31'
+                        startDate:   '2025-03-01',
+                        endDate:     '2025-03-31'
                     }
                 ]
             };

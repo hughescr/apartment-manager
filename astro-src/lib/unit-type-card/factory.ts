@@ -2,14 +2,14 @@
 // Extracted from UnitTypeCard.astro for centralized registry
 
 interface AlpineContext {
-    $root?: HTMLElement
-    $el?: HTMLElement
+    $root?:    HTMLElement
+    $el?:      HTMLElement
     $dispatch: (event: string, detail: unknown) => void
 }
 
 interface DepositObject {
-    amount?: number
-    refundable?: boolean
+    amount?:                  number
+    refundable?:              boolean
     partialRefundPercentage?: number
 }
 
@@ -66,10 +66,10 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
     const apiURL = element?.dataset?.apiUrl || '';
 
     return {
-        unitType: unitType,
-        originalUnitType: JSON.parse(JSON.stringify(unitType)), // Deep copy for original state
-        apiURL: apiURL,
-        saving: false,
+        unitType:          unitType,
+        originalUnitType:  JSON.parse(JSON.stringify(unitType)), // Deep copy for original state
+        apiURL:            apiURL,
+        saving:            false,
         expandedAmenities: false,
         buildingAmenities: buildingAmenities || [], // Use passed building amenities
 
@@ -109,9 +109,9 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
             this.saving = true;
             try {
                 const response = await fetch(context.apiURL + 'buildings/' + context.unitType.buildingID + '/unit-types/' + context.unitType.modelID, {
-                    method: 'PUT',
+                    method:  'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(context.unitType),
+                    body:    JSON.stringify(context.unitType),
                 });
                 if(response.ok) {
                     context.originalUnitType = { ...context.unitType };
@@ -142,8 +142,8 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
                 return '';
             }
             return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
+                style:                 'currency',
+                currency:              'USD',
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             }).format(value);
@@ -155,9 +155,9 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
             }
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', {
-                year: 'numeric',
+                year:  'numeric',
                 month: 'short',
-                day: 'numeric'
+                day:   'numeric'
             });
         },
 
@@ -166,7 +166,7 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
             // Convert legacy number deposits to enhanced object format
             if(typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit)) {
                 this.unitType.deposit = {
-                    amount: this.unitType.deposit,
+                    amount:     this.unitType.deposit,
                     refundable: true
                 };
             }
@@ -199,12 +199,12 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
 
             if(!this.unitType.deposit) {
                 this.unitType.deposit = {
-                    amount: amount,
+                    amount:     amount,
                     refundable: true
                 };
             } else if(typeof this.unitType.deposit === 'number' && !isNaN(this.unitType.deposit)) {
                 this.unitType.deposit = {
-                    amount: amount,
+                    amount:     amount,
                     refundable: true
                 };
             } else {

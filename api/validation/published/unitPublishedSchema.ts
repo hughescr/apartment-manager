@@ -36,7 +36,7 @@ const DepositPublishedSchema = z.union([
         amount: z.number()
             .min(0, 'Deposit amount cannot be negative for MITS Deposit element')
             .max(50000, 'Deposit amount seems unusually high - please verify'),
-        refundable: z.boolean().optional(),
+        refundable:              z.boolean().optional(),
         partialRefundPercentage: z.number()
             .min(0, 'Partial refund percentage cannot be negative')
             .max(100, 'Partial refund percentage cannot exceed 100%')
@@ -155,7 +155,7 @@ export const UnitPublishedSchema = z.object({
 
     // MITS ILSUnit.Availability dates - CONDITIONAL REQUIRED based on vacancy class
     availableDate: mitsDateString('Available date'),
-    vacateDate: mitsDateString('Vacate date'),
+    vacateDate:    mitsDateString('Vacate date'),
     madeReadyDate: mitsDateString('Made ready date'),
 
     // Optional but recommended MITS fields
@@ -226,7 +226,7 @@ export const UnitPublishedSchema = z.object({
         .optional(),
 
     // Feed management fields
-    feedInclusion: z.record(z.string(), z.boolean()).optional(),
+    feedInclusion:    z.record(z.string(), z.boolean()).optional(),
     manualReferences: z.record(z.string(), z.string()).optional(),
 
     // Metadata
@@ -244,7 +244,7 @@ export const UnitPublishedSchema = z.object({
     },
     {
         message: 'Minimum lease term cannot be greater than maximum lease term',
-        path: ['maxLeaseTerm']
+        path:    ['maxLeaseTerm']
     }
 )
 .refine(
@@ -263,7 +263,7 @@ export const UnitPublishedSchema = z.object({
     },
     {
         message: 'Vacate date cannot be after made ready date for MITS Availability logic',
-        path: ['madeReadyDate']
+        path:    ['madeReadyDate']
     }
 )
 .refine(
@@ -282,7 +282,7 @@ export const UnitPublishedSchema = z.object({
     },
     {
         message: 'Made ready date cannot be after available date for MITS Availability logic',
-        path: ['availableDate']
+        path:    ['availableDate']
     }
 );
 
@@ -292,10 +292,10 @@ export type UnitPublishedInput = z.infer<typeof UnitPublishedSchema>;
  * MITS validation error messages for common unit failures
  */
 export const MITS_UNIT_ERROR_MESSAGES = {
-    MISSING_REQUIRED_FIELD: 'This field is required for MITS 4.1 ILSUnit compliance and must be provided before publishing',
-    INVALID_VACANCY_CLASS: 'Invalid vacancy class: must be one of Occupied, Unoccupied, Notice, Down (MITS standard)',
+    MISSING_REQUIRED_FIELD:    'This field is required for MITS 4.1 ILSUnit compliance and must be provided before publishing',
+    INVALID_VACANCY_CLASS:     'Invalid vacancy class: must be one of Occupied, Unoccupied, Notice, Down (MITS standard)',
     MISSING_AVAILABILITY_DATE: 'Available date is required for unoccupied units per MITS Availability requirements',
-    INVALID_ROOM_COUNT: 'Invalid room configuration: beds and baths are required for MITS ILSUnit elements',
-    INVALID_DATE_SEQUENCE: 'Invalid date sequence: dates must follow logical order (vacate → made ready → available)',
-    ZERO_RENT: 'Rent must be greater than 0 for MITS unit availability publication'
+    INVALID_ROOM_COUNT:        'Invalid room configuration: beds and baths are required for MITS ILSUnit elements',
+    INVALID_DATE_SEQUENCE:     'Invalid date sequence: dates must follow logical order (vacate → made ready → available)',
+    ZERO_RENT:                 'Rent must be greater than 0 for MITS unit availability publication'
 } as const;

@@ -27,9 +27,9 @@ describe('Alpine.js Registry Error Handling', () => {
     describe('Malformed Data Attributes', () => {
         it('should handle completely invalid JSON gracefully', () => {
             const dataset = {
-                unitType: '{"invalid": json, missing quotes}',
+                unitType:          '{"invalid": json, missing quotes}',
                 buildingAmenities: '[broken array without closing bracket',
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -45,9 +45,9 @@ describe('Alpine.js Registry Error Handling', () => {
 
         it('should handle null and undefined JSON strings', () => {
             const dataset = {
-                unitType: 'null',
+                unitType:          'null',
                 buildingAmenities: 'undefined',
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -60,9 +60,9 @@ describe('Alpine.js Registry Error Handling', () => {
 
         it('should handle empty strings and whitespace', () => {
             const dataset = {
-                unitType: '',
+                unitType:          '',
                 buildingAmenities: '   ',
-                apiUrl: '   /api/   '
+                apiUrl:            '   /api/   '
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -77,9 +77,9 @@ describe('Alpine.js Registry Error Handling', () => {
         it('should handle mixed valid and invalid JSON attributes', () => {
             const validUnitType = { modelID: 'studio', beds: 0 };
             const dataset = {
-                unitType: JSON.stringify(validUnitType),
+                unitType:          JSON.stringify(validUnitType),
                 buildingAmenities: 'invalid-json[',
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -122,7 +122,7 @@ describe('Alpine.js Registry Error Handling', () => {
 
         it('should handle empty string values as missing', () => {
             const mockElement = createMockElement({
-                apiUrl: '',
+                apiUrl:     '',
                 buildingId: ''
             });
             const factory = createUnitTypeFormFactory();
@@ -134,7 +134,7 @@ describe('Alpine.js Registry Error Handling', () => {
 
         it('should handle whitespace-only values as missing', () => {
             const mockElement = createMockElement({
-                apiUrl: '   ',
+                apiUrl:     '   ',
                 buildingId: '   '
             });
             const factory = createUnitTypeFormFactory();
@@ -150,8 +150,8 @@ describe('Alpine.js Registry Error Handling', () => {
             const dataset = {
                 defaultLat: 'not-a-number',
                 defaultLng: 'also-not-a-number',
-                latModel: 'lat',
-                lngModel: 'lng'
+                latModel:   'lat',
+                lngModel:   'lng'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -166,8 +166,8 @@ describe('Alpine.js Registry Error Handling', () => {
 
         it('should handle malformed addressModels configuration', () => {
             const dataset = {
-                latModel: 'lat',
-                lngModel: 'lng',
+                latModel:      'lat',
+                lngModel:      'lng',
                 addressModels: '{"addressModel": incomplete json'
             };
 
@@ -202,14 +202,14 @@ describe('Alpine.js Registry Error Handling', () => {
             mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
             const mockUnitType = {
-                modelID: 'studio',
+                modelID:    'studio',
                 buildingID: 'building-1',
-                rent: 2000
+                rent:       2000
             };
 
             const dataset = {
                 unitType: JSON.stringify(mockUnitType),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -227,20 +227,20 @@ describe('Alpine.js Registry Error Handling', () => {
 
         it('should handle HTTP error responses in save operations', async () => {
             mockFetch.mockResolvedValueOnce({
-                ok: false,
+                ok:     false,
                 status: 500,
-                json: () => Promise.resolve({ error: 'Internal server error' })
+                json:   () => Promise.resolve({ error: 'Internal server error' })
             });
 
             const mockUnitType = {
-                modelID: 'studio',
+                modelID:    'studio',
                 buildingID: 'building-1',
-                rent: 2000
+                rent:       2000
             };
 
             const dataset = {
                 unitType: JSON.stringify(mockUnitType),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -259,9 +259,9 @@ describe('Alpine.js Registry Error Handling', () => {
             mockFetch.mockRejectedValueOnce(new Error('Geocoding service unavailable'));
 
             const dataset = {
-                latModel: 'lat',
-                lngModel: 'lng',
-                apiUrl: '/api/',
+                latModel:      'lat',
+                lngModel:      'lng',
+                apiUrl:        '/api/',
                 addressModels: JSON.stringify({
                     addressModel: 'address'
                 })
@@ -287,8 +287,8 @@ describe('Alpine.js Registry Error Handling', () => {
             const dataset = {
                 unitType: JSON.stringify({
                     modelID: 123, // Number instead of string
-                    beds: '2', // String instead of number
-                    rent: null,
+                    beds:    '2', // String instead of number
+                    rent:    null,
                     deposit: 'invalid-deposit-type'
                 }),
                 apiUrl: '/api/'
@@ -313,7 +313,7 @@ describe('Alpine.js Registry Error Handling', () => {
             // but our factories should handle dataset parsing errors
             const dataset = {
                 unitType: '{"name": "test", "self": "[circular]"}', // Simulate what might happen
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);
@@ -338,15 +338,15 @@ describe('Alpine.js Registry Error Handling', () => {
     describe('Memory and Performance Edge Cases', () => {
         it('should handle very large JSON objects without memory issues', () => {
             const largeAmenities = Array(1000).fill(null).map((_, i) => ({
-                id: `amenity-${i}`,
-                name: `Amenity ${i}`,
+                id:          `amenity-${i}`,
+                name:        `Amenity ${i}`,
                 description: 'A'.repeat(1000) // Large description
             }));
 
             const dataset = {
-                unitType: JSON.stringify({ modelID: 'test' }),
+                unitType:          JSON.stringify({ modelID: 'test' }),
                 buildingAmenities: JSON.stringify(largeAmenities),
-                apiUrl: '/api/'
+                apiUrl:            '/api/'
             };
 
             const mockContext = createMockAlpineContext(dataset);

@@ -154,7 +154,7 @@ describe('Amenity Transformer', () => {
             const result = transformAmenities(testAmenities, 'unknown_site');
 
             const expected: MappedAmenity[] = map(testAmenities, amenity => ({
-                name: amenity.name,
+                name:     amenity.name,
                 category: amenity.category as string
             } as MappedAmenity));
             expect(result).toEqual(expected);
@@ -385,7 +385,7 @@ describe('Amenity Transformer', () => {
 
         it('should handle very long amenity lists', () => {
             const manyAmenities: Amenity[] = Array.from({ length: 100 }, (_, i) => ({
-                name: `Amenity ${i}`,
+                name:     `Amenity ${i}`,
                 category: AmenityCategory.PROPERTY
             }));
 
@@ -556,7 +556,7 @@ describe('Amenity Transformer', () => {
         it('should handle amenityListToString with extreme cases', () => {
             // Very large number of amenities
             const manyAmenities: Amenity[] = Array.from({ length: 1000 }, (_, i) => ({
-                name: `A${i}`,
+                name:     `A${i}`,
                 category: AmenityCategory.UNIT
             }));
 

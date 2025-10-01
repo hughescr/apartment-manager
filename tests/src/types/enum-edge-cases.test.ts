@@ -37,14 +37,14 @@ describe('Enum Edge Cases', () => {
         it('should accept null/undefined enum values in optional fields', () => {
             const fee: Fee = {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing null assignment to enum type for edge case validation
-                type: null as any, // Type system allows this with 'as any'
+                type:   null as any, // Type system allows this with 'as any'
                 amount: 100
             };
             expect(fee.type).toBeNull();
 
             const fee2: Fee = {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing undefined assignment to enum type for edge case validation
-                type: undefined as any,
+                type:   undefined as any,
                 amount: 100
             };
             expect(fee2.type).toBeUndefined();
@@ -54,7 +54,7 @@ describe('Enum Edge Cases', () => {
             const policy: PetPolicy = {
                 allowed: true,
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing array with mixed valid/invalid enum values including null/undefined
-                types: [PetType.DOG, undefined as any, PetType.CAT, null as any]
+                types:   [PetType.DOG, undefined as any, PetType.CAT, null as any]
             };
             expect(policy.types).toContain(undefined);
             expect(policy.types).toContain(null);
@@ -65,13 +65,13 @@ describe('Enum Edge Cases', () => {
     describe('Invalid Enum Assignments', () => {
         it('should accept non-enum string values with type assertion', () => {
             const building: BuildingData = {
-                buildingID: 'bldg-123',
+                buildingID:   'bldg-123',
                 propertyType: 'invalid-type' as PropertyType
             };
             expect(building.propertyType as string).toBe('invalid-type');
 
             const building2: BuildingData = {
-                buildingID: 'bldg-456',
+                buildingID:   'bldg-456',
                 propertyType: 'APARTMENT' as PropertyType // Wrong case
             };
             expect(building2.propertyType as string).toBe('APARTMENT');
@@ -79,14 +79,14 @@ describe('Enum Edge Cases', () => {
 
         it('should accept numeric values as enum with type assertion', () => {
             const amenity: Amenity = {
-                name: 'Test',
+                name:     'Test',
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing numeric value assignment to enum type for edge case testing
                 category: 123 as any as AmenityCategory
             };
             expect(amenity.category as unknown).toBe(123);
 
             const amenity2: Amenity = {
-                name: 'Test2',
+                name:     'Test2',
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing boolean value assignment to enum type for edge case testing
                 category: true as any as AmenityCategory
             };
@@ -96,7 +96,7 @@ describe('Enum Edge Cases', () => {
         it('should accept object types as enum values', () => {
             const parking: ParkingOption = {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing object assignment to enum type to verify type system behavior
-                type: { invalid: 'object' } as any as ParkingType,
+                type:     { invalid: 'object' } as any as ParkingType,
                 included: true
             };
             expect(typeof parking.type).toBe('object');
@@ -109,7 +109,7 @@ describe('Enum Edge Cases', () => {
         it('should accept empty arrays for enum array fields', () => {
             const policy: PetPolicy = {
                 allowed: true,
-                types: []
+                types:   []
             };
             expect(policy.types).toEqual([]);
             expect(policy.types).toHaveLength(0);
@@ -118,7 +118,7 @@ describe('Enum Edge Cases', () => {
         it('should accept arrays with invalid enum values', () => {
             const policy: PetPolicy = {
                 allowed: true,
-                types: ['invalid-pet' as PetType, '' as PetType, '   ' as PetType]
+                types:   ['invalid-pet' as PetType, '' as PetType, '   ' as PetType]
             };
             expect(policy.types).toContain('invalid-pet');
             expect(policy.types).toContain('');
@@ -128,7 +128,7 @@ describe('Enum Edge Cases', () => {
         it('should accept mixed valid and invalid enum values', () => {
             const policy: PetPolicy = {
                 allowed: true,
-                types: [
+                types:   [
                     PetType.DOG,
                     'not-a-pet' as PetType,
                     PetType.CAT,
@@ -149,7 +149,7 @@ describe('Enum Edge Cases', () => {
             const manyTypes = times(10000, () => PetType.DOG);
             const policy: PetPolicy = {
                 allowed: true,
-                types: manyTypes
+                types:   manyTypes
             };
             expect(policy.types).toHaveLength(10000);
         });
@@ -176,7 +176,7 @@ describe('Enum Edge Cases', () => {
                 ['MONDAY' as any]: { open: '09:00', close: '17:00' },
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing title case day name as key for case sensitivity validation
                 ['Monday' as any]: { open: '10:00', close: '18:00' },
-                ['monday']: { open: '11:00', close: '19:00' },
+                ['monday']:        { open: '11:00', close: '19:00' },
                 ['mondayCorrect']: { open: '12:00', close: '20:00' }
             };
             expect(hours.MONDAY).toBeDefined();
@@ -189,13 +189,13 @@ describe('Enum Edge Cases', () => {
     describe('Whitespace in Enum Values', () => {
         it('should accept enum values with leading/trailing whitespace', () => {
             const fee: Fee = {
-                type: '  application  ' as FeeType,
+                type:   '  application  ' as FeeType,
                 amount: 50
             };
             expect(fee.type as string).toBe('  application  ');
 
             const fee2: Fee = {
-                type: '\tapplication\n' as FeeType,
+                type:   '\tapplication\n' as FeeType,
                 amount: 50
             };
             expect(fee2.type as string).toBe('\tapplication\n');
@@ -203,13 +203,13 @@ describe('Enum Edge Cases', () => {
 
         it('should accept enum values with internal spaces', () => {
             const storage: StorageOption = {
-                type: 'external unit' as StorageType, // Missing hyphen
+                type:     'external unit' as StorageType, // Missing hyphen
                 included: true
             };
             expect(storage.type as string).toBe('external unit');
 
             const property: BuildingData = {
-                buildingID: 'bldg-123',
+                buildingID:   'bldg-123',
                 propertyType: 'single family' as PropertyType // Missing hyphen
             };
             expect(property.propertyType as string).toBe('single family');
@@ -219,10 +219,10 @@ describe('Enum Edge Cases', () => {
     describe('Special Characters in Enum Strings', () => {
         it('should accept enum values with special characters', () => {
             const utility: Record<string, boolean> = {
-                ['water!@#$' as UtilityType]: true,
+                ['water!@#$' as UtilityType]:                     true,
                 ['<script>alert("xss")</script>' as UtilityType]: false,
-                ['water\u0000' as UtilityType]: true, // Null character
-                ['💧' as UtilityType]: true // Emoji
+                ['water\u0000' as UtilityType]:                   true, // Null character
+                ['💧' as UtilityType]:                             true // Emoji
             };
             expect(utility['water!@#$']).toBe(true);
             expect(utility['<script>alert("xss")</script>']).toBe(false);
@@ -231,7 +231,7 @@ describe('Enum Edge Cases', () => {
 
         it('should handle SQL injection attempts in enum values', () => {
             const fee: Fee = {
-                type: "'; DROP TABLE fees; --" as FeeType,
+                type:   "'; DROP TABLE fees; --" as FeeType,
                 amount: 100
             };
             expect(fee.type as string).toBe("'; DROP TABLE fees; --");
@@ -240,7 +240,7 @@ describe('Enum Edge Cases', () => {
         it('should handle very long enum string values', () => {
             const longString = repeat('a', 10000);
             const amenity: Amenity = {
-                name: 'Test',
+                name:     'Test',
                 category: longString as AmenityCategory
             };
             expect(amenity.category).toHaveLength(10000);
@@ -251,7 +251,7 @@ describe('Enum Edge Cases', () => {
         it('should show what happens with enum concatenation', () => {
             const combined = (PropertyType.APARTMENT as string) + (PropertyType.CONDO as string);
             const building: BuildingData = {
-                buildingID: 'bldg-123',
+                buildingID:   'bldg-123',
                 propertyType: combined as PropertyType
             };
             expect(building.propertyType as string).toBe('apartmentcondo');
@@ -259,19 +259,19 @@ describe('Enum Edge Cases', () => {
 
         it('should handle enum values that look like other types', () => {
             const parking: ParkingOption = {
-                type: 'true' as ParkingType, // String that looks like boolean
+                type:     'true' as ParkingType, // String that looks like boolean
                 included: true
             };
             expect(parking.type as string).toBe('true');
 
             const parking2: ParkingOption = {
-                type: '123' as ParkingType, // String that looks like number
+                type:     '123' as ParkingType, // String that looks like number
                 included: false
             };
             expect(parking2.type as string).toBe('123');
 
             const parking3: ParkingOption = {
-                type: 'null' as ParkingType, // String that looks like null
+                type:     'null' as ParkingType, // String that looks like null
                 included: true
             };
             expect(parking3.type as string).toBe('null');

@@ -25,10 +25,10 @@ describe('MITS Core Generator', () => {
     describe('Basic XML Generation', () => {
         it('should generate valid MITS 4.1 XML structure', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
@@ -38,10 +38,10 @@ describe('MITS Core Generator', () => {
 
         it('should include property identification', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Property_ID>');
@@ -52,10 +52,10 @@ describe('MITS Core Generator', () => {
 
         it('should include property address', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Property_ID>');
@@ -68,10 +68,10 @@ describe('MITS Core Generator', () => {
 
         it('should include contact information', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('<Information>');
@@ -81,10 +81,10 @@ describe('MITS Core Generator', () => {
 
         it('should include UnitCount in Information section', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Should include count of units included in the feed
@@ -95,10 +95,10 @@ describe('MITS Core Generator', () => {
             const buildingWithoutAddress = createBuildingWithoutAddress();
 
             const xml = await generateMITSFeed({
-                building: buildingWithoutAddress,
+                building:  buildingWithoutAddress,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             // Address is required by MITS spec, should have fallback values
@@ -115,10 +115,10 @@ describe('MITS Core Generator', () => {
             const buildingWithSpecialChars = createBuildingWithSpecialChars();
 
             const xml = await generateMITSFeed({
-                building: buildingWithSpecialChars,
+                building:  buildingWithSpecialChars,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             expect(xml).toContain('Smith &amp; Jones Apartments');
@@ -130,10 +130,10 @@ describe('MITS Core Generator', () => {
             const minimalBuilding = createMinimalBuilding();
 
             const xml = await generateMITSFeed({
-                building: minimalBuilding,
+                building:  minimalBuilding,
                 unitTypes: [],
-                units: [],
-                siteName: 'apartments_com'
+                units:     [],
+                siteName:  'apartments_com'
             });
 
             // Should still generate valid XML structure
@@ -146,10 +146,10 @@ describe('MITS Core Generator', () => {
     describe('Validation', () => {
         it('should generate XML that passes MITS validation', async () => {
             const xml = await generateMITSFeed({
-                building: mockBuilding,
+                building:  mockBuilding,
                 unitTypes: mockUnitTypes,
-                units: mockUnits,
-                siteName: 'apartments_com'
+                units:     mockUnits,
+                siteName:  'apartments_com'
             });
 
             const isValid = validateMITSXML(xml);
@@ -159,10 +159,10 @@ describe('MITS Core Generator', () => {
         it('should reject invalid building data', async () => {
             expect(async () => {
                 await generateMITSFeed({
-                    building: { buildingID: '' }, // Invalid: empty ID
+                    building:  { buildingID: '' }, // Invalid: empty ID
                     unitTypes: [],
-                    units: [],
-                    siteName: 'apartments_com'
+                    units:     [],
+                    siteName:  'apartments_com'
                 });
             }).toThrow('Building ID is required');
         });

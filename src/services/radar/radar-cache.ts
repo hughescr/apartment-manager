@@ -113,8 +113,8 @@ export class RadarCache {
         const key = this.createAutocompleteKey(query, coordinates);
         const now = Date.now();
         this.autocompleteCache.set(key, {
-            results: map(results, r => ({ ...r, source: 'radar' as const })),
-            timestamp: now,
+            results:      map(results, r => ({ ...r, source: 'radar' as const })),
+            timestamp:    now,
             lastAccessed: now
         });
 
@@ -151,7 +151,7 @@ export class RadarCache {
         const now = Date.now();
         this.ipCache.set(clientIP, {
             result,
-            timestamp: now,
+            timestamp:    now,
             lastAccessed: now
         });
 
@@ -170,20 +170,20 @@ export class RadarCache {
     }
 
     getStats(): {
-        autocompleteSize: number
-        ipSize: number
-        maxAutocompleteSize: number
-        maxIPSize: number
+        autocompleteSize:       number
+        ipSize:                 number
+        maxAutocompleteSize:    number
+        maxIPSize:              number
         autocompleteTtlMinutes: number
-        ipTtlMinutes: number
+        ipTtlMinutes:           number
     } {
         return {
-            autocompleteSize: this.autocompleteCache.size,
-            ipSize: this.ipCache.size,
-            maxAutocompleteSize: this.maxAutocompleteSize,
-            maxIPSize: this.maxIPSize,
+            autocompleteSize:       this.autocompleteCache.size,
+            ipSize:                 this.ipCache.size,
+            maxAutocompleteSize:    this.maxAutocompleteSize,
+            maxIPSize:              this.maxIPSize,
             autocompleteTtlMinutes: 5,
-            ipTtlMinutes: 60
+            ipTtlMinutes:           60
         };
     }
 }

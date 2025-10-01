@@ -13,11 +13,11 @@ export interface ExtendedPetPolicy extends PetPolicy {
  * Individual pet type policy configuration
  */
 export interface PetTypePolicy {
-    type: PetType
-    weightLimit?: number
-    countLimit?: number
-    fee?: number
-    deposit?: number
+    type:               PetType
+    weightLimit?:       number
+    countLimit?:        number
+    fee?:               number
+    deposit?:           number
     breedRestrictions?: string[]
 }
 
@@ -34,23 +34,23 @@ export interface PetTypeOption {
  */
 export interface PetPolicyUIState {
     showBreedRestrictions: boolean
-    newBreedRestriction: string
-    showAdvancedSettings: boolean
+    newBreedRestriction:   string
+    showAdvancedSettings:  boolean
 }
 
 /**
  * Pet policy form errors
  */
 export interface PetPolicyErrors {
-    general?: string
-    types?: string
-    maxCount?: string
-    weightLimit?: string
-    deposit?: string
-    monthlyFee?: string
-    oneTimeFee?: string
+    general?:           string
+    types?:             string
+    maxCount?:          string
+    weightLimit?:       string
+    deposit?:           string
+    monthlyFee?:        string
+    oneTimeFee?:        string
     breedRestrictions?: string
-    notes?: string
+    notes?:             string
 }
 
 /**
@@ -59,7 +59,7 @@ export interface PetPolicyErrors {
 export interface PetCostSummary {
     upfront: number
     monthly: number
-    annual: number
+    annual:  number
 }
 
 /**
@@ -67,14 +67,14 @@ export interface PetCostSummary {
  */
 export interface PetPolicyState extends PetPolicyUIState {
     // Data
-    modelName: string
-    petTypes: PetTypeOption[]
+    modelName:    string
+    petTypes:     PetTypeOption[]
     commonBreeds: string[]
 
     // Computed properties
-    petsAllowed: boolean
-    totalPetCost: PetCostSummary
-    hasAdvancedPetTypes: boolean
+    petsAllowed:             boolean
+    totalPetCost:            PetCostSummary
+    hasAdvancedPetTypes:     boolean
     advancedPetTypesSummary: string
 
     // Methods
@@ -100,14 +100,14 @@ export type PetPolicyStateWithMagic = PetPolicyState & AlpineMagics & Record<str
  * Props for pet policy components
  */
 export interface PetPolicyComponentProps {
-    name: string
-    label?: string
-    xModel: string
+    name:       string
+    label?:     string
+    xModel:     string
     petPolicy?: PetPolicy
-    required?: boolean
-    disabled?: boolean
-    'class'?: string
-    error?: string
+    required?:  boolean
+    disabled?:  boolean
+    'class'?:   string
+    error?:     string
     showLabel?: boolean
 }
 
@@ -116,15 +116,15 @@ export interface PetPolicyComponentProps {
  */
 export interface PetTypeEditorProps {
     petTypeIndex: number
-    disabled?: boolean
+    disabled?:    boolean
 }
 
 /**
  * Breed restrictions component props
  */
 export interface BreedRestrictionsProps {
-    xModel: string
-    disabled?: boolean
+    xModel:            string
+    disabled?:         boolean
     showCommonBreeds?: boolean
 }
 
@@ -132,9 +132,9 @@ export interface BreedRestrictionsProps {
  * Pet fee manager component props
  */
 export interface PetFeeManagerProps {
-    name: string
-    xModel: string
-    disabled?: boolean
+    name:         string
+    xModel:       string
+    disabled?:    boolean
     showSummary?: boolean
 }
 
@@ -143,7 +143,7 @@ export interface PetFeeManagerProps {
  */
 export interface PetPolicyValidationResult {
     isValid: boolean
-    errors: PetPolicyErrors
+    errors:  PetPolicyErrors
 }
 
 /**

@@ -9,44 +9,44 @@ describe('MapperRegistry', () => {
 
     // Mock mapper implementations
     const mockMappedBuilding: MappedBuilding = {
-        name: 'Test Building',
-        address: { street: '123 Main St', city: 'Test City', state: 'TS', zip: '12345' },
+        name:         'Test Building',
+        address:      { street: '123 Main St', city: 'Test City', state: 'TS', zip: '12345' },
         propertyType: 'apartment'
     };
 
     const mockMappedUnitType: MappedUnitType = {
         modelName: 'Test Model',
-        beds: 2,
-        baths: 2
+        beds:      2,
+        baths:     2
     };
 
     const mockMappedUnit: MappedUnit = {
         unitNumber: '101',
-        beds: 2,
-        baths: 2,
-        rent: 1500
+        beds:       2,
+        baths:      2,
+        rent:       1500
     };
 
     const mockApartmentsMapper: SiteMapper = {
-        siteId: 'apartments_com',
-        siteName: 'Apartments.com',
-        mapBuilding: () => mockMappedBuilding,
-        mapUnitType: () => mockMappedUnitType,
-        mapUnit: () => mockMappedUnit,
+        siteId:           'apartments_com',
+        siteName:         'Apartments.com',
+        mapBuilding:      () => mockMappedBuilding,
+        mapUnitType:      () => mockMappedUnitType,
+        mapUnit:          () => mockMappedUnit,
         validateBuilding: () => ({ isValid: true, errors: [] }),
         validateUnitType: () => ({ isValid: true, errors: [] }),
-        validateUnit: () => ({ isValid: true, errors: [] })
+        validateUnit:     () => ({ isValid: true, errors: [] })
     };
 
     const mockZillowMapper: SiteMapper = {
-        siteId: 'zillow',
-        siteName: 'Zillow Rental Manager',
-        mapBuilding: () => mockMappedBuilding,
-        mapUnitType: () => mockMappedUnitType,
-        mapUnit: () => mockMappedUnit,
+        siteId:           'zillow',
+        siteName:         'Zillow Rental Manager',
+        mapBuilding:      () => mockMappedBuilding,
+        mapUnitType:      () => mockMappedUnitType,
+        mapUnit:          () => mockMappedUnit,
         validateBuilding: () => ({ isValid: true, errors: [] }),
         validateUnitType: () => ({ isValid: true, errors: [] }),
-        validateUnit: () => ({ isValid: true, errors: [] })
+        validateUnit:     () => ({ isValid: true, errors: [] })
     };
 
     beforeEach(() => {
@@ -401,7 +401,7 @@ describe('MapperRegistry', () => {
             for(let i = 0; i < count; i++) {
                 const mapper: SiteMapper = {
                     ...mockApartmentsMapper,
-                    siteId: `perf_test_${i}`,
+                    siteId:   `perf_test_${i}`,
                     siteName: `Performance Test Site ${i}`
                 };
                 registry.register(mapper);
@@ -468,8 +468,9 @@ describe('MapperRegistry', () => {
     describe('Invalid Mapper Object Edge Cases', () => {
         it('should handle mapper with missing methods gracefully', () => {
             const invalidMapper = {
-                siteId: 'invalid',
-                siteName: 'Invalid Mapper',
+                siteId:      'invalid',
+                siteName:    'Invalid Mapper',
+                // eslint-disable-next-line @typescript-eslint/unbound-method -- Not gonna call it just testing register
                 mapBuilding: mockApartmentsMapper.mapBuilding,
                 // Missing other required methods
             } as unknown as SiteMapper;
@@ -484,14 +485,14 @@ describe('MapperRegistry', () => {
 
         it('should handle null/undefined values in mapper properties', () => {
             const mapperWithNulls: SiteMapper = {
-                siteId: 'null_test',
-                siteName: null as unknown as string,
-                mapBuilding: () => null as unknown as MappedBuilding,
-                mapUnitType: () => null as unknown as MappedUnitType,
-                mapUnit: () => null as unknown as MappedUnit,
+                siteId:           'null_test',
+                siteName:         null as unknown as string,
+                mapBuilding:      () => null as unknown as MappedBuilding,
+                mapUnitType:      () => null as unknown as MappedUnitType,
+                mapUnit:          () => null as unknown as MappedUnit,
                 validateBuilding: () => ({ isValid: true, errors: [] }),
                 validateUnitType: () => ({ isValid: true, errors: [] }),
-                validateUnit: () => ({ isValid: true, errors: [] })
+                validateUnit:     () => ({ isValid: true, errors: [] })
             };
 
             registry.register(mapperWithNulls);
@@ -503,14 +504,14 @@ describe('MapperRegistry', () => {
 
         it('should handle mappers that throw errors', () => {
             const throwingMapper: SiteMapper = {
-                siteId: 'throwing',
-                siteName: 'Throwing Mapper',
-                mapBuilding: () => { throw new Error('Building mapping error'); },
-                mapUnitType: () => { throw new Error('Unit type mapping error'); },
-                mapUnit: () => { throw new Error('Unit mapping error'); },
+                siteId:           'throwing',
+                siteName:         'Throwing Mapper',
+                mapBuilding:      () => { throw new Error('Building mapping error'); },
+                mapUnitType:      () => { throw new Error('Unit type mapping error'); },
+                mapUnit:          () => { throw new Error('Unit mapping error'); },
                 validateBuilding: () => { throw new Error('Building validation error'); },
                 validateUnitType: () => { throw new Error('Unit type validation error'); },
-                validateUnit: () => { throw new Error('Unit validation error'); }
+                validateUnit:     () => { throw new Error('Unit validation error'); }
             };
 
             // Registration should succeed
@@ -654,7 +655,7 @@ describe('MapperRegistry', () => {
             forEach(unicodeIds, (id, index) => {
                 const mapper: SiteMapper = {
                     ...mockApartmentsMapper,
-                    siteId: id,
+                    siteId:   id,
                     siteName: `Unicode Test ${index}`
                 };
                 registry.register(mapper);
@@ -682,7 +683,7 @@ describe('MapperRegistry', () => {
     describe('Circular Reference Edge Cases', () => {
         it('should handle mappers with circular references', () => {
             const circularMapper: Record<string, unknown> = {
-                siteId: 'circular',
+                siteId:   'circular',
                 siteName: 'Circular Mapper'
             };
 
@@ -706,23 +707,23 @@ describe('MapperRegistry', () => {
 
         it('should handle deep object graphs in mappers', () => {
             const deepMapper: SiteMapper = {
-                siteId: 'deep',
-                siteName: 'Deep Mapper',
+                siteId:      'deep',
+                siteName:    'Deep Mapper',
                 mapBuilding: () => ({
-                    name: 'Deep Building',
+                    name:    'Deep Building',
                     address: {
                         street: '123 Deep St',
-                        city: 'Deep City',
-                        state: 'DC',
-                        zip: '12345'
+                        city:   'Deep City',
+                        state:  'DC',
+                        zip:    '12345'
                     },
                     propertyType: 'apartment'
                 }),
-                mapUnitType: () => mockMappedUnitType,
-                mapUnit: () => mockMappedUnit,
+                mapUnitType:      () => mockMappedUnitType,
+                mapUnit:          () => mockMappedUnit,
                 validateBuilding: () => ({ isValid: true, errors: [] }),
                 validateUnitType: () => ({ isValid: true, errors: [] }),
-                validateUnit: () => ({ isValid: true, errors: [] })
+                validateUnit:     () => ({ isValid: true, errors: [] })
             };
 
             registry.register(deepMapper);

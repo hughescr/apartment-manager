@@ -12,29 +12,29 @@ import { mockQueryResponse } from '../helpers/mock-responses';
 // Helper function to create API Gateway events
 function createAPIGatewayEvent(site?: string): APIGatewayProxyEventV2 {
     return {
-        version: '2.0',
-        routeKey: 'GET /feed/{site}/live',
-        rawPath: `/feed/${site || ''}/live`,
-        rawQueryString: '',
-        headers: {},
-        pathParameters: site ? { site } : {},
+        version:         '2.0',
+        routeKey:        'GET /feed/{site}/live',
+        rawPath:         `/feed/${site || ''}/live`,
+        rawQueryString:  '',
+        headers:         {},
+        pathParameters:  site ? { site } : {},
         isBase64Encoded: false,
-        requestContext: {
-            accountId: 'test',
-            apiId: 'test',
-            domainName: 'test.com',
+        requestContext:  {
+            accountId:    'test',
+            apiId:        'test',
+            domainName:   'test.com',
             domainPrefix: 'test',
-            http: {
-                method: 'GET',
-                path: `/feed/${site || ''}/live`,
-                protocol: 'HTTP/1.1',
-                sourceIp: '127.0.0.1',
+            http:         {
+                method:    'GET',
+                path:      `/feed/${site || ''}/live`,
+                protocol:  'HTTP/1.1',
+                sourceIp:  '127.0.0.1',
                 userAgent: 'test'
             },
             requestId: 'test',
-            routeKey: 'GET /feed/{site}/live',
-            stage: 'test',
-            time: '01/Jan/2024:00:00:00 +0000',
+            routeKey:  'GET /feed/{site}/live',
+            stage:     'test',
+            time:      '01/Jan/2024:00:00:00 +0000',
             timeEpoch: 1704067200000
         }
     };
@@ -43,23 +43,23 @@ function createAPIGatewayEvent(site?: string): APIGatewayProxyEventV2 {
 // Test data factories
 function createTestBuilding(id: string, name: string): BuildingData {
     return {
-        buildingID: id,
-        buildingName: name,
-        street: '123 Test Street',
-        city: 'Test City',
-        state: 'TX',
-        zip: '75001',
-        latitude: 32.7767,
-        longitude: -96.7970,
-        description: 'Test apartment complex',
-        yearBuilt: 2020,
-        numberStories: 3,
-        totalUnits: 24,
+        buildingID:          id,
+        buildingName:        name,
+        street:              '123 Test Street',
+        city:                'Test City',
+        state:               'TX',
+        zip:                 '75001',
+        latitude:            32.7767,
+        longitude:           -96.7970,
+        description:         'Test apartment complex',
+        yearBuilt:           2020,
+        numberStories:       3,
+        totalUnits:          24,
         propertyDescription: 'Beautiful test apartments with modern amenities',
-        contactInfo: {
-            name: 'Test Manager',
-            phone: '(555) 123-4567',
-            email: 'test@example.com',
+        contactInfo:         {
+            name:            'Test Manager',
+            phone:           '(555) 123-4567',
+            email:           'test@example.com',
             propertyWebsite: 'https://test.com'
         },
         propertyAmenities: [
@@ -67,11 +67,11 @@ function createTestBuilding(id: string, name: string): BuildingData {
             { name: 'Gym', category: AmenityCategory.PROPERTY }
         ],
         petPolicies: {
-            allowed: true,
-            deposit: 500,
+            allowed:    true,
+            deposit:    500,
             monthlyFee: 25
         },
-        applicationFee: 50,
+        applicationFee:            50,
         acceptsOnlineApplications: true
     };
 }
@@ -80,28 +80,28 @@ function createTestUnitTypes(buildingID: string): UnitTypeData[] {
     return [
         {
             buildingID,
-            modelID: 'model-studio',
-            modelName: 'Studio Deluxe',
-            beds: 0,
-            baths: 1,
-            minRent: 1200,
-            maxRent: 1400,
-            minSqft: 450,
-            maxSqft: 550,
-            deposit: 1200,
+            modelID:        'model-studio',
+            modelName:      'Studio Deluxe',
+            beds:           0,
+            baths:          1,
+            minRent:        1200,
+            maxRent:        1400,
+            minSqft:        450,
+            maxSqft:        550,
+            deposit:        1200,
             countAvailable: 3
         },
         {
             buildingID,
-            modelID: 'model-1br',
-            modelName: 'One Bedroom',
-            beds: 1,
-            baths: 1,
-            minRent: 1600,
-            maxRent: 1800,
-            minSqft: 750,
-            maxSqft: 850,
-            deposit: 1600,
+            modelID:        'model-1br',
+            modelName:      'One Bedroom',
+            beds:           1,
+            baths:          1,
+            minRent:        1600,
+            maxRent:        1800,
+            minSqft:        750,
+            maxSqft:        850,
+            deposit:        1600,
             countAvailable: 5
         }
     ];
@@ -111,30 +111,30 @@ function createTestUnits(buildingID: string, includeInFeed: { apartments_com: bo
     return [
         {
             buildingID,
-            unitID: `${buildingID}-unit-101`,
-            unitNumber: '101',
-            modelID: 'model-studio',
-            beds: 0,
-            baths: 1,
-            sqft: 500,
-            rent: 1300,
-            occupied: false,
+            unitID:        `${buildingID}-unit-101`,
+            unitNumber:    '101',
+            modelID:       'model-studio',
+            beds:          0,
+            baths:         1,
+            sqft:          500,
+            rent:          1300,
+            occupied:      false,
             availableDate: '2025-02-01',
-            deposit: 1300,
+            deposit:       1300,
             feedInclusion: includeInFeed
         },
         {
             buildingID,
-            unitID: `${buildingID}-unit-201`,
-            unitNumber: '201',
-            modelID: 'model-1br',
-            beds: 1,
-            baths: 1,
-            sqft: 800,
-            rent: 1700,
-            occupied: false,
+            unitID:        `${buildingID}-unit-201`,
+            unitNumber:    '201',
+            modelID:       'model-1br',
+            beds:          1,
+            baths:         1,
+            sqft:          800,
+            rent:          1700,
+            occupied:      false,
             availableDate: '2025-02-15',
-            deposit: 1700,
+            deposit:       1700,
             feedInclusion: includeInFeed
         }
     ];
@@ -189,9 +189,9 @@ describe('Feed API - /feed/{site}/live endpoint', () => {
 
             expect(result.statusCode).toBe(200);
             expect(result.headers).toEqual({
-                'Content-Type': 'application/xml',
+                'Content-Type':  'application/xml',
                 'Cache-Control': 'public, max-age=3600',
-                'X-Robots-Tag': 'noindex'
+                'X-Robots-Tag':  'noindex'
             });
             expect(typeof result.body).toBe('string');
             expect(result.body).toContain('<?xml');
@@ -207,9 +207,9 @@ describe('Feed API - /feed/{site}/live endpoint', () => {
 
             expect(result.statusCode).toBe(200);
             expect(result.headers).toEqual({
-                'Content-Type': 'application/xml',
+                'Content-Type':  'application/xml',
                 'Cache-Control': 'public, max-age=3600',
-                'X-Robots-Tag': 'noindex'
+                'X-Robots-Tag':  'noindex'
             });
             expect(typeof result.body).toBe('string');
             expect(result.body).toContain('<?xml');
@@ -329,7 +329,7 @@ describe('Feed API - /feed/{site}/live endpoint', () => {
 
             expect(result.statusCode).toBe(500);
             expect(JSON.parse(result.body!)).toEqual({
-                error: 'Failed to generate MITS feed',
+                error:   'Failed to generate MITS feed',
                 details: 'Database error'
             });
         });
@@ -379,9 +379,9 @@ describe('Feed API - /feed/{site}/live endpoint', () => {
 
             expect(result.statusCode).toBe(200);
             expect(result.headers).toEqual({
-                'Content-Type': 'application/xml',
+                'Content-Type':  'application/xml',
                 'Cache-Control': 'public, max-age=3600',
-                'X-Robots-Tag': 'noindex'
+                'X-Robots-Tag':  'noindex'
             });
             expect(result.body).toContain('<?xml');
             expect(result.body).toContain('<PhysicalProperties');

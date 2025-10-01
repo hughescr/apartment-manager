@@ -28,7 +28,7 @@ const s3Client = {
         const cmd = command as { constructor: { name: string } };
         if(cmd.constructor.name === 'PutObjectCommand') {
             return Promise.resolve({
-                ETag: '"mock-etag"',
+                ETag:      '"mock-etag"',
                 VersionId: 'mock-version-id',
             });
         }
@@ -66,7 +66,7 @@ const handleUploadRequest = async (body: string | null) => {
     if(!filename || !buildingId || !unitId) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Missing required fields' })
+            body:       JSON.stringify({ error: 'Missing required fields' })
         };
     }
 
@@ -76,7 +76,7 @@ const handleUploadRequest = async (body: string | null) => {
     if(buildingIdError || unitIdError) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Forbidden' })
+            body:       JSON.stringify({ error: 'Forbidden' })
         };
     }
 
@@ -84,14 +84,14 @@ const handleUploadRequest = async (body: string | null) => {
     if(!validatePath(filename)) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Forbidden' })
+            body:       JSON.stringify({ error: 'Forbidden' })
         };
     }
 
     if(!isValidImageType(filename)) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Invalid file type. Only images are allowed.' })
+            body:       JSON.stringify({ error: 'Invalid file type. Only images are allowed.' })
         };
     }
 
@@ -100,15 +100,15 @@ const handleUploadRequest = async (body: string | null) => {
 
     // Create presigned URL for upload
     const command = new PutObjectCommand({
-        Bucket: TestResource.PhotosBucket.name,
-        Key: key,
+        Bucket:      TestResource.PhotosBucket.name,
+        Key:         key,
         ContentType: contentType || 'image/jpeg',
         // Add metadata
-        Metadata: {
+        Metadata:    {
             buildingId,
             unitId,
             originalFilename: filename,
-            uploadedAt: new Date().toISOString()
+            uploadedAt:       new Date().toISOString()
         }
     });
 
@@ -119,7 +119,7 @@ const handleUploadRequest = async (body: string | null) => {
 
     return {
         statusCode: 200,
-        body: JSON.stringify({
+        body:       JSON.stringify({
             uploadUrl,
             key,
             publicUrl
@@ -134,7 +134,7 @@ const handleDeleteRequest = async (path: string) => {
     if(!key) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Missing key parameter' })
+            body:       JSON.stringify({ error: 'Missing key parameter' })
         };
     }
 
@@ -142,7 +142,7 @@ const handleDeleteRequest = async (path: string) => {
     if(!validatePath(key)) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Forbidden' })
+            body:       JSON.stringify({ error: 'Forbidden' })
         };
     }
 
@@ -150,27 +150,27 @@ const handleDeleteRequest = async (path: string) => {
     if(!startsWith(key, 'buildings/')) {
         return {
             statusCode: 403,
-            body: JSON.stringify({ error: 'Forbidden' })
+            body:       JSON.stringify({ error: 'Forbidden' })
         };
     }
 
     const command = new DeleteObjectCommand({
         Bucket: TestResource.PhotosBucket.name,
-        Key: key
+        Key:    key
     });
 
     await s3Client.send(command);
 
     return {
         statusCode: 200,
-        body: JSON.stringify({ success: true })
+        body:       JSON.stringify({ success: true })
     };
 };
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
+        'Content-Type':                 'application/json',
+        'Access-Control-Allow-Origin':  '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS'
     };
@@ -180,7 +180,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         return {
             statusCode: 200,
             headers,
-            body: ''
+            body:       ''
         };
     }
 
@@ -204,9 +204,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         return {
             statusCode: 405,
             headers,
-            body: JSON.stringify({ error: 'Method not allowed' })
+            body:       JSON.stringify({ error: 'Method not allowed' })
         };
-    } catch(error) {
+    } catch (error) {
         // Log error for debugging (removed console.error per ESLint)
         let errorMessage = 'Unknown error';
 
@@ -223,8 +223,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({
-                error: 'Internal server error',
+            body:       JSON.stringify({
+                error:   'Internal server error',
                 message: errorMessage
             })
         };

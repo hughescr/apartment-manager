@@ -22,7 +22,7 @@ const logger = baseLogger;
  */
 export interface RadarClientConfig {
     throttle?: {
-        limit: number
+        limit:    number
         interval: number
     }
     debounceDelay?: number
@@ -33,12 +33,12 @@ export interface RadarClientConfig {
  * Tests get faster settings to improve test performance
  */
 export function createRadarConfig(): RadarClientConfig {
-    const isTest = process.env.NODE_ENV === 'test' ||
-      process.env.BUN_ENV === 'test';
+    const isTest = process.env.NODE_ENV === 'test'
+      || process.env.BUN_ENV === 'test';
 
     return {
         throttle: {
-            limit: isTest ? 100 : 10,
+            limit:    isTest ? 100 : 10,
             interval: isTest ? 1 : 1000
         },
         debounceDelay: isTest ? 1 : 200
@@ -61,9 +61,9 @@ export function createRadarConfig(): RadarClientConfig {
 export class RadarClient {
     private readonly baseUrl = 'https://api.radar.io/v1';
     private readonly userAgent = 'apartment-manager/1.0';
-    private cache: RadarCache;
-    private config: RadarClientConfig;
-    private throttledMakeRequest: (endpoint: string, params: Record<string, string>) => Promise<Response>;
+    private cache:                 RadarCache;
+    private config:                RadarClientConfig;
+    private throttledMakeRequest:  (endpoint: string, params: Record<string, string>) => Promise<Response>;
     private debouncedAutocomplete: Map<string, (() => Promise<RadarAutocompleteResult[]>)>;
 
     constructor(cache: RadarCache, config?: RadarClientConfig) {
@@ -72,7 +72,7 @@ export class RadarClient {
 
         // Create a throttled version of makeRequest using config values
         const throttle = pThrottle({
-            limit: this.config.throttle?.limit || 10,
+            limit:    this.config.throttle?.limit || 10,
             interval: this.config.throttle?.interval || 1000
         });
         this.throttledMakeRequest = throttle(this.makeRequestInternal.bind(this));
@@ -114,8 +114,8 @@ export class RadarClient {
 
         return fetch(url.toString(), {
             headers: {
-                Authorization: this.createAuthHeader(),
-                'User-Agent': this.userAgent,
+                Authorization:  this.createAuthHeader(),
+                'User-Agent':   this.userAgent,
                 'Content-Type': 'application/json'
             }
         });
@@ -158,7 +158,7 @@ export class RadarClient {
                 }
 
                 const error: RadarServiceError = {
-                    code: errorCode,
+                    code:    errorCode,
                     message: `Radar IP geocoding error: ${response.status} ${response.statusText}`
                 };
                 logger.error('IP geocoding API error', error);
@@ -174,10 +174,10 @@ export class RadarClient {
 
             const coords = data.address.geometry.coordinates;
             const result: GeolocationResult = {
-                lat: coords[1], // Radar returns [lng, lat]
-                lon: coords[0],
+                lat:        coords[1], // Radar returns [lng, lat]
+                lon:        coords[0],
                 confidence: data.address.confidence,
-                source: 'ip'
+                source:     'ip'
             };
 
             // Cache the result if we have a specific IP
@@ -187,10 +187,10 @@ export class RadarClient {
 
             logger.info(`IP geocoding successful: ${ipAddress} -> ${result.lat}, ${result.lon}`);
             return result;
-        } catch(error) {
+        } catch (error) {
             const serviceError: RadarServiceError = {
-                code: 'NETWORK_ERROR',
-                message: 'Failed to get location from IP',
+                code:          'NETWORK_ERROR',
+                message:       'Failed to get location from IP',
                 originalError: error as Error
             };
             logger.error('IP geocoding failed', serviceError);
@@ -229,10 +229,10 @@ export class RadarClient {
             if(!debouncedFn) {
                 debouncedFn = pDebounce(async (): Promise<RadarAutocompleteResult[]> => {
                     const params: Record<string, string> = {
-                        query: trimmedQuery,
+                        query:   trimmedQuery,
                         country: 'US',
-                        layers: 'address,place',
-                        limit: limit.toString()
+                        layers:  'address,place',
+                        limit:   limit.toString()
                     };
 
                     // Add proximity bias if coordinates provided
@@ -251,7 +251,7 @@ export class RadarClient {
                         }
 
                         const error: RadarServiceError = {
-                            code: errorCode,
+                            code:    errorCode,
                             message: `Radar autocomplete error: ${response.status} ${response.statusText}`
                         };
                         logger.error('Autocomplete API error', error);
@@ -280,10 +280,10 @@ export class RadarClient {
             const results = await debouncedFn();
 
             return results ? results.slice(0, limit) : [];
-        } catch(error) {
+        } catch (error) {
             const serviceError: RadarServiceError = {
-                code: 'NETWORK_ERROR',
-                message: 'Failed to get address autocomplete suggestions',
+                code:          'NETWORK_ERROR',
+                message:       'Failed to get address autocomplete suggestions',
                 originalError: error as Error
             };
             logger.error('Address autocomplete failed', serviceError);
@@ -306,9 +306,9 @@ export class RadarClient {
             logger.info(`Forward geocoding address: ${trimmedAddress}`);
 
             const response = await this.makeRequest('/geocode/forward', {
-                query: trimmedAddress,
+                query:   trimmedAddress,
                 country: 'US',
-                limit: '1'
+                limit:   '1'
             });
 
             if(!response.ok) {
@@ -320,7 +320,7 @@ export class RadarClient {
                 }
 
                 const error: RadarServiceError = {
-                    code: errorCode,
+                    code:    errorCode,
                     message: `Radar geocoding error: ${response.status} ${response.statusText}`
                 };
                 logger.error('Forward geocoding API error', error);
@@ -342,10 +342,10 @@ export class RadarClient {
 
             logger.info(`Forward geocoding successful: ${trimmedAddress} -> ${result.lat}, ${result.lon}`);
             return result;
-        } catch(error) {
+        } catch (error) {
             const serviceError: RadarServiceError = {
-                code: 'NETWORK_ERROR',
-                message: 'Failed to geocode address',
+                code:          'NETWORK_ERROR',
+                message:       'Failed to geocode address',
                 originalError: error as Error
             };
             logger.error('Forward geocoding failed', serviceError);
@@ -359,8 +359,8 @@ export class RadarClient {
      */
     getDefaultLocation(): GeolocationResult {
         return {
-            lat: 37.7749,
-            lon: -122.4194,
+            lat:    37.7749,
+            lon:    -122.4194,
             source: 'fallback'
         };
     }
@@ -391,19 +391,19 @@ export class RadarClient {
             }
 
             const components = {
-                street: address.addressLabel,
-                city: address.city,
-                state: address.state,
-                country: address.country,
+                street:     address.addressLabel,
+                city:       address.city,
+                state:      address.state,
+                country:    address.country,
                 postalCode: address.postalCode
             };
 
             // Map Radar confidence levels to numeric scores
             const confidenceMap = {
-                exact: 1.0,
-                high: 0.8,
+                exact:  1.0,
+                high:   0.8,
                 medium: 0.6,
-                low: 0.4
+                low:    0.4
             };
 
             return {
@@ -415,10 +415,10 @@ export class RadarClient {
                 },
                 components,
                 confidence: address.confidence ? confidenceMap[address.confidence] : undefined,
-                source: 'radar',
-                id: `radar_${address.layer}_${index}_${Date.now()}`
+                source:     'radar',
+                id:         `radar_${address.layer}_${index}_${Date.now()}`
             };
-        } catch(error) {
+        } catch (error) {
             logger.warn('Failed to parse Radar autocomplete address', { address, error });
             return null;
         }
@@ -437,12 +437,12 @@ export class RadarClient {
      * Get cache statistics
      */
     getCacheStats(): {
-        autocompleteSize: number
-        ipSize: number
-        maxAutocompleteSize: number
-        maxIPSize: number
+        autocompleteSize:       number
+        ipSize:                 number
+        maxAutocompleteSize:    number
+        maxIPSize:              number
         autocompleteTtlMinutes: number
-        ipTtlMinutes: number
+        ipTtlMinutes:           number
     } {
         return this.cache.getStats();
     }

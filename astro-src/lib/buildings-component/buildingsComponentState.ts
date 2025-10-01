@@ -6,7 +6,7 @@ import type { BuildingData } from '../types';
 
 // Define Building interface locally since it's not exported from types
 interface Building {
-    buildingID: string
+    buildingID:    string
     buildingName?: string
     [key: string]: unknown
 }
@@ -17,8 +17,8 @@ export function createBuildingsComponentState() {
     return {
         activeBuildingTab: 0,
         // Toast properties removed - now uses global toast system
-        buildings: [] as BuildingData[],
-        apiURL: '',
+        buildings:         [] as BuildingData[],
+        apiURL:            '',
 
         init() {
             this.buildings = this.$el?.dataset.buildings ? JSON.parse(this.$el.dataset.buildings) : [];
@@ -110,16 +110,16 @@ export function createBuildingsComponentState() {
         showAndHideToast(message: string, type: string) {
             // Use global toast system instead of local toast
             // Ensure type is valid for showToast function
-            const validType = (type === 'error' || type === 'success' || type === 'warning' || type === 'info') ? type as ('error' | 'success' | 'warning' | 'info') : 'info';
+            const validType = (type === 'error' || type === 'success' || type === 'warning' || type === 'info') ? type : 'info';
             window.showToast(message, validType);
         },
 
         // Alpine magic properties are provided by AlpineComponentData
         $dispatch: (() => undefined) as ((name: string, detail?: unknown) => void),
-        $root: null as unknown as HTMLElement,
-        $el: null as unknown as HTMLElement,
-        $watch: (() => undefined) as ((property: string, callback: (...args: unknown[]) => void) => void),
+        $root:     null as unknown as HTMLElement,
+        $el:       null as unknown as HTMLElement,
+        $watch:    (() => undefined) as ((property: string, callback: (...args: unknown[]) => void) => void),
         $nextTick: (() => undefined) as ((callback: () => void) => void),
-        $store: {} as Record<string, unknown>
+        $store:    {} as Record<string, unknown>
     };
 }

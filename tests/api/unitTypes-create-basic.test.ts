@@ -23,10 +23,10 @@ describe('Unit Types API - Create Basic', () => {
         it('should create a new unit type', async () => {
             expect.assertions(3);
             const newUnitType = {
-                modelID: 'model-3br',
-                modelName: '3 Bedroom',
-                beds: 3,
-                baths: 2.5,
+                modelID:    'model-3br',
+                modelName:  '3 Bedroom',
+                beds:       3,
+                baths:      2.5,
                 buildingID: '7FV4VRuTr8PEv3xwzPUKau'
             };
             // Mock the check for existing unit type (returns undefined)
@@ -36,14 +36,14 @@ describe('Unit Types API - Create Basic', () => {
 
             const event = createMockEvent({
                 pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
-                body: JSON.stringify(newUnitType),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(newUnitType),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await create(event);
 
             expect(result.statusCode).toBe(201);
-            expect(JSON.parse(result.body as string)).toEqual(newUnitType);
+            expect(JSON.parse(result.body!)).toEqual(newUnitType);
             expect(dynamoDbMock).toHaveBeenCalledTimes(2);
         });
 
@@ -55,14 +55,14 @@ describe('Unit Types API - Create Basic', () => {
 
             const event = createMockEvent({
                 pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
-                body: JSON.stringify(invalidData),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(invalidData),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await create(event);
 
             expect(result.statusCode).toBe(400);
-            const responseBody = JSON.parse(result.body as string);
+            const responseBody = JSON.parse(result.body!);
             // buildingID is provided via path parameters, so no error expected
             expect(responseBody.errors).toHaveProperty('modelID');
         });
@@ -71,23 +71,23 @@ describe('Unit Types API - Create Basic', () => {
             expect.assertions(2);
             const event = createMockEvent({
                 pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
-                body: 'invalid json',
-                headers: { 'content-type': 'application/json' }
+                body:           'invalid json',
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await create(event);
 
             expect(result.statusCode).toBe(400);
-            expect(JSON.parse(result.body as string)).toEqual({ error: 'Invalid request body' });
+            expect(JSON.parse(result.body!)).toEqual({ error: 'Invalid request body' });
         });
 
         it('should return 409 conflict when unit type already exists', async () => {
             expect.assertions(2);
             const newUnitType = {
-                modelID: 'existing-model',
-                modelName: 'Existing Model',
-                beds: 2,
-                baths: 2,
+                modelID:    'existing-model',
+                modelName:  'Existing Model',
+                beds:       2,
+                baths:      2,
                 buildingID: '7FV4VRuTr8PEv3xwzPUKau'
             };
             // Mock the check for existing unit type (returns an existing item)
@@ -98,83 +98,83 @@ describe('Unit Types API - Create Basic', () => {
 
             const event = createMockEvent({
                 pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
-                body: JSON.stringify(newUnitType),
-                headers: { 'content-type': 'application/json' }
+                body:           JSON.stringify(newUnitType),
+                headers:        { 'content-type': 'application/json' }
             });
 
             const result = await create(event);
 
             expect(result.statusCode).toBe(409);
-            expect(JSON.parse(result.body as string)).toEqual({ error: 'Unit type already exists' });
+            expect(JSON.parse(result.body!)).toEqual({ error: 'Unit type already exists' });
         });
 
         describe('basic validation edge cases', () => {
             it('should validate empty modelName', async () => {
                 expect.assertions(2);
                 const invalidData = {
-                    modelID: 'test-model',
-                    modelName: '   ', // Whitespace only
-                    beds: 2,
-                    baths: 2,
+                    modelID:    'test-model',
+                    modelName:  '   ', // Whitespace only
+                    beds:       2,
+                    baths:      2,
                     buildingID: '7FV4VRuTr8PEv3xwzPUKau'
                 };
 
                 const event = createMockEvent({
                     pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
-                    body: JSON.stringify(invalidData),
-                    headers: { 'content-type': 'application/json' }
+                    body:           JSON.stringify(invalidData),
+                    headers:        { 'content-type': 'application/json' }
                 });
 
                 const result = await create(event);
 
                 expect(result.statusCode).toBe(400);
-                const errors = JSON.parse(result.body as string).errors;
+                const errors = JSON.parse(result.body!).errors;
                 expect(errors.modelName).toBe('Model name cannot be empty');
             });
 
             it('should validate invalid modelID format', async () => {
                 expect.assertions(2);
                 const invalidData = {
-                    modelID: 'invalid!@#$%',
-                    modelName: 'Test Model',
-                    beds: 2,
-                    baths: 2,
+                    modelID:    'invalid!@#$%',
+                    modelName:  'Test Model',
+                    beds:       2,
+                    baths:      2,
                     buildingID: '7FV4VRuTr8PEv3xwzPUKau'
                 };
 
                 const event = createMockEvent({
                     pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
-                    body: JSON.stringify(invalidData),
-                    headers: { 'content-type': 'application/json' }
+                    body:           JSON.stringify(invalidData),
+                    headers:        { 'content-type': 'application/json' }
                 });
 
                 const result = await create(event);
 
                 expect(result.statusCode).toBe(400);
-                const errors = JSON.parse(result.body as string).errors;
+                const errors = JSON.parse(result.body!).errors;
                 expect(errors.modelID).toBe('Model ID can only contain letters, numbers, underscores, and hyphens');
             });
 
             it('should validate out-of-range beds and baths', async () => {
                 expect.assertions(3);
                 const invalidData = {
-                    modelID: 'test-model',
-                    modelName: 'Test Model',
-                    beds: 11, // > 10
-                    baths: 15, // > 10
+                    modelID:    'test-model',
+                    modelName:  'Test Model',
+                    beds:       11, // > 10
+                    baths:      15, // > 10
                     buildingID: '7FV4VRuTr8PEv3xwzPUKau'
                 };
 
                 const event = createMockEvent({
                     pathParameters: { buildingID: '7FV4VRuTr8PEv3xwzPUKau' },
-                    body: JSON.stringify(invalidData),
-                    headers: { 'content-type': 'application/json' }
+                    body:           JSON.stringify(invalidData),
+                    headers:        { 'content-type': 'application/json' }
                 });
 
                 const result = await create(event);
 
                 expect(result.statusCode).toBe(400);
-                const errors = JSON.parse(result.body as string).errors;
+                const errors = JSON.parse(result.body!).errors;
                 expect(errors.beds).toBe('Number of beds must be between 0 and 10');
                 expect(errors.baths).toBe('Number of baths must be between 0 and 10');
             });

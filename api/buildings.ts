@@ -31,18 +31,18 @@ function parseJsonStringFields(data: Record<string, unknown>): void {
     forEach(arrayFields, (field) => {
         if(field in data && isString(data[field])) {
             try {
-                const parsed = JSON.parse(data[field] as string);
+                const parsed = JSON.parse(data[field]) as unknown;
                 // Only replace if it successfully parses to an array
                 if(isArray(parsed)) {
                     data[field] = parsed;
                 }
-            } catch(parseError) {
+            } catch (parseError) {
                 // If parsing fails, leave the field as-is
                 // The validation layer will catch invalid data
                 logger.debug('Failed to parse JSON string field', {
                     field,
-                    value: data[field],
-                    error: parseError,
+                    value:   data[field],
+                    error:   parseError,
                     context: 'parseJsonStringFields'
                 });
             }
@@ -54,18 +54,18 @@ function parseJsonStringFields(data: Record<string, unknown>): void {
 function parseAndValidateInput(rawBody: string): { success: true, data: BuildingInput } | { success: false, response: APIGatewayProxyStructuredResultV2 } {
     let rawData;
     try {
-        rawData = JSON.parse(rawBody || '{}');
-    } catch(parseError) {
+        rawData = JSON.parse(rawBody || '{}') as Record<string, unknown>;
+    } catch (parseError) {
         logger.warn('Failed to parse building request body', {
-            error: parseError,
+            error:   parseError,
             context: 'parseAndValidateInput'
         });
         return {
-            success: false,
+            success:  false,
             response: {
                 statusCode: 400,
-                body: JSON.stringify({
-                    error: 'Invalid request body',
+                body:       JSON.stringify({
+                    error:   'Invalid request body',
                     details: isError(parseError) ? parseError.message : 'Invalid JSON format'
                 }),
             }
@@ -86,10 +86,10 @@ function parseAndValidateInput(rawBody: string): { success: true, data: Building
             errors[err.field] = err.message;
         });
         return {
-            success: false,
+            success:  false,
             response: {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'Validation failed', errors }),
+                body:       JSON.stringify({ error: 'Validation failed', errors }),
             }
         };
     }
@@ -103,7 +103,7 @@ export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => {
     const buildings = await getBuildings();
     return {
         statusCode: 200,
-        body: JSON.stringify(buildings),
+        body:       JSON.stringify(buildings),
     };
 };
 
@@ -123,17 +123,17 @@ export const get = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyS
 export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2> => {
     let rawData;
     try {
-        rawData = JSON.parse(evt.body || '{}');
-    } catch(parseError) {
+        rawData = JSON.parse(evt.body ?? '{}') as Record<string, unknown>;
+    } catch (parseError) {
         logger.warn('Failed to parse building creation request body', {
-            error: parseError,
-            context: 'building creation request parsing',
+            error:      parseError,
+            context:    'building creation request parsing',
             httpMethod: evt.requestContext.http.method
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({
-                error: 'Invalid request body',
+            body:       JSON.stringify({
+                error:   'Invalid request body',
                 details: isError(parseError) ? parseError.message : 'Invalid JSON format'
             }),
         };
@@ -146,9 +146,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     parseJsonStringFields(data);
 
     // Only auto-generate building ID if not provided
-    if(!data.buildingID) {
-        data.buildingID = generateBuildingId();
-    }
+    data.buildingID ??= generateBuildingId();
 
     // Auto-generate building name from address if not provided
     if(!data.buildingName && data.street) {
@@ -165,29 +163,27 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         });
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Validation failed', errors }),
+            body:       JSON.stringify({ error: 'Validation failed', errors }),
         };
     }
 
     // Convert validated data to expected format
     const sanitizedData = validation.data as BuildingData;
-    if(!sanitizedData.buildingName) {
-        sanitizedData.buildingName = 'unknown';
-    }
+    sanitizedData.buildingName ??= 'unknown';
 
     // Debug: log data being sent to createBuilding
     logger.debug('Data being sent to createBuilding', {
         sanitizedData,
-        zip: sanitizedData.zip,
+        zip:         sanitizedData.zip,
         contactInfo: sanitizedData.contactInfo
     });
 
-    const newBuilding = await createBuilding(sanitizedData as BuildingData);
+    const newBuilding = await createBuilding(sanitizedData);
 
     // Debug: log result from createBuilding
     logger.debug('Result from createBuilding', {
         newBuilding,
-        zip: newBuilding.zip,
+        zip:         newBuilding.zip,
         contactInfo: newBuilding.contactInfo
     });
 
@@ -196,7 +192,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     // Debug: log final response
     logger.debug('Final response', {
         response,
-        zip: response.zip,
+        zip:         response.zip,
         contactInfo: response.contactInfo
     });
 
@@ -213,16 +209,14 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     }
 
     // Parse and validate input (using building-specific logic for JSON string fields)
-    const parseResult = parseAndValidateInput(evt.body || '{}');
+    const parseResult = parseAndValidateInput(evt.body ?? '{}');
     if(!parseResult.success) {
         return parseResult.response;
     }
 
     // Convert validated data to expected format
     const sanitizedData = parseResult.data as BuildingData;
-    if(!sanitizedData.buildingName) {
-        sanitizedData.buildingName = 'unknown';
-    }
+    sanitizedData.buildingName ??= 'unknown';
 
     try {
         const updatedBuilding = await updateBuilding(buildingID, sanitizedData);
@@ -231,9 +225,9 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         }
         return createSuccessResponse({
             ...updatedBuilding,
-            buildingName: sanitizedData.buildingName || updatedBuilding.buildingName || 'unknown'
+            buildingName: sanitizedData.buildingName ?? updatedBuilding.buildingName ?? 'unknown'
         });
-    } catch(error) {
+    } catch (error) {
         return createServerErrorResponse(error, 'update', { buildingID });
     }
 };

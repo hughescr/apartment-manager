@@ -12,10 +12,10 @@ import type { SpecialtyType } from './alpine-state';
  * Standard API response wrapper
  */
 export interface ApiResponse<T = unknown> {
-    success: boolean
-    data?: T
-    error?: string
-    message?: string
+    success:    boolean
+    data?:      T
+    error?:     string
+    message?:   string
     timestamp?: string
 }
 
@@ -23,10 +23,10 @@ export interface ApiResponse<T = unknown> {
  * API error response
  */
 export interface ApiErrorResponse {
-    success: false
-    error: string
-    message?: string
-    details?: Record<string, unknown>
+    success:     false
+    error:       string
+    message?:    string
+    details?:    Record<string, unknown>
     statusCode?: number
 }
 
@@ -34,14 +34,14 @@ export interface ApiErrorResponse {
  * Paginated API response
  */
 export interface PaginatedApiResponse<T = unknown> {
-    data: T[]
+    data:       T[]
     pagination: {
-        page: number
-        limit: number
-        total: number
+        page:       number
+        limit:      number
+        total:      number
         totalPages: number
-        hasNext: boolean
-        hasPrev: boolean
+        hasNext:    boolean
+        hasPrev:    boolean
     }
 }
 
@@ -49,11 +49,11 @@ export interface PaginatedApiResponse<T = unknown> {
  * Bulk operation response
  */
 export interface BulkOperationResponse {
-    success: boolean
+    success:   boolean
     processed: number
-    failed: number
+    failed:    number
     errors?: {
-        id: string
+        id:    string
         error: string
     }[]
 }
@@ -64,15 +64,15 @@ export interface BulkOperationResponse {
  * Building creation request
  */
 export interface CreateBuildingRequest {
-    buildingID: string
-    street?: string
-    city?: string
-    state?: string
-    zip?: string
-    description?: string
+    buildingID:     string
+    street?:        string
+    city?:          string
+    state?:         string
+    zip?:           string
+    description?:   string
     specialtyType?: SpecialtyType
     contactInfo?: {
-        propertyWebsite?: string
+        propertyWebsite?:   string
         managementWebsite?: string
     }
 }
@@ -98,8 +98,8 @@ export type BuildingsListResponse = ApiResponse<BuildingData[]>;
  * Building with related data response
  */
 export type BuildingWithDataResponse = ApiResponse<{
-    building: BuildingData
-    units: UnitData[]
+    building:  BuildingData
+    units:     UnitData[]
     unitTypes: UnitTypeData[]
 }>;
 
@@ -108,7 +108,7 @@ export type BuildingWithDataResponse = ApiResponse<{
  */
 export type BuildingDeletionResponse = ApiResponse<{
     buildingID: string
-    deletedAt: string
+    deletedAt:  string
 }>;
 
 // ===== UNIT API TYPES =====
@@ -117,39 +117,39 @@ export type BuildingDeletionResponse = ApiResponse<{
  * Unit creation request
  */
 export interface CreateUnitRequest {
-    buildingID: string
-    unitID: string
-    modelID?: string
+    buildingID:  string
+    unitID:      string
+    modelID?:    string
     unitNumber?: string
-    beds?: number
-    baths?: number
-    sqft?: number
-    rent?: number
+    beds?:       number
+    baths?:      number
+    sqft?:       number
+    rent?:       number
     deposit?: number | {
-        amount: number
-        refundable?: boolean
+        amount:                   number
+        refundable?:              boolean
         partialRefundPercentage?: number
     }
-    maxOccupants?: number
-    perPersonRent?: number
-    minLeaseTerm?: number
-    maxLeaseTerm?: number
-    availableDate?: string
-    vacancyClass?: VacancyClass
-    vacateDate?: string
-    madeReadyDate?: string
-    status?: string
-    description?: string
-    unitDescription?: string
-    unitAmenities?: Amenity[]
-    photos?: string[]
-    feedInclusion?: Record<string, string>
+    maxOccupants?:     number
+    perPersonRent?:    number
+    minLeaseTerm?:     number
+    maxLeaseTerm?:     number
+    availableDate?:    string
+    vacancyClass?:     VacancyClass
+    vacateDate?:       string
+    madeReadyDate?:    string
+    status?:           string
+    description?:      string
+    unitDescription?:  string
+    unitAmenities?:    Amenity[]
+    photos?:           string[]
+    feedInclusion?:    Record<string, string>
     manualReferences?: Record<string, string>
     unitRentSpecial?: {
-        title?: string
+        title?:       string
         description?: string
-        startDate?: string
-        endDate?: string
+        startDate?:   string
+        endDate?:     string
     }
 }
 
@@ -157,7 +157,7 @@ export interface CreateUnitRequest {
  * Unit update request
  */
 export interface UpdateUnitRequest extends Partial<CreateUnitRequest> {
-    unitID: string
+    unitID:     string
     buildingID: string
 }
 
@@ -175,9 +175,9 @@ export type UnitsListResponse = ApiResponse<UnitData[]>;
  * Unit deletion response
  */
 export type UnitDeletionResponse = ApiResponse<{
-    unitID: string
+    unitID:     string
     buildingID: string
-    deletedAt: string
+    deletedAt:  string
 }>;
 
 // ===== UNIT TYPE API TYPES =====
@@ -187,33 +187,33 @@ export type UnitDeletionResponse = ApiResponse<{
  */
 export interface CreateUnitTypeRequest {
     buildingID: string
-    modelID: string
-    modelName: string
-    beds: number
-    baths: number
-    minSqft?: number
-    maxSqft?: number
-    minRent?: number
-    maxRent?: number
+    modelID:    string
+    modelName:  string
+    beds:       number
+    baths:      number
+    minSqft?:   number
+    maxSqft?:   number
+    minRent?:   number
+    maxRent?:   number
     deposit?: number | {
-        amount: number
-        refundable?: boolean
+        amount:                   number
+        refundable?:              boolean
         partialRefundPercentage?: number
     }
-    maxOccupants?: number
-    perPersonRent?: number
-    minLeaseTerm?: number
-    maxLeaseTerm?: number
+    maxOccupants?:   number
+    perPersonRent?:  number
+    minLeaseTerm?:   number
+    maxLeaseTerm?:   number
     modelAmenities?: Amenity[]
-    photos?: string[]
-    description?: string
+    photos?:         string[]
+    description?:    string
 }
 
 /**
  * Unit type update request
  */
 export interface UpdateUnitTypeRequest extends Partial<CreateUnitTypeRequest> {
-    modelID: string
+    modelID:    string
     buildingID: string
 }
 
@@ -231,9 +231,9 @@ export type UnitTypesListResponse = ApiResponse<UnitTypeData[]>;
  * Unit type deletion response
  */
 export type UnitTypeDeletionResponse = ApiResponse<{
-    modelID: string
+    modelID:    string
     buildingID: string
-    deletedAt: string
+    deletedAt:  string
 }>;
 
 // ===== BULK OPERATIONS API TYPES =====
@@ -244,10 +244,10 @@ export type UnitTypeDeletionResponse = ApiResponse<{
 export interface BulkStatusUpdateRequest {
     unitIDs: string[]
     updates: {
-        status?: string
-        vacancyClass?: VacancyClass
+        status?:        string
+        vacancyClass?:  VacancyClass
         availableDate?: string
-        vacateDate?: string
+        vacateDate?:    string
         madeReadyDate?: string
     }
 }
@@ -258,7 +258,7 @@ export interface BulkStatusUpdateRequest {
 export interface BulkRentUpdateRequest {
     unitIDs: string[]
     updates: {
-        rentType: 'absolute' | 'percentage'
+        rentType:  'absolute' | 'percentage'
         rentValue: number
     }
 }
@@ -284,10 +284,10 @@ export interface BulkUpdateResponse extends BulkOperationResponse {
  * Photo upload request
  */
 export interface PhotoUploadRequest {
-    entityType: 'building' | 'unit' | 'unitType'
-    entityID: string
+    entityType:  'building' | 'unit' | 'unitType'
+    entityID:    string
     buildingID?: string
-    files: File[]
+    files:       File[]
 }
 
 /**
@@ -296,13 +296,13 @@ export interface PhotoUploadRequest {
 export type PhotoUploadResponse = ApiResponse<{
     uploadedPhotos: {
         filename: string
-        url: string
-        size: number
+        url:      string
+        size:     number
         mimeType: string
     }[]
     failedUploads?: {
         filename: string
-        error: string
+        error:    string
     }[]
 }>;
 
@@ -310,10 +310,10 @@ export type PhotoUploadResponse = ApiResponse<{
  * Photo deletion request
  */
 export interface PhotoDeletionRequest {
-    entityType: 'building' | 'unit' | 'unitType'
-    entityID: string
+    entityType:  'building' | 'unit' | 'unitType'
+    entityID:    string
     buildingID?: string
-    photoUrl: string
+    photoUrl:    string
 }
 
 /**
@@ -321,7 +321,7 @@ export interface PhotoDeletionRequest {
  */
 export type PhotoDeletionResponse = ApiResponse<{
     deletedPhoto: string
-    deletedAt: string
+    deletedAt:    string
 }>;
 
 // ===== VALIDATION API TYPES =====
@@ -331,16 +331,16 @@ export type PhotoDeletionResponse = ApiResponse<{
  */
 export interface ValidationRequest {
     entityType: 'building' | 'unit' | 'unitType'
-    data: Record<string, unknown>
-    rules?: string[]
+    data:       Record<string, unknown>
+    rules?:     string[]
 }
 
 /**
  * Validation response
  */
 export type ValidationResponse = ApiResponse<{
-    isValid: boolean
-    errors: Record<string, string[]>
+    isValid:   boolean
+    errors:    Record<string, string[]>
     warnings?: Record<string, string[]>
 }>;
 
@@ -350,15 +350,15 @@ export type ValidationResponse = ApiResponse<{
  * Search request
  */
 export interface SearchRequest {
-    query: string
+    query:        string
     entityTypes?: ('building' | 'unit' | 'unitType')[]
-    filters?: Record<string, unknown>
+    filters?:     Record<string, unknown>
     sort?: {
-        field: string
+        field:     string
         direction: 'asc' | 'desc'
     }
     pagination?: {
-        page: number
+        page:  number
         limit: number
     }
 }
@@ -367,7 +367,7 @@ export interface SearchRequest {
  * Search response
  */
 export interface SearchResponse<T = unknown> extends PaginatedApiResponse<T> {
-    query: string
+    query:        string
     suggestions?: string[]
     facets?: Record<string, {
         value: string
@@ -385,12 +385,12 @@ export type FilterOptionsResponse = ApiResponse<{
         count: number
     }[]
     amenityOptions: {
-        category: string
+        category:  string
         amenities: Amenity[]
     }[]
     priceRanges: {
-        min: number
-        max: number
+        min:   number
+        max:   number
         count: number
     }[]
 }>;
@@ -401,7 +401,7 @@ export type FilterOptionsResponse = ApiResponse<{
  * Geocoding request
  */
 export interface GeocodingRequest {
-    address: string
+    address:     string
     buildingID?: string
 }
 
@@ -409,15 +409,15 @@ export interface GeocodingRequest {
  * Geocoding response
  */
 export type GeocodingResponse = ApiResponse<{
-    latitude: number
-    longitude: number
+    latitude:         number
+    longitude:        number
     formattedAddress: string
-    accuracy: 'exact' | 'approximate' | 'interpolated'
+    accuracy:         'exact' | 'approximate' | 'interpolated'
     components: {
-        street?: string
-        city?: string
-        state?: string
-        zip?: string
+        street?:  string
+        city?:    string
+        state?:   string
+        zip?:     string
         country?: string
     }
 }>;
@@ -426,7 +426,7 @@ export type GeocodingResponse = ApiResponse<{
  * Reverse geocoding request
  */
 export interface ReverseGeocodingRequest {
-    latitude: number
+    latitude:  number
     longitude: number
 }
 
@@ -442,11 +442,11 @@ export type ReverseGeocodingResponse = GeocodingResponse;
  */
 export interface AnalyticsRequest {
     entityType: 'building' | 'unit' | 'unitType'
-    entityID: string
-    metrics: string[]
+    entityID:   string
+    metrics:    string[]
     timeRange?: {
         start: string
-        end: string
+        end:   string
     }
     groupBy?: 'day' | 'week' | 'month'
 }
@@ -456,11 +456,11 @@ export interface AnalyticsRequest {
  */
 export type AnalyticsResponse = ApiResponse<{
     metrics: Record<string, {
-        current: number
+        current:   number
         previous?: number
-        change?: number
+        change?:   number
         data?: {
-            date: string
+            date:  string
             value: number
         }[]
     }>
@@ -472,10 +472,10 @@ export type AnalyticsResponse = ApiResponse<{
  * Export request
  */
 export interface ExportRequest {
-    entityType: 'building' | 'unit' | 'unitType'
-    entityIDs?: string[]
-    format: 'json' | 'csv' | 'xlsx'
-    fields?: string[]
+    entityType:     'building' | 'unit' | 'unitType'
+    entityIDs?:     string[]
+    format:         'json' | 'csv' | 'xlsx'
+    fields?:        string[]
     includePhotos?: boolean
 }
 
@@ -484,8 +484,8 @@ export interface ExportRequest {
  */
 export type ExportResponse = ApiResponse<{
     downloadUrl: string
-    filename: string
-    expiresAt: string
+    filename:    string
+    expiresAt:   string
 }>;
 
 /**
@@ -493,11 +493,11 @@ export type ExportResponse = ApiResponse<{
  */
 export interface ImportRequest {
     entityType: 'building' | 'unit' | 'unitType'
-    file: File
+    file:       File
     options?: {
         skipDuplicates?: boolean
         updateExisting?: boolean
-        validateOnly?: boolean
+        validateOnly?:   boolean
     }
 }
 
@@ -506,8 +506,8 @@ export interface ImportRequest {
  */
 export interface ImportResponse extends BulkOperationResponse {
     preview?: {
-        row: number
-        data: Record<string, unknown>
+        row:       number
+        data:      Record<string, unknown>
         warnings?: string[]
     }[]
 }
@@ -517,24 +517,24 @@ export interface ImportResponse extends BulkOperationResponse {
 /**
  * Webhook event types
  */
-export type WebhookEventType =
-  | 'building.created'
-  | 'building.updated'
-  | 'building.deleted'
-  | 'unit.created'
-  | 'unit.updated'
-  | 'unit.deleted'
-  | 'unitType.created'
-  | 'unitType.updated'
-  | 'unitType.deleted';
+export type WebhookEventType
+    = | 'building.created'
+      | 'building.updated'
+      | 'building.deleted'
+      | 'unit.created'
+      | 'unit.updated'
+      | 'unit.deleted'
+      | 'unitType.created'
+      | 'unitType.updated'
+      | 'unitType.deleted';
 
 /**
  * Webhook payload
  */
 export interface WebhookPayload<T = unknown> {
-    event: WebhookEventType
+    event:     WebhookEventType
     timestamp: string
-    data: T
+    data:      T
     metadata?: Record<string, unknown>
 }
 
@@ -544,13 +544,13 @@ export interface WebhookPayload<T = unknown> {
  * API client configuration
  */
 export interface ApiClientConfig {
-    baseURL: string
-    timeout?: number
-    retries?: number
-    retryDelay?: number
-    headers?: Record<string, string>
+    baseURL:       string
+    timeout?:      number
+    retries?:      number
+    retryDelay?:   number
+    headers?:      Record<string, string>
     interceptors?: {
-        request?: (config: RequestInit) => RequestInit
+        request?:  (config: RequestInit) => RequestInit
         response?: <T>(response: ApiResponse<T>) => ApiResponse<T>
     }
 }
@@ -559,8 +559,8 @@ export interface ApiClientConfig {
  * API request options
  */
 export interface ApiRequestOptions extends RequestInit {
-    timeout?: number
-    retries?: number
+    timeout?:          number
+    retries?:          number
     validateResponse?: boolean
 }
 

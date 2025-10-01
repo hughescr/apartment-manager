@@ -70,7 +70,7 @@ describe('Building Tab Navigation', () => {
             // Simulate Alpine.js component initialization
             const component = {
                 activeSectionTab: 'building-info',
-                init: noop
+                init:             noop
             };
 
             component.init();
@@ -143,9 +143,9 @@ describe('Building Tab Navigation', () => {
             // - Contact information
             // - Building-level amenities
             const expectedContent = {
-                basicInfo: ['name', 'address', 'buildingType', 'yearBuilt', 'totalUnits'],
+                basicInfo:   ['name', 'address', 'buildingType', 'yearBuilt', 'totalUnits'],
                 contactInfo: ['contactName', 'contactPhone', 'contactEmail', 'officeHours'],
-                amenities: ['buildingAmenities']
+                amenities:   ['buildingAmenities']
             };
 
             expect(expectedContent.basicInfo.length).toBeGreaterThan(0);
@@ -208,8 +208,8 @@ describe('Building Tab Navigation', () => {
         it('should maintain tab state during form operations', async () => {
             const component = {
                 activeSectionTab: 'pricing-policies',
-                saving: false,
-                errors: {},
+                saving:           false,
+                errors:           {},
 
                 async saveChanges() {
                     const originalTab = this.activeSectionTab;
@@ -233,8 +233,8 @@ describe('Building Tab Navigation', () => {
         it('should handle tab switching during loading states', () => {
             const component = {
                 activeSectionTab: 'building-info',
-                saving: false,
-                loading: false
+                saving:           false,
+                loading:          false
             };
 
             // Should allow tab switching even when saving
@@ -254,7 +254,7 @@ describe('Building Tab Navigation', () => {
         it('should have proper tab structure for screen readers', () => {
             // Test tab button attributes
             const tabAttributes = {
-                role: 'tab',
+                role:            'tab',
                 'aria-selected': false,
                 'aria-controls': 'tab-panel-id'
             };
@@ -267,9 +267,9 @@ describe('Building Tab Navigation', () => {
         it('should have proper panel structure for screen readers', () => {
             // Test tab panel attributes
             const panelAttributes = {
-                role: 'tabpanel',
+                role:              'tabpanel',
                 'aria-labelledby': 'tab-id',
-                hidden: true
+                hidden:            true
             };
 
             expect(panelAttributes.role).toBe('tabpanel');
@@ -307,7 +307,7 @@ describe('Building Tab Navigation', () => {
         it('should efficiently handle frequent tab switches', () => {
             const component = {
                 activeSectionTab: 'building-info',
-                switchCount: 0,
+                switchCount:      0,
 
                 switchToTab(tabName: string) {
                     this.activeSectionTab = tabName;
@@ -330,7 +330,7 @@ describe('Building Tab Navigation', () => {
         it('should not cause memory leaks with tab data', () => {
             const component = {
                 activeSectionTab: 'building-info',
-                tabData: new Map(),
+                tabData:          new Map(),
 
                 loadTabData(tabName: string) {
                     // Simulate loading data for tab

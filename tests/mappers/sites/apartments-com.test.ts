@@ -25,7 +25,7 @@ describe('ApartmentsComMapper', () => {
         mapper = new ApartmentsComMapper();
         mockFieldMappings = {};
         mockTransformers = {
-            get: () => undefined,
+            get:      () => undefined,
             register: noop
         };
     });
@@ -33,9 +33,9 @@ describe('ApartmentsComMapper', () => {
     const _createContext = (unit: UnitData, unitType?: UnitTypeData, building?: BuildingData): UnitMappingContext => ({
         unit,
         unitType,
-        building: building || basicBuilding,
+        building:      building || basicBuilding,
         fieldMappings: mockFieldMappings,
-        transformers: mockTransformers
+        transformers:  mockTransformers
     });
 
     describe('Basic Properties', () => {
@@ -53,9 +53,9 @@ describe('ApartmentsComMapper', () => {
             expect(result.name).toBe(basicBuilding.buildingID);
             expect(result.address).toEqual({
                 street: '',
-                city: '',
-                state: '',
-                zip: ''
+                city:   '',
+                state:  '',
+                zip:    ''
             });
             expect(result.propertyType).toBe('Apartment'); // Default value
         });
@@ -94,9 +94,9 @@ describe('ApartmentsComMapper', () => {
             const buildingWithUtils: BuildingData = {
                 ...basicBuilding,
                 utilitiesIncluded: {
-                    [UtilityType.WATER]: true,
+                    [UtilityType.WATER]:       true,
                     [UtilityType.ELECTRICITY]: false,
-                    [UtilityType.GAS]: true
+                    [UtilityType.GAS]:         true
                 }
             };
 
@@ -126,13 +126,13 @@ describe('ApartmentsComMapper', () => {
             const buildingWithPets: BuildingData = {
                 ...basicBuilding,
                 petPolicies: {
-                    allowed: true,
-                    types: [PetType.DOG, PetType.CAT],
-                    maxCount: 2,
+                    allowed:     true,
+                    types:       [PetType.DOG, PetType.CAT],
+                    maxCount:    2,
                     weightLimit: 50,
-                    deposit: 300,
-                    monthlyFee: 25,
-                    notes: 'Breed restrictions apply'
+                    deposit:     300,
+                    monthlyFee:  25,
+                    notes:       'Breed restrictions apply'
                 }
             };
 
@@ -162,10 +162,10 @@ describe('ApartmentsComMapper', () => {
         it('should handle missing optional fields', () => {
             const minimalBuilding: BuildingData = {
                 buildingID: 'BLDG-001',
-                street: '123 Main St',
-                city: 'Test City',
-                state: 'TS',
-                zip: '12345'
+                street:     '123 Main St',
+                city:       'Test City',
+                state:      'TS',
+                zip:        '12345'
             };
 
             const result = mapper.mapBuilding(minimalBuilding);
@@ -208,16 +208,16 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnitType(completeUnitType, basicBuilding);
 
             expect(result.sqft).toBeDefined();
-            expect(result.sqft!.min).toBe(completeUnitType.minSqft!);
-            expect(result.sqft!.max).toBe(completeUnitType.maxSqft!);
+            expect(result.sqft!.min).toBe(completeUnitType.minSqft);
+            expect(result.sqft!.max).toBe(completeUnitType.maxSqft);
         });
 
         it('should handle rent ranges', () => {
             const result = mapper.mapUnitType(completeUnitType, basicBuilding);
 
             expect(result.rent).toBeDefined();
-            expect(result.rent!.min).toBe(completeUnitType.minRent!);
-            expect(result.rent!.max).toBe(completeUnitType.maxRent!);
+            expect(result.rent!.min).toBe(completeUnitType.minRent);
+            expect(result.rent!.max).toBe(completeUnitType.maxRent);
         });
 
         it('should transform amenities', () => {
@@ -265,7 +265,7 @@ describe('ApartmentsComMapper', () => {
         it('should apply inheritance correctly', () => {
             const unitWithoutBeds: UnitData = {
                 ...basicUnit,
-                beds: undefined,
+                beds:  undefined,
                 baths: undefined
             };
 
@@ -334,9 +334,9 @@ describe('ApartmentsComMapper', () => {
         it('should default numeric values to 0', () => {
             const unitWithMissing: UnitData = {
                 ...basicUnit,
-                beds: undefined,
+                beds:  undefined,
                 baths: undefined,
-                rent: undefined
+                rent:  undefined
             };
 
             const context = _createContext(unitWithMissing, undefined, basicBuilding);
@@ -361,10 +361,10 @@ describe('ApartmentsComMapper', () => {
             it('should catch missing address fields', () => {
                 const invalidBuilding: BuildingData = {
                     buildingID: 'BLDG-001',
-                    street: undefined as unknown as string,
-                    city: undefined as unknown as string,
-                    state: undefined as unknown as string,
-                    zip: undefined as unknown as string
+                    street:     undefined as unknown as string,
+                    city:       undefined as unknown as string,
+                    state:      undefined as unknown as string,
+                    zip:        undefined as unknown as string
                 };
 
                 const result = mapper.validateBuilding(invalidBuilding);
@@ -380,10 +380,10 @@ describe('ApartmentsComMapper', () => {
             it('should validate partial missing fields', () => {
                 const partialBuilding: BuildingData = {
                     buildingID: 'BLDG-001',
-                    street: '123 Main St',
-                    city: 'Test City',
-                    state: undefined as unknown as string,
-                    zip: undefined as unknown as string
+                    street:     '123 Main St',
+                    city:       'Test City',
+                    state:      undefined as unknown as string,
+                    zip:        undefined as unknown as string
                 };
 
                 const result = mapper.validateBuilding(partialBuilding);
@@ -404,10 +404,10 @@ describe('ApartmentsComMapper', () => {
             it('should catch missing fields', () => {
                 const invalidUnitType: UnitTypeData = {
                     buildingID: 'BLDG-001',
-                    modelID: 'MODEL-001',
-                    modelName: undefined as unknown as string,
-                    beds: undefined as unknown as number,
-                    baths: undefined as unknown as number
+                    modelID:    'MODEL-001',
+                    modelName:  undefined as unknown as string,
+                    beds:       undefined as unknown as number,
+                    baths:      undefined as unknown as number
                 };
 
                 const result = mapper.validateUnitType(invalidUnitType);
@@ -422,7 +422,7 @@ describe('ApartmentsComMapper', () => {
             it('should accept zero values for beds/baths', () => {
                 const studioUnitType: UnitTypeData = {
                     ...basicUnitType,
-                    beds: 0,
+                    beds:  0,
                     baths: 1
                 };
 
@@ -443,7 +443,7 @@ describe('ApartmentsComMapper', () => {
             it('should require unit number or ID', () => {
                 const invalidUnit: UnitData = {
                     buildingID: 'BLDG-001',
-                    unitID: undefined as unknown as string,
+                    unitID:     undefined as unknown as string,
                     unitNumber: undefined
                 };
 
@@ -457,7 +457,7 @@ describe('ApartmentsComMapper', () => {
             it('should accept unit with only unitID', () => {
                 const unitWithOnlyId: UnitData = {
                     buildingID: 'BLDG-001',
-                    unitID: 'UNIT-001',
+                    unitID:     'UNIT-001',
                     unitNumber: undefined
                 };
 
@@ -469,7 +469,7 @@ describe('ApartmentsComMapper', () => {
             it('should accept unit with only unitNumber', () => {
                 const unitWithOnlyNumber: UnitData = {
                     buildingID: 'BLDG-001',
-                    unitID: 'UNIT-001',
+                    unitID:     'UNIT-001',
                     unitNumber: '101'
                 };
 
@@ -485,7 +485,7 @@ describe('ApartmentsComMapper', () => {
             const customMappings: Partial<FieldMappingConfig> = {
                 propertyType: {
                     apartment: 'Apt',
-                    condo: 'Condominium'
+                    condo:     'Condominium'
                 }
             };
 
@@ -546,10 +546,10 @@ describe('ApartmentsComMapper', () => {
         it('should treat whitespace-only fields as valid (trimming happens elsewhere)', () => {
             const buildingWhitespace: BuildingData = {
                 buildingID: 'BLDG-001',
-                street: '   ',
-                city: '\t\t',
-                state: '\n\n',
-                zip: '    '
+                street:     '   ',
+                city:       '\t\t',
+                state:      '\n\n',
+                zip:        '    '
             };
 
             const result = mapper.validateBuilding(buildingWhitespace);
@@ -576,16 +576,16 @@ describe('ApartmentsComMapper', () => {
         it('should handle invalid enum values gracefully', () => {
             const invalidEnumBuilding: BuildingData = {
                 ...basicBuilding,
-                propertyType: 'INVALID_TYPE' as PropertyType,
+                propertyType:   'INVALID_TYPE' as PropertyType,
                 parkingOptions: [
                     {
-                        type: 'INVALID_PARKING' as ParkingType,
+                        type:     'INVALID_PARKING' as ParkingType,
                         included: true
                     }
                 ],
                 petPolicies: {
                     allowed: true,
-                    types: ['INVALID_PET' as PetType]
+                    types:   ['INVALID_PET' as PetType]
                 }
             };
 
@@ -596,8 +596,8 @@ describe('ApartmentsComMapper', () => {
         it('should handle NaN/Infinity in numeric fields', () => {
             const nanBuilding: BuildingData = {
                 ...basicBuilding,
-                yearBuilt: NaN,
-                totalUnits: Infinity,
+                yearBuilt:      NaN,
+                totalUnits:     Infinity,
                 applicationFee: -Infinity
             };
 
@@ -611,10 +611,10 @@ describe('ApartmentsComMapper', () => {
         it('should default missing numeric values to 0 but preserve NaN/Infinity', () => {
             const nanUnit: UnitData = {
                 ...basicUnit,
-                beds: NaN,
+                beds:  NaN,
                 baths: Infinity,
-                rent: -Infinity,
-                sqft: -0
+                rent:  -Infinity,
+                sqft:  -0
             };
 
             const context = _createContext(nanUnit, undefined, basicBuilding);
@@ -650,7 +650,7 @@ describe('ApartmentsComMapper', () => {
             const maliciousBuilding: BuildingData = {
                 ...basicBuilding,
                 propertyDescription: maliciousContent,
-                propertyAmenities: [
+                propertyAmenities:   [
                     { name: '<b>Bold Amenity</b>', category: AmenityCategory.PROPERTY }
                 ]
             };
@@ -681,7 +681,7 @@ describe('ApartmentsComMapper', () => {
 
                 const result = mapper.mapUnit(context);
 
-                expect(result.dateAvailable).toBe(expected!);
+                expect(result.dateAvailable).toBe(expected);
             });
         });
 
@@ -690,7 +690,7 @@ describe('ApartmentsComMapper', () => {
             const currencyBuilding: BuildingData = {
                 ...basicBuilding,
                 applicationFee: 0.00,
-                oneTimeFees: [
+                oneTimeFees:    [
                     { description: 'Penny Fee', amount: 0.01, type: FeeType.APPLICATION },
                     { description: 'Large Fee', amount: 99999.99, type: FeeType.ADMIN },
                     { description: 'Negative Fee', amount: -50, type: FeeType.MOVE_IN },
@@ -804,19 +804,19 @@ describe('ApartmentsComMapper', () => {
         it('should handle missing model fields with unit override', () => {
             const incompleteModel: UnitTypeData = {
                 buildingID: 'BLDG-001',
-                modelID: 'MODEL-001',
-                modelName: 'Incomplete',
-                beds: undefined as unknown as number,
-                baths: undefined as unknown as number,
-                minRent: undefined,
-                maxRent: undefined
+                modelID:    'MODEL-001',
+                modelName:  'Incomplete',
+                beds:       undefined as unknown as number,
+                baths:      undefined as unknown as number,
+                minRent:    undefined,
+                maxRent:    undefined
             };
 
             const completeUnit: UnitData = {
                 ...basicUnit,
-                beds: 2,
+                beds:  2,
                 baths: 1.5,
-                rent: 1800
+                rent:  1800
             };
 
             const context = _createContext(completeUnit, incompleteModel, basicBuilding);
@@ -870,7 +870,7 @@ describe('ApartmentsComMapper', () => {
             const reservedBuilding: BuildingData = {
                 ...basicBuilding,
                 propertyDescription: 'null undefined false true delete',
-                propertyAmenities: [
+                propertyAmenities:   [
                     { name: 'SELECT * FROM', category: AmenityCategory.PROPERTY },
                     { name: 'DROP TABLE', category: AmenityCategory.PROPERTY },
                     { name: '<iframe>', category: AmenityCategory.PROPERTY }
@@ -903,8 +903,8 @@ describe('ApartmentsComMapper', () => {
             const emptyStringsUnit: UnitData = {
                 ...basicUnit,
                 unitDescription: '',
-                unitNumber: '',
-                availableDate: ''
+                unitNumber:      '',
+                availableDate:   ''
             };
 
             const context = _createContext(emptyStringsUnit, basicUnitType, basicBuilding);
@@ -934,9 +934,9 @@ describe('ApartmentsComMapper', () => {
             const unicodeBuilding: BuildingData = {
                 ...basicBuilding,
                 propertyDescription: '🏢 Luksusowe mieszkanie w centrum Warszawy',
-                street: '123 Rue de la Paix',
-                city: 'São Paulo',
-                propertyAmenities: [
+                street:              '123 Rue de la Paix',
+                city:                'São Paulo',
+                propertyAmenities:   [
                     { name: '🏊‍♂️ Swimming Pool', category: AmenityCategory.PROPERTY },
                     { name: 'Café & Restaurant', category: AmenityCategory.PROPERTY },
                     { name: '中文设施', category: AmenityCategory.PROPERTY }
@@ -955,10 +955,10 @@ describe('ApartmentsComMapper', () => {
         it('should handle zero and negative values appropriately', () => {
             const zeroUnit: UnitData = {
                 ...basicUnit,
-                beds: 0, // Studio
-                baths: 0, // Invalid but should handle
-                rent: -100, // Invalid
-                sqft: 0,
+                beds:    0, // Studio
+                baths:   0, // Invalid but should handle
+                rent:    -100, // Invalid
+                sqft:    0,
                 deposit: -500
             };
 

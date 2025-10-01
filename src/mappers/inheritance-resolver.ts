@@ -206,9 +206,9 @@ export class InheritanceResolver implements IInheritanceResolver {
 
         for(const field of requiredFields) {
             const value = unit[field];
-            if(value === undefined || value === null ||
-              (isString(value) && trim(value) === '') ||
-              (isArray(value) && value.length === 0)) {
+            if(value === undefined || value === null
+              || (isString(value) && trim(value) === '')
+              || (isArray(value) && value.length === 0)) {
                 missingFields.push(field);
             }
         }

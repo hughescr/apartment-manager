@@ -215,7 +215,7 @@ describe('Timer Acceleration Utility', () => {
                     expect(accelerator.isInstalled).toBe(true);
                     throw new Error('Test error');
                 });
-            } catch(error) {
+            } catch (error) {
                 expect((error as Error).message).toBe('Test error');
             }
 

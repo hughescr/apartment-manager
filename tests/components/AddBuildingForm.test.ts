@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
 import { promises as fs } from 'fs';
-import _ from 'lodash';
+import { noop } from 'lodash';
 import { createAddBuildingFormState } from '../../astro-src/lib/add-building-form/addBuildingFormState';
 
 let componentSrc: string;
@@ -31,7 +31,7 @@ describe('AddBuildingForm Address Autocomplete', () => {
             // Verify keyboard handling exists in the factory function
             expect(typeof formState.handleKeydown).toBe('function');
             // Verify the factory function handles the correct keys
-            const mockEvent = { key: 'ArrowDown', preventDefault: _.noop } as KeyboardEvent;
+            const mockEvent = { key: 'ArrowDown', preventDefault: noop } as KeyboardEvent;
             expect(() => formState.handleKeydown(mockEvent)).not.toThrow();
         });
 
@@ -216,15 +216,15 @@ describe('AddBuildingForm Autocomplete Types', () => {
         // Verify the factory function can handle properly structured suggestions
         const testSuggestion = {
             displayText: 'test address',
-            address: {
-                street: '123 Main St',
-                city: 'Test City',
-                state: 'TS',
-                postcode: '12345',
+            address:     {
+                street:    '123 Main St',
+                city:      'Test City',
+                state:     'TS',
+                postcode:  '12345',
                 formatted: '123 Main St, Test City, TS 12345'
             },
             source: 'radar' as const,
-            id: 'test-1'
+            id:     'test-1'
         };
         expect(() => formState.selectSuggestion(testSuggestion)).not.toThrow();
     });

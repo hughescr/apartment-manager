@@ -41,7 +41,7 @@ export function createMockSendFunction(defaultResponse = {}) {
 interface MockSendFunction {
     (...args: unknown[]): Promise<unknown>
     mock: {
-        calls: unknown[][]
+        calls:   unknown[][]
         results: unknown[]
         mockClear(): void
         mockResolvedValue(value: unknown): void
@@ -50,26 +50,26 @@ interface MockSendFunction {
 }
 
 export interface DynamoDBMocks {
-    mockSend: MockSendFunction
+    mockSend:               MockSendFunction
     DynamoDBDocumentClient: unknown
-    GetCommand: unknown
-    PutCommand: unknown
-    QueryCommand: unknown
-    UpdateCommand: unknown
-    DeleteCommand: unknown
-    BatchWriteCommand: unknown
-    BatchGetCommand: unknown
-    ScanCommand: unknown
-    TransactGetCommand: unknown
-    TransactWriteCommand: unknown
+    GetCommand:             unknown
+    PutCommand:             unknown
+    QueryCommand:           unknown
+    UpdateCommand:          unknown
+    DeleteCommand:          unknown
+    BatchWriteCommand:      unknown
+    BatchGetCommand:        unknown
+    ScanCommand:            unknown
+    TransactGetCommand:     unknown
+    TransactWriteCommand:   unknown
 }
 
 export interface S3Mocks {
-    mockSend: MockSendFunction
-    S3Client: unknown
-    PutObjectCommand: unknown
+    mockSend:            MockSendFunction
+    S3Client:            unknown
+    PutObjectCommand:    unknown
     DeleteObjectCommand: unknown
-    GetObjectCommand: unknown
+    GetObjectCommand:    unknown
 }
 
 /**
@@ -83,9 +83,9 @@ export interface S3Mocks {
  */
 export function mockDynamoDB(): DynamoDBMocks {
     throw new Error(
-        'mockDynamoDB() is deprecated due to cross-test contamination. ' +
-        'Use centralized test-setup.ts files instead. ' +
-        'Import "./test-setup" or "../data/test-setup" at the top of your test file.'
+        'mockDynamoDB() is deprecated due to cross-test contamination. '
+        + 'Use centralized test-setup.ts files instead. '
+        + 'Import "./test-setup" or "../data/test-setup" at the top of your test file.'
     );
 }
 
@@ -100,9 +100,9 @@ export function mockDynamoDB(): DynamoDBMocks {
  */
 export function mockS3(): S3Mocks {
     throw new Error(
-        'mockS3() is deprecated due to cross-test contamination. ' +
-        'Use centralized test-setup.ts files instead. ' +
-        'Import "./test-setup" or "../data/test-setup" at the TOP of your test file.'
+        'mockS3() is deprecated due to cross-test contamination. '
+        + 'Use centralized test-setup.ts files instead. '
+        + 'Import "./test-setup" or "../data/test-setup" at the TOP of your test file.'
     );
 }
 
@@ -117,9 +117,9 @@ export function mockS3(): S3Mocks {
  */
 export function mockCrypto() {
     throw new Error(
-        'mockCrypto() is deprecated due to cross-test contamination. ' +
-        'Use jest.spyOn(crypto, "randomUUID") in your test setup instead, ' +
-        'or use the createMockRandomUUID() helper for dependency injection.'
+        'mockCrypto() is deprecated due to cross-test contamination. '
+        + 'Use jest.spyOn(crypto, "randomUUID") in your test setup instead, '
+        + 'or use the createMockRandomUUID() helper for dependency injection.'
     );
 }
 
@@ -134,8 +134,8 @@ export function mockCrypto() {
  */
 export function mockS3RequestPresigner() {
     throw new Error(
-        'mockS3RequestPresigner() is deprecated due to cross-test contamination. ' +
-        'Use jest.spyOn on the getSignedUrl import in your test, ' +
-        'or use the createMockGetSignedUrl() helper for dependency injection.'
+        'mockS3RequestPresigner() is deprecated due to cross-test contamination. '
+        + 'Use jest.spyOn on the getSignedUrl import in your test, '
+        + 'or use the createMockGetSignedUrl() helper for dependency injection.'
     );
 }

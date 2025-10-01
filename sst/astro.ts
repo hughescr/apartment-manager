@@ -5,9 +5,9 @@ import { uploadedDocs } from './s3';
 import { api, uploadApi } from './api';
 
 const site = new sst.aws.Astro('Web', {
-    link: [buildingsUnitsTable, uploadedDocs, api, uploadApi],
+    link:   [buildingsUnitsTable, uploadedDocs, api, uploadApi],
     domain: {
-        name: 'apartments.rungie.com',
+        name:      'apartments.rungie.com',
         redirects: ['www.apartments.rungie.com'],
     },
 });

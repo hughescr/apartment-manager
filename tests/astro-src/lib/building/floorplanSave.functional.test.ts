@@ -14,29 +14,29 @@ global.fetch = mockFetch as unknown as typeof fetch;
 
 // Helper to create mock Response objects
 const createMockResponse = (options: {
-    ok: boolean
-    status: number
+    ok:          boolean
+    status:      number
     statusText?: string
-    json?: () => Promise<unknown>
-    text?: () => Promise<string>
+    json?:       () => Promise<unknown>
+    text?:       () => Promise<string>
 }) => {
     return {
-        ok: options.ok,
-        status: options.status,
-        statusText: options.statusText || '',
-        headers: new Headers(),
-        json: options.json || (() => Promise.resolve({})),
-        text: options.text || (() => Promise.resolve('')),
-        blob: () => Promise.resolve(new Blob()),
+        ok:          options.ok,
+        status:      options.status,
+        statusText:  options.statusText || '',
+        headers:     new Headers(),
+        json:        options.json || (() => Promise.resolve({})),
+        text:        options.text || (() => Promise.resolve('')),
+        blob:        () => Promise.resolve(new Blob()),
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-        formData: () => Promise.resolve(new FormData()),
-        clone: jest.fn(),
-        body: null,
-        bodyUsed: false,
-        redirected: false,
-        type: 'default' as ResponseType,
-        url: '',
-        bytes: () => Promise.resolve(new Uint8Array())
+        formData:    () => Promise.resolve(new FormData()),
+        clone:       jest.fn(),
+        body:        null,
+        bodyUsed:    false,
+        redirected:  false,
+        type:        'default' as ResponseType,
+        url:         '',
+        bytes:       () => Promise.resolve(new Uint8Array())
     } as Response;
 };
 
@@ -55,27 +55,27 @@ describe('Floorplan Save - Functional Tests', () => {
             expect.assertions(4);
 
             const testFloorplan: UnitType = {
-                modelID: 'model-2br-deluxe',
-                modelName: '2 Bedroom Deluxe',
-                beds: 2,
-                baths: 2,
+                modelID:    'model-2br-deluxe',
+                modelName:  '2 Bedroom Deluxe',
+                beds:       2,
+                baths:      2,
                 buildingID: testBuildingId,
-                minRent: 1800,
-                maxRent: 2200,
-                minSqft: 950,
-                maxSqft: 1100
+                minRent:    1800,
+                maxRent:    2200,
+                minSqft:    950,
+                maxSqft:    1100
             };
 
             const responseData = {
                 ...testFloorplan,
-                unitID: `MODEL#${testFloorplan.modelID}`,
+                unitID:    `MODEL#${testFloorplan.modelID}`,
                 updatedAt: new Date()
             };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 201,
-                json: () => Promise.resolve(responseData)
+                json:   () => Promise.resolve(responseData)
             }));
 
             const result = await apiService.addUnitType(testBuildingId, testFloorplan);
@@ -85,9 +85,9 @@ describe('Floorplan Save - Functional Tests', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 `${testApiURL}/buildings/${testBuildingId}/unit-types`,
                 expect.objectContaining({
-                    method: 'POST',
+                    method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(testFloorplan)
+                    body:    JSON.stringify(testFloorplan)
                 })
             );
             expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -97,17 +97,17 @@ describe('Floorplan Save - Functional Tests', () => {
             expect.assertions(3);
 
             const invalidFloorplan: UnitType = {
-                modelID: 'existing-model',
-                modelName: 'Existing Model',
-                beds: 2,
-                baths: 2,
+                modelID:    'existing-model',
+                modelName:  'Existing Model',
+                beds:       2,
+                baths:      2,
                 buildingID: testBuildingId
             };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 409,
-                text: () => Promise.resolve('Unit type with this model ID already exists')
+                text:   () => Promise.resolve('Unit type with this model ID already exists')
             }));
 
             const result = await apiService.addUnitType(testBuildingId, invalidFloorplan);
@@ -123,23 +123,23 @@ describe('Floorplan Save - Functional Tests', () => {
             const modelId = 'model-2br';
             const updates = {
                 modelName: 'Updated 2 Bedroom Deluxe',
-                minRent: 1900,
-                maxRent: 2300
+                minRent:   1900,
+                maxRent:   2300
             };
 
             const responseData = {
-                modelID: modelId,
+                modelID:    modelId,
                 buildingID: testBuildingId,
                 ...updates,
-                beds: 2,
-                baths: 2,
-                updatedAt: new Date()
+                beds:       2,
+                baths:      2,
+                updatedAt:  new Date()
             };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200,
-                json: () => Promise.resolve(responseData)
+                json:   () => Promise.resolve(responseData)
             }));
 
             const result = await apiService.updateUnitType(testBuildingId, modelId, updates);
@@ -149,9 +149,9 @@ describe('Floorplan Save - Functional Tests', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 `${testApiURL}/buildings/${testBuildingId}/unit-types/${modelId}`,
                 expect.objectContaining({
-                    method: 'PUT',
+                    method:  'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updates)
+                    body:    JSON.stringify(updates)
                 })
             );
             expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -163,7 +163,7 @@ describe('Floorplan Save - Functional Tests', () => {
             const modelId = 'model-to-delete';
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200
             }));
 
@@ -185,10 +185,10 @@ describe('Floorplan Save - Functional Tests', () => {
             expect.assertions(3);
 
             const testFloorplan: UnitType = {
-                modelID: 'network-test',
-                modelName: 'Network Test Model',
-                beds: 1,
-                baths: 1,
+                modelID:    'network-test',
+                modelName:  'Network Test Model',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuildingId
             };
 
@@ -206,17 +206,17 @@ describe('Floorplan Save - Functional Tests', () => {
             expect.assertions(3);
 
             const testFloorplan: UnitType = {
-                modelID: 'server-error-test',
-                modelName: 'Server Error Test',
-                beds: 1,
-                baths: 1,
+                modelID:    'server-error-test',
+                modelName:  'Server Error Test',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuildingId
             };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 500,
-                text: () => Promise.resolve('Internal server error')
+                text:   () => Promise.resolve('Internal server error')
             }));
 
             const result = await apiService.addUnitType(testBuildingId, testFloorplan);
@@ -232,25 +232,25 @@ describe('Floorplan Save - Functional Tests', () => {
             expect.assertions(2);
 
             const complexFloorplan: UnitType = {
-                modelID: 'complex-model',
-                modelName: 'Complex Model with "Special" Characters',
-                beds: 3,
-                baths: 2.5,
-                buildingID: testBuildingId,
-                minRent: 2500,
-                maxRent: 3000,
-                minSqft: 1200,
-                maxSqft: 1400,
-                deposit: 2500,
+                modelID:      'complex-model',
+                modelName:    'Complex Model with "Special" Characters',
+                beds:         3,
+                baths:        2.5,
+                buildingID:   testBuildingId,
+                minRent:      2500,
+                maxRent:      3000,
+                minSqft:      1200,
+                maxSqft:      1400,
+                deposit:      2500,
                 maxOccupants: 6,
                 minLeaseTerm: 6,
                 maxLeaseTerm: 18
             };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 201,
-                json: () => Promise.resolve(complexFloorplan)
+                json:   () => Promise.resolve(complexFloorplan)
             }));
 
             const result = await apiService.addUnitType(testBuildingId, complexFloorplan);
@@ -259,9 +259,9 @@ describe('Floorplan Save - Functional Tests', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 `${testApiURL}/buildings/${testBuildingId}/unit-types`,
                 expect.objectContaining({
-                    method: 'POST',
+                    method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(complexFloorplan)
+                    body:    JSON.stringify(complexFloorplan)
                 })
             );
         });
@@ -275,10 +275,10 @@ describe('Floorplan Save - Functional Tests', () => {
             };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200,
-                json: () => Promise.resolve({
-                    modelID: modelId,
+                json:   () => Promise.resolve({
+                    modelID:    modelId,
                     ...partialUpdates,
                     buildingID: testBuildingId
                 })
@@ -291,7 +291,7 @@ describe('Floorplan Save - Functional Tests', () => {
                 `${testApiURL}/buildings/${testBuildingId}/unit-types/${modelId}`,
                 expect.objectContaining({
                     method: 'PUT',
-                    body: JSON.stringify(partialUpdates)
+                    body:   JSON.stringify(partialUpdates)
                 })
             );
         });
@@ -304,7 +304,7 @@ describe('Floorplan Save - Functional Tests', () => {
             const serviceWithTrailingSlash = new BuildingApiService('https://api.test.com/');
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200
             }));
 
@@ -322,7 +322,7 @@ describe('Floorplan Save - Functional Tests', () => {
             const serviceWithoutSlash = new BuildingApiService('https://api.test.com');
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 200
             }));
 
@@ -340,17 +340,17 @@ describe('Floorplan Save - Functional Tests', () => {
             expect.assertions(3);
 
             const testFloorplan: UnitType = {
-                modelID: 'empty-response-test',
-                modelName: 'Empty Response Test',
-                beds: 1,
-                baths: 1,
+                modelID:    'empty-response-test',
+                modelName:  'Empty Response Test',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuildingId
             };
 
             mockFetch.mockResolvedValueOnce(createMockResponse({
-                ok: false,
+                ok:     false,
                 status: 400,
-                text: () => Promise.resolve('')
+                text:   () => Promise.resolve('')
             }));
 
             const result = await apiService.addUnitType(testBuildingId, testFloorplan);
@@ -364,15 +364,15 @@ describe('Floorplan Save - Functional Tests', () => {
             expect.assertions(3);
 
             const testFloorplan: UnitType = {
-                modelID: 'json-error-test',
-                modelName: 'JSON Error Test',
-                beds: 1,
-                baths: 1,
+                modelID:    'json-error-test',
+                modelName:  'JSON Error Test',
+                beds:       1,
+                baths:      1,
                 buildingID: testBuildingId
             };
 
             const mockResponse = createMockResponse({
-                ok: true,
+                ok:     true,
                 status: 201
             });
             mockResponse.json = () => Promise.reject(new Error('Invalid JSON'));

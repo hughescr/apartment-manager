@@ -26,7 +26,7 @@ describe('Upload API - Delete Functionality', () => {
 
         // Import test wrapper instead of original upload module to avoid SST Resource issues
         const uploadModule = await import('./upload-test-wrapper');
-        handler = uploadModule.handler as APIGatewayProxyHandlerV2;
+        handler = uploadModule.handler;
 
         // Get references to mocked functions from the test wrapper
         mockGetSignedUrl = uploadModule.mockGetSignedUrl;
@@ -52,30 +52,30 @@ describe('Upload API - Delete Functionality', () => {
     });
 
     const createMockEvent = (overrides: Partial<APIGatewayProxyEventV2> = {}): APIGatewayProxyEventV2 => ({
-        headers: {},
+        headers:         {},
         isBase64Encoded: false,
-        rawPath: '/api/upload',
-        rawQueryString: '',
-        requestContext: {
-            accountId: 'test-account',
-            apiId: 'test-api',
-            domainName: 'test.com',
+        rawPath:         '/api/upload',
+        rawQueryString:  '',
+        requestContext:  {
+            accountId:    'test-account',
+            apiId:        'test-api',
+            domainName:   'test.com',
             domainPrefix: 'test',
-            http: {
-                method: 'POST',
-                path: '/api/upload',
-                protocol: 'HTTP/1.1',
-                sourceIp: '127.0.0.1',
+            http:         {
+                method:    'POST',
+                path:      '/api/upload',
+                protocol:  'HTTP/1.1',
+                sourceIp:  '127.0.0.1',
                 userAgent: 'test-agent',
             },
             requestId: 'test-request-id',
-            routeKey: 'POST /api/upload',
-            stage: 'test',
-            time: '01/Jan/2024:00:00:00 +0000',
+            routeKey:  'POST /api/upload',
+            stage:     'test',
+            time:      '01/Jan/2024:00:00:00 +0000',
             timeEpoch: 1704067200000,
         },
         routeKey: 'POST /api/upload',
-        version: '2.0',
+        version:  '2.0',
         ...overrides,
     });
 
@@ -85,7 +85,7 @@ describe('Upload API - Delete Functionality', () => {
             s3Mock.mockResolvedValueOnce({});
 
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/uuid-1234.jpg',
+                rawPath:        '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/uuid-1234.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -110,7 +110,7 @@ describe('Upload API - Delete Functionality', () => {
             s3Mock.mockResolvedValueOnce({});
 
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings%2Fbuilding-1%2Funits%2Funit-1%2Fuuid-1234.jpg',
+                rawPath:        '/api/upload/buildings%2Fbuilding-1%2Funits%2Funit-1%2Fuuid-1234.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -131,7 +131,7 @@ describe('Upload API - Delete Functionality', () => {
         it('should return 400 for missing key', async () => {
             expect.assertions(2);
             const event = createMockEvent({
-                rawPath: '/api/upload/',
+                rawPath:        '/api/upload/',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -157,7 +157,7 @@ describe('Upload API - Delete Functionality', () => {
 
             for(const path of invalidPaths) {
                 const event = createMockEvent({
-                    rawPath: `/api/upload/${path}`,
+                    rawPath:        `/api/upload/${path}`,
                     requestContext: {
                         ...createMockEvent().requestContext,
                         http: {
@@ -180,7 +180,7 @@ describe('Upload API - Delete Functionality', () => {
             s3Mock.mockRejectedValueOnce(new Error('Access Denied'));
 
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/uuid-1234.jpg',
+                rawPath:        '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/uuid-1234.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -203,17 +203,17 @@ describe('Upload API - Delete Functionality', () => {
             const notFoundError = new Error('The specified key does not exist.');
             notFoundError.name = 'NoSuchKey';
             Object.defineProperty(notFoundError, 'code', {
-                value: 'NoSuchKey',
+                value:      'NoSuchKey',
                 enumerable: true
             });
             Object.defineProperty(notFoundError, '$metadata', {
-                value: { httpStatusCode: 404 },
+                value:      { httpStatusCode: 404 },
                 enumerable: true
             });
             s3Mock.mockRejectedValueOnce(notFoundError);
 
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/nonexistent.jpg',
+                rawPath:        '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/nonexistent.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {
@@ -236,17 +236,17 @@ describe('Upload API - Delete Functionality', () => {
             const versionError = new Error('The request failed due to a conflict with the current state of the resource');
             versionError.name = 'ConflictError';
             Object.defineProperty(versionError, 'code', {
-                value: 'Conflict',
+                value:      'Conflict',
                 enumerable: true
             });
             Object.defineProperty(versionError, '$metadata', {
-                value: { httpStatusCode: 409 },
+                value:      { httpStatusCode: 409 },
                 enumerable: true
             });
             s3Mock.mockRejectedValueOnce(versionError);
 
             const event = createMockEvent({
-                rawPath: '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/versioned.jpg',
+                rawPath:        '/api/upload/buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/versioned.jpg',
                 requestContext: {
                     ...createMockEvent().requestContext,
                     http: {

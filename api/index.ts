@@ -18,21 +18,21 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
         GET: allData.get,
     },
     '/buildings': {
-        GET: buildings.list,
+        GET:  buildings.list,
         POST: buildings.create,
     },
     '/buildings/{buildingID}': {
-        GET: buildings.get,
-        PUT: buildings.update,
+        GET:    buildings.get,
+        PUT:    buildings.update,
         DELETE: buildings.del,
     },
     '/buildings/{buildingID}/units': {
-        GET: units.list,
+        GET:  units.list,
         POST: units.create,
     },
     '/buildings/{buildingID}/units/{unitID}': {
-        GET: units.get,
-        PUT: units.update,
+        GET:    units.get,
+        PUT:    units.update,
         DELETE: units.del,
     },
     '/buildings/{buildingID}/units/bulk-status': {
@@ -42,21 +42,21 @@ const routes: Record<string, Record<string, APIGatewayProxyHandlerV2>> = {
         PUT: units.bulkRentUpdate,
     },
     '/buildings/{buildingID}/unit-types': {
-        GET: unitTypes.list,
+        GET:  unitTypes.list,
         POST: unitTypes.create,
     },
     '/buildings/{buildingID}/unit-types/{modelID}': {
-        GET: unitTypes.get,
-        PUT: unitTypes.update,
+        GET:    unitTypes.get,
+        PUT:    unitTypes.update,
         DELETE: unitTypes.del,
     },
     '/credentials': {
         GET: credentials.list,
     },
     '/credentials/{site}': {
-        GET: credentials.get,
-        POST: credentials.create,
-        PUT: credentials.update,
+        GET:    credentials.get,
+        POST:   credentials.create,
+        PUT:    credentials.update,
         DELETE: credentials.del,
     },
     '/feed/{site}/live': {

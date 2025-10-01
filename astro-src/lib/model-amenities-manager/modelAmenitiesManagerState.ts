@@ -2,32 +2,32 @@
 // Extracted from ModelAmenitiesManager.astro to centralized registration system
 
 interface Amenity {
-    name: string
+    name:          string
     [key: string]: unknown
 }
 
 interface UnitType {
-    modelName: string
-    beds: number
-    baths: number
+    modelName:       string
+    beds:            number
+    baths:           number
     modelAmenities?: Amenity[]
-    [key: string]: unknown
+    [key: string]:   unknown
 }
 
 export function createModelAmenitiesManagerState() {
     return {
-        apiURL: '',
-        buildingID: '',
-        unitTypes: {} as Record<string, UnitType>,
-        selectedModel: '',
-        saving: false,
-        bulkEditMode: false,
+        apiURL:         '',
+        buildingID:     '',
+        unitTypes:      {} as Record<string, UnitType>,
+        selectedModel:  '',
+        saving:         false,
+        bulkEditMode:   false,
         selectedModels: [] as string[],
-        bulkAmenities: [] as Amenity[],
+        bulkAmenities:  [] as Amenity[],
 
         init() {
             // Initialize from data attributes
-            const container = document.querySelector('[data-api-url]') as HTMLElement;
+            const container = document.querySelector('[data-api-url]')!;
             this.apiURL = container?.dataset.apiUrl || '';
             this.buildingID = container?.dataset.buildingId || '';
             const unitTypesData = container?.dataset.unitTypes;
@@ -64,16 +64,16 @@ export function createModelAmenitiesManagerState() {
             this.saving = true;
             try {
                 const response = await fetch(this.apiURL + 'buildings/' + this.buildingID + '/unit-types/' + modelID, {
-                    method: 'PUT',
+                    method:  'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(unitType),
+                    body:    JSON.stringify(unitType),
                 });
 
                 if(!response.ok) {
                     const errorMessage = `Failed to save amenities: ${response.status} ${response.statusText}`;
                     alert(errorMessage);
                 }
-            } catch(error) {
+            } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
                 alert(`Network error during save: ${errorMessage}. Please check your connection and try again.`);
             } finally {
@@ -115,9 +115,9 @@ export function createModelAmenitiesManagerState() {
                     unitType.modelAmenities = [...this.bulkAmenities]; // Clone the array
 
                     return fetch(this.apiURL + 'buildings/' + this.buildingID + '/unit-types/' + modelID, {
-                        method: 'PUT',
+                        method:  'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(unitType),
+                        body:    JSON.stringify(unitType),
                     });
                 });
 
@@ -130,7 +130,7 @@ export function createModelAmenitiesManagerState() {
                     alert('Successfully updated all ' + results.length + ' models!');
                     this.toggleBulkEdit();
                 }
-            } catch(error) {
+            } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
                 alert(`Network error during bulk update: ${errorMessage}. Please check your connection and try again.`);
             } finally {

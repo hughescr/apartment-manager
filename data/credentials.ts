@@ -18,12 +18,12 @@ function getParameterPrefix(): string {
  * Credential data structure for third-party sites
  */
 export interface SiteCredentials {
-    username?: string
-    password?: string
-    apiKey?: string
+    username?:  string
+    password?:  string
+    apiKey?:    string
     apiSecret?: string
-    feedUrl?: string
-    metadata?: Record<string, string>
+    feedUrl?:   string
+    metadata?:  Record<string, string>
 }
 
 /**
@@ -38,18 +38,18 @@ export async function storeCredential(site: string, credentials: SiteCredentials
         const credentialValue = JSON.stringify(credentials);
 
         const command = new PutParameterCommand({
-            Name: parameterName,
-            Value: credentialValue,
-            Type: 'SecureString',
-            Overwrite: true,
+            Name:        parameterName,
+            Value:       credentialValue,
+            Type:        'SecureString',
+            Overwrite:   true,
             Description: `Credentials for ${site}`,
-            Tier: 'Standard'
+            Tier:        'Standard'
         });
 
         await getSSMClient().send(command);
         logger.info(`Stored credentials for site: ${site}`);
         return true;
-    } catch(error) {
+    } catch (error) {
         logger.error(`Failed to store credentials for ${site}:`, error);
         throw new Error(`Failed to store credentials: ${(error as Error).message || 'Unknown error'}`);
     }
@@ -65,7 +65,7 @@ export async function getCredential(site: string): Promise<SiteCredentials | nul
         const parameterName = `${getParameterPrefix()}/${site}`;
 
         const command = new GetParameterCommand({
-            Name: parameterName,
+            Name:           parameterName,
             WithDecryption: true
         });
 
@@ -76,7 +76,7 @@ export async function getCredential(site: string): Promise<SiteCredentials | nul
         }
 
         return null;
-    } catch(error) {
+    } catch (error) {
         if(isObject(error) && 'name' in error && error.name === 'ParameterNotFound') {
             logger.debug(`No credentials found for site: ${site}`);
             return null;
@@ -102,7 +102,7 @@ export async function deleteCredential(site: string): Promise<boolean> {
         await getSSMClient().send(command);
         logger.info(`Deleted credentials for site: ${site}`);
         return true;
-    } catch(error) {
+    } catch (error) {
         if(isObject(error) && 'name' in error && error.name === 'ParameterNotFound') {
             logger.debug(`No credentials to delete for site: ${site}`);
             return true; // Consider it successful if already deleted
@@ -126,12 +126,12 @@ export async function listCredentials(): Promise<string[]> {
             const command = new DescribeParametersCommand({
                 ParameterFilters: [
                     {
-                        Key: 'Name',
+                        Key:    'Name',
                         Option: 'BeginsWith',
                         Values: [prefix]
                     }
                 ],
-                NextToken: nextToken,
+                NextToken:  nextToken,
                 MaxResults: 50
             });
 
@@ -152,7 +152,7 @@ export async function listCredentials(): Promise<string[]> {
 
         logger.debug(`Found ${sites.length} sites with credentials`);
         return sites;
-    } catch(error) {
+    } catch (error) {
         logger.error('Failed to list credentials:', error);
         throw new Error(`Failed to list credentials: ${(error as Error).message || 'Unknown error'}`);
     }

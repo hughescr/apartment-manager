@@ -83,12 +83,12 @@ describe('Alpine.js Component Isolation and Registration', () => {
 
             const context1 = createMockAlpineContext({
                 unitType: JSON.stringify(mockUnitType1),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             });
 
             const context2 = createMockAlpineContext({
                 unitType: JSON.stringify(mockUnitType2),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             });
 
             const factory1 = createUnitTypeCardFactory.bind(context1);
@@ -118,15 +118,15 @@ describe('Alpine.js Component Isolation and Registration', () => {
         it('should isolate factory function state properly', () => {
             // Create multiple location map instances
             const dataset1 = {
-                latModel: 'building1.lat',
-                lngModel: 'building1.lng',
+                latModel:   'building1.lat',
+                lngModel:   'building1.lng',
                 defaultLat: '37.7749',
                 defaultLng: '-122.4194'
             };
 
             const dataset2 = {
-                latModel: 'building2.lat',
-                lngModel: 'building2.lng',
+                latModel:   'building2.lat',
+                lngModel:   'building2.lng',
                 defaultLat: '40.7589',
                 defaultLng: '-73.9851'
             };
@@ -160,12 +160,12 @@ describe('Alpine.js Component Isolation and Registration', () => {
         it('should prevent cross-instance method interference', () => {
             const mockContext1 = createMockAlpineContext({
                 unitType: JSON.stringify({ modelID: 'test1', rent: 2000 }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             });
 
             const mockContext2 = createMockAlpineContext({
                 unitType: JSON.stringify({ modelID: 'test2', rent: 3000 }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             });
 
             const instance1 = createUnitTypeCardFactory.bind(mockContext1)();
@@ -199,7 +199,7 @@ describe('Alpine.js Component Isolation and Registration', () => {
             for(let i = 0; i < 100; i++) {
                 const context = createMockAlpineContext({
                     unitType: JSON.stringify({ modelID: `unit-${i}`, rent: 2000 + i }),
-                    apiUrl: '/api/'
+                    apiUrl:   '/api/'
                 });
 
                 const factory = createUnitTypeCardFactory.bind(context);
@@ -219,14 +219,14 @@ describe('Alpine.js Component Isolation and Registration', () => {
 
         it('should handle cleanup of complex nested objects', () => {
             const complexUnitType = {
-                modelID: 'complex-unit',
+                modelID:        'complex-unit',
                 modelAmenities: Array(50).fill(null).map((_, i) => ({
-                    id: `amenity-${i}`,
-                    name: `Amenity ${i}`,
+                    id:       `amenity-${i}`,
+                    name:     `Amenity ${i}`,
                     metadata: {
-                        category: 'test',
+                        category:    'test',
                         subcategory: `sub-${i}`,
-                        nested: {
+                        nested:      {
                             deep: {
                                 value: i
                             }
@@ -237,7 +237,7 @@ describe('Alpine.js Component Isolation and Registration', () => {
 
             const context = createMockAlpineContext({
                 unitType: JSON.stringify(complexUnitType),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             });
 
             const factory = createUnitTypeCardFactory.bind(context);
@@ -254,12 +254,12 @@ describe('Alpine.js Component Isolation and Registration', () => {
         it('should properly isolate service instances', () => {
             const context1 = createMockAlpineContext({
                 unitType: JSON.stringify({ modelID: 'test1' }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             });
 
             const context2 = createMockAlpineContext({
                 unitType: JSON.stringify({ modelID: 'test2' }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             });
 
             const instance1 = createUnitTypeCardFactory.bind(context1)();
@@ -362,7 +362,7 @@ describe('Alpine.js Component Isolation and Registration', () => {
             // Create two instances of the same component
             const dataset = {
                 unitType: JSON.stringify({ modelID: 'test' }),
-                apiUrl: '/api/'
+                apiUrl:   '/api/'
             };
 
             const context1 = createMockAlpineContext(dataset);

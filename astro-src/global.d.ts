@@ -33,13 +33,13 @@ declare global {
          * Using official @types/alpinejs types via our centralized type definitions
          * These return component-specific implementations that extend AlpineComponent
          */
-        buildingsComponentData: () => import('./lib/types/alpine-types').AlpineComponent<unknown>
-        buildingManagerData: () => import('./lib/types/alpine-types').AlpineComponent<unknown>
-        buildingStateData: () => import('./lib/types/alpine-types').AlpineComponent<unknown>
+        buildingsComponentData:    () => import('./lib/types/alpine-types').AlpineComponent<unknown>
+        buildingManagerData:       () => import('./lib/types/alpine-types').AlpineComponent<unknown>
+        buildingStateData:         () => import('./lib/types/alpine-types').AlpineComponent<unknown>
         modelAmenitiesManagerData: () => import('./lib/types/alpine-types').AlpineComponent<unknown>
-        buildingsListData: () => import('./lib/types/alpine-types').AlpineComponent<unknown>
-        unitCardData: () => import('./lib/types/alpine-types').AlpineComponent<unknown>
-        addBuildingFormData: () => import('./lib/types/alpine-types').AlpineComponent<unknown>
+        buildingsListData:         () => import('./lib/types/alpine-types').AlpineComponent<unknown>
+        unitCardData:              () => import('./lib/types/alpine-types').AlpineComponent<unknown>
+        addBuildingFormData:       () => import('./lib/types/alpine-types').AlpineComponent<unknown>
     }
 
     /**

@@ -331,13 +331,13 @@ export function isAlpineState<T extends Record<string, unknown>>(
     _stateType: new () => T
 ): obj is T {
     return (
-        obj !== null &&
-        obj !== undefined &&
-        isObject(obj) &&
-        'errors' in obj &&
-        'saving' in obj &&
-        isObject((obj as T).errors) &&
-        isBoolean((obj as T).saving)
+        obj !== null
+        && obj !== undefined
+        && isObject(obj)
+        && 'errors' in obj
+        && 'saving' in obj
+        && isObject((obj as T).errors)
+        && isBoolean((obj as T).saving)
     );
 }
 /**
@@ -348,9 +348,9 @@ export function isAlpineEvent<T extends string>(
     event: unknown
 ): event is CustomEvent<T> {
     return (
-        isObject(event) &&
-        event !== null &&
-        'detail' in event
+        isObject(event)
+        && event !== null
+        && 'detail' in event
     );
 }
 

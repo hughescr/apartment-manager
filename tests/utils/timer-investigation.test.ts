@@ -10,7 +10,7 @@ describe('Timer Mocking Investigation', () => {
         beforeEach(() => {
             clock = FakeTimers.install({
                 shouldClearNativeTimers: true,
-                toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance']
+                toFake:                  ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance']
             });
         });
 
@@ -49,7 +49,7 @@ describe('Timer Mocking Investigation', () => {
         beforeEach(() => {
             clock = FakeTimers.install({
                 shouldClearNativeTimers: true,
-                toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance']
+                toFake:                  ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance']
             });
         });
 
@@ -86,7 +86,7 @@ describe('Timer Mocking Investigation', () => {
         beforeEach(() => {
             clock = FakeTimers.install({
                 shouldClearNativeTimers: true,
-                toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance']
+                toFake:                  ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance']
             });
         });
 
@@ -102,7 +102,7 @@ describe('Timer Mocking Investigation', () => {
             };
 
             const throttle = pThrottle({
-                limit: 1,
+                limit:    1,
                 interval: 1000
             });
             const throttled = throttle(fn);

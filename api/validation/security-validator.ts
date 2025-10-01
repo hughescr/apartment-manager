@@ -27,9 +27,9 @@ export function performSecurityValidations(data: unknown, entityType: string): V
         const arrayError = validateArraySize(obj.photos, 'photos', 50);
         if(arrayError) {
             errors.push({
-                field: 'photos',
+                field:   'photos',
                 message: arrayError,
-                code: 'ARRAY_TOO_LARGE'
+                code:    'ARRAY_TOO_LARGE'
             });
         }
     }
@@ -38,9 +38,9 @@ export function performSecurityValidations(data: unknown, entityType: string): V
         const arrayError = validateArraySize(obj.amenities, 'amenities', 100);
         if(arrayError) {
             errors.push({
-                field: 'amenities',
+                field:   'amenities',
                 message: arrayError,
-                code: 'ARRAY_TOO_LARGE'
+                code:    'ARRAY_TOO_LARGE'
             });
         }
     }
@@ -49,9 +49,9 @@ export function performSecurityValidations(data: unknown, entityType: string): V
         const arrayError = validateArraySize(obj.features, 'features', 100);
         if(arrayError) {
             errors.push({
-                field: 'features',
+                field:   'features',
                 message: arrayError,
-                code: 'ARRAY_TOO_LARGE'
+                code:    'ARRAY_TOO_LARGE'
             });
         }
     }
@@ -62,9 +62,9 @@ export function performSecurityValidations(data: unknown, entityType: string): V
             const numError = validateNumericValue(obj.yearBuilt as number, 'yearBuilt', 1800, new Date().getFullYear() + 1);
             if(numError) {
                 errors.push({
-                    field: 'yearBuilt',
+                    field:   'yearBuilt',
                     message: numError,
-                    code: 'INVALID_RANGE'
+                    code:    'INVALID_RANGE'
                 });
             }
         }
@@ -73,11 +73,11 @@ export function performSecurityValidations(data: unknown, entityType: string): V
     // Validate negative numbers for fields that shouldn't be negative
     const nonNegativeFields = ['beds', 'baths', 'sqft', 'rent', 'deposit', 'minRent', 'maxRent'];
     forEach(nonNegativeFields, (field) => {
-        if(obj[field] !== undefined && isNumber(obj[field]) && (obj[field] as number) < 0) {
+        if(obj[field] !== undefined && isNumber(obj[field]) && (obj[field]) < 0) {
             errors.push({
                 field,
                 message: `${startCase(field)} cannot be negative`,
-                code: 'NEGATIVE_VALUE'
+                code:    'NEGATIVE_VALUE'
             });
         }
     });
@@ -167,11 +167,11 @@ function sanitizeStringField(key: string, value: string): unknown {
     if(isUrlField(key)) {
         const trimmedValue = trim(value);
         if(trimmedValue && validator.isURL(trimmedValue, {
-            protocols: ['http', 'https'],
-            require_protocol: false,
+            protocols:              ['http', 'https'],
+            require_protocol:       false,
             require_valid_protocol: true,
             allow_query_components: true,
-            allow_fragments: true
+            allow_fragments:        true
         })) {
             const result = sanitizeHtml(trimmedValue);
             return result;

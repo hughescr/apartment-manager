@@ -16,27 +16,27 @@ describe('BuildingCore', () => {
 
         // Mock Alpine.js state
         mockState = {
-            building: null,
-            original: null,
-            apiURL: '',
-            saving: false,
-            showSave: false,
-            lastSaveSuccess: false,
-            errors: {},
+            building:             null,
+            original:             null,
+            apiURL:               '',
+            saving:               false,
+            showSave:             false,
+            lastSaveSuccess:      false,
+            errors:               {},
             expandedRentSpecials: {},
-            $watch: noop,
-            $nextTick: async (callback?: () => void) => {
+            $watch:               noop,
+            $nextTick:            async (callback?: () => void) => {
                 if(callback) {
                     return void callback();
                 }
             },
             $dispatch: noop,
-            $store: {},
-            $root: { dataset: {} } as HTMLElement,
-            $refs: {} as Record<string, HTMLElement>,
-            $data: {} as Record<string, unknown>,
-            $id: (name: string, key?: number | string | null) => `${name}${key ? `-${key}` : ''}`,
-            $el: (() => {
+            $store:    {},
+            $root:     { dataset: {} } as HTMLElement,
+            $refs:     {} as Record<string, HTMLElement>,
+            $data:     {} as Record<string, unknown>,
+            $id:       (name: string, key?: number | string | null) => `${name}${key ? `-${key}` : ''}`,
+            $el:       (() => {
                 // Create a mock element that works in test environment
                 const el = { dataset: {} } as HTMLElement;
                 return el;
