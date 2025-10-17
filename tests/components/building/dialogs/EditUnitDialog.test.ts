@@ -564,10 +564,19 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                     const selectedType = this.selectedUnitType;
                     if(selectedType) {
                         // Reset inheritable fields to allow inheritance
-                        this.editUnit.beds ??= undefined;
-                        this.editUnit.baths ??= undefined;
-                        this.editUnit.sqft ??= undefined;
-                        this.editUnit.rent ??= undefined;
+                        // Only reset fields that are 0 or nullish (allow non-zero overrides to persist)
+                        if(this.editUnit.beds === 0 || this.editUnit.beds == null) {
+                            this.editUnit.beds = undefined;
+                        }
+                        if(this.editUnit.baths === 0 || this.editUnit.baths == null) {
+                            this.editUnit.baths = undefined;
+                        }
+                        if(this.editUnit.sqft === 0 || this.editUnit.sqft == null) {
+                            this.editUnit.sqft = undefined;
+                        }
+                        if(this.editUnit.rent === 0 || this.editUnit.rent == null) {
+                            this.editUnit.rent = undefined;
+                        }
                     } else {
                         // For custom units, ensure we have default values
                         this.editUnit.beds ??= 1;

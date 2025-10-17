@@ -107,6 +107,7 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
 
         const response: GeocodingResponse = {
             success:    true,
+            // Geocoding service returns null when no results; convert to undefined for optional field semantics
             result:     result ?? undefined,
             cacheStats: geocodingService.getCacheStats()
         };

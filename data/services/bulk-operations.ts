@@ -94,6 +94,12 @@ export async function performBulkRentUpdate(params: BulkRentUpdateParams): Promi
                 throw new Error(`Unit ${unitID} not found`);
             }
 
+            // For percentage updates, we need a valid current rent
+            // For absolute updates, current rent is ignored anyway
+            if(updateType === 'percentage' && (currentUnit.rent == null || currentUnit.rent === 0)) {
+                throw new Error(`Unit ${unitID} has no rent set, cannot apply percentage increase`);
+            }
+
             const newRent = calculateNewRent(currentUnit.rent ?? 0, updateType, value);
 
             await updateUnit(buildingID, unitID, {

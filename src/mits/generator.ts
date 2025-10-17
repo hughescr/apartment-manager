@@ -39,7 +39,7 @@ interface UnitTypeWithUpdate extends UnitTypeData {
 interface UnitWithUpdate extends UnitData {
     updatedAt: Date
 }
-import { chain, filter, isNumber, isString, map, max, maxBy, replace, split, toLower } from 'lodash';
+import { chain, filter, isNumber, isString, map, max, maxBy, replace, toLower } from 'lodash';
 import { inheritanceResolver } from '../mappers/inheritance-resolver.js';
 import type {
     MITSPhysicalProperty as _MITSPhysicalProperty,
@@ -330,28 +330,31 @@ function generateUnitDetailsXML(unit: UnitData): string {
 function generateUnitAvailabilityXML(unit: UnitData): string {
     const enhancedUnit = unit as EnhancedUnitData;
 
-    // Use new vacancy date fields with fallbacks
-    const vacateDate = enhancedUnit.vacateDate ?? unit.availableDate ?? split(new Date().toISOString(), 'T')[0];
-    const madeReadyDate = enhancedUnit.madeReadyDate ?? unit.availableDate ?? vacateDate;
-    const availableDate = unit.availableDate ?? madeReadyDate;
+    // Compute dates with fallbacks - each date type has its own fallback chain
+    // VacateDate: when tenant moves out (falls back to available date if not specified)
+    // MadeReadyDate: when unit is ready for new tenant (falls back to available date)
+    // AvailableDate: when unit can be shown/rented (required field, no fallback to today to avoid misleading availability)
+    const vacateDate = enhancedUnit.vacateDate ?? unit.availableDate;
+    const madeReadyDate = enhancedUnit.madeReadyDate ?? unit.availableDate;
+    const availableDate = unit.availableDate; // No fallback - if not set, don't include in XML
 
     // Use new vacancyClass field with backward compatibility
     const vacancyClass = enhancedUnit.vacancyClass ?? (unit.occupied ? 'Occupied' : 'Unoccupied');
 
     return `
                 <Availability>${
-                    enhancedUnit.vacateDate
+                    vacateDate
                         ? `
                     <VacateDate>${vacateDate}</VacateDate>`
                         : ''
                 }
                     <VacancyClass>${vacancyClass}</VacancyClass>${
-                        enhancedUnit.madeReadyDate
+                        madeReadyDate
                             ? `
                     <MadeReadyDate>${madeReadyDate}</MadeReadyDate>`
                             : ''
                     }${
-                        unit.availableDate
+                        availableDate
                             ? `
                     <AvailableDate>${availableDate}</AvailableDate>`
                             : ''
@@ -371,6 +374,9 @@ function generateUnit(unit: UnitData): string {
 function generatePropertyIdentification(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
     const enhancedBuilding = building as EnhancedBuildingData;
 
+    // Prefer propertyWebsite, fall back to website field
+    const websiteUrl = enhancedBuilding.contactInfo?.propertyWebsite ?? enhancedBuilding.contactInfo?.website;
+
     return `
         <Identification>
             <PropertyID>${escapeXML(building.buildingID)}</PropertyID>${
@@ -379,9 +385,9 @@ function generatePropertyIdentification(building: BuildingData, escapeXML: (str:
             <MarketingName>${escapeXML(building.buildingName)}</MarketingName>`
                     : ''
             }${
-                (enhancedBuilding.contactInfo?.propertyWebsite ?? enhancedBuilding.contactInfo?.website)
+                websiteUrl
                     ? `
-            <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite ?? enhancedBuilding.contactInfo.website)}</WebSite>`
+            <WebSite>${escapeXML(websiteUrl)}</WebSite>`
                     : ''
             }
         </Identification>`;
@@ -433,9 +439,11 @@ function generateInformationFieldsXML(building: BuildingData, unitCount: number,
         <Email>${escapeXML(building.contactInfo.email)}</Email>`
         : '';
 
-    const websiteXML = (enhancedBuilding.contactInfo?.propertyWebsite ?? enhancedBuilding.contactInfo?.website)
+    // Prefer propertyWebsite, fall back to website field
+    const propertyWebsite = enhancedBuilding.contactInfo?.propertyWebsite ?? enhancedBuilding.contactInfo?.website;
+    const websiteXML = propertyWebsite
         ? `
-        <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite ?? enhancedBuilding.contactInfo.website)}</WebSite>`
+        <WebSite>${escapeXML(propertyWebsite)}</WebSite>`
         : '';
 
     const unitCountXML = unitCount > 0

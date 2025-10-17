@@ -3,7 +3,7 @@ import { getBuilding } from '../data/buildings';
 import { getUnitTypes } from '../data/unitTypes';
 import { getUnits } from '../data/units';
 import type { BuildingData, UnitTypeData, UnitData } from '../src/types/index.js';
-import { every, filter, isError, isObject, isString, map, omit, pick, replace, sumBy } from 'lodash';
+import { every, filter, isError, isObject, isString, map, omit, pick, replace, sumBy, trim } from 'lodash';
 import { sanitizeObject } from './security-validation';
 import { validateSingleId } from './shared/request-handlers';
 import { logger } from '@hughescr/logger';
@@ -125,8 +125,20 @@ export const validate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayP
  * Parse and validate the request body
  */
 function parseValidationRequest(body: string | null): ValidationRequest | APIGatewayProxyStructuredResultV2 {
+    // Body is required - don't hide this with a fallback to empty object
+    // Reject null, undefined, or empty string
+    if(!body || trim(body) === '') {
+        return {
+            statusCode: 400,
+            body:       JSON.stringify({
+                error:  'Validation failed',
+                errors: { body: 'Request body is required' }
+            })
+        };
+    }
+
     try {
-        const rawData: unknown = JSON.parse(body ?? '{}');
+        const rawData: unknown = JSON.parse(body);
         const data = sanitizeObject(rawData as Record<string, unknown>) as unknown as ValidationRequest;
 
         // Validate required fields

@@ -44,34 +44,53 @@ export class InheritanceResolver implements IInheritanceResolver {
     /**
      * Apply inheritance from unit type to unit.
      * @private
+     *
+     * Null vs Undefined Semantics:
+     * - undefined = inherit from parent (use parent's value)
+     * - null = explicit "no value" (preserve null, do not inherit)
+     * - All fields use explicit `!== undefined` checks to differentiate null from undefined
+     *
+     * Note: We intentionally do NOT use nullish coalescing (??) because it treats null and undefined
+     * identically. We need to preserve null values while inheriting undefined values.
      */
     private inheritFromUnitType(
         resolved: UnitData,
         unit: UnitData,
         unitType: UnitTypeData
     ): void {
-        // Basic fields - preserve null values as intentional overrides
-        resolved.beds = unit.beds ?? unitType.beds;
-        resolved.baths = unit.baths ?? unitType.baths;
+        // Basic fields - null is preserved (explicit "no value"), undefined inherits from parent
+        // Using explicit checks: undefined inherits, null/value is preserved
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.beds = unit.beds !== undefined ? unit.beds : unitType.beds;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.baths = unit.baths !== undefined ? unit.baths : unitType.baths;
 
         // Square footage - use unit's specific value or model's min
-        resolved.sqft = unit.sqft ?? unitType.minSqft;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.sqft = unit.sqft !== undefined ? unit.sqft : unitType.minSqft;
 
         // Rent - use unit's specific value or model's min
-        resolved.rent = unit.rent ?? unitType.minRent;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.rent = unit.rent !== undefined ? unit.rent : unitType.minRent;
 
         // Occupancy
-        resolved.maxOccupants = unit.maxOccupants ?? unitType.maxOccupants;
-        resolved.perPersonRent = unit.perPersonRent ?? unitType.perPersonRent;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.maxOccupants = unit.maxOccupants !== undefined ? unit.maxOccupants : unitType.maxOccupants;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.perPersonRent = unit.perPersonRent !== undefined ? unit.perPersonRent : unitType.perPersonRent;
 
         // Deposit
-        resolved.deposit = unit.deposit ?? unitType.deposit;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.deposit = unit.deposit !== undefined ? unit.deposit : unitType.deposit;
 
         // Lease terms
-        resolved.minLeaseTerm = unit.minLeaseTerm ?? unitType.minLeaseTerm;
-        resolved.maxLeaseTerm = unit.maxLeaseTerm ?? unitType.maxLeaseTerm;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.minLeaseTerm = unit.minLeaseTerm !== undefined ? unit.minLeaseTerm : unitType.minLeaseTerm;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.maxLeaseTerm = unit.maxLeaseTerm !== undefined ? unit.maxLeaseTerm : unitType.maxLeaseTerm;
 
         // Amenities - handle null as intentional override to "no amenities"
+        // undefined = inherit from parent, null = explicit "no amenities"
         if(unit.unitAmenities !== undefined) {
             resolved.unitAmenities = unit.unitAmenities;
         } else if(unitType.modelAmenities) {
@@ -82,17 +101,27 @@ export class InheritanceResolver implements IInheritanceResolver {
     /**
      * Apply inheritance from building to unit.
      * @private
+     *
+     * Null vs Undefined Semantics:
+     * - undefined = inherit from parent (use parent's value)
+     * - null = explicit "no value" (preserve null, do not inherit)
+     * - All fields use explicit checks to differentiate null from undefined
      */
     private inheritFromBuilding(
         resolved: UnitData,
         building: BuildingData
     ): void {
         // Lease terms from building if not set by unit or model
-        resolved.minLeaseTerm = resolved.minLeaseTerm ?? building.leaseLength;
-        resolved.maxLeaseTerm = resolved.maxLeaseTerm ?? building.leaseLength;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.minLeaseTerm = resolved.minLeaseTerm !== undefined ? resolved.minLeaseTerm : building.leaseLength;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        resolved.maxLeaseTerm = resolved.maxLeaseTerm !== undefined ? resolved.maxLeaseTerm : building.leaseLength;
 
         // Photos - only inherit if photos is undefined (null means intentional override to no photos)
-        resolved.photos ??= building.photos;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- null and undefined have different semantics here
+        if(resolved.photos === undefined) {
+            resolved.photos = building.photos;
+        }
     }
 
     /**

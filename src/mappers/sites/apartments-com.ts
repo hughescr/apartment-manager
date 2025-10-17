@@ -54,6 +54,23 @@ function getDepositAmount(deposit: number | Deposit | undefined): number | undef
 }
 
 /**
+ * Sanitize numeric values to handle NaN edge cases.
+ * - NaN is converted to 0
+ * - Infinity and -Infinity are preserved (they're valid JavaScript numbers)
+ * - undefined and null are preserved
+ * - All other numbers (including 0, -0) are preserved
+ */
+function sanitizeNumeric(value: number | undefined | null): number | undefined | null {
+    if(value === undefined || value === null) {
+        return value;
+    }
+    if(Number.isNaN(value)) {
+        return 0;
+    }
+    return value; // Preserves Infinity, -Infinity, normal numbers, and 0
+}
+
+/**
  * Apartments.com mapper implementation.
  * Supports the three-tier hierarchy: Building → Models → Units
  */
@@ -181,17 +198,30 @@ export class ApartmentsComMapper implements SiteMapper {
             building.propertyAmenities
         );
 
+        // Sanitize numeric values to handle NaN
+        const sanitizedBeds = sanitizeNumeric(resolved.beds);
+        const sanitizedBaths = sanitizeNumeric(resolved.baths);
+        const sanitizedRent = sanitizeNumeric(resolved.rent);
+
+        // Determine description with fallback chain
+        let description: string | undefined;
+        if(resolved.unitDescription && resolved.unitDescription !== '') {
+            description = resolved.unitDescription;
+        } else if(resolved.description && resolved.description !== '') {
+            description = resolved.description;
+        }
+
         return {
             externalId:    unit.unitID,
-            unitNumber:    unit.unitNumber ?? unit.unitID,
+            unitNumber:    (unit.unitNumber && unit.unitNumber !== '') ? unit.unitNumber : unit.unitID,
             modelName:     unitType?.modelName,
-            beds:          resolved.beds ?? 0,
-            baths:         resolved.baths ?? 0,
+            beds:          sanitizedBeds ?? 0,
+            baths:         sanitizedBaths ?? 0,
             sqft:          resolved.sqft,
-            rent:          resolved.rent ?? 0,
+            rent:          sanitizedRent ?? 0,
             deposit:       getDepositAmount(resolved.deposit),
             dateAvailable: dateFormatter(resolved.availableDate),
-            description:   resolved.unitDescription ?? resolved.description,
+            description,
             maxOccupants:  resolved.maxOccupants,
             leaseTerms:    {
                 minMonths: resolved.minLeaseTerm,

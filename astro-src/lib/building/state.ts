@@ -1722,11 +1722,19 @@ function buildingStateObject(): any {
             const selectedType = this.editFormSelectedUnitType;
             if(selectedType) {
                 // Reset inheritable fields to allow inheritance
-                // Only set values if unit doesn't have explicit values
-                this.editUnit.beds ??= null; // Allow inheritance
-                this.editUnit.baths ??= null; // Allow inheritance
-                this.editUnit.sqft ??= null; // Allow inheritance
-                this.editUnit.rent ??= null; // Allow inheritance
+                // Only reset fields that are 0 or nullish (allow non-zero overrides to persist)
+                if(this.editUnit.beds === 0 || this.editUnit.beds == null) {
+                    this.editUnit.beds = undefined;
+                }
+                if(this.editUnit.baths === 0 || this.editUnit.baths == null) {
+                    this.editUnit.baths = undefined;
+                }
+                if(this.editUnit.sqft === 0 || this.editUnit.sqft == null) {
+                    this.editUnit.sqft = undefined;
+                }
+                if(this.editUnit.rent === 0 || this.editUnit.rent == null) {
+                    this.editUnit.rent = undefined;
+                }
             } else {
                 // For custom units, ensure we have default values
                 this.editUnit.beds ??= 1;

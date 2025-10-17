@@ -28,6 +28,7 @@ import {
     categorizeFees,
     mergeAmenities
 } from '../transformers/index.js';
+import { logger } from '../../utils/logger.js';
 // import fieldMappingsV2 from '../field-mappings.json'; // Reserved for future field mapping features
 
 /** Enhanced deposit structure with refundability and partial refund options */
@@ -51,6 +52,23 @@ function getDepositAmount(deposit: number | Deposit | undefined): number | undef
         return (deposit).amount;
     }
     return undefined;
+}
+
+/**
+ * Sanitize numeric values to handle NaN edge cases.
+ * - NaN is converted to 0
+ * - Infinity and -Infinity are preserved (they're valid JavaScript numbers)
+ * - undefined and null are preserved
+ * - All other numbers (including 0, -0) are preserved
+ */
+function sanitizeNumeric(value: number | undefined | null): number | undefined | null {
+    if(value === undefined || value === null) {
+        return value;
+    }
+    if(Number.isNaN(value)) {
+        return 0;
+    }
+    return value; // Preserves Infinity, -Infinity, normal numbers, and 0
 }
 
 /**
@@ -96,6 +114,14 @@ export class ZillowMapper implements SiteMapper {
             }
         }
 
+        // Determine description with fallback chain
+        let description: string | undefined;
+        if(building.propertyDescription && building.propertyDescription !== '') {
+            description = building.propertyDescription;
+        } else if(building.description && building.description !== '') {
+            description = building.description;
+        }
+
         return {
             externalId: building.buildingID,
             name:       building.buildingID,
@@ -108,11 +134,11 @@ export class ZillowMapper implements SiteMapper {
             propertyType: building.propertyType
                 ? propertyTypeTransformer(building.propertyType)
                 : 'Apartment',
-            yearBuilt:   building.yearBuilt,
-            totalUnits:  building.totalUnits,
-            description: building.propertyDescription ?? building.description,
-            photos:      transformPhotoUrls(building.photos, this.siteId),
-            leaseTerms:  {
+            yearBuilt:  building.yearBuilt,
+            totalUnits: building.totalUnits,
+            description,
+            photos:     transformPhotoUrls(building.photos, this.siteId),
+            leaseTerms: {
                 minMonths:     building.leaseLength,
                 maxMonths:     building.leaseLength,
                 defaultMonths: building.leaseLength ?? 12
@@ -187,17 +213,34 @@ export class ZillowMapper implements SiteMapper {
         const allPhotos = this.getAllPhotos(flattened, building);
         const fullDescription = this.getCombinedDescription(building, flattened);
 
+        // Sanitize numeric values to handle NaN
+        const sanitizedBeds = sanitizeNumeric(flattened.beds);
+        const sanitizedBaths = sanitizeNumeric(flattened.baths);
+        const sanitizedRent = sanitizeNumeric(flattened.rent);
+
+        // Validate critical fields - these are required by Zillow
+        // Log warnings when using fallback values to highlight data quality issues
+        if(sanitizedBeds == null) {
+            logger.warn('Unit missing beds, defaulting to 0', { buildingID: building.buildingID, unitID: unit.unitID });
+        }
+        if(sanitizedBaths == null) {
+            logger.warn('Unit missing baths, defaulting to 0', { buildingID: building.buildingID, unitID: unit.unitID });
+        }
+        if(sanitizedRent == null || sanitizedRent === 0) {
+            logger.warn('Unit missing rent or rent is 0', { buildingID: building.buildingID, unitID: unit.unitID, rent: sanitizedRent });
+        }
+
         return {
             externalId:    unit.unitID,
             unitNumber:    unit.unitNumber ?? unit.unitID,
             modelName:     unitType?.modelName, // For internal tracking only
-            beds:          flattened.beds ?? 0,
-            baths:         flattened.baths ?? 0,
+            beds:          sanitizedBeds ?? 0,
+            baths:         sanitizedBaths ?? 0,
             sqft:          flattened.sqft,
-            rent:          flattened.rent ?? 0,
+            rent:          sanitizedRent ?? 0,
             deposit:       getDepositAmount(flattened.deposit),
             dateAvailable: dateFormatter(flattened.availableDate),
-            description:   fullDescription ?? `${flattened.beds} bed, ${flattened.baths} bath unit`,
+            description:   fullDescription || undefined,
             maxOccupants:  flattened.maxOccupants,
             leaseTerms:    {
                 minMonths: flattened.minLeaseTerm ?? building.leaseLength,

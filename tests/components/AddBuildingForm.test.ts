@@ -27,7 +27,7 @@ describe('AddBuildingForm Address Autocomplete', () => {
         });
 
         it('has keyboard navigation attributes', () => {
-            expect(componentSrc).toContain("'@keydown': 'handleKeydown($event)'");
+            expect(componentSrc).toContain("'@keydown':                     'handleKeydown($event)'");
             // Verify keyboard handling exists in the factory function
             expect(typeof formState.handleKeydown).toBe('function');
             // Verify the factory function handles the correct keys
@@ -113,7 +113,7 @@ describe('AddBuildingForm Address Autocomplete', () => {
 
     describe('User Interaction', () => {
         it('has input event handler with debouncing', () => {
-            expect(componentSrc).toContain("'@input': 'handleStreetInput($event)'");
+            expect(componentSrc).toContain("'@input':                       'handleStreetInput($event)'");
         });
 
         it('has click handlers for suggestions', () => {

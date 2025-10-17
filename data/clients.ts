@@ -28,7 +28,10 @@ function createMockItemResponse(item: Record<string, unknown>, unitID: string) {
 }
 
 function handleMockPutCommand(cmd: { input?: Record<string, unknown> }) {
-    // DynamoDB Toolbox sends data in input.Item
+    // DynamoDB Toolbox sends data in input.Item, but fallback chain handles different command structures:
+    // 1. Try input.Item (DynamoDB Toolbox format)
+    // 2. Fall back to input directly (raw DynamoDB format)
+    // 3. Fall back to empty object if neither exist
     const item = (cmd.input?.Item ?? cmd.input ?? {}) as Record<string, unknown>;
     const unitID = isString(item.unitID)
         ? item.unitID
@@ -39,6 +42,7 @@ function handleMockPutCommand(cmd: { input?: Record<string, unknown> }) {
 }
 
 function handleMockUpdateCommand(cmd: { input?: Record<string, unknown> }) {
+    // Similar fallback chain for update commands - handles different DynamoDB command formats
     const updates = cmd.input?.Item ?? cmd.input ?? {};
     const key = cmd.input?.Key ?? {};
     let unitID = 'BUILDING';

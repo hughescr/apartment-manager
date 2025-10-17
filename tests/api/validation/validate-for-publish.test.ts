@@ -733,9 +733,10 @@ describe('Validate for Publish API Endpoint', () => {
 
             expect(result.statusCode).toBe(400);
             const response = JSON.parse(result.body!) as {
-                errors: { entityType: string }
+                errors: { body: string }
             };
-            expect(response.errors.entityType).toContain('entityType must be one of');
+            // Now correctly rejects missing body before trying to parse
+            expect(response.errors.body).toBe('Request body is required');
         });
     });
 

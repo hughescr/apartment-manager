@@ -29,6 +29,7 @@ export function createDateFormatter(format: string): TransformerFunction<string 
             case 'MM/DD/YYYY':
                 return dateTime.toFormat('MM/dd/yyyy');
             case 'YYYY-MM-DD':
+                // Luxon's toISODate() returns string | null, convert null to undefined for consistency
                 return dateTime.toISODate() ?? undefined;
             case 'MM-DD-YYYY':
                 return dateTime.toFormat('MM-dd-yyyy');
@@ -54,6 +55,7 @@ export function parseDateToISO(value: string | undefined): string | undefined {
     }
 
     const dateTime = parseDateToDateTime(value);
+    // Luxon's toISODate() returns string | null, convert null to undefined for consistency
     return dateTime?.isValid ? (dateTime.toISODate() ?? undefined) : undefined;
 }
 
