@@ -67,7 +67,7 @@ export function formatPriceRange(
     }
 
     if(min === max || max === undefined) {
-        return formatter(min) || 'Call for pricing';
+        return formatter(min) ?? 'Call for pricing';
     }
 
     if(min === undefined) {
@@ -115,7 +115,7 @@ export function formatDeposit(deposit: number | undefined, rent?: number): strin
         return `${formatter(deposit)} (${months} month${months > 1 ? 's' : ''} rent)`;
     }
 
-    return formatter(deposit) || 'Call for deposit';
+    return formatter(deposit) ?? 'Call for deposit';
 }
 
 /**

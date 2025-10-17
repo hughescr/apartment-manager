@@ -39,7 +39,7 @@ describe('Unit Types API - List and Get', () => {
             expect(result.statusCode).toBe(200);
 
             // The data layer should return the unit types (empty array if mocking isn't working correctly)
-            const responseData = JSON.parse(result.body!);
+            const responseData = JSON.parse(result.body!) as Record<string, unknown>;
             expect(isArray(responseData)).toBe(true);
 
             // Since DynamoDB Toolbox mocking is complex, just verify basic API behavior

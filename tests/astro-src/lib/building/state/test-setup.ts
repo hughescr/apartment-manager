@@ -51,10 +51,10 @@ export const createMockResponse = (options: {
     return {
         ok:          options.ok,
         status:      options.status,
-        statusText:  options.statusText || '',
+        statusText:  options.statusText ?? '',
         headers:     new Headers(),
-        json:        options.json || (() => Promise.resolve({})),
-        text:        options.text || (() => Promise.resolve('')),
+        json:        options.json ?? (() => Promise.resolve({})),
+        text:        options.text ?? (() => Promise.resolve('')),
         blob:        () => Promise.resolve(new Blob()),
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
         formData:    () => Promise.resolve(new FormData()),
@@ -138,10 +138,10 @@ export const createMockAlpineContext = (overrides: Partial<AlpineMagics> = {}): 
     $watch: jest.fn().mockImplementation((property: string, callback: (newValue: unknown, oldValue: unknown) => void) => {
         // Store watchers for later triggering in tests
         const context = mockAlpineContext as unknown as { _watchers?: Map<string, (newValue: unknown, oldValue: unknown) => void> };
-        if(!context._watchers) {
+        if(!(context._watchers ?? false)) {
             context._watchers = new Map();
         }
-        context._watchers.set(property, callback);
+        context._watchers?.set(property, callback);
     }),
     $nextTick: jest.fn().mockImplementation((callback?: () => void) => {
         // Execute immediately for tests
@@ -157,7 +157,7 @@ export const createMockAlpineContext = (overrides: Partial<AlpineMagics> = {}): 
     $data:     {} as Record<string, unknown>,
     $id:       jest.fn().mockImplementation((_name: string, index?: number) => {
         // Generate predictable IDs for testing as numbers (matches test expectations)
-        return index !== undefined ? index : Math.floor(Math.random() * 1000);
+        return (index ?? Math.floor(Math.random() * 1000));
     }),
     ...overrides
 } as unknown as AlpineMagics);

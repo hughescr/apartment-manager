@@ -286,6 +286,6 @@ export function validateMITSXML(xml: string, options: ValidationOptions = {}): b
         if(error instanceof MITSValidationError) {
             throw error;
         }
-        throw new MITSValidationError(`XML parsing error: ${error}`);
+        throw new MITSValidationError(`XML parsing error: ${String(error)}`);
     }
 }

@@ -94,7 +94,7 @@ describe('Upload API - Basic Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(200);
             expect(body.uploadUrl).toBe('https://s3.example.com/signed-url');
@@ -130,7 +130,7 @@ describe('Upload API - Basic Functionality', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(body.key).toContain(testCase.expected);
             }
@@ -174,7 +174,7 @@ describe('Upload API - Basic Functionality', () => {
                     body: JSON.stringify(testCase.body)
                 });
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe(testCase.expectedError);
@@ -201,7 +201,7 @@ describe('Upload API - Basic Functionality', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Invalid file type. Only images are allowed.');
@@ -220,11 +220,11 @@ describe('Upload API - Basic Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(200);
             expect(body.key).toBe('buildings/gSPgoPTdFcPqdeCYMBZMzy/units/unit-1/test-uuid.jpg');
-            expect(body.publicUrl).toContain('test-uuid.jpg');
+            expect((body).publicUrl).toContain('test-uuid.jpg');
         });
 
         it('should handle malformed request body', async () => {
@@ -234,13 +234,13 @@ describe('Upload API - Basic Functionality', () => {
             const event1 = createMockEvent({ body: undefined });
             const result1 = await callHandler(event1);
             expect(result1.statusCode).toBe(400);
-            expect(JSON.parse(result1.body!).error).toBe('Missing required fields');
+            expect((JSON.parse(result1.body!) as { error?: string }).error).toBe('Missing required fields');
 
             // Invalid JSON
             const event2 = createMockEvent({ body: 'invalid json' });
             const result2 = await callHandler(event2);
             expect(result2.statusCode).toBe(500);
-            expect(JSON.parse(result2.body!).error).toBe('Internal server error');
+            expect((JSON.parse(result2.body!) as { error?: string }).error).toBe('Internal server error');
         });
 
         it('should include timestamp metadata', async () => {
@@ -283,7 +283,7 @@ describe('Upload API - Basic Functionality', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(result.statusCode).toBe(405);
                 expect(body.error).toBe('Method not allowed');
@@ -304,7 +304,7 @@ describe('Upload API - Basic Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(405);
             expect(body.error).toBe('Method not allowed');
@@ -322,7 +322,7 @@ describe('Upload API - Basic Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(405);
             expect(body.error).toBe('Method not allowed');
@@ -343,7 +343,7 @@ describe('Upload API - Basic Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(500);
             expect(body.error).toBe('Internal server error');
@@ -363,7 +363,7 @@ describe('Upload API - Basic Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(500);
             expect(body.error).toBe('Internal server error');
@@ -384,7 +384,7 @@ describe('Upload API - Basic Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(500);
             expect(body.error).toBe('Internal server error');

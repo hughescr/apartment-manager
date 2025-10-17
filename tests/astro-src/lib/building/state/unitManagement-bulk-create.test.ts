@@ -55,7 +55,7 @@ describe('UnitManagement - Bulk Create Error Handling', () => {
         };
 
         unitManagement = new UnitManagement(mockState);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Need to access private property for testing
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Need to access private property for testing
         (unitManagement as any).apiService = mockApiService;
     });
 

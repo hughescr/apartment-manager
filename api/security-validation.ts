@@ -12,7 +12,7 @@ const VALID_ID_PATTERN = /^[\w-]+$/;
 const PATH_TRAVERSAL_PATTERN = /\.\.|\/\//;
 
 // Pattern for detecting null bytes
-const NULL_BYTE_PATTERN = /\0/;
+const _NULL_BYTE_PATTERN = /\0/;
 
 // Pattern for detecting newline characters (header injection)
 const NEWLINE_PATTERN = /[\r\n]/;
@@ -111,8 +111,9 @@ export function sanitizeHtml(text: string): string {
         /vbscript:/gi, '');
 
     // Restore CDATA sections
-    processedText = replace(processedText, new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (_, index) => {
-        return cdataSections[parseInt(index)] || '';
+    processedText = replace(processedText, new RegExp(`${cdataPlaceholder}(\\d+)`, 'g'), (_match: string, index: string) => {
+        const numericIndex = parseInt(index, 10);
+        return cdataSections[numericIndex] ?? '';
     });
 
     return processedText;

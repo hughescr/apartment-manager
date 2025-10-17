@@ -33,7 +33,7 @@ describe('ZillowMapper', () => {
     const _createContext = (unit: UnitData, unitType?: UnitTypeData, building?: BuildingData): UnitMappingContext => ({
         unit,
         unitType,
-        building:      building || basicBuilding,
+        building:      building ?? basicBuilding,
         fieldMappings: mockFieldMappings,
         transformers:  mockTransformers
     });
@@ -202,7 +202,7 @@ describe('ZillowMapper', () => {
 
             // Should include building address in unit
             expect(result.externalId).toBe(basicUnit.unitID);
-            expect(result.unitNumber).toBe(basicUnit.unitNumber || basicUnit.unitID);
+            expect(result.unitNumber).toBe(basicUnit.unitNumber ?? basicUnit.unitID);
         });
 
         it('should map complete unit with flattened data', () => {
@@ -528,9 +528,9 @@ describe('ZillowMapper', () => {
 
             // NaN is treated as falsy and defaults to 0
             expect(result.beds).toBe(0);
-            // Infinity is truthy so not replaced by || 0
+            // Infinity is truthy so not replaced by ?? 0
             expect(result.baths).toBe(Infinity);
-            // -Infinity is truthy so not replaced by || 0
+            // -Infinity is truthy so not replaced by ?? 0
             expect(result.rent).toBe(-Infinity);
             expect(result.sqft).toBe(0);
         });

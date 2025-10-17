@@ -10,12 +10,8 @@ export class DepositManager {
         // If deposit is already an object, ensure it has all properties
         if(isObject(unit.deposit) && unit.deposit !== null) {
             const deposit = unit.deposit;
-            if(deposit.amount === undefined) {
-                deposit.amount = 0;
-            }
-            if(deposit.refundable === undefined) {
-                deposit.refundable = true;
-            }
+            deposit.amount ??= 0;
+            deposit.refundable ??= true;
             // partialRefundPercentage can be undefined
         } else if(isNumber(unit.deposit)) {
             (unit as UnitData & Record<string, unknown>).deposit = {
@@ -74,8 +70,8 @@ export class DepositManager {
             (unit.deposit).refundable = refundable;
             if(refundable) {
                 (unit.deposit).partialRefundPercentage = undefined;
-            } else if((unit.deposit).partialRefundPercentage === undefined || (unit.deposit).partialRefundPercentage === null) {
-                (unit.deposit).partialRefundPercentage = 0;
+            } else {
+                (unit.deposit).partialRefundPercentage ??= 0;
             }
         }
     }

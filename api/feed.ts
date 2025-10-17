@@ -3,7 +3,7 @@ import { getBuildings } from '../data/buildings';
 import { getUnits } from '../data/units';
 import { getUnitTypes } from '../data/unitTypes';
 import { generateMultiBuildingMITSFeed } from '../src/mits/generator';
-import { UnitData, UnitTypeData } from '../src/types';
+import { UnitData, UnitTypeData } from '../src/types/index.js';
 import { filter, isError, map } from 'lodash';
 
 // Helper function to validate site name
@@ -21,7 +21,7 @@ export async function live(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         const site = event.pathParameters?.site;
 
         // Validate site name
-        const validatedSite = validateSiteName(site || '');
+        const validatedSite = validateSiteName(site ?? '');
         if(!validatedSite) {
             return {
                 statusCode: 400,

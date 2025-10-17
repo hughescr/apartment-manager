@@ -12,6 +12,7 @@ const {
     isOpen: _isOpen = false,
     dialogId = 'bulk-rent-dialog'
 } = Astro.props;
+void _isOpen; // Intentionally unused - prop for potential future use
 ---
 
 <dialog class="modal" :class="{'modal-open': showBulkRentDialog}" data-testid={dialogId}>

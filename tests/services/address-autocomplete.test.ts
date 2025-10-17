@@ -100,7 +100,7 @@ describe('PhotonAutocompleteService', () => {
 
             expect(mockFetch).toHaveBeenCalledTimes(1);
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
 
             // The processed query should expand "st" to "street" and preserve "SE"
             expect(url.searchParams.get('q')).toBe('2720 SE steele street');
@@ -121,7 +121,7 @@ describe('PhotonAutocompleteService', () => {
             await service.getSuggestions(query);
 
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
 
             // Should preserve directional as uppercase and expand avenue
             expect(url.searchParams.get('q')).toBe('123 NE broadway avenue');
@@ -142,7 +142,7 @@ describe('PhotonAutocompleteService', () => {
             await service.getSuggestions(query);
 
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
 
             expect(url.searchParams.get('q')).toBe('456 SW main street apt 2b');
         });
@@ -164,7 +164,7 @@ describe('PhotonAutocompleteService', () => {
 
             expect(mockFetch).toHaveBeenCalledTimes(1);
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
 
             // Should NOT have osm_tag parameter
             expect(url.searchParams.has('osm_tag')).toBe(false);
@@ -184,7 +184,7 @@ describe('PhotonAutocompleteService', () => {
             await service.getSuggestions('test address');
 
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
 
             // Should have US bounding box
             expect(url.searchParams.get('bbox')).toBe('-125.0,25.0,-66.0,49.0');
@@ -204,7 +204,7 @@ describe('PhotonAutocompleteService', () => {
             await service.getSuggestions('test address', 3);
 
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
 
             // Should request 6 results (limit * 2) for better filtering
             expect(url.searchParams.get('limit')).toBe('6');
@@ -531,7 +531,7 @@ describe('PhotonAutocompleteService', () => {
 
             // Verify the processed query was sent to the API
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
             expect(url.searchParams.get('q')).toBe('2720 SE steele street portland or');
         });
     });
@@ -555,7 +555,7 @@ describe('PhotonAutocompleteService', () => {
             // Verify fetch was called with coordinates in the URL
             expect(mockFetch).toHaveBeenCalled();
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
             const bbox = url.searchParams.get('bbox');
 
             // Should contain a local bounding box around Portland
@@ -578,7 +578,7 @@ describe('PhotonAutocompleteService', () => {
 
             // Verify fetch was called with US bounding box
             const fetchCall = mockFetch.mock.calls[0];
-            const url = new URL(fetchCall[0]);
+            const url = new URL(fetchCall[0] as string);
             const bbox = url.searchParams.get('bbox');
             expect(bbox).toBe('-125.0,25.0,-66.0,49.0');
         });

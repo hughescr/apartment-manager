@@ -1,4 +1,4 @@
-import { BuildingData, getDefaultBuildingData, BuildingDynamoDBItem } from '../src/types';
+import { BuildingData, getDefaultBuildingData, BuildingDynamoDBItem } from '../src/types/index.js';
 import { ApartmentTable, getBuildingEntity, getApartmentTable, Building } from './model';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
@@ -10,7 +10,7 @@ import { DeleteItemCommand } from 'dynamodb-toolbox/entity/actions/delete';
 import { isArray, isError, isObject, isString, map, merge, omit } from 'lodash';
 import _ from 'lodash';
 
-import  { logger } from '@hughescr/logger';
+import { logger } from '@hughescr/logger';
 
 // Array fields that require complete replacement (not partial update)
 const ARRAY_FIELDS = [
@@ -131,7 +131,7 @@ export async function getBuildings() {
 
         // Ensure nested fields are preserved
         if(rawBuilding.contactInfo) {
-            result.contactInfo = merge({}, defaults.contactInfo || {}, rawBuilding.contactInfo);
+            result.contactInfo = merge({}, defaults.contactInfo ?? {}, rawBuilding.contactInfo);
         }
 
         return result;
@@ -207,7 +207,7 @@ export async function createBuilding(building: BuildingData) {
         return formatBuildingResult(itemToStore);
     } catch (error) {
         // If there's any error, log it and re-throw
-        logger.error('Error in createBuilding:', error);
+        logger.error('Error in createBuilding', { error: error as Record<string, unknown> });
         throw error;
     }
 }
@@ -334,12 +334,12 @@ export async function updateBuilding(buildingID: string, updates: Partial<Buildi
         }
 
         // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
-        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic:', error);
+        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic', { error: error as Record<string, unknown> });
 
         try {
             return await performFallbackUpdate(buildingID, updates, now);
         } catch (fallbackError) {
-            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed:', fallbackError);
+            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed', { error: fallbackError as Record<string, unknown> });
             throw fallbackError;
         }
     }
@@ -353,7 +353,7 @@ export async function deleteBuilding(buildingID: string): Promise<boolean> {
             .send();
         return true;
     } catch (error) {
-        logger.error('Error deleting building:', error);
+        logger.error('Error deleting building', { error: error as Record<string, unknown> });
         return false;
     }
 }

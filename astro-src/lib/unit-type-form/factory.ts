@@ -62,12 +62,12 @@ export function createUnitTypeFormFactory(config?: UnitTypeFormConfig | string, 
         if(typeof config === 'string') {
             // Legacy pattern: createUnitTypeFormFactory(apiURL, buildingID)
             const apiURL = config;
-            const resolvedBuildingID = buildingID || '';
+            const resolvedBuildingID = buildingID ?? '';
             return createUnitTypeFormState(apiURL, resolvedBuildingID);
         }
 
         // New pattern: createUnitTypeFormFactory(config)
-        const parsedConfig = typeof config === 'object' ? config : JSON.parse(config);
+        const parsedConfig: UnitTypeFormConfig = typeof config === 'object' ? config : JSON.parse(config) as UnitTypeFormConfig;
         return createUnitTypeFormState(parsedConfig.apiURL, parsedConfig.buildingID);
     };
 }

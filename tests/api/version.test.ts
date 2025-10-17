@@ -6,6 +6,17 @@ import { describe, it, expect, beforeEach, beforeAll, afterEach } from 'bun:test
 import { get } from '../../api/version';
 import _ from 'lodash';
 
+// Type for the version response body
+interface VersionResponse {
+    version:    string
+    deployedAt: string
+    features: {
+        consistentReads: boolean
+        logging:         boolean
+        description:     string
+    }
+}
+
 // Mock setTimeout to eliminate delays
 const mockSetTimeout = jest.fn();
 const originalSetTimeout = global.setTimeout;
@@ -40,7 +51,7 @@ describe('Version API - /version endpoint', () => {
             expect(result.statusCode).toBe(200);
             expect(result.body).toBeDefined();
 
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
             expect(parsedBody).toHaveProperty('version');
             expect(parsedBody).toHaveProperty('deployedAt');
             expect(parsedBody).toHaveProperty('features');
@@ -49,16 +60,16 @@ describe('Version API - /version endpoint', () => {
         it('should return valid JSON response body', async () => {
             const result = await get();
 
-            expect(() => JSON.parse(result.body!)).not.toThrow();
+            expect(() => JSON.parse(result.body!) as VersionResponse).not.toThrow();
 
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
             expect(typeof parsedBody).toBe('object');
             expect(parsedBody).not.toBeNull();
         });
 
         it('should return expected version information structure', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
             // Version should be a string
             expect(typeof parsedBody.version).toBe('string');
@@ -76,14 +87,14 @@ describe('Version API - /version endpoint', () => {
 
         it('should return current version as 1.0.3', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
             expect(parsedBody.version).toBe('1.0.3');
         });
 
         it('should return valid deployedAt timestamp', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
             const deployedDate = new Date(parsedBody.deployedAt);
             const now = new Date();
@@ -96,7 +107,7 @@ describe('Version API - /version endpoint', () => {
 
         it('should return expected features configuration', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
             expect(parsedBody.features).toEqual({
                 consistentReads: true,
@@ -139,8 +150,8 @@ describe('Version API - /version endpoint', () => {
             expect(result2.statusCode).toBeDefined();
             expect(result1.statusCode).toBe(result2.statusCode);
 
-            const body1 = JSON.parse(result1.body!);
-            const body2 = JSON.parse(result2.body!);
+            const body1: VersionResponse = JSON.parse(result1.body!) as VersionResponse;
+            const body2: VersionResponse = JSON.parse(result2.body!) as VersionResponse;
 
             // Version and features should be identical
             expect(body1.version).toBe(body2.version);
@@ -164,13 +175,13 @@ describe('Version API - /version endpoint', () => {
             // All calls should succeed
             _.forEach(results, (result) => {
                 expect(result.statusCode).toBe(200);
-                expect(() => JSON.parse(result.body!)).not.toThrow();
+                expect(() => JSON.parse(result.body!) as VersionResponse).not.toThrow();
             });
 
             // All responses should be identical
-            const firstBody = JSON.parse(results[0].body!);
+            const firstBody: VersionResponse = JSON.parse(results[0].body!) as VersionResponse;
             _.forEach(results.slice(1), (result) => {
-                expect(JSON.parse(result.body!)).toEqual(firstBody);
+                expect(JSON.parse(result.body!) as VersionResponse).toEqual(firstBody);
             });
         });
 
@@ -183,36 +194,36 @@ describe('Version API - /version endpoint', () => {
             const result = await get();
 
             expect(result.statusCode).toBe(200);
-            expect(() => JSON.parse(result.body!)).not.toThrow();
+            expect(() => JSON.parse(result.body!) as VersionResponse).not.toThrow();
         });
     });
 
     describe('JSON structure validation', () => {
         it('should contain only expected top-level properties', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
-            const expectedKeys = ['version', 'deployedAt', 'features'];
-            const actualKeys = _.keys(parsedBody);
+            const expectedKeys: string[] = ['version', 'deployedAt', 'features'];
+            const actualKeys: string[] = Object.keys(parsedBody);
 
-            expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+            expect(actualKeys.sort()).toEqual(expectedKeys.sort());
             expect(actualKeys.length).toBe(expectedKeys.length);
         });
 
         it('should have features object with expected properties', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
-            const expectedFeatureKeys = ['consistentReads', 'logging', 'description'];
-            const actualFeatureKeys = _.keys(parsedBody.features);
+            const expectedFeatureKeys: string[] = ['consistentReads', 'logging', 'description'];
+            const actualFeatureKeys: string[] = Object.keys(parsedBody.features);
 
-            expect(actualFeatureKeys).toEqual(expect.arrayContaining(expectedFeatureKeys));
+            expect(actualFeatureKeys.sort()).toEqual(expectedFeatureKeys.sort());
             expect(actualFeatureKeys.length).toBe(expectedFeatureKeys.length);
         });
 
         it('should have boolean values for feature flags', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
             expect(typeof parsedBody.features.consistentReads).toBe('boolean');
             expect(typeof parsedBody.features.logging).toBe('boolean');
@@ -221,7 +232,7 @@ describe('Version API - /version endpoint', () => {
 
         it('should not contain any null or undefined values', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
             expect(parsedBody.version).not.toBeNull();
             expect(parsedBody.version).not.toBeUndefined();
@@ -283,7 +294,7 @@ describe('Version API - /version endpoint', () => {
     describe('Data integrity', () => {
         it('should return deployedAt timestamp that is in the past or present', async () => {
             const result = await get();
-            const parsedBody = JSON.parse(result.body!);
+            const parsedBody: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
             const deployedAt = new Date(parsedBody.deployedAt);
             const now = new Date();
@@ -296,7 +307,7 @@ describe('Version API - /version endpoint', () => {
             const results = await Promise.all([get(), get(), get()]);
 
             _.forEach(results, (result) => {
-                const body = JSON.parse(result.body!);
+                const body: VersionResponse = JSON.parse(result.body!) as VersionResponse;
 
                 expect(typeof body.version).toBe('string');
                 expect(typeof body.deployedAt).toBe('string');
@@ -312,11 +323,11 @@ describe('Version API - /version endpoint', () => {
             const originalBody = result.body!;
 
             // Parse and re-stringify
-            const parsed = JSON.parse(originalBody);
+            const parsed: VersionResponse = JSON.parse(originalBody) as VersionResponse;
             const reserialized = JSON.stringify(parsed);
 
             // Should be able to parse again without errors
-            const reparsed = JSON.parse(reserialized);
+            const reparsed: VersionResponse = JSON.parse(reserialized) as VersionResponse;
 
             expect(reparsed).toEqual(parsed);
         });

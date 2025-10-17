@@ -14,7 +14,7 @@ import {
     validateCreditScoreField,
     validateIncomeRatioField,
     validateMaxOccupantsField
-} from './validators';
+} from './validators/index.js';
 
 /**
  * Validates building data and returns validation result

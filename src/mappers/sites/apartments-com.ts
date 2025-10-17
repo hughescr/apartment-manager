@@ -96,22 +96,22 @@ export class ApartmentsComMapper implements SiteMapper {
             externalId: building.buildingID,
             name:       building.buildingID, // Could be enhanced with a display name
             address:    {
-                street: building.street || '',
-                city:   building.city || '',
-                state:  building.state || '',
-                zip:    building.zip || ''
+                street: building.street ?? '',
+                city:   building.city ?? '',
+                state:  building.state ?? '',
+                zip:    building.zip ?? ''
             },
             propertyType: building.propertyType
                 ? propertyTypeTransformer(building.propertyType)
                 : 'Apartment',
             yearBuilt:   building.yearBuilt,
             totalUnits:  building.totalUnits,
-            description: building.propertyDescription || building.description,
+            description: building.propertyDescription ?? building.description,
             photos:      transformPhotoUrls(building.photos, this.siteId),
             leaseTerms:  {
                 minMonths:     building.leaseLength,
                 maxMonths:     building.leaseLength,
-                defaultMonths: building.leaseLength || 12
+                defaultMonths: building.leaseLength ?? 12
             },
             fees: [
                 ...transformFees(oneTime, this.siteId),
@@ -183,15 +183,15 @@ export class ApartmentsComMapper implements SiteMapper {
 
         return {
             externalId:    unit.unitID,
-            unitNumber:    unit.unitNumber || unit.unitID,
+            unitNumber:    unit.unitNumber ?? unit.unitID,
             modelName:     unitType?.modelName,
-            beds:          resolved.beds || 0,
-            baths:         resolved.baths || 0,
+            beds:          resolved.beds ?? 0,
+            baths:         resolved.baths ?? 0,
             sqft:          resolved.sqft,
-            rent:          resolved.rent || 0,
+            rent:          resolved.rent ?? 0,
             deposit:       getDepositAmount(resolved.deposit),
             dateAvailable: dateFormatter(resolved.availableDate),
-            description:   resolved.unitDescription || resolved.description,
+            description:   resolved.unitDescription ?? resolved.description,
             maxOccupants:  resolved.maxOccupants,
             leaseTerms:    {
                 minMonths: resolved.minLeaseTerm,

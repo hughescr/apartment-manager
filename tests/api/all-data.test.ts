@@ -36,7 +36,11 @@ describe('All Data API Endpoint', () => {
 
         expect(response.statusCode).toBe(200);
 
-        const body = JSON.parse(response.body!);
+        const body = JSON.parse(response.body!) as {
+            buildings:           unknown[]
+            unitsByBuilding:     Record<string, unknown[]>
+            unitTypesByBuilding: Record<string, unknown[]>
+        };
         expect(body.buildings).toHaveLength(1);
         expect(body.unitsByBuilding[testBuilding.buildingID]).toHaveLength(1);
         expect(body.unitTypesByBuilding[testBuilding.buildingID]).toHaveLength(1);
@@ -52,7 +56,7 @@ describe('All Data API Endpoint', () => {
 
         expect(response.statusCode).toBe(500);
 
-        const body = JSON.parse(response.body!);
+        const body = JSON.parse(response.body!) as { error: string };
         expect(body.error).toBe('Internal server error during getalldata');
     });
 
@@ -65,7 +69,11 @@ describe('All Data API Endpoint', () => {
 
         expect(response.statusCode).toBe(200);
 
-        const body = JSON.parse(response.body!);
+        const body = JSON.parse(response.body!) as {
+            buildings:           unknown[]
+            unitsByBuilding:     Record<string, unknown[]>
+            unitTypesByBuilding: Record<string, unknown[]>
+        };
         expect(body.buildings).toEqual([]);
         expect(body.unitsByBuilding).toEqual({});
         expect(body.unitTypesByBuilding).toEqual({});

@@ -184,8 +184,7 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             expect(xml).toContain('<PropertyID>test-building-1</PropertyID>');
 
             // All available units should be present (occupied unit should be excluded)
-            // All available units should be present (occupied unit should be excluded)
-            const availableUnits: UnitData[] = filter(mockUnitsWithInheritance, u => !u.occupied && u.feedInclusion?.apartments_com) as UnitData[];
+            const availableUnits = filter(mockUnitsWithInheritance, u => !u.occupied && u.feedInclusion?.apartments_com) as UnitData[];
             expect(availableUnits).toHaveLength(4);
 
             // Verify each available unit appears in XML
@@ -439,8 +438,9 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             });
 
             // Parse XML to ensure it's well-formed
-            const parsedXml = await parseStringPromise(xml);
+            const parsedXml = await parseStringPromise(xml) as { PhysicalProperty?: unknown };
             expect(parsedXml).toBeDefined();
+
             expect(parsedXml.PhysicalProperty).toBeDefined();
         });
 
@@ -568,7 +568,7 @@ describe('MITS Generator - Comprehensive Inheritance Integration', () => {
             expect(duration).toBeLessThan(5000); // 5 seconds
 
             // Should generate XML with expected unit count (all 100 units since they have feedInclusion: true)
-            const unitMatches = xml.match(/<UnitID>unit-\d+<\/UnitID>/g) || [];
+            const unitMatches = xml.match(/<UnitID>unit-\d+<\/UnitID>/g) ?? [];
             expect(unitMatches.length).toBe(100); // All units included when they have explicit feedInclusion
         });
     });

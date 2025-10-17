@@ -1,8 +1,6 @@
-import { logger as baseLogger } from '@hughescr/logger';
+import { logger } from '@hughescr/logger';
 import { map, trim, toLower } from 'lodash';
 import type { RadarAutocompleteResult, GeolocationResult, AutocompleteCacheEntry, IPCacheEntry } from './types';
-
-const logger = baseLogger;
 
 /**
  * Enhanced in-memory cache for Radar results with TTL and LRU eviction

@@ -1,9 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { geocodingService, GeocodingResult } from '../src/services/geocoding';
-import { logger as baseLogger } from '@hughescr/logger';
+import { logger } from '@hughescr/logger';
 import { trim } from 'lodash';
-
-const logger = baseLogger;
 
 // Helper function to create consistent headers
 function createHeaders(): Record<string, string> {
@@ -109,7 +107,7 @@ export const geocode: APIGatewayProxyHandlerV2 = async (event) => {
 
         const response: GeocodingResponse = {
             success:    true,
-            result:     result || undefined,
+            result:     result ?? undefined,
             cacheStats: geocodingService.getCacheStats()
         };
 

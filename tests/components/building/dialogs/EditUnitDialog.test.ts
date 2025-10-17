@@ -265,7 +265,11 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                 getFieldPlaceholder(fieldName: FieldName, defaultPlaceholder = '') {
                     const inheritedValue = this.getInheritedValue(fieldName);
                     if(inheritedValue !== null && inheritedValue !== undefined) {
-                        return `Inherited: ${inheritedValue}`;
+                        return `Inherited: ${
+                            typeof inheritedValue === 'string' || typeof inheritedValue === 'number'
+                                ? inheritedValue
+                                : JSON.stringify(inheritedValue)
+                        }`;
                     }
                     return defaultPlaceholder;
                 },
@@ -461,7 +465,11 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                 getFieldPlaceholder(fieldName: FieldName, defaultPlaceholder = '') {
                     const inheritedValue = this.getInheritedValue(fieldName);
                     if(inheritedValue !== null && inheritedValue !== undefined) {
-                        return `Inherited: ${inheritedValue}`;
+                        return `Inherited: ${
+                            typeof inheritedValue === 'string' || typeof inheritedValue === 'number'
+                                ? inheritedValue
+                                : JSON.stringify(inheritedValue)
+                        }`;
                     }
                     return defaultPlaceholder;
                 },
@@ -544,7 +552,7 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                         if(willInherit && newInheritedValue !== null && normalizedCurrentValue !== normalizedNewValue) {
                             changes.push({
                                 field: field,
-                                from:  currentValue?.toString() || 'Not set',
+                                from:  currentValue?.toString() ?? 'Not set',
                                 to:    newInheritedValue
                             });
                         }
@@ -556,29 +564,15 @@ describe('EditUnitDialog - Inheritance Logic', () => {
                     const selectedType = this.selectedUnitType;
                     if(selectedType) {
                         // Reset inheritable fields to allow inheritance
-                        if(!this.editUnit.beds) {
-                            this.editUnit.beds = undefined;
-                        }
-                        if(!this.editUnit.baths) {
-                            this.editUnit.baths = undefined;
-                        }
-                        if(!this.editUnit.sqft) {
-                            this.editUnit.sqft = undefined;
-                        }
-                        if(!this.editUnit.rent) {
-                            this.editUnit.rent = undefined;
-                        }
+                        this.editUnit.beds ??= undefined;
+                        this.editUnit.baths ??= undefined;
+                        this.editUnit.sqft ??= undefined;
+                        this.editUnit.rent ??= undefined;
                     } else {
                         // For custom units, ensure we have default values
-                        if(!this.editUnit.beds) {
-                            this.editUnit.beds = 1;
-                        }
-                        if(!this.editUnit.baths) {
-                            this.editUnit.baths = 1;
-                        }
-                        if(!this.editUnit.rent) {
-                            this.editUnit.rent = 0;
-                        }
+                        this.editUnit.beds ??= 1;
+                        this.editUnit.baths ??= 1;
+                        this.editUnit.rent ??= 0;
                     }
                 }
             };

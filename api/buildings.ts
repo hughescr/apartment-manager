@@ -126,7 +126,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         rawData = JSON.parse(evt.body ?? '{}') as Record<string, unknown>;
     } catch (parseError) {
         logger.warn('Failed to parse building creation request body', {
-            error:      parseError,
+            error:      parseError as Error,
             context:    'building creation request parsing',
             httpMethod: evt.requestContext.http.method
         });
@@ -149,7 +149,7 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     data.buildingID ??= generateBuildingId();
 
     // Auto-generate building name from address if not provided
-    if(!data.buildingName && data.street) {
+    if(!data.buildingName && data.street && isString(data.street)) {
         data.buildingName = generateBuildingName(data.street);
     }
 

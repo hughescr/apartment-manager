@@ -357,7 +357,9 @@ describe('UnitTypeManagement - Async Operations', () => {
 
             // Accept whatever the implementation actually passes
             expect(mockUpdateUnitType).toHaveBeenCalled();
-            const [_firstArg, secondArg, thirdArg] = mockUpdateUnitType.mock.calls[0];
+            const mockCalls = mockUpdateUnitType.mock.calls[0] as unknown[];
+            const secondArg = mockCalls[1] as string;
+            const thirdArg = mockCalls[2] as typeof updatedUnitType;
             expect(secondArg).toBe(testModelID);
             expect(thirdArg).toEqual(updatedUnitType);
 
@@ -418,7 +420,9 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockApiServiceUpdateUnitType).toHaveBeenCalled();
             // Verify CRUD was called with proper parameters (implementation may modify state first)
             expect(mockUpdateUnitType).toHaveBeenCalled();
-            const [_stateArg, modelIDArg, updatesArg] = mockUpdateUnitType.mock.calls[0];
+            const mockCalls1 = mockUpdateUnitType.mock.calls[0] as unknown[];
+            const modelIDArg = mockCalls1[1] as string;
+            const updatesArg = mockCalls1[2] as typeof testUpdates;
             expect(modelIDArg).toBe(testModelID);
             expect(updatesArg).toEqual(testUpdates);
             expect(mockState.unitTypes).toEqual([{ ...existingUnitType, ...testUpdates }]);
@@ -438,7 +442,9 @@ describe('UnitTypeManagement - Async Operations', () => {
             expect(mockApiServiceUpdateUnitType).not.toHaveBeenCalled();
             // Verify CRUD was called with proper parameters (implementation may modify state first)
             expect(mockUpdateUnitType).toHaveBeenCalled();
-            const [_stateArg2, modelIDArg2, updatesArg2] = mockUpdateUnitType.mock.calls[0];
+            const mockCalls2 = mockUpdateUnitType.mock.calls[0] as unknown[];
+            const modelIDArg2 = mockCalls2[1] as string;
+            const updatesArg2 = mockCalls2[2] as typeof testUpdates;
             expect(modelIDArg2).toBe(testModelID);
             expect(updatesArg2).toEqual(testUpdates);
             expect(offlineState.unitTypes).toEqual([{ ...existingUnitType, ...testUpdates }]);
@@ -489,7 +495,8 @@ describe('UnitTypeManagement - Async Operations', () => {
                 testModelID
             );
             expect(mockRemoveUnitType).toHaveBeenCalled();
-            const [_stateArg, modelIDArg] = mockRemoveUnitType.mock.calls[0];
+            const mockRemoveCalls = mockRemoveUnitType.mock.calls[0];
+            const modelIDArg = (mockRemoveCalls as unknown[])[1] as string;
             expect(modelIDArg).toBe(testModelID);
             expect(mockState.unitTypes).toHaveLength(1);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {

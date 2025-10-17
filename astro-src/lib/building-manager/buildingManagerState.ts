@@ -20,8 +20,8 @@ export function createBuildingManagerState() {
         unitTypes:    [],
 
         init() {
-            this.buildingID = this.$root?.dataset.buildingId || '';
-            this.apiURL = this.$root?.dataset.apiUrl || '';
+            this.buildingID = this.$root?.dataset.buildingId ?? '';
+            this.apiURL = this.$root?.dataset.apiUrl ?? '';
             this.parseInitialData();
             this.setupEventListeners();
         },

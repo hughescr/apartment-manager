@@ -359,7 +359,7 @@ class BuildingDataParser {
             if(!buildingData) {
                 return null;
             }
-            return JSON.parse(buildingData);
+            return JSON.parse(buildingData) as BuildingData;
         } catch{
             return null;
         }
@@ -390,9 +390,9 @@ class BuildingDataParser {
             // Initialize extended properties for each unit
             return map(units, unit => ({
                 ...unit,
-                lastUpdated: unit.lastUpdated || new Date().toISOString(),
-                status:      unit.status || this.getUnitStatus(unit),
-                currentRent: unit.rent || 0,
+                lastUpdated: unit.lastUpdated ?? new Date().toISOString(),
+                status:      unit.status ?? this.getUnitStatus(unit),
+                currentRent: unit.rent ?? 0,
                 editingRent: false,
                 savingField: null
             }));
@@ -420,7 +420,7 @@ class BuildingDataParser {
             if(!unitTypesData) {
                 return [];
             }
-            return JSON.parse(unitTypesData);
+            return JSON.parse(unitTypesData) as UnitTypeData[];
         } catch{
             return [];
         }
@@ -440,7 +440,7 @@ class BuildingDataParser {
             return '';
         }
 
-        return apiUrlEl.dataset.apiUrl || '';
+        return apiUrlEl.dataset.apiUrl ?? '';
     }
 
     private static getUnitStatus(unit: ExtendedUnitData): string {
@@ -488,7 +488,7 @@ class BuildingDataParser {
             if(!locationData) {
                 return null;
             }
-            return JSON.parse(locationData);
+            return JSON.parse(locationData) as LocationConfig;
         } catch{
             return null;
         }
@@ -546,10 +546,10 @@ class UnitsStateManager {
             filtered = filtered.filter((unit): unit is ExtendedUnitData => {
                 return !!(
                     unit.unitID.toLowerCase().includes(query)
-                    || (unit.description?.toLowerCase().includes(query))
-                    || (unit.beds?.toString().includes(query))
-                    || (unit.baths?.toString().includes(query))
-                    || (unit.rent?.toString().includes(query))
+                    || (unit.description?.toLowerCase().includes(query) ?? false)
+                    || (unit.beds?.toString().includes(query) ?? false)
+                    || (unit.baths?.toString().includes(query) ?? false)
+                    || (unit.rent?.toString().includes(query) ?? false)
                 );
             });
         }
@@ -733,11 +733,11 @@ function buildingStateObject(): any {
             // Initialize API service
             this.apiURL = BuildingDataParser.parseApiUrl(element);
             if(this.apiURL) {
-                this.apiService = new BuildingApiService(this.apiURL);
+                this.apiService = new BuildingApiService(this.apiURL as string);
             }
 
             // Initialize units manager
-            this.unitsManager = new UnitsStateManager(this.units, this.selectedUnits);
+            this.unitsManager = new UnitsStateManager(this.units as ExtendedUnitData[], this.selectedUnits as Set<string>);
 
             // Setup all watchers
             this.setupBuildingWatchers();
@@ -776,7 +776,7 @@ function buildingStateObject(): any {
             this.units = BuildingDataParser.parseUnitsData(element);
 
             // Initialize timestamps
-            BuildingDataParser.initializeUnitTimestamps(this.units);
+            BuildingDataParser.initializeUnitTimestamps(this.units as ExtendedUnitData[]);
         },
 
         /**
@@ -811,7 +811,7 @@ function buildingStateObject(): any {
             this.$watch('building', (value: BuildingData | null) => {
                 // Only check for unsaved changes after initial setup is complete and watcher is not suspended
                 if(initialSetupComplete && this.original && !this.suspendWatcher) {
-                    this.showSave = hasUnsavedChanges(this.building, this.original);
+                    this.showSave = hasUnsavedChanges(this.building as BuildingData | null, this.original as BuildingData | null);
                 }
                 if(value) {
                     this.$dispatch('building:updated', { building: value });
@@ -836,8 +836,8 @@ function buildingStateObject(): any {
          */
         setupUnitWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             // Watch for units changes
-            this.$watch('units', () => this.updateFilteredUnits());
-            this.$watch('statusFilter', () => this.updateFilteredUnits());
+            this.$watch('units', () => this.updateFilteredUnits() as void);
+            this.$watch('statusFilter', () => this.updateFilteredUnits() as void);
 
             // Watch for search query changes
             this.$watch('searchQuery', () => {
@@ -852,7 +852,7 @@ function buildingStateObject(): any {
             // Watch for selection changes
             this.$watch('selectedUnits', () => {
                 this.$dispatch('units:selection-changed', {
-                    selected: Array.from(this.selectedUnits)
+                    selected: Array.from(this.selectedUnits as Set<string>)
                 });
             });
         },
@@ -903,7 +903,7 @@ function buildingStateObject(): any {
         setupSelectionWatchers(this: ReturnType<typeof buildingStateObject> & AlpineMagics): void {
             this.$watch('selectedUnits', () => {
                 this.$dispatch('units:selection-changed', {
-                    selected: Array.from(this.selectedUnits)
+                    selected: Array.from(this.selectedUnits as Set<string>)
                 });
             });
         },
@@ -944,9 +944,9 @@ function buildingStateObject(): any {
                         const units = JSON.parse(value);
                         this.units = map(units, (unit: ExtendedUnitData) => ({
                             ...unit,
-                            lastUpdated: unit.lastUpdated || new Date().toISOString(),
-                            status:      unit.status || this.getUnitStatus(unit) || 'unknown',
-                            currentRent: unit.rent || 0,
+                            lastUpdated: unit.lastUpdated ?? new Date().toISOString(),
+                            status:      unit.status ?? this.getUnitStatus(unit) ?? 'unknown',
+                            currentRent: unit.rent ?? 0,
                             editingRent: false,
                             savingField: null
                         }));
@@ -986,9 +986,9 @@ function buildingStateObject(): any {
                 // Update units with extended properties
                 this.units = map(newUnits, (unit: ExtendedUnitData) => ({
                     ...unit,
-                    lastUpdated: unit.lastUpdated || new Date().toISOString(),
-                    status:      unit.status || this.getUnitStatus(unit) || 'unknown',
-                    currentRent: unit.rent || 0,
+                    lastUpdated: unit.lastUpdated ?? new Date().toISOString(),
+                    status:      unit.status ?? this.getUnitStatus(unit) ?? 'unknown',
+                    currentRent: unit.rent ?? 0,
                     editingRent: false,
                     savingField: null
                 }));
@@ -1066,7 +1066,7 @@ function buildingStateObject(): any {
                 const result = await this.apiService.saveBuilding(this.building);
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to save building');
+                    throw new Error(result.error ?? 'Failed to save building');
                 }
 
                 // Check if response has validation warnings
@@ -1124,7 +1124,7 @@ function buildingStateObject(): any {
                 }
 
                 this.$dispatch('photos:updated', {
-                    photos: this.building.photos || []
+                    photos: this.building.photos ?? []
                 });
 
                 this.$dispatch('building:reset', {
@@ -1153,7 +1153,7 @@ function buildingStateObject(): any {
                 const result = await this.apiService.deleteBuilding(this.building.buildingID);
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to delete building');
+                    throw new Error(result.error ?? 'Failed to delete building');
                 }
 
                 this.$dispatch('toast:show', {
@@ -1211,7 +1211,7 @@ function buildingStateObject(): any {
                 maxSqft:    undefined,
                 minRent:    undefined,
                 maxRent:    undefined,
-                buildingID: this.building?.buildingID || ''
+                buildingID: this.building?.buildingID ?? ''
             };
         },
 
@@ -1224,7 +1224,7 @@ function buildingStateObject(): any {
             // Validate the new unit type
             const validation = validateUnitType(this.newUnitType);
             if(!validation.isValid) {
-                const firstError = values(validation.errors)[0] || 'Invalid unit type data';
+                const firstError = values(validation.errors)[0] ?? 'Invalid unit type data';
                 this.$dispatch('toast:show', {
                     message: firstError,
                     type:    'error'
@@ -1254,7 +1254,7 @@ function buildingStateObject(): any {
                     const response = await this.apiService.addUnitType(buildingID, unitType);
                     if(!response.success) {
                         this.$dispatch('toast:show', {
-                            message: response.error || 'Failed to save unit type',
+                            message: response.error ?? 'Failed to save unit type',
                             type:    'error'
                         });
                         // Keep dialog open for retry
@@ -1262,7 +1262,7 @@ function buildingStateObject(): any {
                     }
 
                     // Use the response data if available, otherwise use the local unit type
-                    const savedUnitType = response.data || unitType;
+                    const savedUnitType = response.data ?? unitType;
 
                     // Add to local collection
                     this.unitTypes = UnitTypeCrud.addUnitType(this.unitTypes, savedUnitType);
@@ -1306,7 +1306,7 @@ function buildingStateObject(): any {
                     const response = await this.apiService.updateUnitType(buildingID, modelID, updates);
                     if(!response.success) {
                         this.$dispatch('toast:show', {
-                            message: response.error || 'Failed to update unit type',
+                            message: response.error ?? 'Failed to update unit type',
                             type:    'error'
                         });
                         return;
@@ -1367,7 +1367,7 @@ function buildingStateObject(): any {
                     const response = await this.apiService.deleteUnitType(buildingID, modelID);
                     if(!response.success) {
                         this.$dispatch('toast:show', {
-                            message: response.error || 'Failed to delete unit type',
+                            message: response.error ?? 'Failed to delete unit type',
                             type:    'error'
                         });
                         return;
@@ -1422,7 +1422,7 @@ function buildingStateObject(): any {
                 });
 
                 if(!result.success || !result.data) {
-                    throw new Error(result.error || 'Failed to add unit');
+                    throw new Error(result.error ?? 'Failed to add unit');
                 }
 
                 this.unitsManager?.addUnit(result.data);
@@ -1476,7 +1476,7 @@ function buildingStateObject(): any {
                 const result = await this.apiService.updateUnit(this.building.buildingID, updatedUnit);
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to update unit');
+                    throw new Error(result.error ?? 'Failed to update unit');
                 }
 
                 // Update local state
@@ -1488,7 +1488,7 @@ function buildingStateObject(): any {
                 this.closeEditUnitDialog();
 
                 this.$dispatch('toast:show', {
-                    message: `Unit ${this.editingUnit.unitNumber || unitId} updated successfully`,
+                    message: `Unit ${this.editingUnit.unitNumber ?? unitId} updated successfully`,
                     type:    'success'
                 });
             } catch (error) {
@@ -1515,7 +1515,7 @@ function buildingStateObject(): any {
                 const result = await this.apiService.deleteUnit(this.building.buildingID, unitId);
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to delete unit');
+                    throw new Error(result.error ?? 'Failed to delete unit');
                 }
 
                 // Update local state
@@ -1524,7 +1524,7 @@ function buildingStateObject(): any {
                 this.closeEditUnitDialog();
 
                 this.$dispatch('toast:show', {
-                    message: `Unit ${this.editingUnit.unitNumber || unitId} deleted successfully`,
+                    message: `Unit ${this.editingUnit.unitNumber ?? unitId} deleted successfully`,
                     type:    'success'
                 });
             } catch (error) {
@@ -1541,14 +1541,14 @@ function buildingStateObject(): any {
             if(this.editingUnit) {
                 this.editUnit = {
                     unitID:       this.editingUnit.unitID,
-                    unitNumber:   this.editingUnit.unitNumber || this.editingUnit.unitID,
-                    modelID:      this.editingUnit.modelID || '',
-                    beds:         this.editingUnit.beds || 0,
-                    baths:        this.editingUnit.baths || 1,
-                    sqft:         this.editingUnit.sqft || null,
-                    rent:         this.editingUnit.rent || 0,
-                    vacancyClass: this.editingUnit.vacancyClass || 'Unoccupied',
-                    description:  this.editingUnit.description || ''
+                    unitNumber:   this.editingUnit.unitNumber ?? this.editingUnit.unitID,
+                    modelID:      this.editingUnit.modelID ?? '',
+                    beds:         this.editingUnit.beds ?? 0,
+                    baths:        this.editingUnit.baths ?? 1,
+                    sqft:         this.editingUnit.sqft ?? null,
+                    rent:         this.editingUnit.rent ?? 0,
+                    vacancyClass: this.editingUnit.vacancyClass ?? 'Unoccupied',
+                    description:  this.editingUnit.description ?? ''
                 };
             }
         },
@@ -1558,7 +1558,7 @@ function buildingStateObject(): any {
             if(!this.editUnit.modelID) {
                 return null;
             }
-            return this.unitTypes.find((ut: UnitTypeData) => ut.modelID === this.editUnit.modelID) || null;
+            return this.unitTypes.find((ut: UnitTypeData) => ut.modelID === this.editUnit.modelID) ?? null;
         },
 
         // Check if a field is inherited in edit form
@@ -1699,7 +1699,7 @@ function buildingStateObject(): any {
                 if(willInherit && newInheritedValue !== null && normalizedCurrentValue !== normalizedNewValue) {
                     changes.push({
                         field: field,
-                        from:  currentValue || 'Not set',
+                        from:  currentValue ?? 'Not set',
                         to:    newInheritedValue
                     });
                 }
@@ -1723,29 +1723,15 @@ function buildingStateObject(): any {
             if(selectedType) {
                 // Reset inheritable fields to allow inheritance
                 // Only set values if unit doesn't have explicit values
-                if(!this.editUnit.beds) {
-                    this.editUnit.beds = null; // Allow inheritance
-                }
-                if(!this.editUnit.baths) {
-                    this.editUnit.baths = null; // Allow inheritance
-                }
-                if(!this.editUnit.sqft) {
-                    this.editUnit.sqft = null; // Allow inheritance
-                }
-                if(!this.editUnit.rent) {
-                    this.editUnit.rent = null; // Allow inheritance
-                }
+                this.editUnit.beds ??= null; // Allow inheritance
+                this.editUnit.baths ??= null; // Allow inheritance
+                this.editUnit.sqft ??= null; // Allow inheritance
+                this.editUnit.rent ??= null; // Allow inheritance
             } else {
                 // For custom units, ensure we have default values
-                if(!this.editUnit.beds) {
-                    this.editUnit.beds = 1;
-                }
-                if(!this.editUnit.baths) {
-                    this.editUnit.baths = 1;
-                }
-                if(!this.editUnit.rent) {
-                    this.editUnit.rent = 0;
-                }
+                this.editUnit.beds ??= 1;
+                this.editUnit.baths ??= 1;
+                this.editUnit.rent ??= 0;
             }
         },
 
@@ -1799,7 +1785,7 @@ function buildingStateObject(): any {
                 return;
             }
 
-            const unitDisplayName = this.editingUnit.unitNumber || this.editingUnit.unitID;
+            const unitDisplayName = this.editingUnit.unitNumber ?? this.editingUnit.unitID;
             if(confirm(`Are you sure you want to delete Unit ${unitDisplayName}?\n\nThis action cannot be undone.`)) {
                 this.editUnitLoading = true;
                 try {
@@ -1872,7 +1858,7 @@ function buildingStateObject(): any {
                 const result = await this.apiService.updateUnit(this.building.buildingID, updatedUnit);
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to assign unit type');
+                    throw new Error(result.error ?? 'Failed to assign unit type');
                 }
 
                 // Update local state
@@ -1907,7 +1893,7 @@ function buildingStateObject(): any {
             this.showBulkCreateDialog = true;
             // Use Object.assign to avoid type checking issues
             Object.assign(this.bulkCreateData, {
-                modelID:           modelID || '',
+                modelID:           modelID ?? '',
                 count:             null,
                 patternType:       'numeric',
                 startingNumber:    '101',
@@ -1998,7 +1984,7 @@ function buildingStateObject(): any {
                     });
 
                     if(!result.success || !result.data) {
-                        throw new Error(result.error || `Failed to create unit ${unitNumber}`);
+                        throw new Error(result.error ?? `Failed to create unit ${unitNumber}`);
                     }
 
                     results.push(result.data);
@@ -2066,7 +2052,7 @@ function buildingStateObject(): any {
         },
 
         isUnitSelected(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unitID: string) {
-            return this.unitsManager?.isUnitSelected(unitID) || false;
+            return this.unitsManager?.isUnitSelected(unitID) ?? false;
         },
 
         toggleUnitSelection(this: ReturnType<typeof buildingStateObject> & AlpineMagics, unitID: string) {
@@ -2074,7 +2060,7 @@ function buildingStateObject(): any {
         },
 
         getSelectedCount(this: ReturnType<typeof buildingStateObject> & AlpineMagics) {
-            return this.unitsManager?.getSelectedCount() || 0;
+            return this.unitsManager?.getSelectedCount() ?? 0;
         },
 
         // Bulk Operations Methods
@@ -2093,7 +2079,7 @@ function buildingStateObject(): any {
                 );
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to update units');
+                    throw new Error(result.error ?? 'Failed to update units');
                 }
 
                 // Update local state
@@ -2145,7 +2131,7 @@ function buildingStateObject(): any {
                 );
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to update rents');
+                    throw new Error(result.error ?? 'Failed to update rents');
                 }
 
                 // Update local state based on operation type
@@ -2154,7 +2140,7 @@ function buildingStateObject(): any {
                         if(this.bulkOperation.rentUpdateType === 'absolute') {
                             unit.rent = this.bulkOperation.rentValue;
                         } else if(this.bulkOperation.rentUpdateType === 'percentage') {
-                            const currentRent = unit.rent || 0;
+                            const currentRent = unit.rent ?? 0;
                             const changeAmount = currentRent * (this.bulkOperation.rentValue / 100);
                             unit.rent = currentRent + changeAmount;
                         }
@@ -2202,7 +2188,7 @@ function buildingStateObject(): any {
                 const result = await this.apiService.updateUnit(this.building.buildingID, updatedUnit);
 
                 if(!result.success) {
-                    throw new Error(result.error || 'Failed to update unit');
+                    throw new Error(result.error ?? 'Failed to update unit');
                 }
 
                 // Update local state
@@ -2302,7 +2288,7 @@ function buildingStateObject(): any {
             }
 
             // Find the unit type for this unit
-            const unitType = this.unitTypes?.find((ut: UnitTypeData) => ut.modelID === unit.modelID) || null;
+            const unitType = this.unitTypes?.find((ut: UnitTypeData) => ut.modelID === unit.modelID) ?? null;
 
             // Get the effective value using inheritance manager
             const value = this.inheritanceManager.getEffectiveValue(unit, unitType, fieldName);
@@ -2319,9 +2305,9 @@ function buildingStateObject(): any {
                         // Handle range values like [min, max]
                         const [min, max] = value;
                         if(min === max) {
-                            return min?.toString() || '—';
+                            return min?.toString() ?? '—';
                         }
-                        return `${min || '?'}–${max || '?'}`;
+                        return `${min ?? '?'}–${max ?? '?'}`;
                     }
                     return value.toString();
 
@@ -2330,11 +2316,11 @@ function buildingStateObject(): any {
                         // Handle range values like [min, max]
                         const [min, max] = value;
                         if(min === max) {
-                            return min || 0;
+                            return min ?? 0;
                         }
-                        return min || 0; // For rent display, show minimum
+                        return min ?? 0; // For rent display, show minimum
                     }
-                    return value || 0;
+                    return value ?? 0;
 
                 case 'beds':
                 case 'baths':
@@ -2345,10 +2331,10 @@ function buildingStateObject(): any {
 
                 case 'perPersonRent':
                 case 'deposit':
-                    return value || 0;
+                    return value ?? 0;
 
                 default:
-                    return value?.toString() || '—';
+                    return value?.toString() ?? '—';
             }
         },
 
@@ -2359,9 +2345,7 @@ function buildingStateObject(): any {
             }
 
             // Initialize rentSpecials array if it doesn't exist
-            if(!this.building.rentSpecials) {
-                this.building.rentSpecials = [];
-            }
+            this.building.rentSpecials ??= [];
 
             // Add new rent special with unique ID using Alpine $id magic property
             // This provides deterministic IDs for testing and better type safety
@@ -2395,7 +2379,7 @@ function buildingStateObject(): any {
 
         // Form validation methods
         validateField(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string, value: unknown): boolean {
-            const error = validateSingleField(fieldName, value, this.building || undefined);
+            const error = validateSingleField(fieldName, value, this.building ?? undefined);
 
             if(error) {
                 this.errors[fieldName] = error;
@@ -2424,7 +2408,7 @@ function buildingStateObject(): any {
         },
 
         getFieldError(this: ReturnType<typeof buildingStateObject> & AlpineMagics, fieldName: string): string | null {
-            return this.errors[fieldName] || null;
+            return this.errors[fieldName] ?? null;
         },
 
         getAllErrors(this: ReturnType<typeof buildingStateObject> & AlpineMagics): Record<string, string> {
@@ -2446,7 +2430,7 @@ function buildingStateObject(): any {
                 total:     this.units.length,
                 filtered:  this.filteredUnits.length,
                 selected:  this.selectedUnits.size,
-                hasFilter: !!(this.statusFilter || this.searchQuery)
+                hasFilter: !!(this.statusFilter ?? this.searchQuery)
             };
         },
 
@@ -2516,7 +2500,7 @@ function buildingStateObject(): any {
                 return 0;
             }
 
-            const totalRent = unitsWithRent.reduce((sum: number, unit: ExtendedUnitData) => sum + (unit.rent || 0), 0);
+            const totalRent = unitsWithRent.reduce((sum: number, unit: ExtendedUnitData) => sum + (unit.rent ?? 0), 0);
             return Math.round(totalRent / unitsWithRent.length);
         },
 
@@ -2617,12 +2601,9 @@ export class BuildingCore {
         this.stateObj = state as ReturnType<typeof buildingStateObject> & AlpineMagics;
 
         // Initialize the consolidated state functionality
-        if(!this.stateObj.init) {
-            // If init method doesn't exist, create minimal initialization
-            this.stateObj.init = function() {
-                this.inheritanceManager = new FieldInheritanceManager();
-            };
-        }
+        this.stateObj.init ??= function() {
+            this.inheritanceManager = new FieldInheritanceManager();
+        };
     }
 
     initializeBuildingData(element: HTMLElement): void {
@@ -2645,7 +2626,7 @@ export class BuildingCore {
     }
 
     validateBuildingForm(): boolean {
-        return this.stateObj.validateForm?.() || false;
+        return this.stateObj.validateForm?.() ?? false;
     }
 
     async saveBuildingData(): Promise<void> {
@@ -2681,7 +2662,7 @@ export class BuildingCore {
     }
 
     hasUnsavedChanges(): boolean {
-        return this.stateObj.hasUnsavedChanges?.() || false;
+        return this.stateObj.hasUnsavedChanges?.() ?? false;
     }
 
     addRentSpecial(): void {
@@ -2749,11 +2730,11 @@ export class UnitManagement {
     }
 
     isUnitSelected(unitID: string): boolean {
-        return this.stateObj.isUnitSelected?.(unitID) || false;
+        return this.stateObj.isUnitSelected?.(unitID) ?? false;
     }
 
     getSelectedCount(): number {
-        return this.stateObj.getSelectedCount?.() || 0;
+        return this.stateObj.getSelectedCount?.() ?? 0;
     }
 
     async performBulkCreateUnits(): Promise<void> {
@@ -2788,7 +2769,7 @@ export class UnitTypeManagement {
             modelName:  '',
             beds:       1,
             baths:      1,
-            buildingID: this.state.building?.buildingID || '',
+            buildingID: this.state.building?.buildingID ?? '',
             minSqft:    undefined,
             maxSqft:    undefined,
             minRent:    undefined,
@@ -2806,7 +2787,7 @@ export class UnitTypeManagement {
             // Validate the new unit type
             const validation = validateUnitType(this.state.newUnitType);
             if(!validation.isValid) {
-                const firstError = values(validation.errors)[0] || 'Invalid unit type data';
+                const firstError = values(validation.errors)[0] ?? 'Invalid unit type data';
                 this.state.$dispatch('toast:show', {
                     message: firstError,
                     type:    'error'
@@ -2832,7 +2813,7 @@ export class UnitTypeManagement {
                 const response = await this.apiService.addUnitType(buildingID, unitType);
                 if(!response.success) {
                     this.state.$dispatch('toast:show', {
-                        message: response.error || 'Failed to save unit type',
+                        message: response.error ?? 'Failed to save unit type',
                         type:    'error'
                     });
                     // Keep dialog open for retry
@@ -2840,7 +2821,7 @@ export class UnitTypeManagement {
                 }
 
                 // Use the response data if available, otherwise use the local unit type
-                const savedUnitType = response.data || unitType;
+                const savedUnitType = response.data ?? unitType;
 
                 // Add to local collection
                 this.state.unitTypes = UnitTypeCrud.addUnitType(this.state.unitTypes, savedUnitType);
@@ -2894,7 +2875,7 @@ export class UnitTypeManagement {
                 const response = await this.apiService.updateUnitType(buildingID, modelID, updates);
                 if(!response.success) {
                     this.state.$dispatch('toast:show', {
-                        message: response.error || 'Failed to update unit type',
+                        message: response.error ?? 'Failed to update unit type',
                         type:    'error'
                     });
                     return;
@@ -2902,7 +2883,7 @@ export class UnitTypeManagement {
 
                 // Use the response data if available
                 // Use the response data if available
-                this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, response.data || updates);
+                this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, response.data ?? updates);
             } else {
                 // Fallback: just update local state if no API
                 this.state.unitTypes = UnitTypeCrud.updateUnitType(this.state.unitTypes, modelID, updates);
@@ -2949,7 +2930,7 @@ export class UnitTypeManagement {
                 const response = await this.apiService.deleteUnitType(buildingID, modelID);
                 if(!response.success) {
                     this.state.$dispatch('toast:show', {
-                        message: response.error || 'Failed to delete unit type',
+                        message: response.error ?? 'Failed to delete unit type',
                         type:    'error'
                     });
                     return;

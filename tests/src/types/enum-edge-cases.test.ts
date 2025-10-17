@@ -36,14 +36,14 @@ describe('Enum Edge Cases', () => {
     describe('Empty and Null Enum Values', () => {
         it('should accept null/undefined enum values in optional fields', () => {
             const fee: Fee = {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing null assignment to enum type for edge case validation
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment -- Testing null assignment to enum type
                 type:   null as any, // Type system allows this with 'as any'
                 amount: 100
             };
             expect(fee.type).toBeNull();
 
             const fee2: Fee = {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing undefined assignment to enum type for edge case validation
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment -- Testing undefined assignment to enum type
                 type:   undefined as any,
                 amount: 100
             };
@@ -100,7 +100,7 @@ describe('Enum Edge Cases', () => {
                 included: true
             };
             expect(typeof parking.type).toBe('object');
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing property on object assigned to enum type for test verification
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Accessing property on object assigned to enum type for test verification
             expect((parking.type as any).invalid).toBe('object');
         });
     });

@@ -399,7 +399,7 @@ describe('Floorplan Save Flow - Integration Tests', () => {
 
             // Verify state updates - implementation may modify state before CRUD call
             expect(mockUpdateUnitType).toHaveBeenCalled();
-            const [_stateArg, modelIdArg, dataArg] = mockUpdateUnitType.mock.calls[0];
+            const [_stateArg, modelIdArg, dataArg] = mockUpdateUnitType.mock.calls[0] as [unknown, string, UnitTypeData];
             expect(modelIdArg).toBe('existing-model');
             expect(dataArg).toEqual(updatedUnitType);
             expect(mockState.unitTypes).toEqual([updatedUnitType]);
@@ -452,7 +452,8 @@ describe('Floorplan Save Flow - Integration Tests', () => {
 
             // Verify state updates - implementation may modify state before CRUD call
             expect(mockRemoveUnitType).toHaveBeenCalled();
-            const [_deleteStateArg, modelIdDeleteArg] = mockRemoveUnitType.mock.calls[0];
+            const mockCalls = mockRemoveUnitType.mock.calls[0] as unknown[];
+            const modelIdDeleteArg = mockCalls[1] as string;
             expect(modelIdDeleteArg).toBe('model-to-delete');
             expect(mockState.unitTypes).toEqual(remainingUnitTypes);
 

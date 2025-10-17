@@ -28,6 +28,7 @@ const {
     isOpen: _isOpen = false,
     dialogId = 'add-unit-dialog'
 } = Astro.props;
+void _isOpen; // Intentionally unused - prop for potential future use
 
 // Prepare unit type options for select
 const unitTypeOptions = _.map(unitTypes, ut => ({

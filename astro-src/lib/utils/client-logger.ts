@@ -30,7 +30,7 @@ function getCurrentLogLevel(): LogLevel {
     // Check for explicit log level in environment or URL parameters
     if(typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
-        const urlLogLevel = (urlParams.get('logLevel') || '').toUpperCase() as LogLevel;
+        const urlLogLevel = (urlParams.get('logLevel') ?? '').toUpperCase() as LogLevel;
         if(urlLogLevel && urlLogLevel in LOG_LEVELS) {
             return urlLogLevel;
         }

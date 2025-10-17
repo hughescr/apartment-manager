@@ -80,7 +80,7 @@ function formatDate(date: Date | string | undefined): string {
     }
     if(isString(date)) {
         // If already ISO format, return as-is
-        if(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})?Z?)?$/.exec(date)) {
+        if(/^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:.\d{3})?Z?)?$/.exec(date)) {
             return date.includes('T') ? date : `${date}T00:00:00Z`;
         }
         const newDate = new Date(date);
@@ -331,12 +331,12 @@ function generateUnitAvailabilityXML(unit: UnitData): string {
     const enhancedUnit = unit as EnhancedUnitData;
 
     // Use new vacancy date fields with fallbacks
-    const vacateDate = enhancedUnit.vacateDate || unit.availableDate || split(new Date().toISOString(), 'T')[0];
-    const madeReadyDate = enhancedUnit.madeReadyDate || unit.availableDate || vacateDate;
-    const availableDate = unit.availableDate || madeReadyDate;
+    const vacateDate = enhancedUnit.vacateDate ?? unit.availableDate ?? split(new Date().toISOString(), 'T')[0];
+    const madeReadyDate = enhancedUnit.madeReadyDate ?? unit.availableDate ?? vacateDate;
+    const availableDate = unit.availableDate ?? madeReadyDate;
 
     // Use new vacancyClass field with backward compatibility
-    const vacancyClass = enhancedUnit.vacancyClass || (unit.occupied ? 'Occupied' : 'Unoccupied');
+    const vacancyClass = enhancedUnit.vacancyClass ?? (unit.occupied ? 'Occupied' : 'Unoccupied');
 
     return `
                 <Availability>${
@@ -379,9 +379,9 @@ function generatePropertyIdentification(building: BuildingData, escapeXML: (str:
             <MarketingName>${escapeXML(building.buildingName)}</MarketingName>`
                     : ''
             }${
-                (enhancedBuilding.contactInfo?.propertyWebsite || enhancedBuilding.contactInfo?.website)
+                (enhancedBuilding.contactInfo?.propertyWebsite ?? enhancedBuilding.contactInfo?.website)
                     ? `
-            <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite || enhancedBuilding.contactInfo.website)}</WebSite>`
+            <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite ?? enhancedBuilding.contactInfo.website)}</WebSite>`
                     : ''
             }
         </Identification>`;
@@ -390,10 +390,10 @@ function generatePropertyIdentification(building: BuildingData, escapeXML: (str:
 // Helper function to generate address XML
 function generateAddressXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
     // Address is required by MITS spec, always provide it
-    const address = building.street || 'Address Not Provided';
-    const city = building.city || 'City Not Provided';
-    const state = building.state || 'CA';
-    const zip = building.zip || '00000';
+    const address = building.street ?? 'Address Not Provided';
+    const city = building.city ?? 'City Not Provided';
+    const state = building.state ?? 'CA';
+    const zip = building.zip ?? '00000';
 
     return `
         <Address>
@@ -433,9 +433,9 @@ function generateInformationFieldsXML(building: BuildingData, unitCount: number,
         <Email>${escapeXML(building.contactInfo.email)}</Email>`
         : '';
 
-    const websiteXML = (enhancedBuilding.contactInfo?.propertyWebsite || enhancedBuilding.contactInfo?.website)
+    const websiteXML = (enhancedBuilding.contactInfo?.propertyWebsite ?? enhancedBuilding.contactInfo?.website)
         ? `
-        <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite || enhancedBuilding.contactInfo.website)}</WebSite>`
+        <WebSite>${escapeXML(enhancedBuilding.contactInfo.propertyWebsite ?? enhancedBuilding.contactInfo.website)}</WebSite>`
         : '';
 
     const unitCountXML = unitCount > 0
@@ -463,9 +463,9 @@ function generateInformationXML(building: BuildingData, unitCount: number, escap
 function generateManagementXML(building: BuildingData, escapeXML: (str: string | undefined | null) => string): string {
     const enhancedBuilding = building as EnhancedBuildingData;
 
-    const managementName = enhancedBuilding.contactInfo?.name || building.buildingName || 'Property Management';
-    const managementEmail = enhancedBuilding.contactInfo?.email || '';
-    const managementPhone = enhancedBuilding.contactInfo?.phone || '';
+    const managementName = enhancedBuilding.contactInfo?.name ?? building.buildingName ?? 'Property Management';
+    const managementEmail = enhancedBuilding.contactInfo?.email ?? '';
+    const managementPhone = enhancedBuilding.contactInfo?.phone ?? '';
     const managementWebsite = enhancedBuilding.contactInfo?.managementWebsite;
 
     return `
@@ -601,7 +601,7 @@ export async function generateMITSFeedForBuilding(options: MITSFeedOptions): Pro
     }
 
     // Use most recent update if found, otherwise use current timestamp
-    const lastUpdate = formatDate(mostRecentUpdate || new Date());
+    const lastUpdate = formatDate(mostRecentUpdate ?? new Date());
 
     // Build the XML document
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -694,7 +694,7 @@ export async function generateMultiBuildingMITSFeed(options: MultiBuildingFeedOp
 
     // Find the most recent updatedAt timestamp from all data across all buildings
     const mostRecentUpdate = findMostRecentUpdate(buildings, unitTypesByBuilding, unitsByBuilding);
-    const lastUpdate = formatDate(mostRecentUpdate || new Date());
+    const lastUpdate = formatDate(mostRecentUpdate ?? new Date());
 
     // Start the aggregated XML document
     let xml = `<?xml version="1.0" encoding="UTF-8"?>

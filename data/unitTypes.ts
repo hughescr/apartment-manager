@@ -1,5 +1,5 @@
-import { UnitTypeData, UnitData, UnitTypeDynamoDBItem } from '../src/types';
-import { ApartmentTable, Unit, getUnitTypeEntity, getApartmentTable, UnitType } from './model';
+import { UnitTypeData, UnitData, UnitTypeDynamoDBItem } from '../src/types/index.js';
+import { ApartmentTable, Unit, getUnitTypeEntity, getApartmentTable, UnitType } from './model.js';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
 import { GetItemCommand } from 'dynamodb-toolbox/entity/actions/get';
@@ -157,12 +157,12 @@ export async function updateUnitType(buildingID: string, modelID: string, update
         return await fallbackToPutItemCommandForUnitType(buildingID, modelID, updates);
     } catch (error) {
         // If UpdateItemCommand fails due to data persistence issues, fall back to PutItemCommand with merge logic
-        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic:', error);
+        logger.warn('UpdateItemCommand failed, falling back to PutItemCommand with merge logic', { error: error as Record<string, unknown> });
 
         try {
             return await fallbackToPutItemCommandForUnitType(buildingID, modelID, updates);
         } catch (fallbackError) {
-            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed:', fallbackError);
+            logger.error('Both UpdateItemCommand and PutItemCommand fallback failed', { error: fallbackError as Record<string, unknown> });
             throw fallbackError;
         }
     }
@@ -176,7 +176,7 @@ export async function deleteUnitType(buildingID: string, modelID: string): Promi
             .send();
         return true;
     } catch (error) {
-        logger.error('Error deleting unit type:', error);
+        logger.error('Error deleting unit type', { error: error as Record<string, unknown> });
         return false;
     }
 }

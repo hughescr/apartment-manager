@@ -60,7 +60,7 @@ export class FieldInheritanceManager {
         if(isArray(modelField)) {
             const values = chain(modelField)
                 .map(f => unitType[f as keyof UnitTypeData])
-                .filter(v => v !== null && v !== undefined)
+                .filter(v => v !== null && v !== undefined && isNumber(v))
                 .value();
             if(values.length === 0) {
                 return null;

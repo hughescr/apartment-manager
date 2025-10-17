@@ -152,7 +152,7 @@ describe('Timer Acceleration Utility', () => {
 
         afterEach(() => {
             // Always cleanup any installed timer accelerator to prevent test pollution
-            if(accelerator && accelerator.isInstalled) {
+            if(accelerator?.isInstalled) {
                 accelerator.uninstall();
             }
         });

@@ -10,6 +10,10 @@ export interface Props {
 }
 
 const { building: _building, errors: _errors = {} } = Astro.props;
+
+// Mark intentionally unused props (part of component interface but not needed in template)
+void _building;
+void _errors;
 ---
 
 <!-- Management Contact Information -->

@@ -407,11 +407,11 @@ describe('Amenity Inheritance System', () => {
 
                 getInheritedValue(fieldName: string): StringOrNull | NumberOrNull {
                     // Try unit type first
-                    if(this.selectedUnitType && this.selectedUnitType[fieldName] !== null && this.selectedUnitType[fieldName] !== undefined) {
+                    if(this.selectedUnitType?.[fieldName] !== null && this.selectedUnitType?.[fieldName] !== undefined) {
                         return this.selectedUnitType[fieldName];
                     }
                     // Fall back to building defaults
-                    if(this.buildingDefaults && this.buildingDefaults[fieldName] !== null && this.buildingDefaults[fieldName] !== undefined) {
+                    if(this.buildingDefaults?.[fieldName] !== null && this.buildingDefaults?.[fieldName] !== undefined) {
                         return this.buildingDefaults[fieldName];
                     }
                     return null;
@@ -507,7 +507,7 @@ describe('Amenity Inheritance System', () => {
                     if(this.unitType.modelAmenities && this.unitType.modelAmenities.length > 0) {
                         return this.unitType.modelAmenities;
                     }
-                    return this.buildingAmenities || [];
+                    return this.buildingAmenities ?? [];
                 }
             };
             expect(component.getEffectiveAmenities()).toEqual([]);
@@ -521,7 +521,7 @@ describe('Amenity Inheritance System', () => {
                 } as RecordType,
 
                 getInheritedValue(fieldName: string): StringOrNull | NumberOrNull {
-                    if(this.selectedUnitType && this.selectedUnitType[fieldName] !== null && this.selectedUnitType[fieldName] !== undefined) {
+                    if(this.selectedUnitType?.[fieldName] !== null && this.selectedUnitType?.[fieldName] !== undefined) {
                         return this.selectedUnitType[fieldName] as StringOrNull | NumberOrNull;
                     }
                     return null;
@@ -538,7 +538,7 @@ describe('Amenity Inheritance System', () => {
                 getEffectiveAmenities(): Amenity[] {
                     try {
                         if(isArray(this.buildingAmenities)) {
-                            return this.buildingAmenities;
+                            return this.buildingAmenities as Amenity[];
                         }
                         return [];
                     } catch{

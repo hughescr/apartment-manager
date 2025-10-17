@@ -72,9 +72,7 @@ let globalRegistry: MapperRegistry | null = null;
  * @returns The global mapper registry
  */
 export function getMapperRegistry(): MapperRegistry {
-    if(!globalRegistry) {
-        globalRegistry = new MapperRegistry();
-    }
+    globalRegistry ??= new MapperRegistry();
     return globalRegistry;
 }
 

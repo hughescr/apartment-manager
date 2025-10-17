@@ -79,7 +79,7 @@ beforeAll(() => {
             testFileCount?: number
         };
         globalState.testStartTime = Date.now();
-        globalState.testFileCount = (globalState.testFileCount || 0) + 1;
+        globalState.testFileCount = (globalState.testFileCount ?? 0) + 1;
     }
 });
 

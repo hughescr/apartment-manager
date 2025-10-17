@@ -25,10 +25,11 @@ export class UnitTypeApiService {
             if(response.ok) {
                 return { success: true };
             } else {
-                const errorData = await response.json();
+                const data: unknown = await response.json();
+                const errorData = data as { error?: string };
                 return {
                     success: false,
-                    error:   errorData.error || 'Failed to create unit type'
+                    error:   errorData.error ?? 'Failed to create unit type'
                 };
             }
         } catch{

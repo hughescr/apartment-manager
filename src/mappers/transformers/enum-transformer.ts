@@ -308,7 +308,7 @@ export function createEnumTransformer<T extends string>(
     siteId: string,
     customMappings?: EnumMapping<T>[]
 ): TransformerFunction<T, string> {
-    const mappings = customMappings || defaultEnumMappings[enumType] as EnumMapping<T>[];
+    const mappings = customMappings ?? defaultEnumMappings[enumType] as EnumMapping<T>[];
 
     return (value: T): string => {
         const mapping = find(mappings, ['internal', value]);
@@ -318,7 +318,7 @@ export function createEnumTransformer<T extends string>(
         }
 
         const siteSpecific = mapping.external[siteId as keyof SiteSpecificValue<string>];
-        return siteSpecific || value;
+        return siteSpecific ?? value;
     };
 }
 
@@ -335,7 +335,7 @@ export function createReverseEnumTransformer<T extends string>(
     siteId: string,
     customMappings?: EnumMapping<T>[]
 ): TransformerFunction<string, T | undefined> {
-    const mappings = customMappings || defaultEnumMappings[enumType] as EnumMapping<T>[];
+    const mappings = customMappings ?? defaultEnumMappings[enumType] as EnumMapping<T>[];
 
     return (value: string): T | undefined => {
         for(const mapping of mappings) {

@@ -355,7 +355,7 @@ describe('Data Layer Performance Tests', () => {
             expect(units[0].buildingID).toBe('building-1');
 
             // Verify query was used (checking partition)
-            const call = dynamoDbMock.mock.calls[0][0];
+            const call = dynamoDbMock.mock.calls[0][0] as { constructor: { name: string } };
             expect(call.constructor.name).toBe('QueryCommand');
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
         });

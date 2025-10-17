@@ -37,9 +37,9 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     }
 
     // Parse request body first
-    let rawData;
+    let rawData: Record<string, unknown>;
     try {
-        rawData = JSON.parse(evt.body || '{}');
+        rawData = JSON.parse(evt.body ?? '{}') as Record<string, unknown>;
     } catch (parseError) {
         logger.warn('Failed to parse unit type creation request body', {
             error:      parseError,
@@ -53,10 +53,10 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         };
     }
 
-    const data = sanitizeObject(rawData);
+    const data: Record<string, unknown> = sanitizeObject(rawData);
 
     // Add building ID from path parameters to data for validation
-    const dataWithBuildingId = {
+    const dataWithBuildingId: Record<string, unknown> = {
         ...data,
         buildingID
     };
@@ -100,9 +100,9 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     }
 
     // Parse request body (use simple parsing for backward compatibility)
-    let rawData;
+    let rawData: Record<string, unknown>;
     try {
-        rawData = JSON.parse(evt.body || '{}');
+        rawData = JSON.parse(evt.body ?? '{}') as Record<string, unknown>;
     } catch (parseError) {
         logger.warn('Failed to parse unit type update request body', {
             error:      parseError,
@@ -117,10 +117,10 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
         };
     }
 
-    const data = sanitizeObject(rawData);
+    const data: Record<string, unknown> = sanitizeObject(rawData);
 
     // Add URL parameters to data for validation (required for draft schema)
-    const dataWithIds = {
+    const dataWithIds: Record<string, unknown> = {
         ...data,
         buildingID,
         modelID

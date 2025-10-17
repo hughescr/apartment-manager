@@ -19,7 +19,7 @@ import { getDefaultBuildingData } from '../../src/types/index';
  * This simulates the metadata that DynamoDB Toolbox adds to items
  */
 function addToolboxMetadata(item: unknown): unknown {
-    if(!item || !isObject(item)) {
+    if(!(item) || !isObject(item)) {
         return item;
     }
 
@@ -45,9 +45,9 @@ function addToolboxMetadata(item: unknown): unknown {
 
     return {
         ...processedItem,
-        _et: processedItem._et || entityType, // Entity type for DynamoDB Toolbox
-        _ct: processedItem._ct || new Date().toISOString(), // Created timestamp
-        _md: processedItem._md || new Date().toISOString(), // Modified timestamp
+        _et: processedItem._et ?? entityType, // Entity type for DynamoDB Toolbox
+        _ct: processedItem._ct ?? new Date().toISOString(), // Created timestamp
+        _md: processedItem._md ?? new Date().toISOString(), // Modified timestamp
     };
 }
 
@@ -71,7 +71,7 @@ export function mockQueryResponse(items: unknown[]): { Items: unknown[], Count: 
 /**
  * Create a mock response for DynamoDB GetItem operations
  */
-export function mockGetResponse(item: unknown | undefined): { Item?: unknown } {
+export function mockGetResponse(item: unknown): { Item?: unknown } {
     return item ? { Item: addToolboxMetadata(item) } : {};
 }
 

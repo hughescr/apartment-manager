@@ -113,7 +113,7 @@ export function sortPhotosByType(photos: string[]): string[] {
 export function generatePhotoCaption(url: string, unitNumber?: string): string {
     try {
         const parsed = new URL(url);
-        const filename = last(split(parsed.pathname, '/')) || '';
+        const filename = last(split(parsed.pathname, '/')) ?? '';
         const nameWithoutExt = replace(filename, /\.[^/.]+$/, '');
 
         // Clean up common separators

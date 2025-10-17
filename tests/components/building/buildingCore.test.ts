@@ -57,7 +57,7 @@ describe('BuildingCore', () => {
     });
 
     describe('timeout cleanup', () => {
-        it('should clear timeout when destroy is called before timeout completes', (done) => {
+        it('should clear timeout when destroy is called before timeout completes', (done: () => void) => {
             // Mock global setTimeout and clearTimeout to track calls
             const originalSetTimeout = global.setTimeout;
             const originalClearTimeout = global.clearTimeout;

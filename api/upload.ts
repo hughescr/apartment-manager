@@ -3,19 +3,41 @@ import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Resource } from 'sst';
 import { randomUUID } from 'crypto';
-import { split, toLower, startsWith, isError } from 'lodash';
+import { split, toLower, startsWith, isError, isObject, isString, isUndefined } from 'lodash';
 import { getS3Client } from '../data/clients';
 import { validatePath } from './security-validation';
 import { validateMultipleIds } from './shared/request-handlers';
 
 const s3Client = getS3Client();
 
+// Interface for upload request body
+interface UploadRequestBody {
+    filename:     string
+    buildingId:   string
+    unitId:       string
+    contentType?: string
+}
+
+// Type guard to validate upload request body
+const isUploadRequestBody = (obj: unknown): obj is UploadRequestBody => {
+    if(!isObject(obj)) {
+        return false;
+    }
+    const body = obj as Record<string, unknown>;
+    return (
+        isString(body.filename)
+        && isString(body.buildingId)
+        && isString(body.unitId)
+        && (isUndefined(body.contentType) || isString(body.contentType))
+    );
+};
+
 // Helper to generate a unique key for S3
 const generateS3Key = (buildingId: string, unitId: string, filename: string): string => {
     // Remove any path information from filename
-    const basename = split(filename, /[/\\]/).pop() || filename;
+    const basename = split(filename, /[/\\]/).pop() ?? filename;
     const parts = split(basename, '.');
-    const extension = toLower(parts.pop() || 'jpg');
+    const extension = toLower(parts.pop() ?? 'jpg');
     const uuid = randomUUID();
     return `buildings/${buildingId}/units/${unitId}/${uuid}.${extension}`;
 };
@@ -24,21 +46,23 @@ const generateS3Key = (buildingId: string, unitId: string, filename: string): st
 const isValidImageType = (filename: string): boolean => {
     const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
     const parts = split(filename, '.');
-    const extension = toLower(parts.pop() || '');
+    const extension = toLower(parts.pop() ?? '');
     return extension ? validExtensions.includes(extension) : false;
 };
 
 // Handle POST upload request
 const handleUploadRequest = async (body: string | null) => {
-    const parsedBody = JSON.parse(body || '{}');
-    const { filename, buildingId, unitId, contentType } = parsedBody;
+    const parsedBody: unknown = JSON.parse(body ?? '{}');
 
-    if(!filename || !buildingId || !unitId) {
+    // Validate the parsed body structure
+    if(!isUploadRequestBody(parsedBody)) {
         return {
             statusCode: 400,
             body:       JSON.stringify({ error: 'Missing required fields' })
         };
     }
+
+    const { filename, buildingId, unitId, contentType } = parsedBody;
 
     // Validate IDs to prevent path traversal using shared utility
     const validationResult = validateMultipleIds([
@@ -74,7 +98,7 @@ const handleUploadRequest = async (body: string | null) => {
     const command = new PutObjectCommand({
         Bucket:      Resource.PhotosBucket.name,
         Key:         key,
-        ContentType: contentType || 'image/jpeg',
+        ContentType: contentType ?? 'image/jpeg',
         // Add metadata
         Metadata:    {
             buildingId,

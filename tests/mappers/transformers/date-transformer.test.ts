@@ -17,20 +17,28 @@ describe('Date Transformer', () => {
     beforeEach(() => {
         // Mock Date constructor
         global.Date = class extends originalDate {
-            constructor(...args: any[]) {
+            constructor(...args: [] | [string | number | Date] | [number, number, number?, number?, number?, number?, number?]) {
                 if(args.length === 0) {
                     super(mockDate.getTime());
                 } else if(args.length === 1) {
                     super(args[0]);
                 } else {
-                    super(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+                    super(
+                        args[0],
+                        args[1],
+                        args[2],
+                        args[3],
+                        args[4],
+                        args[5],
+                        args[6]
+                    );
                 }
             }
 
             static now() {
                 return mockDate.getTime();
             }
-        } as any;
+        } as unknown as typeof Date;
     });
 
     afterEach(() => {

@@ -10,7 +10,7 @@ import { getSSMClient } from './clients';
 
 // Get parameter path prefix based on stage
 function getParameterPrefix(): string {
-    const stage = process.env.SST_STAGE || 'development';
+    const stage = process.env.SST_STAGE ?? 'development';
     return `/apartment-manager/${stage}/credentials`;
 }
 
@@ -50,7 +50,7 @@ export async function storeCredential(site: string, credentials: SiteCredentials
         logger.info(`Stored credentials for site: ${site}`);
         return true;
     } catch (error) {
-        logger.error(`Failed to store credentials for ${site}:`, error);
+        logger.error(`Failed to store credentials for ${site}`, { error: error as Record<string, unknown> });
         throw new Error(`Failed to store credentials: ${(error as Error).message || 'Unknown error'}`);
     }
 }
@@ -81,7 +81,7 @@ export async function getCredential(site: string): Promise<SiteCredentials | nul
             logger.debug(`No credentials found for site: ${site}`);
             return null;
         }
-        logger.error(`Failed to retrieve credentials for ${site}:`, error);
+        logger.error(`Failed to retrieve credentials for ${site}`, { error: error as Record<string, unknown> });
         throw new Error(`Failed to retrieve credentials: ${(error as Error).message || 'Unknown error'}`);
     }
 }
@@ -107,7 +107,7 @@ export async function deleteCredential(site: string): Promise<boolean> {
             logger.debug(`No credentials to delete for site: ${site}`);
             return true; // Consider it successful if already deleted
         }
-        logger.error(`Failed to delete credentials for ${site}:`, error);
+        logger.error(`Failed to delete credentials for ${site}`, { error: error as Record<string, unknown> });
         throw new Error(`Failed to delete credentials: ${(error as Error).message || 'Unknown error'}`);
     }
 }
@@ -153,7 +153,7 @@ export async function listCredentials(): Promise<string[]> {
         logger.debug(`Found ${sites.length} sites with credentials`);
         return sites;
     } catch (error) {
-        logger.error('Failed to list credentials:', error);
+        logger.error('Failed to list credentials', { error: error as Record<string, unknown> });
         throw new Error(`Failed to list credentials: ${(error as Error).message || 'Unknown error'}`);
     }
 }

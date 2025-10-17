@@ -1,6 +1,6 @@
-import { logger as baseLogger } from '@hughescr/logger';
+import { logger } from '@hughescr/logger';
 import { Resource } from 'sst';
-import { forEach, trim, chain } from 'lodash';
+import { forEach, trim, chain, startsWith } from 'lodash';
 import pDebounce from 'p-debounce';
 import pThrottle from 'p-throttle';
 import { RadarCache } from './radar-cache';
@@ -13,9 +13,6 @@ import type {
     RadarIPGeocodeResponse,
     RadarForwardGeocodeResponse
 } from './types';
-import { startsWith } from 'lodash';
-
-const logger = baseLogger;
 
 /**
  * Configuration options for RadarClient
@@ -68,12 +65,12 @@ export class RadarClient {
 
     constructor(cache: RadarCache, config?: RadarClientConfig) {
         this.cache = cache;
-        this.config = config || createRadarConfig();
+        this.config = config ?? createRadarConfig();
 
         // Create a throttled version of makeRequest using config values
         const throttle = pThrottle({
-            limit:    this.config.throttle?.limit || 10,
-            interval: this.config.throttle?.interval || 1000
+            limit:    this.config.throttle?.limit ?? 10,
+            interval: this.config.throttle?.interval ?? 1000
         });
         this.throttledMakeRequest = throttle(this.makeRequestInternal.bind(this));
 
@@ -135,7 +132,7 @@ export class RadarClient {
     async getLocationFromIP(clientIP?: string): Promise<GeolocationResult | null> {
         try {
             // Use a placeholder IP if none provided (Radar will use request IP)
-            const ipAddress = clientIP || 'auto';
+            const ipAddress = clientIP ?? 'auto';
 
             // Check cache first
             if(clientIP) {
@@ -161,7 +158,7 @@ export class RadarClient {
                     code:    errorCode,
                     message: `Radar IP geocoding error: ${response.status} ${response.statusText}`
                 };
-                logger.error('IP geocoding API error', error);
+                logger.error('IP geocoding API error', { code: error.code, message: error.message });
                 return null;
             }
 
@@ -193,7 +190,11 @@ export class RadarClient {
                 message:       'Failed to get location from IP',
                 originalError: error as Error
             };
-            logger.error('IP geocoding failed', serviceError);
+            logger.error('IP geocoding failed', {
+                code:    serviceError.code,
+                message: serviceError.message,
+                error:   serviceError.originalError?.message
+            });
             return null;
         }
     }
@@ -216,7 +217,7 @@ export class RadarClient {
                 return [];
             }
 
-            const limit = Math.min(options.limit || 5, 10);
+            const limit = Math.min(options.limit ?? 5, 10);
 
             // Check cache first
             const cachedResults = this.cache.getAutocomplete(trimmedQuery, options.coordinates);
@@ -254,7 +255,7 @@ export class RadarClient {
                             code:    errorCode,
                             message: `Radar autocomplete error: ${response.status} ${response.statusText}`
                         };
-                        logger.error('Autocomplete API error', error);
+                        logger.error('Autocomplete API error', { code: error.code, message: error.message });
                         return [];
                     }
 
@@ -272,7 +273,7 @@ export class RadarClient {
 
                     logger.info(`Retrieved ${parsedResults.length} autocomplete suggestions for query: ${trimmedQuery}`);
                     return parsedResults;
-                }, this.config.debounceDelay || 200); // configurable debounce delay
+                }, this.config.debounceDelay ?? 200); // configurable debounce delay
 
                 this.debouncedAutocomplete.set(trimmedQuery, debouncedFn);
             }
@@ -286,7 +287,11 @@ export class RadarClient {
                 message:       'Failed to get address autocomplete suggestions',
                 originalError: error as Error
             };
-            logger.error('Address autocomplete failed', serviceError);
+            logger.error('Address autocomplete failed', {
+                code:    serviceError.code,
+                message: serviceError.message,
+                error:   serviceError.originalError?.message
+            });
             return [];
         }
     }
@@ -323,7 +328,7 @@ export class RadarClient {
                     code:    errorCode,
                     message: `Radar geocoding error: ${response.status} ${response.statusText}`
                 };
-                logger.error('Forward geocoding API error', error);
+                logger.error('Forward geocoding API error', { code: error.code, message: error.message });
                 return null;
             }
 
@@ -348,7 +353,11 @@ export class RadarClient {
                 message:       'Failed to geocode address',
                 originalError: error as Error
             };
-            logger.error('Forward geocoding failed', serviceError);
+            logger.error('Forward geocoding failed', {
+                code:    serviceError.code,
+                message: serviceError.message,
+                error:   serviceError.originalError?.message
+            });
             return null;
         }
     }
@@ -384,7 +393,7 @@ export class RadarClient {
             const coords = address.geometry.coordinates;
 
             // Use placeLabel for places, addressLabel for addresses, or fall back to formattedAddress
-            const displayText = address.placeLabel || address.addressLabel || address.formattedAddress;
+            const displayText = address.placeLabel ?? address.addressLabel ?? address.formattedAddress;
 
             if(!displayText) {
                 return null;

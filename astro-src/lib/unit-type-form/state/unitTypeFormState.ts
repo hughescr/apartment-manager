@@ -1,5 +1,5 @@
 import type { UnitTypeData } from '../../../types';
-import { UnitTypeValidationService, UnitTypeApiService, type ValidationErrors } from '../services';
+import { UnitTypeValidationService, UnitTypeApiService, type ValidationErrors } from '../services/index';
 
 export interface UnitTypeFormState {
     apiURL:     string
@@ -92,7 +92,7 @@ export function createUnitTypeFormState(apiURL: string, buildingID: string) {
                         window.location.reload();
                     }
                 } else {
-                    this.errors.submit = result.error || 'Failed to create unit type';
+                    this.errors.submit = result.error ?? 'Failed to create unit type';
                 }
             } catch{
                 this.errors.submit = 'An unexpected error occurred. Please try again.';

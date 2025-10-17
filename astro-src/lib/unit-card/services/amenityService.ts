@@ -110,7 +110,7 @@ export class AmenityService {
      * Get amenities grouped by category
      */
     getAmenitiesByCategory(amenities?: Amenity[]): Map<string, string[]> {
-        const effectiveAmenities = amenities || this.getEffectiveAmenities();
+        const effectiveAmenities = amenities ?? this.getEffectiveAmenities();
         return this.amenityManager.getAmenitiesByCategory(effectiveAmenities);
     }
 
@@ -154,9 +154,7 @@ export class AmenityService {
             return;
         }
 
-        if(!this.state.unit.unitAmenities) {
-            this.state.unit.unitAmenities = [];
-        }
+        this.state.unit.unitAmenities ??= [];
 
         // Check if amenity already exists
         const exists = some(this.state.unit.unitAmenities,

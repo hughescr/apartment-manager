@@ -1,4 +1,4 @@
-/// <reference path="../.sst/platform/config.d.ts" />
+import type {} from '../.sst/platform/config';
 
 /**
  * Parameter Store configuration for secure credential storage

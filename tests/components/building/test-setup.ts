@@ -48,10 +48,10 @@ export const createMockResponse = (options: {
     return {
         ok:          options.ok,
         status:      options.status,
-        statusText:  options.statusText || '',
+        statusText:  options.statusText ?? '',
         headers:     new Headers(),
-        json:        options.json || (() => Promise.resolve({})),
-        text:        options.text || (() => Promise.resolve('')),
+        json:        options.json ?? (() => Promise.resolve({})),
+        text:        options.text ?? (() => Promise.resolve('')),
         blob:        () => Promise.resolve(new Blob()),
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
         formData:    () => Promise.resolve(new FormData()),

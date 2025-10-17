@@ -93,7 +93,7 @@ describe('Upload API - Security Edge Cases', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             // Security validation now properly rejects null bytes in filenames
             expect(result.statusCode).toBe(403);
@@ -119,7 +119,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Security validation now properly rejects directory traversal attempts
                 expect(result.statusCode).toBe(403);
@@ -146,7 +146,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Security validation now properly rejects path traversal even with valid extensions
                 expect(result.statusCode).toBe(403);
@@ -173,7 +173,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Security validation now properly rejects directory traversal attempts
                 expect(result.statusCode).toBe(403);
@@ -203,7 +203,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Should succeed - S3 handles long filenames internally
                 expect(result.statusCode).toBe(200);
@@ -232,7 +232,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(result.statusCode).toBe(200);
                 expect(body.uploadUrl).toBe('https://s3.example.com/signed-url');
@@ -259,7 +259,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Invalid file type. Only images are allowed.');
@@ -292,7 +292,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Should succeed - S3 handles these internally
                 expect(result.statusCode).toBe(200);
@@ -316,7 +316,7 @@ describe('Upload API - Security Edge Cases', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as { uploadUrl?: string };
 
             // Should succeed but use provided content-type
             expect(result.statusCode).toBe(200);
@@ -325,7 +325,7 @@ describe('Upload API - Security Edge Cases', () => {
                 expect.objectContaining({
                     input: expect.objectContaining({
                         ContentType: 'image/jpeg'  // Uses provided type
-                    })
+                    }) as Record<string, unknown>
                 }),
                 { expiresIn: 3600 }
             );
@@ -354,7 +354,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Currently accepts any content-type - this is a potential security issue
                 // but the test documents current behavior
@@ -378,7 +378,7 @@ describe('Upload API - Security Edge Cases', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             // Security validation now properly rejects path injection in buildingId
             expect(result.statusCode).toBe(403);
@@ -398,7 +398,7 @@ describe('Upload API - Security Edge Cases', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             // Security validation now properly rejects path injection in unitId
             expect(result.statusCode).toBe(403);
@@ -422,7 +422,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Security validation now properly rejects special characters that could be used for injection
                 expect(result.statusCode).toBe(403);
@@ -446,7 +446,7 @@ describe('Upload API - Security Edge Cases', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             // Security validation now properly rejects null bytes in DELETE paths
             expect(result.statusCode).toBe(403);
@@ -472,7 +472,7 @@ describe('Upload API - Security Edge Cases', () => {
 
             // Should succeed - Content-Type header not required
             expect(result.statusCode).toBe(200);
-            expect(JSON.parse(result.body!).uploadUrl).toBeDefined();
+            expect((JSON.parse(result.body!) as { uploadUrl?: unknown }).uploadUrl).toBeDefined();
         });
 
         it('should handle extremely large request bodies', async () => {
@@ -490,7 +490,7 @@ describe('Upload API - Security Edge Cases', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             // Should succeed - Lambda will reject if too large
             expect(result.statusCode).toBe(200);
@@ -517,7 +517,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 // Security validation now properly rejects special characters that could be used for injection
                 expect(result.statusCode).toBe(403);
@@ -539,7 +539,7 @@ describe('Upload API - Security Edge Cases', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(result.statusCode).toBe(400);
                 expect(body.error).toBe('Missing required fields');
@@ -557,7 +557,7 @@ describe('Upload API - Security Edge Cases', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(400);
             expect(body.error).toBe('Invalid file type. Only images are allowed.');

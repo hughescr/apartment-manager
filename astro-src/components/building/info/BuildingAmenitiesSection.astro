@@ -8,6 +8,9 @@ export interface Props {
 }
 
 const { building: _building } = Astro.props;
+
+// Mark intentionally unused prop (part of component interface but not needed in template)
+void _building;
 ---
 
 <!-- Building Amenities -->

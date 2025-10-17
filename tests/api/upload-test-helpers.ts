@@ -123,7 +123,11 @@ export const expectSuccessfulUploadResponse = (
     expectedKey: string,
     expectedPublicUrl: string
 ) => {
-    const body = JSON.parse(result.body!);
+    const body = JSON.parse(result.body!) as {
+        uploadUrl: string
+        key:       string
+        publicUrl: string
+    };
 
     expect(result.statusCode).toBe(200);
     expect(body.uploadUrl).toBe(TEST_DATA.SIGNED_URL);
@@ -139,7 +143,7 @@ export const expectErrorResponse = (
     expectedStatus: number,
     expectedError: string
 ) => {
-    const body = JSON.parse(result.body!);
+    const body = JSON.parse(result.body!) as { error: string };
 
     expect(result.statusCode).toBe(expectedStatus);
     expect(body.error).toBe(expectedError);

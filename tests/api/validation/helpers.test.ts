@@ -74,10 +74,8 @@ describe('Validation Helper Functions', () => {
             expect(result.errors[0].field).toBe('buildingID');
 
             // Should contain building ID validation error
-            const errorMessages = map(result.errors, 'message');
-            expect(errorMessages).toEqual(expect.arrayContaining([
-                expect.stringContaining('must be a valid building ID format')
-            ]));
+            const errorMessages: string[] = map(result.errors, 'message');
+            expect(errorMessages.some(msg => msg.includes('must be a valid building ID format'))).toBe(true);
 
             // All errors should have draft context
             forEach(result.errors, (error) => {

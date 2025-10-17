@@ -187,9 +187,9 @@ describe('InheritanceResolver - Performance Tests', () => {
 
             // Should have deduplicated properly
             const uniqueNames = flow([
-                merged => map(merged, 'name'),
+                (mergedEntries: typeof merged) => map(mergedEntries as { name: string }[], 'name'),
                 uniq
-            ])(merged);
+            ])(merged) as string[];
             expect(merged).toHaveLength(uniqueNames.length);
             expect(merged.length).toBeGreaterThan(300); // Should have all unique amenities
             expect(endTime - startTime).toBeLessThan(100); // Should complete in < 100ms
@@ -235,8 +235,8 @@ describe('InheritanceResolver - Performance Tests', () => {
                 ...Object.fromEntries(
                     flow([
                         (entries: [string, unknown][]) => filter(entries, (_, index) => index % 10 === 0),
-                        (entries: [string, unknown][]) => map(entries, ([key, value]) => [key, `override_${value}`])
-                    ])(Object.entries(massiveDefaults))
+                        (entries: [string, unknown][]) => map(entries, ([key, value]) => [key, `override_${String(value)}`])
+                    ])(Object.entries(massiveDefaults)) as [string, string][]
                 )
             };
 

@@ -260,9 +260,9 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         });
 
         document = dom.window.document;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM simulation
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Required for DOM simulation
         (global as any).document = document;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM simulation
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Required for DOM simulation
         (global as any).window = dom.window;
 
         // Setup mock data
@@ -319,11 +319,11 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
         };
 
         // Make mock data available globally for the script
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM simulation
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Required for DOM simulation
         (global as any).mockInheritanceManager = mockInheritanceManager;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM script access
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Required for DOM script access
         (global as any).mockUnitTypes = mockUnitTypes;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required for DOM script access
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Required for DOM script access
         (global as any).mockUnit = mockUnit;
     });
 
@@ -358,7 +358,7 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             expect(inheritedValue).toBe(1);
 
             // Placeholder should show "Inherited: 1"
-            const expectedPlaceholder = `Inherited: ${inheritedValue}`;
+            const expectedPlaceholder = `Inherited: ${String(inheritedValue)}`;
             expect(expectedPlaceholder).toBe('Inherited: 1');
         });
 
@@ -366,12 +366,12 @@ describe('EditUnitDialog - Inheritance Functionality', () => {
             const inheritedValue = mockInheritanceManager.getInheritedValue(mockUnitTypes[0], 'rent');
             expect(inheritedValue).toBe('1500 - 1800');
 
-            const expectedPlaceholder = `Inherited: ${inheritedValue}`;
+            const expectedPlaceholder = `Inherited: ${String(inheritedValue)}`;
             expect(expectedPlaceholder).toBe('Inherited: 1500 - 1800');
         });
 
         it('should show inherited range for sqft field', () => {
-            const inheritedValue = mockInheritanceManager.getInheritedValue(mockUnitTypes[0], 'sqft');
+            const inheritedValue = mockInheritanceManager.getInheritedValue(mockUnitTypes[0], 'sqft') as string;
             expect(inheritedValue).toBe('750 - 850');
 
             const expectedPlaceholder = `Inherited: ${inheritedValue}`;

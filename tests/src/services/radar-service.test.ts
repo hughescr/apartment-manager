@@ -325,6 +325,7 @@ describe('RadarCache', () => {
 
             // Newest entries should still exist
             expect(cache.getIP(`192.168.1.${maxSize + excessEntries - 1}`)).toEqual(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Using expect.objectContaining for partial match
                 expect.objectContaining({ source: 'ip' })
             );
         });
@@ -383,8 +384,9 @@ describe('RadarClient', () => {
     });
 
     afterEach(() => {
-        if(getApiKeySpy) {
-            getApiKeySpy.mockRestore();
+        interface SpyType { mockRestore?: () => void }
+        if(getApiKeySpy && 'mockRestore' in (getApiKeySpy as SpyType) && typeof (getApiKeySpy as SpyType).mockRestore === 'function') {
+            (getApiKeySpy as SpyType).mockRestore?.();
         }
     });
 
@@ -397,6 +399,7 @@ describe('RadarClient', () => {
             expect(mockFetch).toHaveBeenCalledWith(
                 expect.stringContaining('/search/autocomplete'),
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Using expect.objectContaining for mock assertion
                     headers: expect.objectContaining({
                         Authorization: 'prj_test_sk_test_key_for_testing'
                     })
@@ -617,14 +620,12 @@ describe('RadarClient', () => {
         it('should return cache statistics', () => {
             const stats = client.getCacheStats();
 
-            expect(stats).toEqual(
-                expect.objectContaining({
-                    autocompleteSize:    0,
-                    ipSize:              0,
-                    maxAutocompleteSize: 500,
-                    maxIPSize:           1000
-                })
-            );
+            expect(stats).toMatchObject({
+                autocompleteSize:    0,
+                ipSize:              0,
+                maxAutocompleteSize: 500,
+                maxIPSize:           1000
+            });
         });
     });
 });
@@ -641,8 +642,10 @@ describe('Integration Tests', () => {
     });
 
     afterEach(() => {
-        if(getApiKeySpy) {
-            getApiKeySpy.mockRestore();
+        interface SpyType { mockRestore?: () => void }
+
+        if(getApiKeySpy && 'mockRestore' in (getApiKeySpy as SpyType) && typeof (getApiKeySpy as SpyType).mockRestore === 'function') {
+            (getApiKeySpy as SpyType).mockRestore?.();
         }
         // Ensure cache is cleared after each test
         radarService.clearCache();
@@ -660,7 +663,7 @@ describe('Integration Tests', () => {
 
             expect(results).toHaveLength(2);
             expect(results[0]).toMatchObject({
-                displayText: expect.stringContaining('100 Test Street'),
+                displayText: expect.stringContaining('100 Test Street') as string,
                 source:      'radar'
             });
         });

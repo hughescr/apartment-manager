@@ -49,12 +49,12 @@ describe('Credentials Data Layer', () => {
             expect(result).toBe(true);
             expect(ssmMock).toHaveBeenCalledTimes(1);
 
-            const call = ssmMock.mock.calls[0][0];
+            const call = ssmMock.mock.calls[0][0] as { constructor: { name: string }, input: { Name: string, Type: string, Overwrite: boolean, Value: string } };
             expect(call.constructor.name).toBe('PutParameterCommand');
             expect(call.input.Name).toBe('/apartment-manager/test/credentials/apartments-com');
             expect(call.input.Type).toBe('SecureString');
             expect(call.input.Overwrite).toBe(true);
-            expect(JSON.parse(call.input.Value)).toEqual(credentials);
+            expect(JSON.parse(call.input.Value) as typeof credentials).toEqual(credentials);
         });
 
         test('should handle storage errors', async () => {
@@ -86,7 +86,7 @@ describe('Credentials Data Layer', () => {
             expect(result).toEqual(storedCredentials);
             expect(ssmMock).toHaveBeenCalledTimes(1);
 
-            const call = ssmMock.mock.calls[0][0];
+            const call = ssmMock.mock.calls[0][0] as { constructor: { name: string }, input: { Name: string, WithDecryption: boolean } };
             expect(call.constructor.name).toBe('GetParameterCommand');
             expect(call.input.Name).toBe('/apartment-manager/test/credentials/zillow');
             expect(call.input.WithDecryption).toBe(true);
@@ -118,7 +118,7 @@ describe('Credentials Data Layer', () => {
             expect(result).toBe(true);
             expect(ssmMock).toHaveBeenCalledTimes(1);
 
-            const call = ssmMock.mock.calls[0][0];
+            const call = ssmMock.mock.calls[0][0] as { constructor: { name: string }, input: { Name: string } };
             expect(call.constructor.name).toBe('DeleteParameterCommand');
             expect(call.input.Name).toBe('/apartment-manager/test/credentials/apartments-com');
         });
@@ -158,7 +158,7 @@ describe('Credentials Data Layer', () => {
             expect(result).toEqual(['apartments-com', 'zillow', 'rentals-com']);
             expect(ssmMock).toHaveBeenCalledTimes(1);
 
-            const call = ssmMock.mock.calls[0][0];
+            const call = ssmMock.mock.calls[0][0] as { constructor: { name: string }, input: { ParameterFilters: { Key: string, Option: string, Values: string[] }[] } };
             expect(call.constructor.name).toBe('DescribeParametersCommand');
             expect(call.input.ParameterFilters[0].Key).toBe('Name');
             expect(call.input.ParameterFilters[0].Option).toBe('BeginsWith');
@@ -253,8 +253,8 @@ describe('Credentials Data Layer', () => {
             const result = await storeCredential('site1', credentials);
 
             expect(result).toBe(true);
-            const call = ssmMock.mock.calls[0][0];
-            expect(JSON.parse(call.input.Value)).toEqual(credentials);
+            const call = ssmMock.mock.calls[0][0] as { input: { Value: string } };
+            expect(JSON.parse(call.input.Value) as typeof credentials).toEqual(credentials);
         });
 
         test('should handle API key credentials', async () => {
@@ -266,8 +266,8 @@ describe('Credentials Data Layer', () => {
             const result = await storeCredential('site2', credentials);
 
             expect(result).toBe(true);
-            const call = ssmMock.mock.calls[0][0];
-            expect(JSON.parse(call.input.Value)).toEqual(credentials);
+            const call = ssmMock.mock.calls[0][0] as { input: { Value: string } };
+            expect(JSON.parse(call.input.Value) as typeof credentials).toEqual(credentials);
         });
 
         test('should handle feed URL credentials', async () => {
@@ -278,8 +278,8 @@ describe('Credentials Data Layer', () => {
             const result = await storeCredential('site3', credentials);
 
             expect(result).toBe(true);
-            const call = ssmMock.mock.calls[0][0];
-            expect(JSON.parse(call.input.Value)).toEqual(credentials);
+            const call = ssmMock.mock.calls[0][0] as { input: { Value: string } };
+            expect(JSON.parse(call.input.Value) as typeof credentials).toEqual(credentials);
         });
 
         test('should handle metadata', async () => {
@@ -295,8 +295,9 @@ describe('Credentials Data Layer', () => {
             const result = await storeCredential('site4', credentials);
 
             expect(result).toBe(true);
-            const call = ssmMock.mock.calls[0][0];
-            expect(JSON.parse(call.input.Value)).toEqual(credentials);
+            const call = ssmMock.mock.calls[0][0] as { input: { Value: string } };
+            const parsedValue = JSON.parse(call.input.Value) as typeof credentials;
+            expect(parsedValue).toEqual(credentials);
         });
     });
 });

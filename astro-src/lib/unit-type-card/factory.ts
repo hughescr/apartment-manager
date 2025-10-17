@@ -47,27 +47,27 @@ interface DepositObject {
  */
 export function createUnitTypeCardFactory(this: AlpineContext) {
     // Extract config from data attributes on the component element
-    const element = this.$root || this.$el;
+    const element = this.$root ?? this.$el;
 
     // Safely parse JSON with fallbacks for malformed data
     let unitType = {} as Record<string, unknown>;
     try {
-        unitType = JSON.parse(element?.dataset?.unitType || '{}');
+        unitType = JSON.parse(element?.dataset?.unitType ?? '{}') as Record<string, unknown>;
     } catch{
         unitType = {};
     }
 
     let buildingAmenities = [] as unknown[];
     try {
-        buildingAmenities = JSON.parse(element?.dataset?.buildingAmenities || '[]');
+        buildingAmenities = JSON.parse(element?.dataset?.buildingAmenities ?? '[]') as unknown[];
     } catch{
         buildingAmenities = [];
     }
-    const apiURL = element?.dataset?.apiUrl || '';
+    const apiURL = element?.dataset?.apiUrl ?? '';
 
     return {
         unitType:          unitType,
-        originalUnitType:  JSON.parse(JSON.stringify(unitType)), // Deep copy for original state
+        originalUnitType:  JSON.parse(JSON.stringify(unitType)) as Record<string, unknown>, // Deep copy for original state
         apiURL:            apiURL,
         saving:            false,
         expandedAmenities: false,
@@ -101,14 +101,14 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
         },
 
         async saveUnitType(myThis?: typeof this) {
-            const context = myThis || this;
+            const context = myThis ?? this;
             if(!context.isDirty()) {
                 return;
             }
 
             this.saving = true;
             try {
-                const response = await fetch(context.apiURL + 'buildings/' + context.unitType.buildingID + '/unit-types/' + context.unitType.modelID, {
+                const response = await fetch(context.apiURL + 'buildings/' + String(context.unitType.buildingID) + '/unit-types/' + String(context.unitType.modelID), {
                     method:  'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body:    JSON.stringify(context.unitType),
@@ -171,9 +171,7 @@ export function createUnitTypeCardFactory(this: AlpineContext) {
                 };
             }
             // Initialize empty deposit object if not present
-            if(!this.unitType.deposit) {
-                this.unitType.deposit = null;
-            }
+            this.unitType.deposit ??= null;
         },
 
         getDepositAmount() {

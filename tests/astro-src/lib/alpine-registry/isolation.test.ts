@@ -61,7 +61,10 @@ describe('Alpine.js Component Isolation and Registration', () => {
             registerAlpineComponents(mockAlpine);
 
             const calls = mockAlpineData.mock.calls;
-            const componentNames = calls.map(([name]) => name);
+            const componentNames = calls.map((call) => {
+                const [name] = call as [string, unknown];
+                return name;
+            });
 
             // Verify specific components are registered in the expected order
             expect(componentNames).toContain('buildingStateData');
@@ -145,8 +148,8 @@ describe('Alpine.js Component Isolation and Registration', () => {
             const instance2 = factory2();
 
             // Should access different property paths
-            expect(instance1.getNestedProperty('building1.lat')).toBe(37.7749);
-            expect(instance2.getNestedProperty('building2.lat')).toBe(40.7589);
+            expect(instance1.getNestedProperty('building1.lat') as number).toBe(37.7749);
+            expect(instance2.getNestedProperty('building2.lat') as number).toBe(40.7589);
 
             expect(instance1.getNestedProperty('building2.lat')).toBeUndefined();
             expect(instance2.getNestedProperty('building1.lat')).toBeUndefined();
@@ -296,7 +299,7 @@ describe('Alpine.js Component Isolation and Registration', () => {
                 if(name === 'unitCardData') {
                     throw new Error('Registration failed');
                 }
-                return originalData(name, factory);
+                return originalData(name, factory) as unknown;
             });
 
             mockAlpine.data = faultyData;
@@ -325,7 +328,8 @@ describe('Alpine.js Component Isolation and Registration', () => {
 
             const calls = mockAlpineData.mock.calls;
 
-            calls.forEach(([componentName, factory]) => {
+            calls.forEach((call) => {
+                const [componentName, factory] = call as [string, () => unknown];
                 expect(typeof factory).toBe('function');
 
                 // Factory functions should be callable
@@ -353,8 +357,14 @@ describe('Alpine.js Component Isolation and Registration', () => {
             expect(firstCalls).toHaveLength(secondCalls.length);
 
             // Component names should be consistent
-            const firstNames = firstCalls.map(([name]) => name);
-            const secondNames = secondCalls.map(([name]) => name);
+            const firstNames = firstCalls.map((call) => {
+                const [name] = call as [string, unknown];
+                return name;
+            });
+            const secondNames = secondCalls.map((call) => {
+                const [name] = call as [string, unknown];
+                return name;
+            });
             expect(firstNames).toEqual(secondNames);
         });
 

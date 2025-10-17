@@ -94,7 +94,7 @@ describe('Unit Types API - Update and Delete', () => {
             const result = await update(event);
 
             expect(result.statusCode).toBe(200);
-            const updatedData = JSON.parse(result.body!);
+            const updatedData = JSON.parse(result.body!) as Record<string, unknown>;
             // Verify the IDs weren't changed
             expect(updatedData.modelID).toBe('model-2br');
             expect(updatedData.buildingID).toBe('o6L6W8KUNhj1sPZCRx4tkw');
@@ -131,7 +131,7 @@ describe('Unit Types API - Update and Delete', () => {
             const result = await update(event);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
             expect(response.error).toBe('Validation failed');
             expect(response.errors).toHaveProperty('minRent');
         });
@@ -155,7 +155,7 @@ describe('Unit Types API - Update and Delete', () => {
             const result = await update(event);
 
             expect(result.statusCode).toBe(400);
-            const errors = JSON.parse(result.body!).errors;
+            const errors = (JSON.parse(result.body!) as Record<string, unknown>).errors as Record<string, unknown>;
             expect(errors.modelName).toBe('Model name cannot be empty');
             expect(errors.beds).toBe('Number of beds must be between 0 and 10');
             expect(errors.maxOccupants).toBe('Number must be greater than or equal to 1');

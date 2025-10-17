@@ -4,7 +4,7 @@ import type { InheritableField } from '../types/alpine-state';
 import { FieldInheritanceManager } from './fieldInheritance';
 import { UnitFormatters } from './unitFormatters';
 import { UnitEventManager } from './unitEvents';
-import { ValidationService, DepositService, AmenityService, ApiService } from './services';
+import { ValidationService, DepositService, AmenityService, ApiService } from './services/index';
 import { find, forOwn } from 'lodash';
 
 /**
@@ -123,7 +123,7 @@ function unitCardStateObject(): UnitCardState {
             // Parse data from HTML dataset
             this.parseUnitData();
             this.parseUnitTypesData();
-            this.apiURL = this.$el?.dataset?.apiUrl || '';
+            this.apiURL = this.$el?.dataset?.apiUrl ?? '';
 
             // Initialize focused services (pass state reference)
             this.validationService = new ValidationService(this);
@@ -141,7 +141,7 @@ function unitCardStateObject(): UnitCardState {
             this.initializeSelectedUnitType();
 
             // Load building amenities for inheritance
-            this.loadBuildingAmenities();
+            void this.loadBuildingAmenities();
 
             // Setup watchers
             this.setupWatchers();
@@ -175,29 +175,15 @@ function unitCardStateObject(): UnitCardState {
             }
 
             // Initialize missing properties
-            if(!this.unit.unitAmenities) {
-                this.unit.unitAmenities = [];
-            }
-            if(!this.unit.photos) {
-                this.unit.photos = [];
-            }
-            if(!this.unit.feedInclusion) {
-                this.unit.feedInclusion = {};
-            }
-            if(!this.unit.manualReferences) {
-                this.unit.manualReferences = {};
-            }
+            this.unit.unitAmenities ??= [];
+            this.unit.photos ??= [];
+            this.unit.feedInclusion ??= {};
+            this.unit.manualReferences ??= {};
 
             // Initialize vacancy status fields
-            if(!this.unit.vacancyClass) {
-                this.unit.vacancyClass = undefined;
-            }
-            if(!this.unit.vacateDate) {
-                this.unit.vacateDate = '';
-            }
-            if(!this.unit.madeReadyDate) {
-                this.unit.madeReadyDate = '';
-            }
+            this.unit.vacancyClass ??= undefined;
+            this.unit.vacateDate ??= '';
+            this.unit.madeReadyDate ??= '';
 
             // Initialize deposit structure
             if(this.depositService) {
@@ -207,7 +193,7 @@ function unitCardStateObject(): UnitCardState {
 
         initializeSelectedUnitType() {
             if(this.unit?.modelID && this.unitTypes) {
-                this.selectedUnitType = find(this.unitTypes, { modelID: this.unit.modelID }) || null;
+                this.selectedUnitType = find(this.unitTypes, { modelID: this.unit.modelID }) ?? null;
             }
         },
 
@@ -221,7 +207,7 @@ function unitCardStateObject(): UnitCardState {
             // Watch for unit changes to trigger auto-save
             this.$watch('unit', () => {
                 if(this.isDirty()) {
-                    this.saveUnit();
+                    void this.saveUnit();
                 }
             });
 
@@ -294,11 +280,11 @@ function unitCardStateObject(): UnitCardState {
             this.unit.modelID = this.selectedUnitType ? this.selectedUnitType.modelID : undefined;
 
             if(this.events) {
-                this.events.modelChanged(this.unit, this.unit.modelID || null);
+                this.events.modelChanged(this.unit, this.unit.modelID ?? null);
             }
 
             // Auto-save the change
-            this.saveUnit();
+            void this.saveUnit();
         },
 
         /**
@@ -339,8 +325,13 @@ function unitCardStateObject(): UnitCardState {
             const inheritedValue = this.getInheritedValue(fieldName);
             const fieldDisplayName = this.formatters.getFieldDisplayName(fieldName);
 
+            // Format the inherited value for display
+            const displayValue = typeof inheritedValue === 'number' || typeof inheritedValue === 'string' || typeof inheritedValue === 'boolean'
+                ? String(inheritedValue)
+                : JSON.stringify(inheritedValue);
+
             if(inheritedValue !== null
-              && confirm(`Reset ${fieldDisplayName} to inherited value (${inheritedValue})? This will clear the unit-specific value.`)) {
+              && confirm(`Reset ${fieldDisplayName} to inherited value (${displayValue})? This will clear the unit-specific value.`)) {
                 this.fieldInheritance.resetFieldToInherited(this.unit, fieldName as InheritableField);
 
                 if(this.events) {

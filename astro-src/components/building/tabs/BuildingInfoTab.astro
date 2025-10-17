@@ -17,6 +17,9 @@ const {
     errors,
     onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)"
 } = Astro.props;
+
+// Mark as intentionally unused (Alpine.js event handler)
+void _onBuildingUpdate;
 ---
 
 <div class="building-info-tab space-y-6">

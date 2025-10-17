@@ -14,7 +14,7 @@ function createAPIGatewayEvent(site?: string): APIGatewayProxyEventV2 {
     return {
         version:         '2.0',
         routeKey:        'GET /feed/{site}/live',
-        rawPath:         `/feed/${site || ''}/live`,
+        rawPath:         `/feed/${site ?? ''}/live`,
         rawQueryString:  '',
         headers:         {},
         pathParameters:  site ? { site } : {},
@@ -26,7 +26,7 @@ function createAPIGatewayEvent(site?: string): APIGatewayProxyEventV2 {
             domainPrefix: 'test',
             http:         {
                 method:    'GET',
-                path:      `/feed/${site || ''}/live`,
+                path:      `/feed/${site ?? ''}/live`,
                 protocol:  'HTTP/1.1',
                 sourceIp:  '127.0.0.1',
                 userAgent: 'test'

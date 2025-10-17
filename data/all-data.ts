@@ -1,4 +1,4 @@
-import { BuildingData, UnitData, UnitTypeData, getDefaultBuildingData } from '../src/types';
+import { BuildingData, UnitData, UnitTypeData, getDefaultBuildingData } from '../src/types/index.js';
 import { ApartmentTable, getApartmentTable } from './model';
 import { ScanCommand } from 'dynamodb-toolbox/table/actions/scan';
 import { logger } from '@hughescr/logger';
@@ -88,7 +88,7 @@ function convertRawItemToBuildingData(rawItem: RawDynamoDBItem): BuildingData {
 
     // Ensure nested fields are preserved
     if(cleanItem.contactInfo) {
-        result.contactInfo = merge({}, defaults.contactInfo || {}, cleanItem.contactInfo);
+        result.contactInfo = merge({}, defaults.contactInfo ?? {}, cleanItem.contactInfo);
     }
 
     return result;

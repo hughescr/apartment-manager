@@ -238,9 +238,9 @@ describe('Date and Time Edge Cases', () => {
                     ['' as any]:            { open: '11:00', close: '19:00' }
                 }
             };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing invalid day name key for test verification
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Accessing invalid day name key for test verification
             expect((tours.tourHours as any)?.INVALID_DAY).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing empty string key for test verification
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Accessing empty string key for test verification
             expect((tours.tourHours as any)?.['']).toBeDefined();
         });
 
@@ -255,12 +255,13 @@ describe('Date and Time Edge Cases', () => {
                     [7 as any]:   { open: '11:00', close: '19:00' } // Out of range
                 }
             };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing numeric zero key for test verification
-            expect((contact.officeHours as any)?.[0]).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing string '1' key for test verification
-            expect((contact.officeHours as any)?.['1']).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing out-of-range number key for test verification
-            expect((contact.officeHours as any)?.[7]).toBeDefined();
+            type AnyRecord = Record<string | number, unknown>;
+
+            expect((contact.officeHours as AnyRecord)?.[0]).toBeDefined();
+
+            expect((contact.officeHours as AnyRecord)?.['1']).toBeDefined();
+
+            expect((contact.officeHours as AnyRecord)?.[7]).toBeDefined();
         });
     });
 

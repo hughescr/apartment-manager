@@ -39,7 +39,7 @@ export function validateNumericRange(value: unknown, min?: number, max?: number)
  */
 export function validateField(value: unknown, rules: ValidationRule[]): string | null {
     for(const rule of rules) {
-        if(isRequiredAndMissing(value, rule.required || false)) {
+        if(isRequiredAndMissing(value, rule.required ?? false)) {
             return rule.message;
         }
 
@@ -66,8 +66,11 @@ export function safeNumberConversion(value: unknown): number | null {
     let numValue: number;
     if(isNumber(value)) {
         numValue = value;
+    } else if(isString(value)) {
+        numValue = Number(value);
     } else {
-        numValue = Number(String(value));
+        // For non-string, non-number values, return null
+        return null;
     }
 
     return isNaN(numValue) ? null : numValue;

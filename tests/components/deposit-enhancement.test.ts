@@ -178,7 +178,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit || isNumber(deposit)) {
                     return null;
                 }
-                return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage || null;
+                return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage ?? null;
             };
 
             expect(getPartialRefundPercentage(1000)).toBe(null);
@@ -189,7 +189,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit || isNumber(deposit)) {
                     return null;
                 }
-                return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage || null;
+                return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage ?? null;
             };
 
             const partialDeposit = { amount: 1000, refundable: false, partialRefundPercentage: 70 };
@@ -201,7 +201,7 @@ describe('Enhanced Deposit Functionality', () => {
                 if(!deposit || isNumber(deposit)) {
                     return null;
                 }
-                return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage || null;
+                return (deposit as { partialRefundPercentage?: number }).partialRefundPercentage ?? null;
             };
 
             const depositWithoutPercentage = { amount: 1000, refundable: false };

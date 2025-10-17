@@ -15,6 +15,9 @@ export interface Props {
 
 const { apiUrl, errors: _errors = {} } = Astro.props;
 
+// Mark intentionally unused prop (part of component interface but not needed in template)
+void _errors;
+
 // Property type options
 const propertyTypeOptions = _.map(Object.entries(PropertyType), ([key, value]) => ({
     value: value as string,

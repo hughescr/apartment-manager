@@ -31,7 +31,9 @@ describe('TabNavigator Component Logic', () => {
 
             // TAB_CONFIGS is an array, extract the actual tab keys
             const actualTabKeys = map(TAB_CONFIGS, 'key');
-            expect(actualTabKeys).toEqual(expect.arrayContaining(expectedTabs));
+            for(const expectedTab of expectedTabs) {
+                expect(actualTabKeys).toContain(expectedTab);
+            }
         });
 
         it('should have proper tab configuration structure', () => {
@@ -278,7 +280,7 @@ describe('TabNavigator Component Logic', () => {
         it('should handle missing tab configurations', () => {
             // Test graceful degradation
             const getTabSafely = (tabKey: string) => {
-                return find(TAB_CONFIGS, { key: tabKey }) || { key: tabKey, label: 'Unknown Tab' };
+                return find(TAB_CONFIGS, { key: tabKey }) ?? { key: tabKey, label: 'Unknown Tab' };
             };
 
             const validTab = getTabSafely('building-info');

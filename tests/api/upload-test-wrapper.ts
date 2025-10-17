@@ -8,12 +8,12 @@ import { jest } from 'bun:test';
 import { validateId, validatePath } from '../../api/security-validation';
 
 // Use mocked versions for testing
-const mockGetSignedUrl = jest.fn().mockResolvedValue('https://presigned-url.example.com');
-const mockRandomUUID = jest.fn().mockReturnValue('test-uuid');
+const mockGetSignedUrl = jest.fn<() => Promise<string>>().mockResolvedValue('https://presigned-url.example.com');
+const mockRandomUUID = jest.fn<() => string>().mockReturnValue('test-uuid');
 
 // Mock these functions instead of importing them
-const getSignedUrl = mockGetSignedUrl;
-const randomUUID = mockRandomUUID;
+const getSignedUrl = mockGetSignedUrl as unknown as (...args: unknown[]) => Promise<string>;
+const randomUUID = mockRandomUUID as () => string;
 
 // Test-only Resource mock
 const TestResource = {
@@ -43,9 +43,9 @@ const s3Client = {
 // Helper to generate a unique key for S3
 const generateS3Key = (buildingId: string, unitId: string, filename: string): string => {
     // Remove any path information from filename
-    const basename = split(filename, /[/\\]/).pop() || filename;
+    const basename = split(filename, /[/\\]/).pop() ?? filename;
     const parts = split(basename, '.');
-    const extension = toLower(parts.pop() || 'jpg');
+    const extension = toLower(parts.pop() ?? 'jpg') as string;
     const uuid = randomUUID();
     return `buildings/${buildingId}/units/${unitId}/${uuid}.${extension}`;
 };
@@ -54,13 +54,18 @@ const generateS3Key = (buildingId: string, unitId: string, filename: string): st
 const isValidImageType = (filename: string): boolean => {
     const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
     const parts = split(filename, '.');
-    const extension = toLower(parts.pop() || '');
+    const extension = toLower(parts.pop() ?? '');
     return extension ? validExtensions.includes(extension) : false;
 };
 
 // Handle POST upload request
 const handleUploadRequest = async (body: string | null) => {
-    const parsedBody = JSON.parse(body || '{}');
+    const parsedBody = JSON.parse(body ?? '{}') as {
+        filename?:    string
+        buildingId?:  string
+        unitId?:      string
+        contentType?: string
+    };
     const { filename, buildingId, unitId, contentType } = parsedBody;
 
     if(!filename || !buildingId || !unitId) {
@@ -102,7 +107,7 @@ const handleUploadRequest = async (body: string | null) => {
     const command = new PutObjectCommand({
         Bucket:      TestResource.PhotosBucket.name,
         Key:         key,
-        ContentType: contentType || 'image/jpeg',
+        ContentType: contentType ?? 'image/jpeg',
         // Add metadata
         Metadata:    {
             buildingId,
@@ -112,7 +117,7 @@ const handleUploadRequest = async (body: string | null) => {
         }
     });
 
-    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // 1 hour expiry
+    const uploadUrl = (await getSignedUrl(s3Client, command, { expiresIn: 3600 })); // 1 hour expiry
 
     // Generate the public URL (assuming bucket is public or using CloudFront)
     const publicUrl = `https://${TestResource.PhotosBucket.name}.s3.amazonaws.com/${key}`;
@@ -120,7 +125,7 @@ const handleUploadRequest = async (body: string | null) => {
     return {
         statusCode: 200,
         body:       JSON.stringify({
-            uploadUrl,
+            uploadUrl: uploadUrl,
             key,
             publicUrl
         })

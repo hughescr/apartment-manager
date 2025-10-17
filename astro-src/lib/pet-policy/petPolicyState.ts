@@ -57,7 +57,7 @@ function petPolicyStateObject(modelName: string): any {
                 this[modelName] = ensurePetPolicyStructure(null);
             } else {
                 // Ensure existing data has proper structure
-                this[modelName] = ensurePetPolicyStructure(this[modelName]);
+                this[modelName] = ensurePetPolicyStructure(this[modelName] as ExtendedPetPolicy);
             }
         },
 
@@ -65,21 +65,19 @@ function petPolicyStateObject(modelName: string): any {
          * Computed property: Are pets allowed?
          */
         get petsAllowed(): boolean {
-            return this[modelName]?.allowed || false;
+            return (this[modelName] as ExtendedPetPolicy | undefined)?.allowed ?? false;
         },
 
         /**
          * Set whether pets are allowed
          */
         set petsAllowed(value: boolean) {
-            if(!this[modelName]) {
-                this[modelName] = ensurePetPolicyStructure(null);
-            }
-            this[modelName].allowed = value;
+            this[modelName] ??= ensurePetPolicyStructure(null);
+            (this[modelName] as ExtendedPetPolicy).allowed = value;
 
             // Clear pet-related fields if pets are not allowed
             if(!value) {
-                clearPetFields(this[modelName]);
+                clearPetFields(this[modelName] as ExtendedPetPolicy);
             }
         },
 
@@ -89,16 +87,16 @@ function petPolicyStateObject(modelName: string): any {
         togglePetType(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, type: PetType) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
-                this[modelName].allowed = true;
+                (this[modelName] as ExtendedPetPolicy).allowed = true;
             }
-            togglePetType(this[modelName], type);
+            togglePetType(this[modelName] as ExtendedPetPolicy, type);
         },
 
         /**
          * Check if a pet type is selected
          */
         isPetTypeSelected(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, type: PetType): boolean {
-            return isPetTypeSelected(this[modelName], type);
+            return isPetTypeSelected(this[modelName] as ExtendedPetPolicy, type);
         },
 
         /**
@@ -107,10 +105,10 @@ function petPolicyStateObject(modelName: string): any {
         addBreedRestriction(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, breed: string) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
-                this[modelName].allowed = true;
+                (this[modelName] as ExtendedPetPolicy).allowed = true;
             }
 
-            if(addBreedRestriction(this[modelName], breed)) {
+            if(addBreedRestriction(this[modelName] as ExtendedPetPolicy, breed)) {
                 this.newBreedRestriction = '';
             }
         },
@@ -120,7 +118,7 @@ function petPolicyStateObject(modelName: string): any {
          */
         removeBreedRestriction(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, index: number) {
             if(this[modelName]) {
-                removeBreedRestriction(this[modelName], index);
+                removeBreedRestriction(this[modelName] as ExtendedPetPolicy, index);
             }
         },
 
@@ -130,16 +128,16 @@ function petPolicyStateObject(modelName: string): any {
         toggleCommonBreed(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, breed: string) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
-                this[modelName].allowed = true;
+                (this[modelName] as ExtendedPetPolicy).allowed = true;
             }
-            toggleCommonBreed(this[modelName], breed);
+            toggleCommonBreed(this[modelName] as ExtendedPetPolicy, breed);
         },
 
         /**
          * Check if a breed is restricted
          */
         isBreedRestricted(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, breed: string): boolean {
-            return isBreedRestricted(this[modelName], breed);
+            return isBreedRestricted(this[modelName] as ExtendedPetPolicy, breed);
         },
 
         /**
@@ -149,7 +147,7 @@ function petPolicyStateObject(modelName: string): any {
             if(!this[modelName]) {
                 return { upfront: 0, monthly: 0, annual: 0 };
             }
-            return calculatePetCosts(this[modelName]);
+            return calculatePetCosts(this[modelName] as ExtendedPetPolicy);
         },
 
         /**
@@ -158,22 +156,22 @@ function petPolicyStateObject(modelName: string): any {
         addPetTypePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics) {
             if(!this[modelName]) {
                 this[modelName] = ensurePetPolicyStructure(null);
-                this[modelName].allowed = true;
+                (this[modelName] as ExtendedPetPolicy).allowed = true;
             }
 
-            if(!this[modelName].petTypes) {
-                this[modelName].petTypes = [];
-            }
+            const policy = this[modelName] as ExtendedPetPolicy;
+            policy.petTypes ??= [];
 
-            this[modelName].petTypes.push(createDefaultPetTypePolicy());
+            policy.petTypes.push(createDefaultPetTypePolicy());
         },
 
         /**
          * Remove a pet type policy by index
          */
         removePetTypePolicy(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics, index: number) {
-            if(this[modelName]?.petTypes && index >= 0 && index < this[modelName].petTypes.length) {
-                this[modelName].petTypes.splice(index, 1);
+            const policy = this[modelName] as ExtendedPetPolicy | undefined;
+            if(policy?.petTypes && index >= 0 && index < policy.petTypes.length) {
+                policy.petTypes.splice(index, 1);
             }
         },
 
@@ -186,7 +184,7 @@ function petPolicyStateObject(modelName: string): any {
             breed: string
         ) {
             if(this[modelName]) {
-                addBreedRestrictionToPetType(this[modelName], petTypeIndex, breed);
+                addBreedRestrictionToPetType(this[modelName] as ExtendedPetPolicy, petTypeIndex, breed);
             }
         },
 
@@ -199,7 +197,7 @@ function petPolicyStateObject(modelName: string): any {
             breedIndex: number
         ) {
             if(this[modelName]) {
-                removeBreedRestrictionFromPetType(this[modelName], petTypeIndex, breedIndex);
+                removeBreedRestrictionFromPetType(this[modelName] as ExtendedPetPolicy, petTypeIndex, breedIndex);
             }
         },
 
@@ -207,14 +205,14 @@ function petPolicyStateObject(modelName: string): any {
          * Computed property: Does policy have advanced pet types?
          */
         get hasAdvancedPetTypes(): boolean {
-            return hasAdvancedPetTypes(this[modelName]);
+            return hasAdvancedPetTypes(this[modelName] as ExtendedPetPolicy);
         },
 
         /**
          * Computed property: Summary of advanced pet types
          */
         get advancedPetTypesSummary(): string {
-            return getAdvancedPetTypesSummary(this[modelName]);
+            return getAdvancedPetTypesSummary(this[modelName] as ExtendedPetPolicy);
         },
 
         /**
@@ -231,7 +229,7 @@ function petPolicyStateObject(modelName: string): any {
          * Get current policy data for form submission
          */
         getPolicyData(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics): ExtendedPetPolicy {
-            return this[modelName] || ensurePetPolicyStructure(null);
+            return (this[modelName] as ExtendedPetPolicy | undefined) ?? ensurePetPolicyStructure(null);
         },
 
         /**
@@ -302,19 +300,19 @@ function petPolicyStateObject(modelName: string): any {
          * Check if policy has any fees configured
          */
         get hasFees(): boolean {
-            const policy = this[modelName];
-            return !!(policy?.deposit || policy?.monthlyFee || policy?.oneTimeFee);
+            const policy = this[modelName] as ExtendedPetPolicy | undefined;
+            return !!(policy?.deposit ?? policy?.monthlyFee ?? policy?.oneTimeFee);
         },
 
         /**
          * Check if policy has any restrictions
          */
         get hasRestrictions(): boolean {
-            const policy = this[modelName];
+            const policy = this[modelName] as ExtendedPetPolicy | undefined;
             return !!(
                 policy?.breedRestrictions?.length
-                || policy?.maxCount
-                || policy?.weightLimit
+                ?? policy?.maxCount
+                ?? policy?.weightLimit
             );
         },
 
@@ -322,7 +320,7 @@ function petPolicyStateObject(modelName: string): any {
          * Get a formatted summary of the pet policy
          */
         getPolicySummary(this: ReturnType<typeof petPolicyStateObject> & AlpineMagics): string {
-            const policy = this[modelName];
+            const policy = this[modelName] as ExtendedPetPolicy | undefined;
 
             if(!policy?.allowed) {
                 return 'No pets allowed';
@@ -333,7 +331,7 @@ function petPolicyStateObject(modelName: string): any {
             if(policy.types?.length) {
                 const typeLabels = map(policy.types, (type: PetType) => {
                     const option = find(PET_TYPE_OPTIONS, { value: type });
-                    return option?.label || type;
+                    return option?.label ?? type;
                 });
                 parts.push(`Allowed: ${typeLabels.join(', ')}`);
             }

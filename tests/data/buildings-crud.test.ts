@@ -53,13 +53,13 @@ describe('Building Data Layer - CRUD Operations', () => {
 
             expect(createdBuilding).toEqual({
                 ...getExpectedBuilding(buildingData),
-                ...(createdBuilding.updatedAt ? { updatedAt: expect.any(Date) } : {})
+                ...(createdBuilding.updatedAt ? { updatedAt: expect.any(Date) as Date } : {})
             });
 
             const fetchedBuilding = await getBuilding(buildingData.buildingID);
             expect(fetchedBuilding).toEqual({
                 ...getExpectedBuilding(buildingData),
-                updatedAt: expect.any(Date)
+                updatedAt: expect.any(Date) as Date
             });
         });
 
@@ -77,10 +77,11 @@ describe('Building Data Layer - CRUD Operations', () => {
             // createBuilding returns the building data even if it already exists
             dynamoDbMock.mockResolvedValueOnce(mockPutResponse({ ...testBuilding, unitID: 'BUILDING', updatedAt: '2025-08-14T17:45:41.248Z' }));
             const result = await createBuilding(testBuilding);
-            expect(result).toEqual({
+            const expected = {
                 ...getExpectedBuilding(testBuilding),
-                updatedAt: expect.any(Date)
-            });
+                updatedAt: expect.any(Date) as Date
+            };
+            expect(result).toEqual(expected);
         });
     });
 

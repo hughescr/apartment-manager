@@ -33,7 +33,7 @@ describe('ApartmentsComMapper', () => {
     const _createContext = (unit: UnitData, unitType?: UnitTypeData, building?: BuildingData): UnitMappingContext => ({
         unit,
         unitType,
-        building:      building || basicBuilding,
+        building:      building ?? basicBuilding,
         fieldMappings: mockFieldMappings,
         transformers:  mockTransformers
     });
@@ -250,7 +250,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnit(context);
 
             expect(result.externalId).toBe(basicUnit.unitID);
-            expect(result.unitNumber).toBe(basicUnit.unitNumber || basicUnit.unitID);
+            expect(result.unitNumber).toBe(basicUnit.unitNumber ?? basicUnit.unitID);
             expect(result.modelName).toBe(basicUnitType.modelName);
         });
 
@@ -328,7 +328,7 @@ describe('ApartmentsComMapper', () => {
             const result = mapper.mapUnit(context);
 
             expect(result.modelName).toBeUndefined();
-            expect(result.beds).toBe(basicUnit.beds || 0);
+            expect(result.beds).toBe(basicUnit.beds ?? 0);
         });
 
         it('should default numeric values to 0', () => {

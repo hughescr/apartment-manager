@@ -1,7 +1,5 @@
-import { logger as baseLogger } from '@hughescr/logger';
-import { trim, toLower, map, replace, split, includes, toUpper, join, filter, sortBy } from 'lodash';
-
-const logger = baseLogger;
+import { logger } from '@hughescr/logger';
+import { trim, toLower, map, replace, split, includes, toUpper, join, filter, sortBy, isError } from 'lodash';
 
 /**
  * Address suggestion result from autocomplete
@@ -250,17 +248,21 @@ class Debouncer {
             // Store the resolvers for potential cleanup
             this.pendingPromises.set(key, { resolve: resolve as (value: unknown) => void, reject });
 
-            const timeout = setTimeout(async () => {
-                try {
-                    // Remove from pending promises since we're about to execute
-                    this.pendingPromises.delete(key);
-                    this.timeouts.delete(key);
+            const timeout = setTimeout(() => {
+                (async () => {
+                    try {
+                        // Remove from pending promises since we're about to execute
+                        this.pendingPromises.delete(key);
+                        this.timeouts.delete(key);
 
-                    const result = await fn();
-                    resolve(result);
-                } catch (error) {
-                    reject(error);
-                }
+                        const result = await fn();
+                        resolve(result);
+                    } catch (error) {
+                        reject(isError(error) ? error : new Error(String(error)));
+                    }
+                })().catch((error: unknown) => {
+                    reject(isError(error) ? error : new Error(String(error)));
+                });
             }, this.debounceMs);
 
             this.timeouts.set(key, timeout);
@@ -459,7 +461,7 @@ export class PhotonAutocompleteService {
                         code:    response.status === 429 ? 'RATE_LIMITED' : 'SERVICE_UNAVAILABLE',
                         message: `Photon API error: ${response.status} ${response.statusText}`
                     };
-                    logger.error('Autocomplete API error', error);
+                    logger.error('Autocomplete API error', { code: error.code, message: error.message });
                     return [];
                 }
 
@@ -491,7 +493,11 @@ export class PhotonAutocompleteService {
                 message:       'Failed to get address suggestions',
                 originalError: error as Error
             };
-            logger.error('Autocomplete failed', autocompleteError);
+            logger.error('Autocomplete failed', {
+                code:    autocompleteError.code,
+                message: autocompleteError.message,
+                error:   autocompleteError.originalError?.message
+            });
             return [];
         }
     }

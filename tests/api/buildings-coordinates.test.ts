@@ -54,7 +54,11 @@ describe('Building Coordinates API', () => {
         expect(dynamoDbMock).toHaveBeenCalled();
 
         // Parse the response body to verify the data
-        const responseData = JSON.parse(result.body!);
+        const responseData = JSON.parse(result.body!) as {
+            latitude:            number
+            longitude:           number
+            coordinatesVerified: boolean
+        };
         expect(responseData.latitude).toBe(37.7749);
         expect(responseData.longitude).toBe(-122.4194);
         expect(responseData.coordinatesVerified).toBe(true);
@@ -92,7 +96,15 @@ describe('Building Coordinates API', () => {
         expect(dynamoDbMock).toHaveBeenCalled();
 
         // Verify that the response doesn't include coordinate fields
-        const responseData = JSON.parse(result.body!);
+        const responseData = JSON.parse(result.body!) as {
+            street:               string
+            city:                 string
+            state:                string
+            zip:                  string
+            latitude?:            number
+            longitude?:           number
+            coordinatesVerified?: boolean
+        };
         expect(responseData.street).toBe('456 Oak St');
         expect(responseData.city).toBe('Los Angeles');
         expect(responseData.state).toBe('CA');
@@ -145,7 +157,18 @@ describe('Building Coordinates API', () => {
         expect(dynamoDbMock).toHaveBeenCalled();
 
         // Verify all fields are preserved in the response
-        const responseData = JSON.parse(result.body!);
+        interface ResponseData {
+            description:         string
+            yearBuilt:           number
+            numberStories:       number
+            totalUnits:          number
+            latitude:            number
+            longitude:           number
+            coordinatesVerified: boolean
+            petPolicies:         { allowed: boolean, maxCount: number }
+            parkingOptions:      { type: string, included: boolean, spaces: number }[]
+        }
+        const responseData = JSON.parse(result.body!) as ResponseData;
         expect(responseData.description).toBe('A nice building');
         expect(responseData.yearBuilt).toBe(2020);
         expect(responseData.numberStories).toBe(5);

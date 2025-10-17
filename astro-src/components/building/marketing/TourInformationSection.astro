@@ -8,6 +8,9 @@ export interface Props {
 }
 
 const { building: _building, errors: _errors = {} } = Astro.props;
+// Variables intentionally unused - accessed via Alpine.js global context in template
+void _building;
+void _errors;
 ---
 
 <!-- Tour Information Section -->

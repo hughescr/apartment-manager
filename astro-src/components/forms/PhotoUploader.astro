@@ -167,13 +167,13 @@ const xData = JSON.stringify({
             const { uploadUrl, photoUrl } = await presignedResponse.json();
 
             // Upload to S3
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- XMLHttpRequest is a browser global
+            // XMLHttpRequest is a browser global, accessed via globalThis
             const xhr = new (globalThis as any).XMLHttpRequest() as {
-                upload:           { addEventListener: (event: string, callback: (e: unknown) => void) => void }
-                addEventListener: (event: string, callback: () => void) => void
-                open:             (method: string, url: string) => void
-                setRequestHeader: (name: string, value: string) => void
-                send:             (data: unknown) => void
+                upload:           { addEventListener: (_event: string, _callback: (_e: unknown) => void) => void }
+                addEventListener: (_event: string, _callback: () => void) => void
+                open:             (_method: string, _url: string) => void
+                setRequestHeader: (_name: string, _value: string) => void
+                send:             (_data: unknown) => void
                 status:           number
             };
             xhr.upload.addEventListener('progress', (e: unknown) => {

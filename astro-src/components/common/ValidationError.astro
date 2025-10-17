@@ -11,6 +11,9 @@ const {
     'class': additionalClass = ''
 } = Astro.props;
 
+// Mark as intentionally unused (errors accessed via Alpine.js context)
+void _errors;
+
 // Generate Alpine.js directives based on field name complexity
 const isComplexFieldName = fieldName.includes('[') || fieldName.includes('.') || /\d/.test(fieldName);
 const xShowDirective = isComplexFieldName ? `errors['${fieldName}']` : `errors.${fieldName}`;

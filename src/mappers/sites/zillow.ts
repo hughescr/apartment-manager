@@ -100,22 +100,22 @@ export class ZillowMapper implements SiteMapper {
             externalId: building.buildingID,
             name:       building.buildingID,
             address:    {
-                street: building.street || '',
-                city:   building.city || '',
-                state:  building.state || '',
-                zip:    building.zip || ''
+                street: building.street ?? '',
+                city:   building.city ?? '',
+                state:  building.state ?? '',
+                zip:    building.zip ?? ''
             },
             propertyType: building.propertyType
                 ? propertyTypeTransformer(building.propertyType)
                 : 'Apartment',
             yearBuilt:   building.yearBuilt,
             totalUnits:  building.totalUnits,
-            description: building.propertyDescription || building.description,
+            description: building.propertyDescription ?? building.description,
             photos:      transformPhotoUrls(building.photos, this.siteId),
             leaseTerms:  {
                 minMonths:     building.leaseLength,
                 maxMonths:     building.leaseLength,
-                defaultMonths: building.leaseLength || 12
+                defaultMonths: building.leaseLength ?? 12
             },
             fees: [
                 ...transformFees(oneTime, this.siteId),
@@ -189,23 +189,23 @@ export class ZillowMapper implements SiteMapper {
 
         return {
             externalId:    unit.unitID,
-            unitNumber:    unit.unitNumber || unit.unitID,
+            unitNumber:    unit.unitNumber ?? unit.unitID,
             modelName:     unitType?.modelName, // For internal tracking only
-            beds:          flattened.beds || 0,
-            baths:         flattened.baths || 0,
+            beds:          flattened.beds ?? 0,
+            baths:         flattened.baths ?? 0,
             sqft:          flattened.sqft,
-            rent:          flattened.rent || 0,
+            rent:          flattened.rent ?? 0,
             deposit:       getDepositAmount(flattened.deposit),
             dateAvailable: dateFormatter(flattened.availableDate),
-            description:   fullDescription || `${flattened.beds} bed, ${flattened.baths} bath unit`,
+            description:   fullDescription ?? `${flattened.beds} bed, ${flattened.baths} bath unit`,
             maxOccupants:  flattened.maxOccupants,
             leaseTerms:    {
-                minMonths: flattened.minLeaseTerm || building.leaseLength,
-                maxMonths: flattened.maxLeaseTerm || building.leaseLength
+                minMonths: flattened.minLeaseTerm ?? building.leaseLength,
+                maxMonths: flattened.maxLeaseTerm ?? building.leaseLength
             },
             amenities:   transformAmenities(allAmenities, this.siteId),
             photos:      transformPhotoUrls(allPhotos, this.siteId),
-            rentSpecial: flattened.unitRentSpecial || head(building.rentSpecials)
+            rentSpecial: flattened.unitRentSpecial ?? head(building.rentSpecials)
         };
     }
 
@@ -231,8 +231,8 @@ export class ZillowMapper implements SiteMapper {
      */
     private getAllPhotos(flattened: UnitData, building: BuildingData) {
         return uniq([
-            ...(flattened.photos || []),
-            ...(building.photos || [])
+            ...(flattened.photos ?? []),
+            ...(building.photos ?? [])
         ]);
     }
 
@@ -395,7 +395,7 @@ export class ZillowMapper implements SiteMapper {
         );
 
         // Combine all pet fees for Zillow
-        const totalPetFees = (policy.deposit || 0) + (policy.oneTimeFee || 0);
+        const totalPetFees = (policy.deposit ?? 0) + (policy.oneTimeFee ?? 0);
 
         return {
             allowed:      true,

@@ -13,7 +13,7 @@ import { resetClients } from '../../data/clients';
  * Helper functions for mock implementations
  */
 const createItemResponse = (item: Record<string, unknown>, unitID: string) => {
-    const buildingID = (item as Record<string, unknown> & { buildingID?: string }).buildingID || 'test-building';
+    const buildingID = (item as Record<string, unknown> & { buildingID?: string }).buildingID ?? 'test-building';
     return {
         Attributes: { ...item, buildingID, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() },
         Item:       { ...item, buildingID, unitID, _ct: new Date().toISOString(), _md: new Date().toISOString() }
@@ -21,20 +21,20 @@ const createItemResponse = (item: Record<string, unknown>, unitID: string) => {
 };
 
 const handlePutCommand = (cmd: { input?: Record<string, unknown> }) => {
-    const item = cmd.input?.Item || cmd.input || {};
+    const item = cmd.input?.Item ?? cmd.input ?? {};
     const itemWithUnitId = item as Record<string, unknown> & { unitID?: string, buildingID?: string };
-    const unitID = itemWithUnitId.unitID || 'BUILDING';
-    const buildingID = itemWithUnitId.buildingID || 'test-building';
+    const unitID = itemWithUnitId.unitID ?? 'BUILDING';
+    const buildingID = itemWithUnitId.buildingID ?? 'test-building';
     return Promise.resolve(createItemResponse({ ...item, buildingID } as Record<string, unknown>, unitID));
 };
 
 const handleUpdateCommand = (cmd: { input?: Record<string, unknown> }) => {
-    const updates = cmd.input?.Item || cmd.input || {};
-    const key = cmd.input?.Key || {};
+    const updates = cmd.input?.Item ?? cmd.input ?? {};
+    const key = cmd.input?.Key ?? {};
     const keyWithUnitId = key as Record<string, unknown> & { unitID?: string, buildingID?: string };
     const updatesWithUnitId = updates as Record<string, unknown> & { unitID?: string, buildingID?: string };
-    const unitID = keyWithUnitId.unitID || updatesWithUnitId.unitID || 'BUILDING';
-    const buildingID = keyWithUnitId.buildingID || updatesWithUnitId.buildingID || 'test-building';
+    const unitID = keyWithUnitId.unitID ?? updatesWithUnitId.unitID ?? 'BUILDING';
+    const buildingID = keyWithUnitId.buildingID ?? updatesWithUnitId.buildingID ?? 'test-building';
     return Promise.resolve(createItemResponse({ ...updates, buildingID } as Record<string, unknown>, unitID));
 };
 

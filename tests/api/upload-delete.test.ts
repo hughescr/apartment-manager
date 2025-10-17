@@ -96,7 +96,7 @@ describe('Upload API - Delete Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(200);
             expect(body.success).toBe(true);
@@ -141,7 +141,7 @@ describe('Upload API - Delete Functionality', () => {
                 }
             });
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(400);
             expect(body.error).toBe('Missing key parameter');
@@ -168,7 +168,7 @@ describe('Upload API - Delete Functionality', () => {
                 });
 
                 const result = await callHandler(event);
-                const body = JSON.parse(result.body!);
+                const body = JSON.parse(result.body!) as Record<string, unknown>;
 
                 expect(result.statusCode).toBe(403);
                 expect(body.error).toBe('Forbidden');
@@ -191,7 +191,7 @@ describe('Upload API - Delete Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(500);
             expect(body.error).toBe('Internal server error');
@@ -224,7 +224,7 @@ describe('Upload API - Delete Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(500);
             expect(body.error).toBe('Internal server error');
@@ -257,7 +257,7 @@ describe('Upload API - Delete Functionality', () => {
             });
 
             const result = await callHandler(event);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as Record<string, unknown>;
 
             expect(result.statusCode).toBe(500);
             expect(body.error).toBe('Internal server error');

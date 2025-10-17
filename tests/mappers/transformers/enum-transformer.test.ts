@@ -261,7 +261,9 @@ describe('Enum Transformer', () => {
     describe('Edge Cases', () => {
         it('should handle undefined enum types gracefully', () => {
             // This tests the case where an invalid enumType is passed
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing invalid enum type edge case
             const transformer = createEnumTransformer('invalidType' as any, 'apartments_com');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing invalid enum value edge case
             expect(transformer('any value' as any)).toBe('any value');
         });
 
@@ -270,7 +272,9 @@ describe('Enum Transformer', () => {
                 {
                     internal: PropertyType.APARTMENT,
                     external: {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Testing null mapping edge case
                         apartments_com: null as any,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Testing undefined mapping edge case
                         zillow:         undefined as any
                     }
                 }
@@ -283,6 +287,7 @@ describe('Enum Transformer', () => {
         it('should handle special characters in enum values', () => {
             const customMappings: EnumMapping<string>[] = [
                 {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Testing special character enum value
                     internal: 'SPECIAL_&_CHARS' as any,
                     external: {
                         apartments_com: 'Special & Characters',
@@ -292,6 +297,7 @@ describe('Enum Transformer', () => {
             ];
 
             const transformer = createEnumTransformer('propertyType', 'apartments_com', customMappings);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing special character enum value
             expect(transformer('SPECIAL_&_CHARS' as any)).toBe('Special & Characters');
         });
     });

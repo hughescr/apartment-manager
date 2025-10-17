@@ -136,7 +136,7 @@ describe('Security Validation Tests', () => {
                 const response = await buildingsHandler.create(event);
 
                 if(response.statusCode === 201) {
-                    const created = JSON.parse(response.body ?? '');
+                    const created = JSON.parse(response.body ?? '') as { buildingName?: string, description?: string, street?: string };
                     // Ensure no script tags are present in the response
                     expect(created.buildingName).not.toContain('<script>');
                     expect(created.description).not.toContain('<script>');
@@ -169,7 +169,7 @@ describe('Security Validation Tests', () => {
                 const response = await unitsHandler.create(event);
 
                 if(response.statusCode === 201) {
-                    const created = JSON.parse(response.body ?? '');
+                    const created = JSON.parse(response.body ?? '') as Record<string, unknown>;
                     // Ensure malicious content is sanitized
                     expect(created.description).not.toMatch(/<script|javascript:/i);
                 }
@@ -225,7 +225,7 @@ describe('Security Validation Tests', () => {
 
                 if(response && isObject(response) && 'statusCode' in response && (response as { statusCode: number }).statusCode === 200) {
                     if('body' in response && response.body) {
-                        const result = JSON.parse(response.body as string);
+                        const result = JSON.parse(response.body as string) as Record<string, unknown>;
                         // Ensure the generated key doesn't contain path traversal
                         expect(result.key).not.toMatch(/\.\./);
                         expect(result.key).toMatch(/^buildings\//);
@@ -267,7 +267,7 @@ describe('Security Validation Tests', () => {
 
                 // Should either fail validation or sanitize the input
                 if(response.statusCode === 201 && response.body) {
-                    const created = JSON.parse(response.body);
+                    const created = JSON.parse(response.body) as Record<string, unknown>;
                     // Ensure command injection characters are handled safely
                     expect(created.buildingName).toBe(payload);
                     // No system commands should have been executed
@@ -326,7 +326,7 @@ describe('Security Validation Tests', () => {
                 const response = await buildingsHandler.create(event);
 
                 if(response.statusCode === 201 && response.body) {
-                    const created = JSON.parse(response.body);
+                    const created = JSON.parse(response.body) as Record<string, unknown>;
                     // XML content should be treated as plain text
                     expect(created.description).toBe(payload);
                 }
@@ -436,7 +436,7 @@ describe('Security Validation Tests', () => {
                 const response = await buildingsHandler.create(event);
 
                 if(response.statusCode === 201 && response.body) {
-                    const created = JSON.parse(response.body);
+                    const created = JSON.parse(response.body) as Record<string, unknown>;
                     // The system should accept but properly handle Unicode
                     expect(created.buildingID).toBe(payload.actual);
                 }
@@ -466,7 +466,7 @@ describe('Security Validation Tests', () => {
                 const response = await buildingsHandler.create(event);
 
                 if(response.statusCode === 201 && response.body) {
-                    const created = JSON.parse(response.body);
+                    const created = JSON.parse(response.body) as Record<string, unknown>;
                     // Should handle Unicode characters safely
                     expect(created.buildingName).toBeTruthy();
                 }
@@ -495,7 +495,7 @@ describe('Security Validation Tests', () => {
 
                 if(response && isObject(response) && 'statusCode' in response && (response as { statusCode: number }).statusCode === 200) {
                     if('body' in response && response.body) {
-                        const result = JSON.parse(response.body as string);
+                        const result = JSON.parse(response.body as string) as Record<string, unknown>;
                         // Ensure null bytes are handled safely
                         expect(result.key).not.toContain('\x00');
                     }
@@ -531,7 +531,7 @@ describe('Security Validation Tests', () => {
                 // Should fail validation for out-of-range numbers
                 expect(response.statusCode).toBe(400);
                 if(response.body) {
-                    const error = JSON.parse(response.body);
+                    const error = JSON.parse(response.body) as Record<string, unknown>;
                     expect(error.errors).toBeDefined();
                 }
             }
@@ -555,7 +555,7 @@ describe('Security Validation Tests', () => {
             // Should fail validation for negative numbers
             expect(response.statusCode).toBe(400);
             if(response.body) {
-                const error = JSON.parse(response.body);
+                const error = JSON.parse(response.body) as Record<string, unknown>;
                 expect(error.errors).toHaveProperty('beds');
                 expect(error.errors).toHaveProperty('baths');
                 expect(error.errors).toHaveProperty('sqft');
@@ -579,7 +579,7 @@ describe('Security Validation Tests', () => {
             for(const payload of payloads) {
                 const event = createMockEvent('POST', '/api/buildings', {
                     buildingID:   'test-building',
-                    buildingName: payload.buildingName || 'Test',
+                    buildingName: payload.buildingName ?? 'Test',
                     description:  payload.description,
                     notes:        payload.notes,
                     street:       '123 Main St',
@@ -658,7 +658,7 @@ describe('Security Validation Tests', () => {
                 // For clearly invalid emails, expect 400 and check error structure
                 if(email === 'test@.com' || email === '@example.com' || email === '') {
                     if(response.statusCode === 400 && response.body) {
-                        const error = JSON.parse(response.body);
+                        const error = JSON.parse(response.body) as Record<string, unknown>;
                         // Just verify we get a validation error for invalid input
                         expect(error.error).toContain('Validation failed');
                     } else {
@@ -706,17 +706,18 @@ describe('Security Validation Tests', () => {
 
                 // Should either reject with 400 or accept but sanitize the URL
                 if(response.statusCode === 400 && response.body) {
-                    const error = JSON.parse(response.body);
+                    const error = JSON.parse(response.body) as Record<string, unknown>;
                     // Check for any URL validation error (property name might vary)
-                    expect(error.errors).toSatisfy((errors: Record<string, unknown>) => {
-                        return chain(errors).keys().some(key =>
+                    const errors = error.errors as Record<string, unknown>;
+                    expect(errors).toSatisfy((errs: Record<string, unknown>) => {
+                        return chain(errs).keys().some(key =>
                             key.includes('propertyWebsite') || key.includes('website')
                         ).value();
                     });
                 } else if(response.statusCode === 201 && response.body) {
                     // If accepted, the URL should be sanitized or the malicious parts removed
-                    const created = JSON.parse(response.body);
-                    expect(created.contactInfo.propertyWebsite).toBeDefined();
+                    const created = JSON.parse(response.body) as { contactInfo?: { propertyWebsite?: string } };
+                    expect(created.contactInfo?.propertyWebsite).toBeDefined();
                 }
             }
         });
@@ -749,7 +750,7 @@ describe('Security Validation Tests', () => {
                 const response = await buildingsHandler.create(event);
 
                 if(response.statusCode === 400 && response.body) {
-                    const error = JSON.parse(response.body);
+                    const error = JSON.parse(response.body) as Record<string, unknown>;
                     // Just verify we get a validation error for invalid input
                     expect(error.error).toContain('Validation failed');
                 } else {
@@ -785,7 +786,7 @@ describe('Security Validation Tests', () => {
                 const response = await unitsHandler.create(event);
 
                 if(response.statusCode === 400 && response.body) {
-                    const error = JSON.parse(response.body);
+                    const error = JSON.parse(response.body) as Record<string, unknown>;
                     expect(error.errors).toHaveProperty('availableDate');
                 }
             }
@@ -818,7 +819,7 @@ describe('Security Validation Tests', () => {
                 const response = await unitsHandler.create(event);
 
                 if(response.statusCode === 400 && response.body) {
-                    const error = JSON.parse(response.body);
+                    const error = JSON.parse(response.body) as Record<string, unknown>;
                     expect(error.errors).toHaveProperty('modelID');
                 }
             }
@@ -878,7 +879,7 @@ describe('Security Validation Tests', () => {
 
             // Should either reject or use the URL parameter
             if(response.statusCode === 201 && response.body) {
-                const created = JSON.parse(response.body);
+                const created = JSON.parse(response.body) as Record<string, unknown>;
                 expect(created.buildingID).toBe('building-a'); // Should use URL param
             }
         });
@@ -910,7 +911,7 @@ describe('Security Validation Tests', () => {
 
                 expect(response.statusCode).toBe(400);
                 if(response.body) {
-                    const error = JSON.parse(response.body);
+                    const error = JSON.parse(response.body) as Record<string, unknown>;
                     expect(error.errors).toHaveProperty('zip');
                 }
             }
@@ -933,7 +934,7 @@ describe('Security Validation Tests', () => {
 
                 expect(response.statusCode).toBe(201);
                 if(response.body) {
-                    const created = JSON.parse(response.body);
+                    const created = JSON.parse(response.body) as Record<string, unknown>;
                     expect(created.zip).toBe(zip);
                 }
             }

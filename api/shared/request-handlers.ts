@@ -78,7 +78,7 @@ export function parseRequestBody<T = unknown>(
 ): ParseRequestResult<T> {
     let rawData: T;
     try {
-        rawData = JSON.parse(body || '{}') as T;
+        rawData = JSON.parse(body ?? '{}') as T;
     } catch (parseError) {
         logger.warn(`Failed to parse ${context} request body`, {
             error: parseError,

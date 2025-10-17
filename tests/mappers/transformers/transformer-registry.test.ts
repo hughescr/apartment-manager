@@ -305,7 +305,16 @@ describe('TransformerRegistry', () => {
 
         it('should handle null/undefined transformers', () => {
             const nullHandler: TransformerFunction = (value) => {
-                return (value as string | null) ?? 'default';
+                if(value === null || value === undefined) {
+                    return 'default';
+                }
+                if(typeof value === 'string') {
+                    return value;
+                }
+                if(typeof value === 'number' || typeof value === 'boolean') {
+                    return String(value);
+                }
+                return 'default';
             };
 
             registry.register('nullHandler', nullHandler);
@@ -504,7 +513,7 @@ describe('Edge Cases - Transformer Chains with Failures', () => {
 
         registry.register('logger', (value) => {
             const stringValue = value as string;
-            results.push(`Logged: ${stringValue}`);
+            results.push(`Logged: ${String(stringValue)}`);
             return stringValue;
         });
         registry.register('failer', () => {
@@ -584,6 +593,7 @@ describe('Edge Cases - Transformers Throwing Exceptions', () => {
         });
         registry.register('range-error', () => {
             const arr = new Array(-1); // RangeError
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Testing error throwing transformer
             return arr;
         });
 
@@ -596,13 +606,13 @@ describe('Edge Cases - Transformers Throwing Exceptions', () => {
         const registry = createTransformerRegistry();
 
         registry.register('string-thrower', () => {
-            throw 'String error';
+            throw new Error('String error');
         });
         registry.register('number-thrower', () => {
-            throw 42;
+            throw new Error('42');
         });
         registry.register('object-thrower', () => {
-            throw { error: 'Object error' };
+            throw new Error('Object error');
         });
 
         expect(() => registry.get('string-thrower')?.('any')).toThrow('String error');

@@ -19,6 +19,7 @@ const {
     isOpen: _isOpen = false,
     dialogId = 'add-unit-type-dialog'
 } = Astro.props;
+void _isOpen; // Intentionally unused - prop for potential future use
 ---
 
 <dialog class="modal" :class="{'modal-open': showAddUnitTypeDialog}" data-testid={dialogId}>

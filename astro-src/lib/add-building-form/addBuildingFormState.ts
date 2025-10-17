@@ -39,7 +39,7 @@ export function createAddBuildingFormState() {
         saving:            false,
         apiURL:            '',
         // Autocomplete state
-        suggestions:       [],
+        suggestions:       [] as AddressSuggestion[],
         showSuggestions:   false,
         loading:           false,
         selectedIndex:     -1,
@@ -50,9 +50,9 @@ export function createAddBuildingFormState() {
         locationTooltip:   '',
 
         init() {
-            this.apiURL = this.$root.parentElement?.dataset.apiUrl || '';
+            this.apiURL = this.$root.parentElement?.dataset.apiUrl ?? '';
             // Request geolocation in the background
-            this.getUserLocation();
+            void this.getUserLocation();
         },
 
         async addBuilding() {
@@ -87,7 +87,7 @@ export function createAddBuildingFormState() {
                 this.saving = false;
 
                 if(response.ok) {
-                    const result = await response.json();
+                    const result = await response.json() as { buildingID: string };
                     this.$dispatch?.('show-toast', {
                         message: 'Building added successfully!',
                         type:    'success'
@@ -174,7 +174,7 @@ export function createAddBuildingFormState() {
 
             // Debounce API calls to 200ms
             this.debounceTimer = setTimeout(() => {
-                this.searchAddresses(query);
+                void this.searchAddresses(query);
             }, 200);
         },
 
@@ -192,7 +192,7 @@ export function createAddBuildingFormState() {
 
                 const response = await fetch(`${this.apiURL}autocomplete/address?${params}`);
                 if(response.ok) {
-                    const data = await response.json();
+                    const data = await response.json() as { success: boolean, suggestions?: AddressSuggestion[] };
                     if(data.success && data.suggestions) {
                         this.suggestions = data.suggestions;
                         this.showSuggestions = this.suggestions.length > 0;
@@ -213,10 +213,10 @@ export function createAddBuildingFormState() {
 
         selectSuggestion(suggestion: AddressSuggestion) {
             // Auto-populate form fields
-            this.street = suggestion.address.street || '';
-            this.city = suggestion.address.city || '';
-            this.state = suggestion.address.state || '';
-            this.zip = suggestion.address.postalCode || suggestion.address.postcode || '';
+            this.street = suggestion.address.street ?? '';
+            this.city = suggestion.address.city ?? '';
+            this.state = suggestion.address.state ?? '';
+            this.zip = suggestion.address.postalCode ?? suggestion.address.postcode ?? '';
 
             // Update building name from the populated address
             this.updateBuildingNameFromAddress();

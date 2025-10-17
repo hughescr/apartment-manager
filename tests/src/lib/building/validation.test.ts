@@ -27,7 +27,7 @@ describe('hasUnsavedChanges', () => {
             zip:        '94102'
         } as BuildingData;
 
-        const original = JSON.parse(JSON.stringify(buildingData));
+        const original = JSON.parse(JSON.stringify(buildingData)) as BuildingData;
         expect(hasUnsavedChanges(buildingData, original)).toBe(false);
     });
 
@@ -105,7 +105,7 @@ describe('hasUnsavedChanges', () => {
             }
         } as BuildingData;
 
-        const building = JSON.parse(JSON.stringify(original));
+        const building = JSON.parse(JSON.stringify(original)) as BuildingData;
 
         expect(hasUnsavedChanges(building, original)).toBe(false);
     });
@@ -160,10 +160,10 @@ describe('hasUnsavedChanges', () => {
         } as BuildingData;
 
         // Simulate the original state being set from parsed JSON
-        const original = JSON.parse(JSON.stringify(serverData));
+        const original = JSON.parse(JSON.stringify(serverData)) as BuildingData;
 
         // Simulate building state being updated from same server data
-        const building = { ...serverData };
+        const building: BuildingData = { ...serverData };
 
         expect(hasUnsavedChanges(building, original)).toBe(false);
     });

@@ -29,18 +29,18 @@ describe('Building Data Layer', () => {
     });
 
     const handlePutCommand = (cmd: { input?: Record<string, unknown> }) => {
-        const item = cmd.input?.Item || cmd.input || {};
+        const item = cmd.input?.Item ?? cmd.input ?? {};
         const itemWithUnitId = item as Record<string, unknown> & { unitID?: string };
-        const unitID = itemWithUnitId.unitID || 'BUILDING';
+        const unitID = itemWithUnitId.unitID ?? 'BUILDING';
         return Promise.resolve(createItemResponse(item as Record<string, unknown>, unitID));
     };
 
     const handleUpdateCommand = (cmd: { input?: Record<string, unknown> }) => {
-        const updates = cmd.input?.Item || cmd.input || {};
-        const key = cmd.input?.Key || {};
+        const updates = cmd.input?.Item ?? cmd.input ?? {};
+        const key = cmd.input?.Key ?? {};
         const keyWithUnitId = key as Record<string, unknown> & { unitID?: string };
         const updatesWithUnitId = updates as Record<string, unknown> & { unitID?: string };
-        const unitID = keyWithUnitId.unitID || updatesWithUnitId.unitID || 'BUILDING';
+        const unitID = keyWithUnitId.unitID ?? updatesWithUnitId.unitID ?? 'BUILDING';
         return Promise.resolve(createItemResponse(updates as Record<string, unknown>, unitID));
     };
 

@@ -42,7 +42,7 @@ describe('Alpine.js Registry Integration Tests', () => {
             );
             expect(unitTypeCardCall).toBeDefined();
 
-            const [, factory] = unitTypeCardCall!;
+            const [, factory] = unitTypeCardCall! as [string, (this: unknown) => { unitType: unknown, apiURL: string, saveUnitType: unknown, formatCurrency: unknown }];
 
             // Step 4: Create component instance with real data
             const mockUnitType = {
@@ -279,8 +279,8 @@ describe('Alpine.js Registry Integration Tests', () => {
                 expect.objectContaining({
                     method:  'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    expect.stringContaining('"rent":2200')
-                })
+                    body:    expect.stringContaining('"rent":2200') as string
+                }) as RequestInit
             );
         });
 
@@ -309,13 +309,13 @@ describe('Alpine.js Registry Integration Tests', () => {
             const instance = factory();
 
             // Test amenity inheritance logic
-            const effectiveAmenities = instance.getEffectiveAmenities();
+            const effectiveAmenities = instance.getEffectiveAmenities() as unknown[];
             expect(effectiveAmenities).toHaveLength(1);
             expect((effectiveAmenities as { id: string, name: string, category: string }[])[0]).toEqual({ id: 'balcony', name: 'Private Balcony', category: 'Unit Features' });
             // Test reset to inherited amenities
             instance.resetToInheritedAmenities();
 
-            const afterReset = instance.getEffectiveAmenities();
+            const afterReset = instance.getEffectiveAmenities() as unknown;
             expect(afterReset).toEqual(buildingAmenities);
         });
 
@@ -346,9 +346,9 @@ describe('Alpine.js Registry Integration Tests', () => {
             );
 
             // Simulate tab becoming visible
-            const watchCallback = mockContext.$watch.mock.calls.find(
+            const watchCallback = (mockContext.$watch.mock.calls.find(
                 ([property]) => property === '$root.activeSectionTab'
-            )?.[1];
+            )?.[1]) as ((value: string) => Promise<void>) | undefined;
 
             if(watchCallback) {
                 await watchCallback('building-info');
@@ -371,14 +371,15 @@ describe('Alpine.js Registry Integration Tests', () => {
             const instance = factory();
 
             // Initialize map
-            instance.map = mockLeaflet.map();
+            const mockMapInstance = mockLeaflet.map() as { remove: jest.Mock };
+            instance.map = mockMapInstance as never;
 
             // Test cleanup
             instance.destroy();
 
             // Verify cleanup was called
-            if(instance.map) {
-                expect(instance.map.remove).toHaveBeenCalled();
+            if(instance.map && typeof instance.map === 'object' && 'remove' in instance.map) {
+                expect(mockMapInstance.remove).toHaveBeenCalled();
             }
             expect(instance.map).toBeNull();
         });
@@ -397,7 +398,7 @@ describe('Alpine.js Registry Integration Tests', () => {
             const calls = mockContext.$watch.mock.calls;
             calls.forEach(() => {
                 // Each watcher should be properly configured
-                expect(typeof mockContext.$watch.mock.results[0]?.value).toBe('function');
+                expect(typeof (mockContext.$watch.mock.results[0]?.value as unknown)).toBe('function');
             });
         });
 
@@ -435,7 +436,7 @@ describe('Alpine.js Registry Integration Tests', () => {
             expect(endTime - startTime).toBeLessThan(100); // Should be very fast
 
             expect(instance.buildingAmenities).toHaveLength(100);
-            expect(instance.getEffectiveAmenities()).toHaveLength(50);
+            expect((instance.getEffectiveAmenities() as unknown[]).length).toBe(50);
         });
     });
 });

@@ -28,17 +28,17 @@ export function createModelAmenitiesManagerState() {
         init() {
             // Initialize from data attributes
             const container = document.querySelector('[data-api-url]')!;
-            this.apiURL = container?.dataset.apiUrl || '';
-            this.buildingID = container?.dataset.buildingId || '';
-            const unitTypesData = container?.dataset.unitTypes;
-            this.unitTypes = unitTypesData ? JSON.parse(unitTypesData) : {};
+            this.apiURL = (container as HTMLElement).dataset.apiUrl ?? '';
+            this.buildingID = (container as HTMLElement).dataset.buildingId ?? '';
+            const unitTypesData = (container as HTMLElement).dataset.unitTypes;
+            this.unitTypes = unitTypesData ? JSON.parse(unitTypesData) as Record<string, UnitType> : {};
         },
 
         get currentModelAmenities() {
             if(!this.selectedModel || !this.unitTypes[this.selectedModel]) {
                 return [];
             }
-            return this.unitTypes[this.selectedModel].modelAmenities || [];
+            return this.unitTypes[this.selectedModel].modelAmenities ?? [];
         },
 
         set currentModelAmenities(value) {
@@ -139,19 +139,19 @@ export function createModelAmenitiesManagerState() {
         },
 
         copyAmenities(fromModelID: string) {
-            const fromAmenities = this.unitTypes[fromModelID]?.modelAmenities || [];
+            const fromAmenities = this.unitTypes[fromModelID]?.modelAmenities ?? [];
             if(this.selectedModel && this.selectedModel !== fromModelID) {
                 this.currentModelAmenities = [...fromAmenities];
-                this.saveModelAmenities(this.selectedModel);
+                void this.saveModelAmenities(this.selectedModel);
             }
         },
 
         getAmenityCount(modelID: string) {
-            return this.unitTypes[modelID]?.modelAmenities?.length || 0;
+            return this.unitTypes[modelID]?.modelAmenities?.length ?? 0;
         },
 
         getAmenitySummary(modelID: string) {
-            const amenities = this.unitTypes[modelID]?.modelAmenities || [];
+            const amenities = this.unitTypes[modelID]?.modelAmenities ?? [];
             if(amenities.length === 0) {
                 return 'No amenities';
             }

@@ -323,9 +323,9 @@ describe('FieldInheritanceManager', () => {
         });
 
         it('should handle unknown field names gracefully', () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing error handling for invalid field names
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- Testing error handling for invalid field names
             expect(manager.getInheritedValue(mockUnitType, 'unknownField' as any)).toBe(null);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Testing error handling for invalid field names
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- Testing error handling for invalid field names
             expect(manager.isInherited(mockUnit, mockUnitType, 'unknownField' as any)).toBe(false);
         });
     });

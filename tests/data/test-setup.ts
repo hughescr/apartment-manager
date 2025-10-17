@@ -91,7 +91,7 @@ const createDynamoDbMock = () => {
             const cmdWithInput = cmd as { input?: { ReturnValues?: string, Item?: Record<string, unknown> } };
             // Return the item that was put if returnValues is set to ALL_NEW
             const returnValues = cmdWithInput.input?.ReturnValues;
-            const attributes = (returnValues === 'ALL_NEW') ? cmdWithInput.input?.Item || {} : {};
+            const attributes = (returnValues === 'ALL_NEW') ? cmdWithInput.input?.Item ?? {} : {};
             return Promise.resolve({
                 Attributes:            attributes,
                 ConsumedCapacity:      undefined,
@@ -265,8 +265,8 @@ if(process.env.BUN_ENV === 'test') {
             return {
                 build: jest.fn().mockImplementation((_CommandClass) => {
                     const commandBuilder = {
-                        entities: jest.fn().mockImplementation((...entities) => {
-                            tableContext.entities = map(entities, entity => ({ name: entity.name }));
+                        entities: jest.fn().mockImplementation((...entities: { name?: string, entityName?: string }[]) => {
+                            tableContext.entities = map(entities, entity => ({ name: entity.name ?? entity.entityName ?? 'Unknown' }));
                             return commandBuilder;
                         }),
                         query:   jest.fn().mockReturnThis(),
@@ -292,7 +292,12 @@ if(process.env.BUN_ENV === 'test') {
                             });
 
                             // First try dynamoDbMock to respect any test configurations
-                            const mockResponse = await dynamoDbMock(commandObj);
+                            const mockResponse = await dynamoDbMock(commandObj) as {
+                                Items?:            unknown[]
+                                Count?:            number
+                                ScannedCount?:     number
+                                LastEvaluatedKey?: unknown
+                            };
 
                             // Check if this is a default empty response (indicating no explicit test configuration)
                             const isDefaultResponse = mockResponse
@@ -313,7 +318,12 @@ if(process.env.BUN_ENV === 'test') {
                             }
 
                             // Otherwise return the mock's configured response as-is
-                            return mockResponse;
+                            return mockResponse as {
+                                Items:            unknown[]
+                                Count:            number
+                                ScannedCount:     number
+                                LastEvaluatedKey: unknown
+                            };
                         })
                     };
                     return commandBuilder;
@@ -423,17 +433,17 @@ const createEntityMock = (entityName: string) => {
             commandContext.optionsData = optionsData;
             return mockCommandBuilder;
         }),
-        entities: jest.fn().mockImplementation((...entities) => {
+        entities: jest.fn().mockImplementation((...entities: { name?: string, entityName?: string }[]) => {
             // Store the entities for filtering during send()
             commandContext.entities = map(entities, entity => ({
-                name: entity.name || entity.entityName || entityName || 'Unknown'
+                name: entity.name ?? entity.entityName ?? entityName ?? 'Unknown'
             }));
             return mockCommandBuilder;
         }),
         send: jest.fn().mockImplementation(async (command?: Record<string, unknown>) => {
             // Determine the command class based on what was stored during build()
             let CommandClass;
-            const commandName = commandContext.lastCommand || 'QueryCommand';
+            const commandName = commandContext.lastCommand ?? 'QueryCommand';
 
             // Create appropriate command class based on the stored command type
             switch(commandName) {
@@ -496,7 +506,16 @@ const createEntityMock = (entityName: string) => {
             }
 
             // Call dynamoDbMock with the properly typed command
-            const mockResponse = await dynamoDbMock(commandObj);
+            const mockResponse = await dynamoDbMock(commandObj) as {
+                Attributes?:            Record<string, unknown>
+                ConsumedCapacity?:      unknown
+                ItemCollectionMetrics?: unknown
+                Items?:                 unknown[]
+                Count?:                 number
+                ScannedCount?:          number
+                LastEvaluatedKey?:      unknown
+                Item?:                  unknown
+            };
 
             // Return the mock response directly
             return mockResponse;
@@ -512,15 +531,15 @@ const createEntityMock = (entityName: string) => {
             partitionKey: { name: 'buildingID', type: 'string' },
             sortKey:      { name: 'unitID', type: 'string' }
         },
-        build: jest.fn().mockImplementation((CommandClass) => {
+        build: jest.fn().mockImplementation((CommandClass?: { name?: string }) => {
             // Store the command type for context
-            commandContext.lastCommand = CommandClass?.name || 'UnknownCommand';
+            commandContext.lastCommand = CommandClass?.name ?? 'UnknownCommand';
             return mockCommandBuilder;
         }),
         // Legacy methods for backward compatibility
-        query: jest.fn().mockImplementation(() => dynamoDbMock()),
-        scan:  jest.fn().mockImplementation(() => dynamoDbMock()),
-        get:   jest.fn().mockImplementation(() => dynamoDbMock())
+        query: jest.fn().mockImplementation(() => dynamoDbMock() as Promise<unknown>),
+        scan:  jest.fn().mockImplementation(() => dynamoDbMock() as Promise<unknown>),
+        get:   jest.fn().mockImplementation(() => dynamoDbMock() as Promise<unknown>)
     };
 
     return { mockEntity, mockCommandBuilder, commandContext };
@@ -591,9 +610,9 @@ const createMockDataClients = () => ({
                 };
 
                 const commandBuilder = {
-                    entities: jest.fn().mockImplementation((...entities) => {
-                        commandContext.entities = map(entities, entity => ({
-                            name: entity.name || entity.entityName || 'Unknown'
+                    entities: jest.fn().mockImplementation((...entities: { name?: string, entityName?: string }[]) => {
+                        commandContext.entities = map(entities, (entity: { name?: string, entityName?: string }) => ({
+                            name: entity.name ?? entity.entityName ?? 'Unknown'
                         }));
                         return commandBuilder;
                     }),
@@ -620,7 +639,12 @@ const createMockDataClients = () => ({
                         });
 
                         // First try dynamoDbMock to respect any test configurations
-                        const mockResponse = await dynamoDbMock(commandObj);
+                        const mockResponse = await dynamoDbMock(commandObj) as {
+                            Items?:            unknown[]
+                            Count?:            number
+                            ScannedCount?:     number
+                            LastEvaluatedKey?: unknown
+                        };
 
                         // Check if this is a default empty response (indicating no explicit test configuration)
                         const isDefaultResponse = mockResponse
@@ -641,7 +665,12 @@ const createMockDataClients = () => ({
                         }
 
                         // Otherwise return the mock's configured response as-is
-                        return mockResponse;
+                        return mockResponse as {
+                            Items:            unknown[]
+                            Count:            number
+                            ScannedCount:     number
+                            LastEvaluatedKey: unknown
+                        };
                     })
                 };
                 return commandBuilder;

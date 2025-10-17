@@ -73,14 +73,14 @@ export const create = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
     const urlBuildingID = evt.pathParameters?.buildingID;
 
     // Validate buildingID from URL using shared utility
-    const idValidationResult = validateSingleId(urlBuildingID || '', 'buildingID');
+    const idValidationResult = validateSingleId(urlBuildingID ?? '', 'buildingID');
     if(!idValidationResult.valid) {
         return idValidationResult.response!;
     }
 
     // Parse and validate input using shared utility
     const parseResult = parseAndValidateRequest(
-        evt.body || null,
+        evt.body ?? null,
         'unit',
         'unit creation request parsing',
         { buildingID: urlBuildingID, httpMethod: evt.requestContext.http.method }
@@ -125,7 +125,7 @@ export const update = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayPro
 
     // Parse and validate input using shared utility
     const parseResult = parseAndValidateRequest(
-        evt.body || null,
+        evt.body ?? null,
         'unit',
         'unit update request parsing',
         { buildingID, unitID, httpMethod: evt.requestContext.http.method }
@@ -203,8 +203,8 @@ export const bulkStatusUpdate = async (evt: APIGatewayProxyEventV2): Promise<API
 // Helper function to parse request body
 function parseBulkRequestBody(body: string | null): StatusUpdateData | APIGatewayProxyStructuredResultV2 {
     try {
-        const rawData = JSON.parse(body || '{}');
-        return sanitizeObject(rawData) as StatusUpdateData;
+        const rawData: unknown = JSON.parse(body ?? '{}');
+        return sanitizeObject(rawData as Record<string, unknown>) as StatusUpdateData;
     } catch (parseError) {
         logger.warn('Failed to parse bulk status update request body', {
             error:   parseError,
@@ -222,7 +222,7 @@ function parseBulkRequestBody(body: string | null): StatusUpdateData | APIGatewa
 
 // Helper function to validate bulk status operation
 function validateBulkStatusOperation(buildingID: string, data: StatusUpdateData): APIGatewayProxyStructuredResultV2 | undefined {
-    const bulkValidation = validateBulkOperationParams(buildingID, data.unitIDs || []);
+    const bulkValidation = validateBulkOperationParams(buildingID, data.unitIDs ?? []);
     const statusValidation = validateBulkStatusParams(data.vacancyClass as VacancyClass);
 
     const errors: Record<string, string> = {};
@@ -286,7 +286,7 @@ async function executeBulkStatusUpdate(buildingID: string, data: StatusUpdateDat
             error,
             context:       'executeBulkStatusUpdate',
             buildingID,
-            unitCount:     data.unitIDs?.length || 0,
+            unitCount:     data.unitIDs?.length ?? 0,
             vacancyClass:  data.vacancyClass,
             operationType: 'status_update'
         });
@@ -336,8 +336,8 @@ export const bulkRentUpdate = async (evt: APIGatewayProxyEventV2): Promise<APIGa
 // Helper function to parse rent request body
 function parseRentRequestBody(body: string | null): RentUpdateData | APIGatewayProxyStructuredResultV2 {
     try {
-        const rawData = JSON.parse(body || '{}');
-        return sanitizeObject(rawData) as RentUpdateData;
+        const rawData: unknown = JSON.parse(body ?? '{}');
+        return sanitizeObject(rawData as Record<string, unknown>) as RentUpdateData;
     } catch (parseError) {
         logger.warn('Failed to parse bulk rent update request body', {
             error:   parseError,
@@ -355,7 +355,7 @@ function parseRentRequestBody(body: string | null): RentUpdateData | APIGatewayP
 
 // Helper function to validate bulk rent operation
 function validateBulkRentOperation(buildingID: string, data: RentUpdateData): APIGatewayProxyStructuredResultV2 | undefined {
-    const bulkValidation = validateBulkOperationParams(buildingID, data.unitIDs || []);
+    const bulkValidation = validateBulkOperationParams(buildingID, data.unitIDs ?? []);
     const rentValidation = validateBulkRentParams(
         data.updateType as 'absolute' | 'percentage',
         Number(data.value)
@@ -425,7 +425,7 @@ async function executeBulkRentUpdate(buildingID: string, data: RentUpdateData): 
             error,
             context:       'executeBulkRentUpdate',
             buildingID,
-            unitCount:     data.unitIDs?.length || 0,
+            unitCount:     data.unitIDs?.length ?? 0,
             updateType:    data.updateType,
             value:         data.value,
             operationType: 'rent_update'

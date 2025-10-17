@@ -8,7 +8,7 @@ import globals from 'globals';
 export default defineConfig(
     {
         name:    'ignores',
-        ignores: ['coverage', 'node_modules', '.sst', '.astro', 'sst-env.d.ts', '*.md'],
+        ignores: ['coverage', 'node_modules', '.sst', '.astro/**', 'astro-src/.astro/**', 'sst-env.d.ts', '*.md'],
     },
 
     defaultConfig,
@@ -17,11 +17,19 @@ export default defineConfig(
     // ...eslintPluginAstro.configs['jsx-a11y-recommended'],
 
     { // Disable @stylistic/indent for astro files as it conflicts with jsx rules and crashes
-        files: ['**/*.astro'],
+        files: ['astro-src/**', '**/*.astro'],
 
         rules: {
-            '@stylistic/indent':                      'off',
-            '@stylistic/jsx-one-expression-per-line': ['error', { allow: 'non-jsx' }],
+            // Disable @stylistic/indent for astro files as it conflicts with jsx rules and crashes
+            '@stylistic/indent':                                 'off',
+            '@stylistic/jsx-one-expression-per-line':            ['error', { allow: 'non-jsx' }],
+            // Astro has a lot of "any" types so these will be common but kinda unavoidable
+            '@typescript-eslint/no-unsafe-assignment':           'off',
+            '@typescript-eslint/no-unsafe-argument':             'off',
+            '@typescript-eslint/no-unsafe-return':               'off',
+            '@typescript-eslint/no-unsafe-call':                 'off',
+            '@typescript-eslint/no-unsafe-member-access':        'off',
+            '@typescript-eslint/no-redundant-type-constituents': 'off',
         },
     },
 
@@ -68,17 +76,20 @@ export default defineConfig(
 
     {
         rules: {
-            '@typescript-eslint/no-unsafe-call': 'off',
-            '@typescript-eslint/no-unsafe-member-access': 'off',
-            '@typescript-eslint/triple-slash-reference': 'off',
-    //         '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+            // Disable n/no-missing-import as it doesn't support TypeScript's bundler moduleResolution
+            'n/no-missing-import': 'off',
         },
     },
 
-    { // Disable lodash rules for test files (Playwright methods like .fill() are not lodash); also 'bun:test' imports
-        files: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js'],
+    {
+        files: ['tests/**', '**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js'],
         rules: {
-            'n/no-missing-import': 'off',
+            // bun:test imports aren't recognized
+            'n/no-missing-import':               'off',
+            // bun:test types don't come through so this blows up
+            '@typescript-eslint/no-unsafe-call': 'off',
+
+            // Disable lodash rules for test files (Playwright methods like .fill() are not lodash)
             'lodash/prefer-lodash-method':    'off',
             'lodash/prefer-lodash-typecheck': 'off',
         },

@@ -26,7 +26,8 @@ export class UnitApiClient {
             });
 
             if(response.ok) {
-                const updatedUnit = await response.json();
+                const data: unknown = await response.json();
+                const updatedUnit = data as UnitData;
                 return {
                     success: true,
                     unit:    updatedUnit
@@ -82,7 +83,8 @@ export class UnitApiClient {
             });
 
             if(response.ok) {
-                const updatedUnit = await response.json();
+                const data: unknown = await response.json();
+                const updatedUnit = data as UnitData;
                 return {
                     success: true,
                     unit:    updatedUnit
@@ -106,7 +108,8 @@ export class UnitApiClient {
         try {
             const response = await fetch(`${this.apiURL}/buildings/${buildingID}/amenities`);
             if(response.ok) {
-                return await response.json();
+                const data: unknown = await response.json();
+                return data as unknown[];
             }
             return [];
         } catch{

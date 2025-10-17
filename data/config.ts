@@ -19,15 +19,13 @@ let _config: DataConfig | null = null;
 export function getConfig(overrides?: Partial<DataConfig>): DataConfig {
     if(overrides) {
         return {
-            tableName: overrides.tableName || Resource.BuildingsUnits.name
+            tableName: overrides.tableName ?? Resource.BuildingsUnits.name
         };
     }
 
-    if(!_config) {
-        _config = {
-            tableName: Resource.BuildingsUnits.name
-        };
-    }
+    _config ??= {
+        tableName: Resource.BuildingsUnits.name
+    };
 
     return _config;
 }

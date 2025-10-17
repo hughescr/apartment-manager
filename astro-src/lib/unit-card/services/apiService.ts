@@ -1,7 +1,7 @@
 import { isError, trim } from 'lodash';
-import type { UnitData, Amenity } from '../../../types';
 import type { UnitCardState } from '../unitCardState';
 import { UnitApiClient, type SaveResult } from '../apiOperations';
+import type { Amenity } from '../../../types';
 
 /**
  * Service for handling API operations within the unit card state context
@@ -48,7 +48,7 @@ export class ApiService {
                     this.state.events.showToast('Unit saved successfully', 'success');
                 }
             } else {
-                this.handleSaveError(result.error || 'Failed to save unit');
+                this.handleSaveError(result.error ?? 'Failed to save unit');
             }
         } catch (error) {
             const errorMessage = isError(error) ? error.message : 'Network error. Please try again.';
@@ -88,7 +88,7 @@ export class ApiService {
                 // Reload page or redirect after successful deletion
                 window.location.reload();
             } else {
-                const errorMessage = result.error || 'Failed to delete unit';
+                const errorMessage = result.error ?? 'Failed to delete unit';
 
                 if(this.state.events) {
                     this.state.events.unitDeleteError(this.state.unit.unitID, errorMessage);

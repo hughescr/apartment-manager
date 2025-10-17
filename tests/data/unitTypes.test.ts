@@ -471,7 +471,7 @@ describe('UnitType Data Layer', () => {
 
             // Verify the query fetches all units first (current behavior)
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
-            const callArgs = dynamoDbMock.mock.calls[0][0];
+            const callArgs = dynamoDbMock.mock.calls[0][0] as { ExpressionAttributeValues?: Record<string, unknown> };
             // The query doesn't filter by modelID at the database level
             expect(callArgs.ExpressionAttributeValues).not.toHaveProperty(':modelID');
         });
@@ -492,10 +492,10 @@ describe('UnitType Data Layer', () => {
             await getUnitsByModelID(testBuildingID, 'model-2br');
 
             // Check that consistent read option is not set (current behavior)
-            const callArgs = dynamoDbMock.mock.calls[0][0];
-            expect(callArgs).toBeDefined();
+            const call = dynamoDbMock.mock.calls[0][0] as { ConsistentRead?: boolean };
+            expect(call).toBeDefined();
             // The function doesn't currently use consistent reads
-            expect(callArgs.ConsistentRead).toBeUndefined();
+            expect(call.ConsistentRead).toBeUndefined();
         });
 
         it('should handle error scenarios gracefully', async () => {

@@ -359,7 +359,7 @@ describe('Building Form Validation', () => {
             const result = validateBuildingForm(incompleteBuilding);
 
             expect(result.isValid).toBe(false);
-            expect(result.errors).toEqual(expect.any(Object));
+            expect(result.errors).toEqual(expect.any(Object) as Record<string, string>);
         });
 
         it('should handle extremely long strings', () => {

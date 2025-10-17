@@ -98,7 +98,7 @@ describe('GeocodingService', () => {
 
             // Verify API call was made correctly
             expect(mockFetch).toHaveBeenCalledTimes(1);
-            const [url, options] = mockFetch.mock.calls[0];
+            const [url, options] = mockFetch.mock.calls[0] as [string, { headers: Record<string, string> }];
             expect(url).toContain('nominatim.openstreetmap.org');
             expect(url).toContain('q=123+Main+St%2C+Los+Angeles%2C+CA');
             expect(options.headers['User-Agent']).toBe('apartment-manager/1.0');

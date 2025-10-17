@@ -82,7 +82,7 @@ function parseCoordinates(latParam?: string, lonParam?: string): { lat: number, 
  * Checks common IP header sources in order of priority
  */
 function getClientIP(event: { headers?: Record<string, string | undefined> }): string | undefined {
-    const headers = event.headers || {};
+    const headers = event.headers ?? {};
 
     // Check common IP headers in order of priority
     const ipHeaders = [
@@ -162,7 +162,7 @@ export const addressAutocomplete: APIGatewayProxyHandlerV2 = async (event) => {
             };
         }
 
-        const queryParams = event.queryStringParameters || {};
+        const queryParams = event.queryStringParameters ?? {};
         const query = queryParams.q;
         const limitParam = queryParams.limit;
         const latParam = queryParams.lat;

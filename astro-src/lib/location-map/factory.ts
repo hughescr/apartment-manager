@@ -48,18 +48,18 @@ interface LocationMapContext extends AlpineContext {
  * Extract configuration from data attributes
  */
 function extractConfig(element: HTMLElement | undefined) {
-    const dataset = element?.dataset || {};
+    const dataset = element?.dataset ?? {};
 
     return {
-        latModel:      dataset.latModel || '',
-        lngModel:      dataset.lngModel || '',
-        verifiedModel: dataset.verifiedModel || null,
-        defaultLat:    parseFloat(dataset.defaultLat || '39.8283'),
-        defaultLng:    parseFloat(dataset.defaultLng || '-98.5795'),
-        apiUrl:        dataset.apiUrl || '',
+        latModel:      dataset.latModel ?? '',
+        lngModel:      dataset.lngModel ?? '',
+        verifiedModel: dataset.verifiedModel ?? null,
+        defaultLat:    parseFloat(dataset.defaultLat ?? '39.8283'),
+        defaultLng:    parseFloat(dataset.defaultLng ?? '-98.5795'),
+        apiUrl:        dataset.apiUrl ?? '',
         addressModels: (() => {
             try {
-                return JSON.parse(dataset.addressModels || '{}') as AddressModels;
+                return JSON.parse(dataset.addressModels ?? '{}') as AddressModels;
             } catch{
                 return {} as AddressModels;
             }
@@ -215,11 +215,11 @@ function createMapMethods(
 
             if(isInTab && context.$root!.activeSectionTab !== 'building-info') {
                 // Map is in a hidden tab, waiting for tab to be visible
-                const unwatch = context.$watch('$root.activeSectionTab', async (newTab: unknown) => {
+                const unwatch = context.$watch('$root.activeSectionTab', (newTab: unknown) => {
                     if(newTab === 'building-info') {
                         // Tab is now visible, initializing map
                         unwatch(); // Stop watching
-                        await context.initMap();
+                        void context.initMap();
                     }
                 });
             } else {
@@ -452,7 +452,7 @@ function createMarkerMethods(
  */
 export function createLocationMapFactory(this: AlpineContext): LocationMapContext {
     // Extract config from data attributes on the component element
-    const element = (this.$root || this.$el) as HTMLElement | undefined;
+    const element = (this.$root ?? this.$el) as HTMLElement | undefined;
     const config = extractConfig(element);
     const { latModel, lngModel, verifiedModel, apiUrl, addressModels } = config;
 
@@ -466,7 +466,7 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
         $dispatch:      this.$dispatch || (null as unknown as (event: string, data?: unknown) => void),
         $nextTick:      this.$nextTick || (null as unknown as () => Promise<void>),
         $watch:         this.$watch || (null as unknown as (property: string, callback: (newValue: unknown) => void) => () => void),
-        $root:          this.$root || undefined as { activeSectionTab?: string } | undefined,
+        $root:          this.$root ?? undefined as { activeSectionTab?: string } | undefined,
 
         // Placeholder properties that will be set after context is complete
         getNestedProperty: null as unknown as (path: string) => unknown,
@@ -485,11 +485,11 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
             context.geocoding = true;
 
             try {
-                const address = context.getNestedProperty(addressModels.addressModel);
-                const city = addressModels.cityModel ? context.getNestedProperty(addressModels.cityModel) : undefined;
-                const state = addressModels.stateModel ? context.getNestedProperty(addressModels.stateModel) : undefined;
+                const address = context.getNestedProperty(addressModels.addressModel) as string | undefined;
+                const city = addressModels.cityModel ? context.getNestedProperty(addressModels.cityModel) as string | undefined : undefined;
+                const state = addressModels.stateModel ? context.getNestedProperty(addressModels.stateModel) as string | undefined : undefined;
 
-                if(!address?.toString().trim()) {
+                if(!address?.trim()) {
                     context.$dispatch('show-toast', {
                         message: 'Please enter an address first',
                         type:    'error'
@@ -498,9 +498,9 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
                 }
 
                 const requestBody = {
-                    address: address.toString().trim(),
-                    ...(city ? { city: city.toString().trim() } : {}),
-                    ...(state ? { state: state.toString().trim() } : {})
+                    address: address.trim(),
+                    ...(city ? { city: city.trim() } : {}),
+                    ...(state ? { state: state.trim() } : {})
                 };
 
                 const response = await fetch(`${apiUrl}geocoding`, {
@@ -511,7 +511,11 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
                     body: JSON.stringify(requestBody),
                 });
 
-                const data = await response.json();
+                const data = await response.json() as {
+                    success: boolean
+                    result?: { lat: number, lng: number, displayName?: string }
+                    error?:  string
+                };
 
                 if(data.success && data.result) {
                     // Set coordinates
@@ -526,12 +530,12 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
                     }
 
                     context.$dispatch('show-toast', {
-                        message: `Address geocoded: ${data.result.displayName || 'Location found'}`,
+                        message: `Address geocoded: ${data.result.displayName ?? 'Location found'}`,
                         type:    'success'
                     });
                 } else {
                     context.$dispatch('show-toast', {
-                        message: data.error || 'Could not find coordinates for this address',
+                        message: data.error ?? 'Could not find coordinates for this address',
                         type:    'error'
                     });
                 }
@@ -547,32 +551,38 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
 
         handleTabVisibility() {
             // Watch for tab changes and refresh map when visible
-            context.$watch('$root.activeSectionTab', async (newTab: unknown) => {
+            context.$watch('$root.activeSectionTab', (newTab: unknown) => {
                 if(newTab === 'building-info' && context.map) {
                     // Use Alpine's nextTick first
-                    await context.$nextTick();
-
-                    // Multiple refreshes for robustness
-                    context.map.invalidateSize();
-
-                    setTimeout(() => {
-                        if(context.map) {
-                            context.map.invalidateSize();
+                    void context.$nextTick().then(() => {
+                        if(!context.map) {
+                            return undefined;
                         }
-                    }, 100);
 
-                    setTimeout(() => {
-                        if(context.map) {
-                            context.map.invalidateSize();
-                            // Also re-center if we have coordinates
-                            if(context.getNestedProperty(latModel) && context.getNestedProperty(lngModel)) {
-                                context.map.setView([
-                                    context.getNestedProperty(latModel) as number,
-                                    context.getNestedProperty(lngModel) as number
-                                ]);
+                        // Multiple refreshes for robustness
+                        context.map.invalidateSize();
+
+                        setTimeout(() => {
+                            if(context.map) {
+                                context.map.invalidateSize();
                             }
-                        }
-                    }, 300);
+                        }, 100);
+
+                        setTimeout(() => {
+                            if(context.map) {
+                                context.map.invalidateSize();
+                                // Also re-center if we have coordinates
+                                if(context.getNestedProperty(latModel) && context.getNestedProperty(lngModel)) {
+                                    context.map.setView([
+                                        context.getNestedProperty(latModel) as number,
+                                        context.getNestedProperty(lngModel) as number
+                                    ]);
+                                }
+                            }
+                        }, 300);
+
+                        return undefined;
+                    });
                 }
             });
 
@@ -606,17 +616,17 @@ export function createLocationMapFactory(this: AlpineContext): LocationMapContex
 
     // Fix the context references in helper methods
     const helpers = createPropertyHelpers(this);
-    context.getNestedProperty = helpers.getNestedProperty;
-    context.setNestedProperty = helpers.setNestedProperty;
+    context.getNestedProperty = (path: string) => helpers.getNestedProperty(path);
+    context.setNestedProperty = (path: string, value: unknown) => helpers.setNestedProperty(path, value);
 
     const mapMethods = createMapMethods(context, config);
-    context.initMapWhenReady = mapMethods.initMapWhenReady;
-    context.initMap = mapMethods.initMap;
+    context.initMapWhenReady = () => mapMethods.initMapWhenReady();
+    context.initMap = () => mapMethods.initMap();
 
     const markerMethods = createMarkerMethods(context, { latModel, lngModel, verifiedModel });
-    context.addMarker = markerMethods.addMarker;
-    context.setMarker = markerMethods.setMarker;
-    context.centerOnMarker = markerMethods.centerOnMarker;
+    context.addMarker = (lat: number, lng: number) => markerMethods.addMarker(lat, lng);
+    context.setMarker = (lat: number, lng: number) => markerMethods.setMarker(lat, lng);
+    context.centerOnMarker = () => markerMethods.centerOnMarker();
 
     return context;
 }

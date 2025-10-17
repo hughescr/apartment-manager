@@ -66,8 +66,8 @@ function transformFeeTypeName(feeType: FeeType, siteId: string): string {
         }
     };
 
-    const siteMapping = mappings[siteId] || mappings.apartments_com;
-    return siteMapping[feeType] || feeType;
+    const siteMapping = mappings[siteId] ?? mappings.apartments_com;
+    return siteMapping[feeType] ?? feeType;
 }
 
 /**
@@ -85,7 +85,7 @@ export function categorizeFees(
     deposits: Fee[]
 } {
     const oneTime: Fee[] = [];
-    const monthly: Fee[] = monthlyFees || [];
+    const monthly: Fee[] = monthlyFees ?? [];
     const deposits: Fee[] = [];
 
     // Separate deposits from other one-time fees
@@ -154,7 +154,7 @@ export function formatFeeList(
 
     const formatter = createPriceFormatter();
     const feeStrings = map(fees, (fee) => {
-        const amount = formatter(fee.amount) || '0';
+        const amount = formatter(fee.amount) ?? '0';
         const refundable = fee.refundable ? ' (refundable)' : '';
         return `${fee.type}: ${amount}${refundable}`;
     });
@@ -179,7 +179,7 @@ export function mergeFees(...sources: (Fee[] | undefined)[]): Fee[] {
                     feeMap.set(fee.type, {
                         ...fee,
                         amount:      existing.amount + fee.amount,
-                        description: fee.description || existing.description
+                        description: fee.description ?? existing.description
                     });
                 } else {
                     feeMap.set(fee.type, fee);

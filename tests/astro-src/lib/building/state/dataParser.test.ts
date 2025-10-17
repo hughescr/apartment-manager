@@ -39,12 +39,14 @@ describe('BuildingDataParser', () => {
 
         test('should handle element with data attribute directly', () => {
             const testBuilding = createTestBuildingData();
+            const mockHasAttribute = jest.fn().mockReturnValue(true);
+            const mockQuerySelector = jest.fn();
             const mockElement = {
-                hasAttribute: jest.fn().mockReturnValue(true),
+                hasAttribute: mockHasAttribute,
                 dataset:      {
                     buildingData: JSON.stringify(testBuilding)
                 },
-                querySelector: jest.fn()
+                querySelector: mockQuerySelector
             } as unknown as HTMLElement;
 
             const result = BuildingDataParser.parseBuildingData(mockElement);
@@ -54,8 +56,8 @@ describe('BuildingDataParser', () => {
             expect(result!.buildingName).toBe(testBuilding.buildingName);
             // JSON parsing converts Date to string
             expect(result!.updatedAt as unknown as string).toBe(testBuilding.updatedAt!.toISOString());
-            expect(mockElement.hasAttribute).toHaveBeenCalledWith('data-building-data');
-            expect(mockElement.querySelector).not.toHaveBeenCalled();
+            expect(mockHasAttribute).toHaveBeenCalledWith('data-building-data');
+            expect(mockQuerySelector).not.toHaveBeenCalled();
         });
 
         test('should return null when no building data element found', () => {
@@ -128,9 +130,9 @@ describe('BuildingDataParser', () => {
             expect(result).toHaveLength(2);
             expect(result[0]).toMatchObject({
                 unitID:      testUnits[0].unitID,
-                status:      expect.any(String),
-                lastUpdated: expect.any(String),
-                currentRent: expect.any(Number),
+                status:      expect.any(String) as string,
+                lastUpdated: expect.any(String) as string,
+                currentRent: expect.any(Number) as number,
                 editingRent: false,
                 savingField: null
             });
@@ -190,7 +192,7 @@ describe('BuildingDataParser', () => {
             expect(result[0]).toMatchObject({
                 unitID:      'unit-1',
                 status:      'Occupied',
-                lastUpdated: expect.any(String),
+                lastUpdated: expect.any(String) as string,
                 currentRent: 2500,
                 editingRent: false,
                 savingField: null
@@ -215,7 +217,7 @@ describe('BuildingDataParser', () => {
 
             expect(result[0]).toMatchObject({
                 unitID:      'unit-1',
-                status:      expect.any(String),
+                status:      expect.any(String) as string,
                 currentRent: 0,
                 editingRent: false,
                 savingField: null
@@ -426,11 +428,11 @@ describe('BuildingDataParser', () => {
             const result = BuildingDataParser.serializeBuildingData(building);
 
             expect(typeof result).toBe('string');
-            const parsed = JSON.parse(result);
+            const parsed = JSON.parse(result) as { buildingID: string, buildingName: string, updatedAt: string };
             expect(parsed.buildingID).toBe(building.buildingID);
-            expect(parsed.buildingName).toBe(building.buildingName);
+            expect(parsed.buildingName).toBe(building.buildingName!);
             // Date objects are serialized as ISO strings
-            expect(parsed.updatedAt).toBe(building.updatedAt?.toISOString());
+            expect(parsed.updatedAt).toEqual(building.updatedAt!.toISOString());
         });
 
         test('should serialize units data and remove runtime properties', () => {
@@ -442,12 +444,12 @@ describe('BuildingDataParser', () => {
             ];
 
             const result = BuildingDataParser.serializeUnitsData(units);
-            const parsedResult = JSON.parse(result);
+            const parsedResult = JSON.parse(result) as Record<string, unknown>[];
 
-            expect(parsedResult[0]).not.toHaveProperty('editingRent');
-            expect(parsedResult[0]).not.toHaveProperty('savingField');
-            expect(parsedResult[0]).toHaveProperty('unitID');
-            expect(parsedResult[0]).toHaveProperty('rent');
+            expect(parsedResult[0] ?? {}).not.toHaveProperty('editingRent');
+            expect(parsedResult[0] ?? {}).not.toHaveProperty('savingField');
+            expect(parsedResult[0] ?? {}).toHaveProperty('unitID');
+            expect(parsedResult[0] ?? {}).toHaveProperty('rent');
         });
 
         test('should handle serialization of complex data structures', () => {
@@ -461,10 +463,12 @@ describe('BuildingDataParser', () => {
             });
 
             const result = BuildingDataParser.serializeBuildingData(complexBuilding);
-            const parsedResult = JSON.parse(result);
+            const parsedResult = JSON.parse(result) as {
+                rentSpecials: { title: string, description: string }[]
+            };
 
-            expect(parsedResult.rentSpecials[0].title).toBe('Complex "Special"');
-            expect(parsedResult.rentSpecials[0].description).toBe('With\nNewlines');
+            expect(parsedResult.rentSpecials[0]?.title).toBe('Complex "Special"');
+            expect(parsedResult.rentSpecials[0]?.description).toBe('With\nNewlines');
         });
     });
 

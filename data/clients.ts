@@ -19,7 +19,7 @@ function createMockItemResponse(item: Record<string, unknown>, unitID: string) {
     // Return all the item data that was sent, plus metadata
     return {
         ...item,
-        buildingID: item.buildingID || 'test-building',
+        buildingID: item.buildingID ?? 'test-building',
         unitID,
         _ct:        new Date().toISOString(),
         _md:        new Date().toISOString(),
@@ -29,7 +29,7 @@ function createMockItemResponse(item: Record<string, unknown>, unitID: string) {
 
 function handleMockPutCommand(cmd: { input?: Record<string, unknown> }) {
     // DynamoDB Toolbox sends data in input.Item
-    const item = (cmd.input?.Item || cmd.input || {}) as Record<string, unknown>;
+    const item = (cmd.input?.Item ?? cmd.input ?? {}) as Record<string, unknown>;
     const unitID = isString(item.unitID)
         ? item.unitID
         : 'BUILDING';
@@ -39,8 +39,8 @@ function handleMockPutCommand(cmd: { input?: Record<string, unknown> }) {
 }
 
 function handleMockUpdateCommand(cmd: { input?: Record<string, unknown> }) {
-    const updates = cmd.input?.Item || cmd.input || {};
-    const key = cmd.input?.Key || {};
+    const updates = cmd.input?.Item ?? cmd.input ?? {};
+    const key = cmd.input?.Key ?? {};
     let unitID = 'BUILDING';
     if(isString((key as Record<string, unknown>).unitID)) {
         unitID = (key as Record<string, unknown>).unitID as string;
@@ -103,10 +103,10 @@ export function getDynamoClient(injectedClient?: DynamoDBDocumentClient): Dynamo
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         if(!_dynamoClient) {
             // Use fallback test mock
-            const mockSend = createTestDynamoClient().send;
+            const testClient = createTestDynamoClient();
 
             _dynamoClient = {
-                send:            mockSend,
+                send:            testClient.send.bind(testClient),
                 destroy:         () => Promise.resolve(),
                 config:          {} as unknown,
                 middlewareStack: {} as unknown
@@ -152,16 +152,14 @@ export function getS3Client(injectedClient?: S3Client): S3Client {
         return _testS3Client;
     }
 
-    if(!_s3Client) {
-        _s3Client = new S3Client({
-            maxAttempts:    4,
-            retryMode:      'adaptive',
-            requestHandler: {
-                requestTimeout:    60000,
-                connectionTimeout: 5000
-            }
-        });
-    }
+    _s3Client ??= new S3Client({
+        maxAttempts:    4,
+        retryMode:      'adaptive',
+        requestHandler: {
+            requestTimeout:    60000,
+            connectionTimeout: 5000
+        }
+    });
     return _s3Client;
 }
 
@@ -224,10 +222,10 @@ export function getSSMClient(injectedClient?: SSMClient): SSMClient {
     if(process.env.BUN_ENV === 'test' || process.env.NODE_ENV === 'test') {
         if(!_ssmClient) {
             // Use fallback test mock
-            const mockSend = createTestSSMClient().send;
+            const testClient = createTestSSMClient();
 
             _ssmClient = {
-                send:            mockSend,
+                send:            testClient.send.bind(testClient),
                 destroy:         () => Promise.resolve(),
                 config:          {} as unknown,
                 middlewareStack: {} as unknown
@@ -236,17 +234,15 @@ export function getSSMClient(injectedClient?: SSMClient): SSMClient {
         return _ssmClient;
     }
 
-    if(!_ssmClient) {
-        _ssmClient = new SSMClient({
-            region:         'us-west-2',
-            maxAttempts:    4,
-            retryMode:      'adaptive',
-            requestHandler: {
-                requestTimeout:    30000,
-                connectionTimeout: 5000
-            }
-        });
-    }
+    _ssmClient ??= new SSMClient({
+        region:         'us-west-2',
+        maxAttempts:    4,
+        retryMode:      'adaptive',
+        requestHandler: {
+            requestTimeout:    30000,
+            connectionTimeout: 5000
+        }
+    });
     return _ssmClient;
 }
 

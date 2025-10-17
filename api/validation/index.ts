@@ -92,7 +92,7 @@ export function validateForSave(
                 success: false,
                 errors:  [{
                     field:   'entityType',
-                    message: `Unknown entity type: ${entityType}`,
+                    message: `Unknown entity type: ${String(entityType)}`,
                     code:    'INVALID_ENTITY_TYPE'
                 }]
             };
@@ -124,7 +124,7 @@ export function validateForPublish(
                 success: false,
                 errors:  [{
                     field:   'entityType',
-                    message: `Unknown entity type: ${entityType}`,
+                    message: `Unknown entity type: ${String(entityType)}`,
                     code:    'INVALID_ENTITY_TYPE'
                 }]
             };

@@ -23,10 +23,10 @@ const createMockResponse = (options: {
     return {
         ok:          options.ok,
         status:      options.status,
-        statusText:  options.statusText || '',
+        statusText:  options.statusText ?? '',
         headers:     new Headers(),
-        json:        options.json || (() => Promise.resolve({})),
-        text:        options.text || (() => Promise.resolve('')),
+        json:        options.json ?? (() => Promise.resolve({})),
+        text:        options.text ?? (() => Promise.resolve('')),
         blob:        () => Promise.resolve(new Blob()),
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
         formData:    () => Promise.resolve(new FormData()),
@@ -308,7 +308,7 @@ describe('Floorplan Save - Functional Tests', () => {
                 status: 200
             }));
 
-            serviceWithTrailingSlash.deleteUnitType('building-123', 'model-123');
+            void serviceWithTrailingSlash.deleteUnitType('building-123', 'model-123');
 
             expect(mockFetch).toHaveBeenCalledWith(
                 'https://api.test.com/buildings/building-123/unit-types/model-123',
@@ -326,7 +326,7 @@ describe('Floorplan Save - Functional Tests', () => {
                 status: 200
             }));
 
-            serviceWithoutSlash.deleteUnitType('building-123', 'model-123');
+            void serviceWithoutSlash.deleteUnitType('building-123', 'model-123');
 
             expect(mockFetch).toHaveBeenCalledWith(
                 'https://api.test.com/buildings/building-123/unit-types/model-123',

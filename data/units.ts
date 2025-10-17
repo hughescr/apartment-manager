@@ -1,4 +1,4 @@
-import { UnitData, VacancyClass, RentSpecial, Amenity } from '../src/types';
+import { UnitData, VacancyClass, RentSpecial, Amenity } from '../src/types/index.js';
 import { ApartmentTable, getApartmentTable, getUnitEntity, Unit } from './model';
 
 import { QueryCommand } from 'dynamodb-toolbox/table/actions/query';
@@ -159,7 +159,7 @@ export async function createUnit(unit: UnitData) {
 
     const UnitEntity = getUnitEntity() as typeof Unit;
     const { Attributes } = await UnitEntity.build(PutItemCommand)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox .item() requires any for library compatibility
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- DynamoDB Toolbox .item() requires any for library compatibility
         .item(unitForDB as any)
         .options({
             condition: { // Fail if unit already exists
@@ -226,7 +226,7 @@ async function tryUpdateItemCommand(updatesForDB: Record<string, unknown>): Prom
     });
 
     const { Attributes } = await UnitEntity.build(UpdateItemCommand)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox .item() requires any for library compatibility
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- DynamoDB Toolbox .item() requires any for library compatibility
         .item(updatesForDB as any)
         .options({ returnValues: 'ALL_NEW' })
         .send();
@@ -308,7 +308,7 @@ async function fallbackToPutItemCommand(
     // Use PutItemCommand as fallback for more reliable data persistence
     const UnitEntity = getUnitEntity() as typeof Unit;
     await UnitEntity.build(PutItemCommand)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DynamoDB Toolbox .item() requires any for library compatibility
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- DynamoDB Toolbox .item() requires any for library compatibility
         .item(mergedData as any)
         .send();
 
@@ -401,7 +401,7 @@ export async function deleteUnit(buildingID: string, unitID: string): Promise<bo
             .send();
         return true;
     } catch (error) {
-        logger.error('Error deleting unit:', error);
+        logger.error('Error deleting unit', { error: error as Record<string, unknown> });
         return false;
     }
 }

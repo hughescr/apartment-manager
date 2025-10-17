@@ -62,7 +62,7 @@ describe('Unit Types API - Create Basic', () => {
             const result = await create(event);
 
             expect(result.statusCode).toBe(400);
-            const responseBody = JSON.parse(result.body!);
+            const responseBody = JSON.parse(result.body!) as Record<string, unknown>;
             // buildingID is provided via path parameters, so no error expected
             expect(responseBody.errors).toHaveProperty('modelID');
         });
@@ -128,7 +128,7 @@ describe('Unit Types API - Create Basic', () => {
                 const result = await create(event);
 
                 expect(result.statusCode).toBe(400);
-                const errors = JSON.parse(result.body!).errors;
+                const errors = (JSON.parse(result.body!) as Record<string, unknown>).errors as Record<string, unknown>;
                 expect(errors.modelName).toBe('Model name cannot be empty');
             });
 
@@ -151,7 +151,7 @@ describe('Unit Types API - Create Basic', () => {
                 const result = await create(event);
 
                 expect(result.statusCode).toBe(400);
-                const errors = JSON.parse(result.body!).errors;
+                const errors = (JSON.parse(result.body!) as Record<string, unknown>).errors as Record<string, unknown>;
                 expect(errors.modelID).toBe('Model ID can only contain letters, numbers, underscores, and hyphens');
             });
 
@@ -174,7 +174,7 @@ describe('Unit Types API - Create Basic', () => {
                 const result = await create(event);
 
                 expect(result.statusCode).toBe(400);
-                const errors = JSON.parse(result.body!).errors;
+                const errors = (JSON.parse(result.body!) as Record<string, unknown>).errors as Record<string, unknown>;
                 expect(errors.beds).toBe('Number of beds must be between 0 and 10');
                 expect(errors.baths).toBe('Number of baths must be between 0 and 10');
             });

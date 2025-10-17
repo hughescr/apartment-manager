@@ -1,7 +1,5 @@
-import { logger as baseLogger } from '@hughescr/logger';
+import { logger } from '@hughescr/logger';
 import { join, toLower, trim } from 'lodash';
-
-const logger = baseLogger;
 
 /**
  * Coordinates result from geocoding
@@ -190,7 +188,7 @@ export class GeocodingService {
                     code:    response.status === 429 ? 'RATE_LIMITED' : 'SERVICE_UNAVAILABLE',
                     message: `Nominatim API error: ${response.status} ${response.statusText}`
                 };
-                logger.error('Geocoding API error', error);
+                logger.error('Geocoding API error', { code: error.code, message: error.message });
                 return null;
             }
 
@@ -214,7 +212,11 @@ export class GeocodingService {
                 message:       'Failed to geocode address',
                 originalError: error as Error
             };
-            logger.error('Geocoding failed', geocodingError);
+            logger.error('Geocoding failed', {
+                code:    geocodingError.code,
+                message: geocodingError.message,
+                error:   geocodingError.originalError?.message
+            });
             return null;
         }
     }

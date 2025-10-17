@@ -15,7 +15,7 @@ import type { S3Client } from '@aws-sdk/client-s3';
 export function createMockDynamoClient(
     sendImplementation?: (command: unknown) => Promise<unknown>
 ): DynamoDBDocumentClient {
-    const mockSend = mock(sendImplementation || ((_command: unknown) => Promise.resolve({})));
+    const mockSend = mock(sendImplementation ?? ((_command: unknown) => Promise.resolve({})));
 
     return {
         send: mockSend,
@@ -31,7 +31,7 @@ export function createMockDynamoClient(
 export function createMockS3Client(
     sendImplementation?: (command: unknown) => Promise<unknown>
 ): S3Client {
-    const mockSend = mock(sendImplementation || ((_command: unknown) => Promise.resolve({})));
+    const mockSend = mock(sendImplementation ?? ((_command: unknown) => Promise.resolve({})));
 
     return {
         send: mockSend,
@@ -153,8 +153,8 @@ export function createTrackedDynamoClient(
     const calls: { command: unknown, response: unknown }[] = [];
 
     const sendImplementation = async (command: unknown): Promise<unknown> => {
-        const commandName = command?.constructor.name || 'UnknownCommand';
-        const response = responses?.get(commandName) || {} as unknown;
+        const commandName = command?.constructor.name ?? 'UnknownCommand';
+        const response = responses?.get(commandName) ?? {} as unknown;
         calls.push({ command, response });
         return response;
     };
@@ -180,8 +180,8 @@ export function createTrackedS3Client(
     const calls: { command: unknown, response: unknown }[] = [];
 
     const sendImplementation = async (command: unknown): Promise<unknown> => {
-        const commandName = command?.constructor.name || 'UnknownCommand';
-        const response = responses?.get(commandName) || {} as unknown;
+        const commandName = (command?.constructor.name ?? 'UnknownCommand');
+        const response = (responses?.get(commandName) ?? {}) as unknown;
         calls.push({ command, response });
         return response;
     };

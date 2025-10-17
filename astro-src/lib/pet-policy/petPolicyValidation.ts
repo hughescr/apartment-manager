@@ -125,9 +125,7 @@ function validateAdvancedPetTypes(policy: ExtendedPetPolicy, errors: PetPolicyEr
             const petTypeErrors = validatePetTypePolicy(petType, i);
 
             if(petTypeErrors.length > 0) {
-                if(!errors.general) {
-                    errors.general = '';
-                }
+                errors.general ??= '';
                 errors.general += `Pet Type ${i + 1}: ${petTypeErrors.join(', ')}. `;
                 isValid = false;
             }
@@ -137,9 +135,7 @@ function validateAdvancedPetTypes(policy: ExtendedPetPolicy, errors: PetPolicyEr
         const petTypeValues = map(policy.petTypes, 'type');
         const duplicatePetTypes = findDuplicates(petTypeValues);
         if(duplicatePetTypes.length > 0) {
-            if(!errors.general) {
-                errors.general = '';
-            }
+            errors.general ??= '';
             errors.general += `Duplicate pet types found: ${duplicatePetTypes.join(', ')}`;
             isValid = false;
         }
@@ -373,7 +369,7 @@ function validateNumericFieldValue(fieldName: string, value: unknown): string | 
     const limits = VALIDATION_LIMITS[fieldName as keyof typeof VALIDATION_LIMITS];
     if(isObject(limits) && 'min' in limits && 'max' in limits) {
         const result = validateNumericInput(value, limits.min, limits.max);
-        return result.error || null;
+        return result.error ?? null;
     }
     return null;
 }

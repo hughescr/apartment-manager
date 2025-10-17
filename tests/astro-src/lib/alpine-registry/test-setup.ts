@@ -185,7 +185,7 @@ const createAlpineMock = (): MockAlpine => ({
     walk:     jest.fn(),
 
     // Naming and storage
-    prefixed: jest.fn().mockImplementation((subject?: string) => `x-${subject || ''}`),
+    prefixed: jest.fn().mockImplementation((subject?: string) => `x-${subject ?? ''}`),
     prefix:   jest.fn(),
     store:    jest.fn(),
 

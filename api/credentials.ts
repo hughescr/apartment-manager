@@ -31,7 +31,7 @@ export async function list(_event: APIGatewayProxyEventV2): Promise<APIGatewayPr
             })
         };
     } catch (error) {
-        logger.error('Failed to list credentials:', error);
+        logger.error('Failed to list credentials', { error: error as Record<string, unknown> });
         return {
             statusCode: 500,
             headers:    { 'Content-Type': 'application/json' },
@@ -81,10 +81,10 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
 
         let credentials: SiteCredentials;
         try {
-            credentials = JSON.parse(event.body);
+            credentials = JSON.parse(event.body) as SiteCredentials;
         } catch (parseError) {
             logger.warn('Failed to parse credentials request body', {
-                error:      parseError,
+                error:      parseError as Record<string, unknown>,
                 context:    'store credentials request parsing',
                 httpMethod: event.requestContext.http.method
             });
@@ -120,7 +120,7 @@ export async function create(event: APIGatewayProxyEventV2): Promise<APIGatewayP
             })
         };
     } catch (error) {
-        logger.error('Failed to store credentials:', error);
+        logger.error('Failed to store credentials', { error: error as Record<string, unknown> });
         return {
             statusCode: 500,
             headers:    { 'Content-Type': 'application/json' },
@@ -180,7 +180,7 @@ export async function get(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
             })
         };
     } catch (error) {
-        logger.error('Failed to check credentials:', error);
+        logger.error('Failed to check credentials', { error: error as Record<string, unknown> });
         return {
             statusCode: 500,
             headers:    { 'Content-Type': 'application/json' },
@@ -223,7 +223,7 @@ export async function del(event: APIGatewayProxyEventV2): Promise<APIGatewayProx
             body:       ''
         };
     } catch (error) {
-        logger.error('Failed to delete credentials:', error);
+        logger.error('Failed to delete credentials', { error: error as Record<string, unknown> });
         return {
             statusCode: 500,
             headers:    { 'Content-Type': 'application/json' },

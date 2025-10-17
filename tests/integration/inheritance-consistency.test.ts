@@ -219,7 +219,9 @@ describe('Inheritance System Consistency Tests', () => {
                     const expectedEffective = unitType[minField as keyof UnitTypeData] ?? unitType[maxField as keyof UnitTypeData];
                     expect(effectiveValueByManager).toBe(expectedEffective);
                 } else {
-                    expect(effectiveValueByManager).toBe(`${unitType[minField as keyof UnitTypeData]} - ${unitType[maxField as keyof UnitTypeData]}`);
+                    const minValue = unitType[minField as keyof UnitTypeData] as number | undefined;
+                    const maxValue = unitType[maxField as keyof UnitTypeData] as number | undefined;
+                    expect(effectiveValueByManager).toBe(`${minValue} - ${maxValue}`);
                 }
             }
         };
@@ -271,7 +273,7 @@ describe('Inheritance System Consistency Tests', () => {
             } else {
                 // No inheritance available
                 expect(isInheritedByManager).toBe(false);
-                const expectedValue = unitValue === undefined ? null : unitValue;
+                const expectedValue = unitValue ?? null;
                 const resolvedFieldValue = resolvedByResolver[field as keyof typeof resolvedByResolver];
                 if(expectedValue === null) {
                     expect(resolvedFieldValue).toBeNull();
@@ -361,7 +363,7 @@ describe('Inheritance System Consistency Tests', () => {
             // Filter out custom units with no unit type as MITS generation requires valid unit types
             const availableUnits = filter(testUnits, u => !u.occupied && u.modelID !== '');
             forEach(availableUnits, (unit) => {
-                const unitType = find(mockUnitTypes, { modelID: unit.modelID }) || undefined;
+                const unitType = find(mockUnitTypes, { modelID: unit.modelID }) ?? undefined;
                 const resolved = inheritanceResolver.resolveUnitValues(unit, unitType, mockBuilding);
 
                 // Find unit section in XML
@@ -420,7 +422,7 @@ describe('Inheritance System Consistency Tests', () => {
             // Test inheritance resolution performance
             let resolvedUnits = 0;
             forEach(largeUnitSet, (unit) => {
-                const unitType = find(mockUnitTypes, { modelID: unit.modelID }) || undefined;
+                const unitType = find(mockUnitTypes, { modelID: unit.modelID }) ?? undefined;
                 const resolved = inheritanceResolver.resolveUnitValues(unit, unitType, mockBuilding);
 
                 // Basic validation that resolution worked
@@ -449,7 +451,7 @@ describe('Inheritance System Consistency Tests', () => {
             expect(resolvedUnits).toBe(1000);
 
             // Verify XML contains expected number of units (900 available units)
-            const unitMatches = xml.match(/<UnitID>perf-unit-\d+<\/UnitID>/g) || [];
+            const unitMatches = xml.match(/<UnitID>perf-unit-\d+<\/UnitID>/g) ?? [];
             expect(unitMatches.length).toBe(900); // 1000 - 100 occupied
         });
     });
@@ -579,7 +581,7 @@ describe('Inheritance System Consistency Tests', () => {
             // Simulate the complete flow: UI -> API -> MITS Generation
 
             forEach(testUnits, (unit) => {
-                const unitType = find(mockUnitTypes, { modelID: unit.modelID }) || undefined;
+                const unitType = find(mockUnitTypes, { modelID: unit.modelID }) ?? undefined;
 
                 // 1. UI layer (FieldInheritanceManager) evaluation
                 const uiEvaluation = {
@@ -670,7 +672,7 @@ describe('Inheritance System Consistency Tests', () => {
             const processTestUnits = (freshFieldManager: FieldInheritanceManager) => {
                 const cycleResults: Record<string, unknown> = {};
                 forEach(testUnits, (unit, unitIndex) => {
-                    const unitType = find(mockUnitTypes, { modelID: unit.modelID }) || undefined;
+                    const unitType = find(mockUnitTypes, { modelID: unit.modelID }) ?? undefined;
 
                     // Test resolution with fresh manager instance
                     const resolved = inheritanceResolver.resolveUnitValues(unit, unitType, mockBuilding);

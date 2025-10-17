@@ -17,6 +17,10 @@ const {
     errors,
     onBuildingUpdate: _onBuildingUpdate = "console.log('Building updated:', building)"
 } = Astro.props;
+
+// Mark as intentionally unused
+void _apiUrl;
+void _onBuildingUpdate;
 ---
 
 <div class="marketing-tab space-y-6">

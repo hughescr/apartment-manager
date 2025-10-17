@@ -2,7 +2,7 @@
 // Extracted from BuildingsComponent.astro to centralized registration system
 
 import _ from 'lodash';
-import type { BuildingData } from '../types';
+import type { BuildingData } from '../types/index.js';
 
 // Define Building interface locally since it's not exported from types
 interface Building {
@@ -21,8 +21,8 @@ export function createBuildingsComponentState() {
         apiURL:            '',
 
         init() {
-            this.buildings = this.$el?.dataset.buildings ? JSON.parse(this.$el.dataset.buildings) : [];
-            this.apiURL = this.$el?.dataset.apiUrl || '';
+            this.buildings = this.$el?.dataset.buildings ? JSON.parse(this.$el.dataset.buildings) as BuildingData[] : [];
+            this.apiURL = this.$el?.dataset.apiUrl ?? '';
 
             // Restore active tab from session or URL hash
             const stored = sessionStorage.getItem('activeBuildingTab');

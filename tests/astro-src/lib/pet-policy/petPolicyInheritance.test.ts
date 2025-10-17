@@ -472,26 +472,26 @@ function applyBasicPolicyMerging(merged: ExtendedPetPolicy, overridePolicy: Exte
 // Helper to apply numeric limits merging
 function applyNumericLimitsMerging(merged: ExtendedPetPolicy, overridePolicy: ExtendedPetPolicy): void {
     if(overridePolicy.maxCount !== undefined) {
-        merged.maxCount = Math.min(merged.maxCount || Infinity, overridePolicy.maxCount);
+        merged.maxCount = Math.min(merged.maxCount ?? Infinity, overridePolicy.maxCount);
     }
 
     if(overridePolicy.weightLimit !== undefined) {
-        merged.weightLimit = Math.min(merged.weightLimit || Infinity, overridePolicy.weightLimit);
+        merged.weightLimit = Math.min(merged.weightLimit ?? Infinity, overridePolicy.weightLimit);
     }
 }
 
 // Helper to apply fee merging
 function applyFeeMerging(merged: ExtendedPetPolicy, overridePolicy: ExtendedPetPolicy): void {
     if(overridePolicy.deposit !== undefined) {
-        merged.deposit = Math.max(merged.deposit || 0, overridePolicy.deposit);
+        merged.deposit = Math.max(merged.deposit ?? 0, overridePolicy.deposit);
     }
 
     if(overridePolicy.monthlyFee !== undefined) {
-        merged.monthlyFee = Math.max(merged.monthlyFee || 0, overridePolicy.monthlyFee);
+        merged.monthlyFee = Math.max(merged.monthlyFee ?? 0, overridePolicy.monthlyFee);
     }
 
     if(overridePolicy.oneTimeFee !== undefined) {
-        merged.oneTimeFee = Math.max(merged.oneTimeFee || 0, overridePolicy.oneTimeFee);
+        merged.oneTimeFee = Math.max(merged.oneTimeFee ?? 0, overridePolicy.oneTimeFee);
     }
 }
 
@@ -499,7 +499,7 @@ function applyFeeMerging(merged: ExtendedPetPolicy, overridePolicy: ExtendedPetP
 function applyBreedRestrictionsMerging(merged: ExtendedPetPolicy, overridePolicy: ExtendedPetPolicy): void {
     if(overridePolicy.breedRestrictions && overridePolicy.breedRestrictions.length > 0) {
         const allRestrictions = [
-            ...(merged.breedRestrictions || []),
+            ...(merged.breedRestrictions ?? []),
             ...overridePolicy.breedRestrictions
         ];
         merged.breedRestrictions = [...new Set(allRestrictions)]; // Remove duplicates
@@ -520,7 +520,7 @@ function applyNotesMerging(merged: ExtendedPetPolicy, overridePolicy: ExtendedPe
 // Helper to apply advanced pet types merging
 function applyAdvancedPetTypesMerging(merged: ExtendedPetPolicy, overridePolicy: ExtendedPetPolicy): void {
     if(overridePolicy.petTypes && overridePolicy.petTypes.length > 0) {
-        merged.petTypes = merged.petTypes || [];
+        merged.petTypes = merged.petTypes ?? [];
 
         forEach(overridePolicy.petTypes, (overridePetType) => {
             const existingIndex = findIndex(merged.petTypes, { type: overridePetType.type }) ?? -1;
@@ -545,21 +545,21 @@ function mergePetTypePolicy(
     return {
         type:        override.type,
         weightLimit: override.weightLimit !== undefined
-            ? Math.min(base.weightLimit || Infinity, override.weightLimit)
+            ? Math.min(base.weightLimit ?? Infinity, override.weightLimit)
             : base.weightLimit,
         countLimit: override.countLimit !== undefined
-            ? Math.min(base.countLimit || Infinity, override.countLimit)
+            ? Math.min(base.countLimit ?? Infinity, override.countLimit)
             : base.countLimit,
         fee: override.fee !== undefined
-            ? Math.max(base.fee || 0, override.fee)
+            ? Math.max(base.fee ?? 0, override.fee)
             : base.fee,
         deposit: override.deposit !== undefined
-            ? Math.max(base.deposit || 0, override.deposit)
+            ? Math.max(base.deposit ?? 0, override.deposit)
             : base.deposit,
 
         breedRestrictions: [
-            ...(base.breedRestrictions || []),
-            ...(override.breedRestrictions || [])
+            ...(base.breedRestrictions ?? []),
+            ...(override.breedRestrictions ?? [])
         ].filter((breed, index, arr) => arr.indexOf(breed) === index) // Remove duplicates
     };
 }

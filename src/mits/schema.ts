@@ -1,7 +1,7 @@
 // MITS 4.1 TypeScript Schema Definitions
 // Based on MITS (Multifamily Information and Transactions Standard) 4.1
 
-import type { BuildingData, UnitTypeData, UnitData } from '../types';
+import type { BuildingData, UnitTypeData, UnitData } from '../types/index.js';
 
 export interface MITSPhysicalProperty {
     Property_ID:  PropertyIdentification

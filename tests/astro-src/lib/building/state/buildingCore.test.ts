@@ -135,9 +135,9 @@ describe('BuildingCore', () => {
             tick(100);
 
             // Get the watcher callback
-            const watchCall = find((mockState.$watch as jest.Mock).mock.calls, ['0', 'building']);
+            const watchCall = find((mockState.$watch as jest.Mock).mock.calls, ['0', 'building']) as unknown[] | undefined;
             expect(watchCall).toBeDefined();
-            const watcherCallback = watchCall![1];
+            const watcherCallback = watchCall![1] as (value: unknown) => void;
 
             // Simulate building update
             const updatedBuilding = createTestBuildingData({ buildingName: 'Updated Name' });
@@ -181,8 +181,8 @@ describe('BuildingCore', () => {
 
             expect(typeof result).toBe('boolean');
             expect(mockState.$dispatch).toHaveBeenCalledWith('building:validate', {
-                isValid: expect.any(Boolean),
-                errors:  expect.any(Object)
+                isValid: expect.any(Boolean) as boolean,
+                errors:  expect.any(Object) as Record<string, string>
             });
         });
 
@@ -232,7 +232,7 @@ describe('BuildingCore', () => {
 
             expect(mockState.saving).toBe(false);
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
-                message: expect.stringContaining('Failed to save building'),
+                message: expect.stringContaining('Failed to save building') as string,
                 type:    'error'
             });
         });
@@ -354,7 +354,7 @@ describe('BuildingCore', () => {
             await buildingCore.deleteBuildingData();
 
             expect(mockState.$dispatch).toHaveBeenCalledWith('toast:show', {
-                message: expect.stringContaining('Failed to delete building'),
+                message: expect.stringContaining('Failed to delete building') as string,
                 type:    'error'
             });
         });
@@ -444,7 +444,7 @@ describe('BuildingCore', () => {
         });
 
         test('should add new rent special', () => {
-            const initialLength = mockState.building?.rentSpecials?.length || 0;
+            const initialLength = mockState.building?.rentSpecials?.length ?? 0;
 
             buildingCore.addRentSpecial();
 
@@ -452,7 +452,7 @@ describe('BuildingCore', () => {
 
             const newSpecial = mockState.building?.rentSpecials?.[initialLength];
             expect(newSpecial).toMatchObject({
-                id:          expect.any(Number),
+                id:          expect.any(Number) as number,
                 title:       '',
                 description: '',
                 startDate:   '',
@@ -469,7 +469,7 @@ describe('BuildingCore', () => {
         });
 
         test('should remove rent special by index', () => {
-            const initialLength = mockState.building?.rentSpecials?.length || 0;
+            const initialLength = mockState.building?.rentSpecials?.length ?? 0;
 
             buildingCore.removeRentSpecial(0);
 
@@ -534,7 +534,8 @@ describe('BuildingCore', () => {
 
             // After timeout, original should be set
             expect(mockState.original).toBeDefined();
-            expect(mockState.original).toEqual(JSON.parse(JSON.stringify(mockState.building)));
+            const buildingString = JSON.stringify(mockState.building);
+            expect(JSON.stringify(mockState.original)).toBe(buildingString);
         });
     });
 
@@ -574,7 +575,7 @@ describe('BuildingCore', () => {
                 })
             );
 
-            buildingCore.saveBuildingData();
+            void buildingCore.saveBuildingData();
 
             // During save, watchers should be suspended
             expect(mockState.$nextTick).toHaveBeenCalled();

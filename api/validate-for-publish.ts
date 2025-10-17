@@ -2,7 +2,7 @@ import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-l
 import { getBuilding } from '../data/buildings';
 import { getUnitTypes } from '../data/unitTypes';
 import { getUnits } from '../data/units';
-import { BuildingData, UnitTypeData, UnitData } from '../src/types';
+import type { BuildingData, UnitTypeData, UnitData } from '../src/types/index.js';
 import { every, filter, isError, isObject, isString, map, omit, pick, replace, sumBy } from 'lodash';
 import { sanitizeObject } from './security-validation';
 import { validateSingleId } from './shared/request-handlers';
@@ -110,7 +110,7 @@ export const validate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayP
             };
         }
     } catch (error) {
-        logger.error('Validation endpoint error:', error);
+        logger.error('Validation endpoint error', { error: error as Record<string, unknown> });
         return {
             statusCode: 500,
             body:       JSON.stringify({
@@ -126,8 +126,8 @@ export const validate = async (evt: APIGatewayProxyEventV2): Promise<APIGatewayP
  */
 function parseValidationRequest(body: string | null): ValidationRequest | APIGatewayProxyStructuredResultV2 {
     try {
-        const rawData = JSON.parse(body || '{}');
-        const data = sanitizeObject(rawData) as ValidationRequest;
+        const rawData: unknown = JSON.parse(body ?? '{}');
+        const data = sanitizeObject(rawData as Record<string, unknown>) as unknown as ValidationRequest;
 
         // Validate required fields
         if(!data.entityType || !['building', 'unitType', 'unit', 'complete'].includes(data.entityType)) {
@@ -157,7 +157,7 @@ function parseValidationRequest(body: string | null): ValidationRequest | APIGat
         return data;
     } catch (parseError) {
         logger.warn('Failed to parse validation request body', {
-            error:   parseError,
+            error:   parseError as Record<string, unknown>,
             context: 'parseValidationRequest'
         });
         return {

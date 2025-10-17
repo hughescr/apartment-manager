@@ -349,7 +349,7 @@ export const deeplyNestedBuilding: BuildingData = {
             chain(Array(20))
                 .fill(null)
                 .map((_, i) => [String(i + 1), (i + 1) * 30000])
-                .value()
+                .value() as [string, number][]
         )
     },
     contactInfo: {

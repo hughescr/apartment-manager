@@ -58,7 +58,8 @@ describe('Alpine.js Registry System', () => {
             // Get the calls made to Alpine.data
             const calls = mockAlpineData.mock.calls;
 
-            calls.forEach(([componentName, factory]) => {
+            calls.forEach((call) => {
+                const [componentName, factory] = call as [string, () => unknown];
                 expect(typeof factory).toBe('function');
 
                 // Factory functions should be callable
@@ -148,7 +149,10 @@ describe('Alpine.js Registry System', () => {
             registerAlpineComponents(mockAlpine);
 
             const calls = mockAlpineData.mock.calls;
-            const factories = calls.map(([_, factory]) => factory);
+            const factories = calls.map((call) => {
+                const [, factory] = call as [unknown, unknown];
+                return factory;
+            });
 
             // All factories should be unique function references
             const uniqueFactories = new Set(factories);

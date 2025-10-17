@@ -55,13 +55,13 @@ describe('BuildingProvider Component', () => {
             // Test default initialization logic directly
             const processedBuilding = {
                 ...incompleteBuilding,
-                oneTimeFees:       incompleteBuilding.oneTimeFees || [],
-                monthlyFees:       incompleteBuilding.monthlyFees || [],
-                parkingOptions:    incompleteBuilding.parkingOptions || [],
-                storageOptions:    incompleteBuilding.storageOptions || [],
-                propertyAmenities: incompleteBuilding.propertyAmenities || [],
-                rentSpecials:      incompleteBuilding.rentSpecials || [],
-                photos:            incompleteBuilding.photos || []
+                oneTimeFees:       incompleteBuilding.oneTimeFees ?? [],
+                monthlyFees:       incompleteBuilding.monthlyFees ?? [],
+                parkingOptions:    incompleteBuilding.parkingOptions ?? [],
+                storageOptions:    incompleteBuilding.storageOptions ?? [],
+                propertyAmenities: incompleteBuilding.propertyAmenities ?? [],
+                rentSpecials:      incompleteBuilding.rentSpecials ?? [],
+                photos:            incompleteBuilding.photos ?? []
             };
 
             // Test that defaults are applied
@@ -83,7 +83,7 @@ describe('BuildingProvider Component', () => {
             // Test default initialization logic directly
             const processedBuilding = {
                 ...buildingWithoutUtilities,
-                utilitiesIncluded: buildingWithoutUtilities.utilitiesIncluded || {}
+                utilitiesIncluded: buildingWithoutUtilities.utilitiesIncluded ?? {}
             };
 
             expect(processedBuilding.utilitiesIncluded).toEqual({});
@@ -98,7 +98,7 @@ describe('BuildingProvider Component', () => {
             // Test default initialization logic directly
             const processedBuilding = {
                 ...buildingWithoutPetPolicies,
-                petPolicies: buildingWithoutPetPolicies.petPolicies || {
+                petPolicies: buildingWithoutPetPolicies.petPolicies ?? {
                     allowed:  false,
                     petTypes: []
                 }
@@ -121,7 +121,7 @@ describe('BuildingProvider Component', () => {
                 ...buildingWithIncompletePetPolicies,
                 petPolicies: {
                     ...buildingWithIncompletePetPolicies.petPolicies!,
-                    petTypes: buildingWithIncompletePetPolicies.petPolicies!.petTypes || []
+                    petTypes: buildingWithIncompletePetPolicies.petPolicies!.petTypes ?? []
                 }
             };
 
@@ -136,7 +136,7 @@ describe('BuildingProvider Component', () => {
             // Test default initialization logic directly
             const processedBuilding = {
                 ...buildingWithoutScreeningCriteria,
-                screeningCriteria: buildingWithoutScreeningCriteria.screeningCriteria || {
+                screeningCriteria: buildingWithoutScreeningCriteria.screeningCriteria ?? {
                     incomeRatio:             3,
                     minCreditScore:          600,
                     maxOccupantsPerBedroom:  2,
@@ -171,7 +171,7 @@ describe('BuildingProvider Component', () => {
             // Test default initialization logic directly
             const processedBuilding = {
                 ...buildingWithoutContact,
-                contactInfo: buildingWithoutContact.contactInfo || {}
+                contactInfo: buildingWithoutContact.contactInfo ?? {}
             };
 
             expect(processedBuilding.contactInfo).toEqual({});
@@ -246,8 +246,8 @@ describe('BuildingProvider Component', () => {
             // Test default initialization for missing fields
             const processedBuilding = {
                 ...malformedBuilding,
-                oneTimeFees: malformedBuilding.oneTimeFees || [],
-                monthlyFees: malformedBuilding.monthlyFees || []
+                oneTimeFees: malformedBuilding.oneTimeFees ?? [],
+                monthlyFees: malformedBuilding.monthlyFees ?? []
             };
 
             expect(processedBuilding.buildingID).toBe('eEUxh8XdGF1RsxfmwHPpYD');

@@ -1,4 +1,4 @@
-import type { VacancyClass } from '../../src/types';
+import type { VacancyClass } from '../../src/types/index.js';
 import { isString, trim } from 'lodash';
 
 /**
@@ -44,7 +44,7 @@ export function getDefaultAvailabilityStatus(vacancyClass: VacancyClass): boolea
 /**
  * Validate a vacancy class value
  */
-export function validateVacancyClass(vacancyClass: VacancyClass | string | null | undefined): StatusValidationResult {
+export function validateVacancyClass(vacancyClass: unknown): StatusValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 

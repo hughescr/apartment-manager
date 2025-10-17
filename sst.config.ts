@@ -1,13 +1,15 @@
+/* eslint-disable @typescript-eslint/triple-slash-reference -- SST requires triple-slash reference for config types */
 /// <reference path="./.sst/platform/config.d.ts" />
+/* eslint-enable @typescript-eslint/triple-slash-reference -- Re-enable rule after required SST reference */
 
 export default $config({
     app(input) {
         return {
-            name: 'apartment-manager',
-            region: 'us-west-2',
-            removal: input?.stage === 'production' ? 'retain' : 'remove',
-            protect: ['production'].includes(input?.stage),
-            home: 'aws',
+            name:      'apartment-manager',
+            region:    'us-west-2',
+            removal:   input?.stage === 'production' ? 'retain' : 'remove',
+            protect:   ['production'].includes(input?.stage),
+            home:      'aws',
             providers: {
                 aws: {
                     region: 'us-west-2',
@@ -22,8 +24,8 @@ export default $config({
             args.transform ??= {};
             args.transform.table = {
                 ...(args.transform.table ?? {}),
-                billingMode: 'PROVISIONED',
-                readCapacity: 1,
+                billingMode:   'PROVISIONED',
+                readCapacity:  1,
                 writeCapacity: 1,
             };
         });
@@ -39,8 +41,8 @@ export default $config({
         const { api, uploadApi } = await import('./sst/api');
 
         return {
-            site: site.url,
-            api: api.url,
+            site:      site.url,
+            api:       api.url,
             UploadAPI: uploadApi.url,
         };
     },

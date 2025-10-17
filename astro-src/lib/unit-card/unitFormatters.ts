@@ -108,7 +108,7 @@ export class UnitFormatters {
             Notice:     'Tenant gave notice but hasn\'t vacated yet',
             Down:       'Unavailable due to maintenance/renovation'
         };
-        return displays[vacancyClass || ''] || 'Status not set';
+        return displays[vacancyClass ?? ''] ?? 'Status not set';
     }
 
     /**
@@ -121,7 +121,7 @@ export class UnitFormatters {
             Notice:     'badge-warning',
             Down:       'badge-error'
         };
-        return classes[vacancyClass || ''] || 'badge-ghost';
+        return classes[vacancyClass ?? ''] ?? 'badge-ghost';
     }
 
     /**

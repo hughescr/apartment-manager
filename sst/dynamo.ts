@@ -1,4 +1,4 @@
-/// <reference path="../.sst/platform/config.d.ts" />
+import type {} from '../.sst/platform/config';
 
 const buildingsUnitsTable = new sst.aws.Dynamo('BuildingsUnits', {
     fields: {

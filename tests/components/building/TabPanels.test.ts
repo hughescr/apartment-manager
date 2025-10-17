@@ -162,7 +162,7 @@ describe('TabPanels Component Logic', () => {
         it('should handle slot content insertion logic', () => {
             // Test slot content logic
             const hasCustomContent = (slotName: string, slots: Record<string, string>) => {
-                return slots && slots[slotName];
+                return slots?.[slotName];
             };
 
             const mockSlots = { 'building-info': '<div>Custom Content</div>' };

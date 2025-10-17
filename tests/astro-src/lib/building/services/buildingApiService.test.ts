@@ -328,7 +328,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
                 status: 200
             }));
 
-            apiServiceWithSlash.deleteUnitType(testBuildingId, 'test-id');
+            void apiServiceWithSlash.deleteUnitType(testBuildingId, 'test-id');
 
             expect(mockFetch).toHaveBeenCalledWith(
                 'https://api.example.com/buildings/test-building-123/unit-types/test-id',
@@ -347,7 +347,8 @@ describe('BuildingApiService - Unit Type Methods', () => {
                 status: 200
             }));
 
-            apiServiceNoSlash.deleteUnitType(testBuildingId, 'test-id');
+            const promise = apiServiceNoSlash.deleteUnitType(testBuildingId, 'test-id');
+            void promise;
 
             expect(mockFetch).toHaveBeenCalledWith(
                 'https://api.example.com/buildings/test-building-123/unit-types/test-id',
@@ -367,7 +368,8 @@ describe('BuildingApiService - Unit Type Methods', () => {
                 status: 200
             }));
 
-            apiService.deleteUnitType(specialBuildingId, specialModelId);
+            const promise = apiService.deleteUnitType(specialBuildingId, specialModelId);
+            void promise;
 
             expect(mockFetch).toHaveBeenCalledWith(
                 `${testApiURL}/buildings/${specialBuildingId}/unit-types/${specialModelId}`,

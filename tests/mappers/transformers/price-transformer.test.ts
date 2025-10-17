@@ -54,6 +54,7 @@ describe('Price Transformer', () => {
             const formatter = createPriceFormatter();
 
             expect(formatter(undefined)).toBeUndefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing null value edge case
             expect(formatter(null as any)).toBeUndefined();
         });
 
@@ -242,6 +243,7 @@ describe('Price Transformer', () => {
         });
 
         it('should handle default case', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing unknown period edge case
             expect(convertRentPeriod(1000, 'unknown' as any)).toBe(1000);
         });
 

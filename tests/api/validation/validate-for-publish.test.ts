@@ -52,7 +52,12 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                entityType:        string
+                validationResults: { basic: { success: boolean } }
+                summary:           { canPublish: boolean, totalEntitiesValidated: number, entitiesWithErrors: number }
+            };
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('building');
             expect(response.validationResults.basic.success).toBe(true);
@@ -82,7 +87,12 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                entityType:        string
+                validationResults: { basic: { success: boolean } }
+                summary:           { canPublish: boolean }
+            };
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('unitType');
             expect(response.validationResults.basic.success).toBe(true);
@@ -112,7 +122,12 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                entityType:        string
+                validationResults: { basic: { success: boolean } }
+                summary:           { canPublish: boolean }
+            };
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('unit');
             expect(response.validationResults.basic.success).toBe(true);
@@ -136,7 +151,11 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                validationResults: { basic: { success: boolean, errors: unknown[] } }
+                summary:           { canPublish: boolean, entitiesWithErrors: number }
+            };
             expect(response.success).toBe(false);
             expect(response.validationResults.basic.success).toBe(false);
             expect(response.validationResults.basic.errors.length).toBeGreaterThan(0);
@@ -175,12 +194,12 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
-            expect(response.validationResults.siteRequirements).toHaveLength(2);
-            expect(response.validationResults.siteRequirements[0].canPublish).toBe(false);
-            expect(response.validationResults.siteRequirements[0].errors[0].message).toContain('Site validation requires complete building data');
-            expect(response.summary.canPublishToSites.apartments_com).toBe(false);
-            expect(response.summary.canPublishToSites.zillow).toBe(false);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
+            expect((response as { validationResults: { siteRequirements: unknown[] } }).validationResults.siteRequirements).toHaveLength(2);
+            expect((response as { validationResults: { siteRequirements: { canPublish: boolean, errors: unknown[] }[] } }).validationResults.siteRequirements[0].canPublish).toBe(false);
+            expect((response as { validationResults: { siteRequirements: { errors: { message: string }[] }[] } }).validationResults.siteRequirements[0].errors[0].message).toContain('Site validation requires complete building data');
+            expect((response as { summary: { canPublishToSites: { apartments_com: boolean } } }).summary.canPublishToSites.apartments_com).toBe(false);
+            expect((response as { summary: { canPublishToSites: { zillow: boolean } } }).summary.canPublishToSites.zillow).toBe(false);
         });
     });
 
@@ -220,7 +239,13 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                entityType:        string
+                entities:          number
+                validationResults: { success: boolean }[]
+                summary:           { totalEntitiesValidated: number, entitiesWithErrors: number, canPublish: boolean }
+            };
             expect(response.success).toBe(true);
             expect(response.entityType).toBe('unit');
             expect(response.entities).toBe(2);
@@ -263,7 +288,11 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                validationResults: { success: boolean }[]
+                summary:           { entitiesWithErrors: number, totalErrors: number, canPublish: boolean }
+            };
             expect(response.success).toBe(false);
             expect(response.validationResults[0].success).toBe(true);
             expect(response.validationResults[1].success).toBe(false);
@@ -299,8 +328,8 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
-            expect(response.summary.canPublishToSites.apartments_com).toBe(false);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
+            expect((response as { summary: { canPublishToSites: { apartments_com: boolean } } }).summary.canPublishToSites.apartments_com).toBe(false);
         });
     });
 
@@ -389,7 +418,18 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                buildingID:        string
+                totalEntities:     number
+                validationResults: {
+                    building:  { success: boolean }
+                    unitTypes: { success: boolean }[]
+                    units:     { success: boolean }[]
+                    complete:  { success: boolean }
+                }
+                summary: { canPublish: boolean }
+            };
 
             expect(response.success).toBe(true);
             expect(response.buildingID).toBe('gSPgoPTdFcPqdeCYMBZMzy');
@@ -420,7 +460,11 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:          boolean
+                siteRequirements: { site: string, canPublish?: boolean }[]
+                summary:          { canPublishToSites: { apartments_com: boolean, zillow: boolean } }
+            };
 
             // Debug logging to see what's failing - use test framework reporting
             if(!response.summary.canPublishToSites.apartments_com) {
@@ -452,7 +496,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(404);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
             expect(response.error).toBe('Building not found');
         });
 
@@ -489,7 +533,15 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                success:           boolean
+                validationResults: {
+                    building: { success: boolean }
+                    units:    { success: boolean }[]
+                }
+                missingMITSFields: unknown[]
+                summary:           { canPublish: boolean, entitiesWithErrors: number }
+            };
             expect(response.success).toBe(false);
             expect(response.validationResults.building.success).toBe(false);
             expect(response.validationResults.units[0].success).toBe(false);
@@ -520,11 +572,11 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
-            expect(response.siteRequirements[0].canPublish).toBe(false);
-            expect(response.summary.canPublishToSites.apartments_com).toBe(false);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
+            expect((response.siteRequirements as { canPublish: boolean }[])[0].canPublish).toBe(false);
+            expect((response as { summary: { canPublishToSites: { apartments_com: boolean } } }).summary.canPublishToSites.apartments_com).toBe(false);
 
-            const photoError = find(response.siteRequirements[0].errors, {
+            const photoError = find((response.siteRequirements as { errors: { field: string, message: string }[] }[])[0].errors, {
                 field: 'building.photos'
             });
             expect(photoError?.message).toContain('At least one building photo is required for Apartments.com');
@@ -563,11 +615,11 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const response = JSON.parse(result.body!);
-            expect(response.siteRequirements[0].canPublish).toBe(false);
-            expect(response.summary.canPublishToSites.zillow).toBe(false);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
+            expect((response.siteRequirements as { canPublish: boolean }[])[0].canPublish).toBe(false);
+            expect((response as { summary: { canPublishToSites: { zillow: boolean } } }).summary.canPublishToSites.zillow).toBe(false);
 
-            const rentError = find(response.siteRequirements[0].errors, {
+            const rentError = find((response.siteRequirements as { errors: { field: string, message: string }[] }[])[0].errors, {
                 field: 'units.0.rent'
             });
             expect(rentError?.message).toContain('Rent amount is required for all units on Zillow');
@@ -583,7 +635,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
             expect(response.error).toBe('Invalid request body');
         });
 
@@ -597,7 +649,10 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                error:  string
+                errors: { entityType: string }
+            };
             expect(response.error).toBe('Validation failed');
             expect(response.errors.entityType).toContain('entityType must be one of');
         });
@@ -612,7 +667,9 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                errors: { entityType: string }
+            };
             expect(response.errors.entityType).toContain('entityType must be one of');
         });
 
@@ -627,7 +684,9 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                errors: { buildingID: string }
+            };
             expect(response.errors.buildingID).toContain('Invalid buildingID format');
         });
 
@@ -642,7 +701,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
             expect(response.error).toBe('Invalid request');
             expect(response.message).toContain('Must provide either entityData');
         });
@@ -660,7 +719,7 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(500);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
             expect(response.error).toBe('Internal server error during validation');
             expect(response.details).toBe('Database connection failed');
         });
@@ -673,7 +732,9 @@ describe('Validate for Publish API Endpoint', () => {
             const result = await validate(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as {
+                errors: { entityType: string }
+            };
             expect(response.errors.entityType).toContain('entityType must be one of');
         });
     });
@@ -706,7 +767,7 @@ describe('Validate for Publish API Endpoint', () => {
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
 
             // Verify response structure
             expect(response).toHaveProperty('success');
@@ -755,7 +816,7 @@ describe('Validate for Publish API Endpoint', () => {
             };
 
             const result = await validate(event as APIGatewayProxyEventV2);
-            const response = JSON.parse(result.body!);
+            const response = JSON.parse(result.body!) as Record<string, unknown>;
 
             // Verify complete validation response structure
             expect(response).toHaveProperty('success');

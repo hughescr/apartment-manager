@@ -5,19 +5,14 @@
  * ensuring proper log levels, security, and environment-based configuration.
  */
 
-import { logger as baseLogger } from '@hughescr/logger';
+import { logger } from '@hughescr/logger';
 import { isError, isObject, isArray, map, toLower, some } from 'lodash';
 
 /**
- * Application logger with environment-based configuration
- *
- * Features:
- * - Environment-based log level control
- * - Consistent log formatting across the application
- * - Security-safe logging that prevents sensitive data leakage
- * - Proper log levels: debug, info, warn, error
+ * Re-export the logger for convenience
+ * The logger is now properly typed via the TypeScript declaration file
  */
-export const logger = baseLogger;
+export { logger };
 
 /**
  * Helper function for logging in development vs production
@@ -25,7 +20,7 @@ export const logger = baseLogger;
  * In production, we're more conservative with logging
  */
 export function getLogLevel(): string {
-    const env = process.env.NODE_ENV || 'development';
+    const env = process.env.NODE_ENV ?? 'development';
     const logLevel = process.env.LOG_LEVEL;
 
     if(logLevel) {

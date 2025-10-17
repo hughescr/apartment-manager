@@ -246,8 +246,8 @@ describe('MITS Generator - Inheritance Resolution', () => {
             expect(xml).toMatch(/<UnitBathrooms>\d+<\/UnitBathrooms>/g);
 
             // Verify that previously missing fields are now populated
-            const bedroomMatches = xml.match(/<UnitBedrooms>\d+<\/UnitBedrooms>/g) || [];
-            const bathroomMatches = xml.match(/<UnitBathrooms>\d+<\/UnitBathrooms>/g) || [];
+            const bedroomMatches = xml.match(/<UnitBedrooms>\d+<\/UnitBedrooms>/g) ?? [];
+            const bathroomMatches = xml.match(/<UnitBathrooms>\d+<\/UnitBathrooms>/g) ?? [];
 
             // Should have bedroom/bathroom entries for all 3 units
             expect(bedroomMatches.length).toBe(3);

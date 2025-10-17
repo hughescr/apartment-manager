@@ -55,7 +55,17 @@ describe('Buildings API - CRUD operations', () => {
             const result = await create(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(201);
-            const responseBuilding = JSON.parse(result.body!);
+            const responseBuilding = JSON.parse(result.body!) as {
+                buildingID:                string
+                buildingName:              string
+                street:                    string
+                city:                      string
+                state:                     string
+                zip:                       string
+                acceptsOnlineApplications: boolean
+                leaseLength:               number
+                photos:                    string[]
+            };
             // Check that buildingID was auto-generated (should be short-uuid format)
             expect(responseBuilding.buildingID).toMatch(/^[\w-]{22}$/);
             // Check that buildingName was auto-generated from street address
@@ -83,7 +93,7 @@ describe('Buildings API - CRUD operations', () => {
             const result = await create(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(400);
-            const error = JSON.parse(result.body!);
+            const error = JSON.parse(result.body!) as { error: string, errors: Record<string, string> };
             expect(error.error).toBe('Validation failed');
             expect(error.errors.buildingID).toContain('must be a valid building ID format');
         });
@@ -110,7 +120,7 @@ describe('Buildings API - CRUD operations', () => {
             const result = await get(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const data = JSON.parse(result.body!);
+            const data = JSON.parse(result.body!) as { buildingID: string, buildingName: string };
             expect(data.buildingID).toBe(testBuildingWithIds.buildingID);
             expect(data.buildingName).toBe('123 Main'); // Building name included
             expect(dynamoDbMock).toHaveBeenCalledTimes(1);
@@ -157,7 +167,7 @@ describe('Buildings API - CRUD operations', () => {
             const result = await update(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(200);
-            const data = JSON.parse(result.body!);
+            const data = JSON.parse(result.body!) as { city: string, buildingID: string, buildingName: string };
             expect(data.city).toBe('New City');
             expect(data.buildingID).toBe(testBuildingWithIds.buildingID); // Preserved
             expect(data.buildingName).toBe('123 Main'); // Preserved or regenerated
@@ -192,7 +202,7 @@ describe('Buildings API - CRUD operations', () => {
             const result = await update(event as APIGatewayProxyEventV2);
 
             expect(result.statusCode).toBe(500);
-            const body = JSON.parse(result.body!);
+            const body = JSON.parse(result.body!) as { error: string };
             expect(body.error).toBe('Internal server error during update');
         });
     });

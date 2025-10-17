@@ -6,6 +6,9 @@ import _ from 'lodash';
 export type Props = Record<string, never>;
 
 const dialogId = 'assign-unit-type-dialog';
+
+// Mark lodash as used (referenced in Alpine.js x-data template strings for _.isObject and _.isNumber)
+void _;
 ---
 
 <dialog class="modal" :class="{'modal-open': showAssignUnitTypeDialog}" data-testid={dialogId}>

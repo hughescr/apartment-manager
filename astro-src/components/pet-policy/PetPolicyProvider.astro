@@ -8,13 +8,16 @@ const {
     name,
     label = 'Pet Policy',
     xModel,
-    petPolicy: _petPolicy, // Unused parameter, kept for interface compatibility
+    petPolicy: _petPolicy,
     required = false,
     disabled = false,
     'class': className = '',
     error,
     showLabel = true,
 } = Astro.props;
+
+// Mark as intentionally unused (data passed via xModel)
+void _petPolicy;
 
 const containerClasses = _.compact([
     'pet-policy-provider',

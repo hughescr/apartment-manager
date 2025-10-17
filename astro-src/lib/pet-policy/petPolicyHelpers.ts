@@ -46,15 +46,9 @@ export function ensurePetPolicyStructure(policy: PetPolicy | null | undefined): 
     const extended = policy as ExtendedPetPolicy;
 
     // Ensure all arrays exist
-    if(!extended.types) {
-        extended.types = [];
-    }
-    if(!extended.breedRestrictions) {
-        extended.breedRestrictions = [];
-    }
-    if(!extended.petTypes) {
-        extended.petTypes = [];
-    }
+    extended.types ??= [];
+    extended.breedRestrictions ??= [];
+    extended.petTypes ??= [];
 
     return extended;
 }
@@ -63,9 +57,9 @@ export function ensurePetPolicyStructure(policy: PetPolicy | null | undefined): 
  * Calculates total cost summary for pet fees
  */
 export function calculatePetCosts(policy: PetPolicy): PetCostSummary {
-    const deposit = policy.deposit || 0;
-    const oneTime = policy.oneTimeFee || 0;
-    const monthly = policy.monthlyFee || 0;
+    const deposit = policy.deposit ?? 0;
+    const oneTime = policy.oneTimeFee ?? 0;
+    const monthly = policy.monthlyFee ?? 0;
 
     return {
         upfront: deposit + oneTime,
@@ -78,16 +72,14 @@ export function calculatePetCosts(policy: PetPolicy): PetCostSummary {
  * Checks if a pet type is selected in the policy
  */
 export function isPetTypeSelected(policy: ExtendedPetPolicy, type: PetType): boolean {
-    return policy.types?.includes(type) || false;
+    return policy.types?.includes(type) ?? false;
 }
 
 /**
  * Toggles a pet type in the policy
  */
 export function togglePetType(policy: ExtendedPetPolicy, type: PetType): void {
-    if(!policy.types) {
-        policy.types = [];
-    }
+    policy.types ??= [];
 
     const index = policy.types.indexOf(type);
     if(index >= 0) {
@@ -101,16 +93,14 @@ export function togglePetType(policy: ExtendedPetPolicy, type: PetType): void {
  * Checks if a breed is restricted in the policy
  */
 export function isBreedRestricted(policy: ExtendedPetPolicy, breed: string): boolean {
-    return policy.breedRestrictions?.includes(breed) || false;
+    return policy.breedRestrictions?.includes(breed) ?? false;
 }
 
 /**
  * Adds a breed restriction to the policy
  */
 export function addBreedRestriction(policy: ExtendedPetPolicy, breed: string): boolean {
-    if(!policy.breedRestrictions) {
-        policy.breedRestrictions = [];
-    }
+    policy.breedRestrictions ??= [];
 
     const trimmedBreed = trim(breed);
     if(trimmedBreed && !policy.breedRestrictions.includes(trimmedBreed)) {
@@ -133,9 +123,7 @@ export function removeBreedRestriction(policy: ExtendedPetPolicy, index: number)
  * Toggles a common breed restriction
  */
 export function toggleCommonBreed(policy: ExtendedPetPolicy, breed: string): void {
-    if(!policy.breedRestrictions) {
-        policy.breedRestrictions = [];
-    }
+    policy.breedRestrictions ??= [];
 
     const index = policy.breedRestrictions.indexOf(breed);
     if(index >= 0) {
@@ -158,9 +146,7 @@ export function addBreedRestrictionToPetType(
         return false;
     }
 
-    if(!petTypePolicy.breedRestrictions) {
-        petTypePolicy.breedRestrictions = [];
-    }
+    petTypePolicy.breedRestrictions ??= [];
 
     const trimmedBreed = trim(breed);
     if(trimmedBreed && !petTypePolicy.breedRestrictions.includes(trimmedBreed)) {
@@ -190,7 +176,7 @@ export function removeBreedRestrictionFromPetType(
  * Gets a summary of advanced pet type configurations
  */
 export function getAdvancedPetTypesSummary(policy: ExtendedPetPolicy): string {
-    const petTypes = policy.petTypes || [];
+    const petTypes = policy.petTypes ?? [];
     if(petTypes.length === 0) {
         return 'No advanced pet types configured';
     }
@@ -203,7 +189,7 @@ export function getAdvancedPetTypesSummary(policy: ExtendedPetPolicy): string {
  * Checks if policy has advanced pet type configurations
  */
 export function hasAdvancedPetTypes(policy: ExtendedPetPolicy): boolean {
-    return (policy.petTypes?.length || 0) > 0;
+    return (policy.petTypes?.length ?? 0) > 0;
 }
 
 /**

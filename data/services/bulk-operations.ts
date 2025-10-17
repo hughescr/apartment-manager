@@ -1,4 +1,4 @@
-import type { VacancyClass } from '../../src/types';
+import type { VacancyClass } from '../../src/types/index.js';
 import { updateUnit } from '../units';
 import { logger } from '@hughescr/logger';
 import { filter, isArray, isError, trim } from 'lodash';
@@ -94,7 +94,7 @@ export async function performBulkRentUpdate(params: BulkRentUpdateParams): Promi
                 throw new Error(`Unit ${unitID} not found`);
             }
 
-            const newRent = calculateNewRent(currentUnit.rent || 0, updateType, value);
+            const newRent = calculateNewRent(currentUnit.rent ?? 0, updateType, value);
 
             await updateUnit(buildingID, unitID, {
                 rent: newRent

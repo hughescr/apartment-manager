@@ -6,7 +6,7 @@
  */
 
 import { flatMap, forEach, isArray, isString, last, map, omit, replace, split, startCase } from 'lodash';
-import { validateForMITSPublication } from './published';
+import { validateForMITSPublication } from './published/index.js';
 import { MissingMITSField, ValidationError, SiteRequirements } from './types';
 
 /**
@@ -178,7 +178,7 @@ function formatFieldDisplayName(fieldPath: string): string {
         unitNumber:          'Unit Number'
     };
 
-    return fieldMappings[fieldPath] || startCase(last(split(fieldPath, '.')) || fieldPath);
+    return fieldMappings[fieldPath] ?? startCase(last(split(fieldPath, '.')) ?? fieldPath);
 }
 
 /**
