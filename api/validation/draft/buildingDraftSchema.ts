@@ -2,6 +2,18 @@ import { z } from 'zod';
 import { PropertyType } from '../../../src/types';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
 import { chain } from 'lodash';
+import {
+    createPetPolicySchema,
+    createFeeSchema,
+    createParkingOptionSchema,
+    createStorageOptionSchema,
+    createAmenitySchema,
+    createRentSpecialSchema,
+    createScreeningCriteriaSchema,
+    createIncomeRestrictionsSchema,
+    createContactInfoSchema,
+    createTourAvailabilitySchema
+} from '../shared/common-schemas';
 
 /**
  * Draft validation schema for buildings - permissive schema for work-in-progress saves
@@ -9,115 +21,17 @@ import { chain } from 'lodash';
  * incremental data entry and auto-save functionality.
  */
 
-// Helper for website URLs with custom message (made optional)
-// Allow any string for security testing, sanitization will handle malicious URLs
-const websiteUrl = () => z.string().optional();
-
-const ContactInfoDraftSchema = z.object({
-    name:  z.string().optional(),
-    email: z.string().optional().refine(email => !email || /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email), {
-        message: 'Invalid email address format'
-    }),
-    phone:             z.string().optional(),
-    propertyWebsite:   websiteUrl(),
-    managementWebsite: websiteUrl(),
-    officeHours:       z.record(z.string(), z.object({
-        open:  z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
-        close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
-    })).optional(),
-}).partial().optional();
-
-const TourAvailabilityDraftSchema = z.object({
-    selfGuidedTours:   z.boolean().optional(),
-    virtualTours:      z.boolean().optional(),
-    inPersonTours:     z.boolean().optional(),
-    tourSchedulingUrl: websiteUrl(),
-    tourHours:         z.record(z.string(), z.object({
-        open:  z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
-        close: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
-    })).optional(),
-}).partial().optional();
-
-const RentSpecialDraftSchema = z.object({
-    id:          z.union([z.string(), z.number()]).optional(),
-    title:       z.string().min(1, 'Rent special title is required').optional(),
-    startDate:   z.string().optional(),
-    endDate:     z.string().optional(),
-    description: z.string().optional(),
-}).optional();
-
-const IncomeRestrictionsDraftSchema = z.object({
-    amiLimit: z.union([
-        z.number().min(0).max(200),
-        z.null().transform(() => undefined)
-    ]).optional(),
-    maxIncomeByHouseholdSize: z.record(z.string(), z.number()).optional(),
-}).partial().optional();
-
-// Enhanced complex structure schemas for draft
-const PetTypePolicyDraftSchema = z.object({
-    type:              z.string().min(1, 'Pet type is required').optional(),
-    weightLimit:       z.number().min(0).optional(),
-    countLimit:        z.number().int().min(0).optional(),
-    fee:               z.number().min(0).optional(),
-    deposit:           z.number().min(0).optional(),
-    breedRestrictions: z.array(z.string()).optional(),
-}).partial().optional();
-
-const PetPolicyDraftSchema = z.object({
-    allowed:           z.boolean().optional(),
-    types:             z.array(z.string()).optional(),
-    maxCount:          z.number().int().min(0).optional(),
-    weightLimit:       z.number().min(0).optional(),
-    breedRestrictions: z.array(z.string()).optional(),
-    deposit:           z.number().min(0).optional(),
-    monthlyFee:        z.number().min(0).optional(),
-    oneTimeFee:        z.number().min(0).optional(),
-    notes:             z.string().optional(),
-    petTypes:          z.array(PetTypePolicyDraftSchema).optional(),
-}).partial().optional();
-
-const FeeDraftSchema = z.object({
-    type:        z.string().min(1, 'Fee type is required').optional(),
-    amount:      z.number().min(0, 'Fee amount cannot be negative').optional(),
-    description: z.string().optional(),
-    refundable:  z.boolean().optional(),
-}).partial();
-
-const ParkingOptionDraftSchema = z.object({
-    type:        z.string().min(1, 'Parking type is required').optional(),
-    included:    z.boolean().optional(),
-    fee:         z.number().min(0).optional(),
-    spaces:      z.number().int().min(0).optional(),
-    description: z.string().optional(),
-}).partial();
-
-const StorageOptionDraftSchema = z.object({
-    type:        z.string().min(1, 'Storage type is required').optional(),
-    included:    z.boolean().optional(),
-    fee:         z.number().min(0).optional(),
-    dimensions:  z.string().optional(),
-    description: z.string().optional(),
-}).partial();
-
-const AmenityDraftSchema = z.object({
-    name:        z.string().min(1, 'Amenity name is required').optional(),
-    category:    z.string().min(1, 'Amenity category is required').optional(),
-    description: z.string().optional(),
-}).partial();
-
-const ScreeningCriteriaDraftSchema = z.object({
-    minCreditScore:          z.number().int().min(300).max(850).optional(),
-    incomeRatio:             z.number().min(0).max(10).optional(),
-    maxOccupantsPerBedroom:  z.number().int().min(0).max(5).optional(),
-    backgroundCheckRequired: z.boolean().optional(),
-    evictionHistory:         z.boolean().optional(),
-    criminalHistory:         z.boolean().optional(),
-    references:              z.number().optional(),
-    employmentVerification:  z.boolean().optional(),
-    rentalHistory:           z.boolean().optional(),
-    notes:                   z.string().optional(),
-}).partial().optional();
+// Create draft-mode schemas using shared builders
+const ContactInfoDraftSchema = createContactInfoSchema({ mode: 'draft' });
+const TourAvailabilityDraftSchema = createTourAvailabilitySchema({ mode: 'draft' });
+const RentSpecialDraftSchema = createRentSpecialSchema({ mode: 'draft' });
+const IncomeRestrictionsDraftSchema = createIncomeRestrictionsSchema({ mode: 'draft' });
+const PetPolicyDraftSchema = createPetPolicySchema({ mode: 'draft' });
+const FeeDraftSchema = createFeeSchema({ mode: 'draft' });
+const ParkingOptionDraftSchema = createParkingOptionSchema({ mode: 'draft' });
+const StorageOptionDraftSchema = createStorageOptionSchema({ mode: 'draft' });
+const AmenityDraftSchema = createAmenitySchema({ mode: 'draft' });
+const ScreeningCriteriaDraftSchema = createScreeningCriteriaSchema({ mode: 'draft' });
 
 export const BuildingDraftSchema = z.looseObject({
     // Required fields for draft - only ID and name

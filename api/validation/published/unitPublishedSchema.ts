@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { trim } from 'lodash';
 import type { VacancyClass } from '../../../src/types';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
+import {
+    createDepositSchema,
+    createUnitAmenitySchema,
+    createDateStringSchema
+} from '../shared/unit-schemas';
 
 /**
  * STRICT MITS 4.1 COMPLIANT UNIT VALIDATION SCHEMA
@@ -27,52 +32,10 @@ const VacancyClassSchema = z.enum(['Occupied', 'Unoccupied', 'Notice', 'Down'], 
     message: 'Vacancy class is required for MITS ILS_Unit.VacancyClass element'
 }) satisfies z.ZodSchema<VacancyClass>;
 
-// Enhanced deposit schema for MITS ILSUnit.Deposit element
-const DepositPublishedSchema = z.union([
-    z.number()
-        .min(0, 'Deposit amount cannot be negative for MITS Deposit element')
-        .max(50000, 'Deposit amount seems unusually high - please verify'),
-    z.object({
-        amount: z.number()
-            .min(0, 'Deposit amount cannot be negative for MITS Deposit element')
-            .max(50000, 'Deposit amount seems unusually high - please verify'),
-        refundable:              z.boolean().optional(),
-        partialRefundPercentage: z.number()
-            .min(0, 'Partial refund percentage cannot be negative')
-            .max(100, 'Partial refund percentage cannot exceed 100%')
-            .optional(),
-        notes: z.string()
-            .max(500, 'Deposit notes must be 500 characters or less')
-            .optional()
-    })
-]).optional();
-
-// Amenity schema for MITS UnitAmenity elements
-const AmenityPublishedSchema = z.object({
-    type: z.string()
-        .min(1, 'Amenity type is required for MITS UnitAmenity.AmenityType')
-        .max(100, 'Amenity type must be 100 characters or less'),
-    description: z.string()
-        .max(500, 'Amenity description must be 500 characters or less for MITS UnitAmenity.AmenityDescription')
-        .optional(),
-    category: z.string()
-        .max(50, 'Amenity category must be 50 characters or less')
-        .optional()
-});
-
-// Date validation helper for MITS date fields
-const mitsDateString = (fieldName: string) => z.string()
-    .refine(
-        (date) => {
-            if(!date) {
-                return true; // Optional dates are valid
-            }
-            const parsed = new Date(date);
-            return !isNaN(parsed.getTime());
-        },
-        { message: `${fieldName} must be a valid date format (ISO 8601 recommended for MITS compliance)` }
-    )
-    .optional();
+// Create published-mode schemas using shared builders
+const DepositPublishedSchema = createDepositSchema({ mode: 'published' });
+const AmenityPublishedSchema = createUnitAmenitySchema({ mode: 'published' });
+const mitsDateString = (fieldName: string) => createDateStringSchema(fieldName, { mode: 'published' });
 
 /**
  * STRICT MITS 4.1 Unit Publication Schema

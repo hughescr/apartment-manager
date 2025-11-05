@@ -45,13 +45,22 @@ export const createMockResponse = (options: {
     json?:       () => Promise<unknown>
     text?:       () => Promise<string>
 }) => {
+    // If json is provided but text is not, automatically create text from json
+    const textMethod = options.text ?? (async () => {
+        if(options.json) {
+            const jsonData = await options.json();
+            return JSON.stringify(jsonData);
+        }
+        return '';
+    });
+
     return {
         ok:          options.ok,
         status:      options.status,
         statusText:  options.statusText ?? '',
         headers:     new Headers(),
         json:        options.json ?? (() => Promise.resolve({})),
-        text:        options.text ?? (() => Promise.resolve('')),
+        text:        textMethod,
         blob:        () => Promise.resolve(new Blob()),
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
         formData:    () => Promise.resolve(new FormData()),

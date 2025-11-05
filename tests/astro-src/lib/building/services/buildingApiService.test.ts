@@ -87,7 +87,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeUndefined();
-            expect(result.error).toBe('Network connection failed');
+            expect(result.error).toBe('Failed to add unit type: Network connection failed');
         });
 
         test('should handle non-Error exceptions', async () => {
@@ -99,7 +99,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeUndefined();
-            expect(result.error).toBe('Network error occurred');
+            expect(result.error).toBe('Failed to add unit type: Unknown error');
         });
 
         test('should handle server error with empty response body', async () => {
@@ -189,7 +189,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeUndefined();
-            expect(result.error).toBe('Connection timeout');
+            expect(result.error).toBe('Failed to update unit type: Connection timeout');
         });
 
         test('should handle empty update data', async () => {
@@ -280,7 +280,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeUndefined();
-            expect(result.error).toBe('Request failed');
+            expect(result.error).toBe('Failed to delete unit type: Request failed');
         });
 
         test('should handle server error with default message', async () => {
@@ -384,13 +384,12 @@ describe('BuildingApiService - Unit Type Methods', () => {
         test('should handle JSON response that fails to parse', async () => {
             expect.assertions(3);
 
-            mockFetch.mockResolvedValueOnce({
-                ...createMockResponse({
-                    ok:     true,
-                    status: 200
-                }),
-                json: () => Promise.reject(new Error('Invalid JSON'))
-            });
+            // Mock response with malformed JSON
+            mockFetch.mockResolvedValueOnce(createMockResponse({
+                ok:     true,
+                status: 200,
+                text:   () => Promise.resolve('{invalid json')
+            }));
 
             const result = await apiService.addUnitType(testBuildingId, {
                 modelID:    'test',
@@ -402,7 +401,7 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeUndefined();
-            expect(result.error).toBe('Invalid JSON');
+            expect(result.error).toContain('JSON');
         });
 
         test('should handle text response that fails to read', async () => {
@@ -426,7 +425,8 @@ describe('BuildingApiService - Unit Type Methods', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeUndefined();
-            expect(result.error).toBe('Failed to read response');
+            // When response body can't be read, falls back to custom error message
+            expect(result.error).toBe('Failed to add unit type');
         });
     });
 });

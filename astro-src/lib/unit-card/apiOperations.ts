@@ -1,5 +1,5 @@
-import { isError } from 'lodash';
 import type { UnitData } from '../../types';
+import { BaseApiService } from '../services/BaseApiService';
 
 export interface SaveResult {
     success: boolean
@@ -12,108 +12,47 @@ export interface DeleteResult {
     error?:  string
 }
 
-export class UnitApiClient {
-    constructor(private apiURL: string) {}
-
+export class UnitApiClient extends BaseApiService {
     async saveUnit(unit: UnitData, buildingID: string): Promise<SaveResult> {
-        try {
-            const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/${unit.unitID}`, {
-                method:  'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(unit)
-            });
+        const result = await this.put<UnitData>(`/buildings/${buildingID}/units/${unit.unitID}`, unit, {
+            errorMessage: 'Failed to save unit'
+        });
 
-            if(response.ok) {
-                const data: unknown = await response.json();
-                const updatedUnit = data as UnitData;
-                return {
-                    success: true,
-                    unit:    updatedUnit
-                };
-            } else {
-                const errorText = await response.text();
-                return {
-                    success: false,
-                    error:   errorText || 'Failed to save unit'
-                };
-            }
-        } catch (error) {
-            return {
-                success: false,
-                error:   isError(error) ? error.message : 'Network error occurred'
-            };
-        }
+        return {
+            success: result.success,
+            unit:    result.data,
+            error:   result.error
+        };
     }
 
     async deleteUnit(unitID: string, buildingID: string): Promise<DeleteResult> {
-        try {
-            const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/${unitID}`, {
-                method: 'DELETE'
-            });
+        const result = await this.delete<void>(`/buildings/${buildingID}/units/${unitID}`, {
+            errorMessage: 'Failed to delete unit'
+        });
 
-            if(response.ok) {
-                return {
-                    success: true
-                };
-            } else {
-                const errorText = await response.text();
-                return {
-                    success: false,
-                    error:   errorText || 'Failed to delete unit'
-                };
-            }
-        } catch (error) {
-            return {
-                success: false,
-                error:   isError(error) ? error.message : 'Network error occurred'
-            };
-        }
+        return {
+            success: result.success,
+            error:   result.error
+        };
     }
 
     async updateUnitField(unitID: string, buildingID: string, fieldName: string, value: unknown): Promise<SaveResult> {
-        try {
-            const response = await fetch(`${this.apiURL}/buildings/${buildingID}/units/${unitID}/fields/${fieldName}`, {
-                method:  'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ value })
-            });
+        const result = await this.request<UnitData>(`/buildings/${buildingID}/units/${unitID}/fields/${fieldName}`, {
+            method:       'PATCH',
+            headers:      { 'Content-Type': 'application/json' },
+            body:         JSON.stringify({ value }),
+            errorMessage: `Failed to update ${fieldName}`
+        });
 
-            if(response.ok) {
-                const data: unknown = await response.json();
-                const updatedUnit = data as UnitData;
-                return {
-                    success: true,
-                    unit:    updatedUnit
-                };
-            } else {
-                const errorText = await response.text();
-                return {
-                    success: false,
-                    error:   errorText || `Failed to update ${fieldName}`
-                };
-            }
-        } catch (error) {
-            return {
-                success: false,
-                error:   isError(error) ? error.message : 'Network error occurred'
-            };
-        }
+        return {
+            success: result.success,
+            unit:    result.data,
+            error:   result.error
+        };
     }
 
     async fetchBuildingAmenities(buildingID: string): Promise<unknown[]> {
-        try {
-            const response = await fetch(`${this.apiURL}/buildings/${buildingID}/amenities`);
-            if(response.ok) {
-                const data: unknown = await response.json();
-                return data as unknown[];
-            }
-            return [];
-        } catch{
-            return [];
-        }
+        const result = await this.get<unknown[]>(`/buildings/${buildingID}/amenities`);
+        return result.data ?? [];
     }
 }

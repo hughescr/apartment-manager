@@ -77,8 +77,8 @@ export function createUnitTypeFormState(apiURL: string, buildingID: string) {
 
             this.saving = true;
             try {
-                const result = await UnitTypeApiService.createUnitType(
-                    this.apiURL,
+                const apiService = new UnitTypeApiService(this.apiURL);
+                const result = await apiService.createUnitType(
                     this.buildingID,
                     this.unitType
                 );

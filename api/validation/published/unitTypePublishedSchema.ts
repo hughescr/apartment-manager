@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { trim } from 'lodash';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
+import {
+    createDepositSchema,
+    createUnitAmenitySchema
+} from '../shared/unit-schemas';
 
 /**
  * STRICT MITS 4.1 COMPLIANT UNIT TYPE VALIDATION SCHEMA
@@ -17,38 +21,9 @@ import { isValidBuildingId } from '../../../src/utils/building-id.js';
  * - Floorplan.Identification.UnitCount: countAvailable
  */
 
-// Enhanced deposit schema for MITS Floorplan.Deposit element
-const DepositPublishedSchema = z.union([
-    z.number()
-        .min(0, 'Deposit amount cannot be negative for MITS Deposit element')
-        .max(50000, 'Deposit amount seems unusually high - please verify'),
-    z.object({
-        amount: z.number()
-            .min(0, 'Deposit amount cannot be negative for MITS Deposit element')
-            .max(50000, 'Deposit amount seems unusually high - please verify'),
-        refundable:              z.boolean().optional(),
-        partialRefundPercentage: z.number()
-            .min(0, 'Partial refund percentage cannot be negative')
-            .max(100, 'Partial refund percentage cannot exceed 100%')
-            .optional(),
-        notes: z.string()
-            .max(500, 'Deposit notes must be 500 characters or less')
-            .optional()
-    })
-]).optional();
-
-// Amenity schema for MITS FloorplanAmenity elements
-const AmenityPublishedSchema = z.object({
-    type: z.string()
-        .min(1, 'Amenity type is required for MITS FloorplanAmenity.AmenityType')
-        .max(100, 'Amenity type must be 100 characters or less'),
-    description: z.string()
-        .max(500, 'Amenity description must be 500 characters or less for MITS FloorplanAmenity.AmenityDescription')
-        .optional(),
-    category: z.string()
-        .max(50, 'Amenity category must be 50 characters or less')
-        .optional()
-});
+// Create published-mode schemas using shared builders
+const DepositPublishedSchema = createDepositSchema({ mode: 'published' });
+const AmenityPublishedSchema = createUnitAmenitySchema({ mode: 'published' });
 
 /**
  * STRICT MITS 4.1 Unit Type (Floorplan) Publication Schema

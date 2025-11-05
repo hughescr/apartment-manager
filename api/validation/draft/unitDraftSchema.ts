@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { some } from 'lodash';
 import { isValidBuildingId } from '../../../src/utils/building-id.js';
+import {
+    createDepositSchema,
+    createUnitAmenitySchema,
+    createUnitRentSpecialSchema,
+    createDateStringSchema
+} from '../shared/unit-schemas';
 
 /**
  * Draft validation schema for units - permissive schema for work-in-progress saves
@@ -8,43 +14,11 @@ import { isValidBuildingId } from '../../../src/utils/building-id.js';
  * incremental data entry and auto-save functionality.
  */
 
-// Helper schema for deposit validation (made optional for draft)
-const DepositDraftSchema = z.union([
-    z.number().min(0, 'Deposit amount cannot be negative'),
-    z.object({
-        amount:                  z.number().min(0, 'Deposit amount is required and cannot be negative').optional(),
-        refundable:              z.boolean().optional(),
-        partialRefundPercentage: z.number().min(0).max(100, 'Partial refund percentage must be between 0 and 100').optional(),
-        notes:                   z.string().optional()
-    })
-]).optional();
-
-const UnitRentSpecialDraftSchema = z.object({
-    id:          z.union([z.string(), z.number()]).optional(),
-    title:       z.string().min(1, 'Rent special title is required').optional(),
-    startDate:   z.string().optional(),
-    endDate:     z.string().optional(),
-    description: z.string().optional(),
-}).optional();
-
-// Helper schema for amenity validation (made optional for draft)
-const AmenityDraftSchema = z.object({
-    type:        z.string().min(1, 'Amenity type is required').optional(),
-    description: z.string().optional(),
-    category:    z.string().optional()
-}).optional();
-
-// Date validation helper (optional for draft)
-const dateStringDraft = () => z.string().optional().refine(
-    (date) => {
-        if(!date) {
-            return true; // Empty strings are valid for optional dates
-        }
-        const parsed = new Date(date);
-        return !isNaN(parsed.getTime());
-    },
-    { message: 'Invalid date format' }
-);
+// Create draft-mode schemas using shared builders
+const DepositDraftSchema = createDepositSchema({ mode: 'draft' });
+const UnitRentSpecialDraftSchema = createUnitRentSpecialSchema({ mode: 'draft' });
+const AmenityDraftSchema = createUnitAmenitySchema({ mode: 'draft' });
+const dateStringDraft = () => createDateStringSchema('date', { mode: 'draft' });
 
 export const UnitDraftSchema = z.looseObject({
     // Required fields for identification in draft
